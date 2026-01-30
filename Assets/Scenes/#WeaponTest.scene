@@ -95,7 +95,7 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "visible": true
+                "visible": false
             },
             "_parentGuid": "1935784717911039056",
             "guid": "6719283318383594766",
@@ -196,7 +196,7 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "visible": true
+                "visible": false
             },
             "_parentGuid": "1935784717911039056",
             "guid": "17187844950702545641",
@@ -297,7 +297,7 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "visible": true
+                "visible": false
             },
             "_parentGuid": "1935784717911039056",
             "guid": "17827978447585413459",
@@ -398,7 +398,7 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "visible": true
+                "visible": false
             },
             "_parentGuid": "1935784717911039056",
             "guid": "10494657380642960882",
@@ -499,7 +499,7 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "visible": true
+                "visible": false
             },
             "_parentGuid": "1935784717911039056",
             "guid": "8399892486145176962",
@@ -600,7 +600,7 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "visible": true
+                "visible": false
             },
             "_parentGuid": "1935784717911039056",
             "guid": "4073673833718499296",
@@ -671,7 +671,7 @@
                 "solverVelocityIterations": 1,
                 "stabilizationThreshold": -1.0,
                 "startAwake": true,
-                "teleport": false
+                "teleport": true
             },
             "SkinnedAnimation": {
                 "clipIndex": 0,
@@ -701,7 +701,7 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "visible": true
+                "visible": false
             },
             "_parentGuid": "1935784717911039056",
             "guid": "14190828958690152112",
@@ -773,21 +773,21 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.10801519453525543,
-                    "y": 3.092863082885742,
-                    "z": 0.1355179101228714
+                    "x": -0.17491191625595093,
+                    "y": 3.0507709980010986,
+                    "z": 0.09738004207611084
                 },
                 "rotation": {
-                    "x": 0.6596369743347168,
-                    "y": 1.0316150188446045,
-                    "z": -2.9825761318206787
+                    "x": 0.4982050657272339,
+                    "y": 0.7058174014091492,
+                    "z": -2.831796884536743
                 },
                 "scale": {
                     "x": 1.0000003576278687,
-                    "y": 1.0000001192092896,
-                    "z": 0.9999998807907104
+                    "y": 1.0000005960464478,
+                    "z": 1.0000003576278687
                 },
-                "visible": true
+                "visible": false
             },
             "guid": "15923733430767623345",
             "name": "W_Core"
@@ -835,7 +835,7 @@
                 "meshAssetPath": "EGOweapon_Tendon"
             },
             "Transform": {
-                "enabled": true,
+                "enabled": false,
                 "position": {
                     "x": 0.0,
                     "y": 0.0,
@@ -921,21 +921,21 @@
                 "socketName": "Test"
             },
             "Transform": {
-                "enabled": false,
+                "enabled": true,
                 "position": {
-                    "x": -0.08131571859121323,
-                    "y": 3.1563491821289063,
-                    "z": 0.0996914952993393
+                    "x": -0.17491191625595093,
+                    "y": 3.0507709980010986,
+                    "z": 0.09738004207611084
                 },
                 "rotation": {
-                    "x": 0.29713499546051025,
-                    "y": 0.9137322306632996,
-                    "z": 2.506850242614746
+                    "x": 0.4982050657272339,
+                    "y": 0.7058174014091492,
+                    "z": -2.831796884536743
                 },
                 "scale": {
-                    "x": 0.9999998807907104,
-                    "y": 1.0000003576278687,
-                    "z": 0.9999993443489075
+                    "x": 1.0000003576278687,
+                    "y": 1.0000005960464478,
+                    "z": 1.0000003576278687
                 },
                 "visible": true
             },
@@ -3234,7 +3234,7 @@
                 "clipIndex": 7,
                 "playing": true,
                 "speed": 0.550000011920929,
-                "timeSec": 410.71022372159416
+                "timeSec": 567.1046276540035
             },
             "SkinnedMesh": {
                 "boneCount": 248,
@@ -3302,6 +3302,7 @@
                         "m_capturePullDistanceAccel": 2.0,
                         "m_capturePullMaxDuration": 0.6000000238418579,
                         "m_capturePullMinDuration": 0.07999999821186066,
+                        "m_capturePullTargetDuration": 0.0,
                         "m_coreName": "W_Core",
                         "m_eyeDistanceAccel": 4.0,
                         "m_eyeFloatMoveSpeed": 2.0,
@@ -3322,8 +3323,8 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.0,
-                    "y": 1.350000023841858,
+                    "x": 0.003000000026077032,
+                    "y": 1.343999981880188,
                     "z": 0.0
                 },
                 "rotation": {

@@ -132,7 +132,7 @@ namespace Alice
 
         void SetEnabled(EntityId id, bool enabled);
         void SetVisible(EntityId id, bool visible);
-        //void SetMaterialAlpha(EntityId id, float alpha);
+        void SetMaterialAlpha(EntityId id, float alpha);
         void SetMaterialTransparent(EntityId id, bool transparent);
         void SetColliderTrigger(EntityId id, bool trigger);
         void SetIgnoreLayers(EntityId id, uint32_t mask);

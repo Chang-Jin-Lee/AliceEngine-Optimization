@@ -667,19 +667,17 @@ namespace Alice
                 m_tendonFading = true;
                 m_tendonTimer = 0.0f;
                 SetVisible(m_tendon, true);
-                SetMaterialTransparent(m_tendon, true);
-                //SetMaterialAlpha(m_tendon, 0.0f);
+                SetMaterialAlpha(m_tendon, 0.0f);
             }
 
             m_tendonTimer += dt;
             float duration = std::max(0.001f, m_tendonVisibleDelay);
             float t = Clamp(m_tendonTimer / duration, 0.0f, 1.0f);
-//             float alpha = SmoothStep(t);
-//             SetMaterialAlpha(m_tendon, alpha);
+            float alpha = SmoothStep(t);
+            SetMaterialAlpha(m_tendon, alpha);
             if (t >= 1.0f)
             {
-     /*           SetMaterialAlpha(m_tendon, 1.0f);*/
-                SetMaterialTransparent(m_tendon, false);
+                SetMaterialAlpha(m_tendon, 1.0f);
             }
         }
     }
@@ -804,26 +802,36 @@ namespace Alice
         }
     }
 
-    //void Gimmick::SetMaterialAlpha(EntityId id, float alpha)
-    //{
-    //    auto* world = GetWorld();
-    //    if (!world || id == InvalidEntityId)
-    //        return;
-    //    if (auto* mat = world->GetComponent<MaterialComponent>(id))
-    //    {
-    //        mat->alpha = Clamp(alpha, 0.0f, 1.0f);
-    //    }
-    //}
+    void Gimmick::SetMaterialAlpha(EntityId id, float alpha)
+    {
+        auto* world = GetWorld();
+        if (!world || id == InvalidEntityId)
+            return;
+
+        MaterialComponent* mat = world->GetComponent<MaterialComponent>(id);
+        if (!mat)
+        {
+            MaterialComponent& newMat = world->AddComponent<MaterialComponent>(id, DirectX::XMFLOAT3(0.7f, 0.7f, 0.7f));
+            mat = &newMat;
+        }
+
+        const float clamped = Clamp(alpha, 0.0f, 1.0f);
+        mat->Set_alpha(clamped);
+        mat->Set_transparent(clamped < 0.999f);
+    }
 
     void Gimmick::SetMaterialTransparent(EntityId id, bool transparent)
     {
         auto* world = GetWorld();
         if (!world || id == InvalidEntityId)
             return;
-        if (auto* mat = world->GetComponent<MaterialComponent>(id))
+        MaterialComponent* mat = world->GetComponent<MaterialComponent>(id);
+        if (!mat)
         {
-            mat->transparent = transparent;
+            MaterialComponent& newMat = world->AddComponent<MaterialComponent>(id, DirectX::XMFLOAT3(0.7f, 0.7f, 0.7f));
+            mat = &newMat;
         }
+        mat->Set_transparent(transparent);
     }
 
     void Gimmick::SetColliderTrigger(EntityId id, bool trigger)
