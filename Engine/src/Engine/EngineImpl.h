@@ -228,6 +228,8 @@ namespace Alice
 		void UpdateEditorFreeCam(float dt);
 		void UpdateApplyFinalCameraLookAt();
 		void UpdateUI(float dt);
+		void UpdateHandlePlayStartReset();
+		float UpdateResolvePhysicsDelta(float dt);
 
 		// =========================
 		// Physics helpers
