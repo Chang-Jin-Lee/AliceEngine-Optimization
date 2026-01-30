@@ -3,6 +3,7 @@
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Blade_1_0.mat",
                 "color": {
@@ -78,30 +79,32 @@
                 "meshAssetPath": "EGOweapon_Blade_1"
             },
             "Transform": {
-                "enabled": false,
+                "enabled": true,
                 "position": {
-                    "x": 1.299083948135376,
-                    "y": 0.08214406669139862,
-                    "z": -1.9833588600158691
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "rotation": {
-                    "x": 0.33199748396873474,
-                    "y": 2.4668538570404053,
-                    "z": -2.895388603210449
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "scale": {
-                    "x": 1.0000001192092896,
-                    "y": 1.0000001192092896,
-                    "z": 1.0000003576278687
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
                 },
-                "visible": false
+                "visible": true
             },
+            "_parentGuid": "1935784717911039056",
             "guid": "6719283318383594766",
             "name": "WB_Back"
         },
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Blade_2_0.mat",
                 "color": {
@@ -177,30 +180,32 @@
                 "meshAssetPath": "EGOweapon_Blade_2"
             },
             "Transform": {
-                "enabled": false,
+                "enabled": true,
                 "position": {
-                    "x": 2.1407294273376465,
-                    "y": 0.08989950269460678,
-                    "z": 0.7789750099182129
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "rotation": {
-                    "x": -0.24677030742168427,
-                    "y": -0.010803572833538055,
-                    "z": -2.670559883117676
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "scale": {
-                    "x": 1.0000001192092896,
-                    "y": 1.0000001192092896,
-                    "z": 1.0000003576278687
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
                 },
-                "visible": false
+                "visible": true
             },
+            "_parentGuid": "1935784717911039056",
             "guid": "17187844950702545641",
             "name": "WB_Base"
         },
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Blade_3_0.mat",
                 "color": {
@@ -276,30 +281,32 @@
                 "meshAssetPath": "EGOweapon_Blade_3"
             },
             "Transform": {
-                "enabled": false,
+                "enabled": true,
                 "position": {
-                    "x": 2.4950449466705322,
-                    "y": 0.026651812717318535,
-                    "z": -0.13526849448680878
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "rotation": {
-                    "x": -1.3274948596954346,
-                    "y": -2.808882474899292,
-                    "z": -3.095410108566284
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "scale": {
-                    "x": 1.0000001192092896,
-                    "y": 1.0000001192092896,
-                    "z": 1.0000003576278687
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
                 },
-                "visible": false
+                "visible": true
             },
+            "_parentGuid": "1935784717911039056",
             "guid": "17827978447585413459",
             "name": "WB_FrontA"
         },
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Blade_4_0.mat",
                 "color": {
@@ -375,30 +382,32 @@
                 "meshAssetPath": "EGOweapon_Blade_4"
             },
             "Transform": {
-                "enabled": false,
+                "enabled": true,
                 "position": {
-                    "x": 1.250349521636963,
-                    "y": 0.00038188695907592773,
-                    "z": -1.4208953380584717
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "rotation": {
-                    "x": -1.4153687953948975,
-                    "y": 0.3975382149219513,
-                    "z": -0.27686378359794617
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "scale": {
-                    "x": 1.0000001192092896,
-                    "y": 1.0000001192092896,
-                    "z": 1.0000003576278687
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
                 },
-                "visible": false
+                "visible": true
             },
+            "_parentGuid": "1935784717911039056",
             "guid": "10494657380642960882",
             "name": "WB_FrontB"
         },
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Blade_5_0.mat",
                 "color": {
@@ -474,30 +483,32 @@
                 "meshAssetPath": "EGOweapon_Blade_5"
             },
             "Transform": {
-                "enabled": false,
+                "enabled": true,
                 "position": {
-                    "x": 1.7144451141357422,
-                    "y": -0.01750241219997406,
-                    "z": -0.6601308584213257
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "rotation": {
-                    "x": 1.4242573976516724,
-                    "y": -0.021730592474341393,
-                    "z": -0.5513201951980591
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "scale": {
-                    "x": 1.0000001192092896,
-                    "y": 1.0000001192092896,
-                    "z": 1.0000003576278687
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
                 },
-                "visible": false
+                "visible": true
             },
+            "_parentGuid": "1935784717911039056",
             "guid": "8399892486145176962",
             "name": "WB_FrontC"
         },
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Blade_6_0.mat",
                 "color": {
@@ -573,30 +584,32 @@
                 "meshAssetPath": "EGOweapon_Blade_6"
             },
             "Transform": {
-                "enabled": false,
+                "enabled": true,
                 "position": {
-                    "x": 0.7596644759178162,
-                    "y": 0.01723901554942131,
-                    "z": -0.1145830973982811
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "rotation": {
-                    "x": 1.5552783012390137,
-                    "y": 1.2721771001815796,
-                    "z": 0.6346138119697571
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "scale": {
-                    "x": 1.0000001192092896,
-                    "y": 1.0000001192092896,
-                    "z": 1.0000003576278687
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
                 },
-                "visible": false
+                "visible": true
             },
+            "_parentGuid": "1935784717911039056",
             "guid": "4073673833718499296",
             "name": "WB_FrontD"
         },
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Eye_0.mat",
                 "color": {
@@ -672,7 +685,7 @@
                 "meshAssetPath": "EGOweapon_Eye"
             },
             "Transform": {
-                "enabled": false,
+                "enabled": true,
                 "position": {
                     "x": 0.0,
                     "y": 0.0,
@@ -688,7 +701,7 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "visible": false
+                "visible": true
             },
             "_parentGuid": "1935784717911039056",
             "guid": "14190828958690152112",
@@ -697,6 +710,7 @@
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Core_0.mat",
                 "color": {
@@ -759,21 +773,21 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.08361698687076569,
-                    "y": 2.7913873195648193,
-                    "z": 0.3333003520965576
+                    "x": -0.10801519453525543,
+                    "y": 3.092863082885742,
+                    "z": 0.1355179101228714
                 },
                 "rotation": {
-                    "x": -0.046374399214982986,
-                    "y": -1.8353838920593262,
-                    "z": -2.684602975845337
+                    "x": 0.6596369743347168,
+                    "y": 1.0316150188446045,
+                    "z": -2.9825761318206787
                 },
                 "scale": {
-                    "x": 0.9999996423721313,
-                    "y": 0.9999997615814209,
-                    "z": 1.000001311302185
+                    "x": 1.0000003576278687,
+                    "y": 1.0000001192092896,
+                    "z": 0.9999998807907104
                 },
-                "visible": false
+                "visible": true
             },
             "guid": "15923733430767623345",
             "name": "W_Core"
@@ -781,6 +795,7 @@
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Tendon_0.mat",
                 "color": {
@@ -820,7 +835,7 @@
                 "meshAssetPath": "EGOweapon_Tendon"
             },
             "Transform": {
-                "enabled": false,
+                "enabled": true,
                 "position": {
                     "x": 0.0,
                     "y": 0.0,
@@ -845,6 +860,7 @@
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_0.mat",
                 "color": {
@@ -905,21 +921,21 @@
                 "socketName": "Test"
             },
             "Transform": {
-                "enabled": true,
+                "enabled": false,
                 "position": {
-                    "x": -0.08361698687076569,
-                    "y": 2.7913873195648193,
-                    "z": 0.3333003520965576
+                    "x": -0.08131571859121323,
+                    "y": 3.1563491821289063,
+                    "z": 0.0996914952993393
                 },
                 "rotation": {
-                    "x": -0.046374399214982986,
-                    "y": -1.8353838920593262,
-                    "z": -2.684602975845337
+                    "x": 0.29713499546051025,
+                    "y": 0.9137322306632996,
+                    "z": 2.506850242614746
                 },
                 "scale": {
-                    "x": 0.9999996423721313,
-                    "y": 0.9999997615814209,
-                    "z": 1.000001311302185
+                    "x": 0.9999998807907104,
+                    "y": 1.0000003576278687,
+                    "z": 0.9999993443489075
                 },
                 "visible": true
             },
@@ -3186,6 +3202,7 @@
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Alice_0.mat",
                 "color": {
@@ -3214,10 +3231,10 @@
                 "transparent": false
             },
             "SkinnedAnimation": {
-                "clipIndex": 2,
+                "clipIndex": 7,
                 "playing": true,
-                "speed": 1.0,
-                "timeSec": 11.099967600777745
+                "speed": 0.550000011920929,
+                "timeSec": 410.71022372159416
             },
             "SkinnedMesh": {
                 "boneCount": 248,
@@ -3230,13 +3247,13 @@
                         "name": "Test",
                         "parentBone": "手首.R",
                         "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "x": -0.009999999776482582,
+                            "y": -0.33000001311302185,
+                            "z": 0.019999999552965164
                         },
                         "rotation": {
                             "x": 0.0,
-                            "y": 0.0,
+                            "y": 0.5,
                             "z": 0.0
                         },
                         "scale": {
@@ -3275,20 +3292,27 @@
                     "enabled": true,
                     "name": "Gimmick",
                     "props": {
-                        "m_arriveThreshold": 0.019999999552965164,
-                        "m_assembleInterval": 1.0,
-                        "m_assembleMoveSpeed": 4.0,
+                        "m_arriveThreshold": 0.009999999776482582,
+                        "m_assembleDistanceAccel": 3.0,
+                        "m_assembleInterval": 0.009999999776482582,
+                        "m_assembleMoveSpeed": 8.0,
                         "m_bindTargetName": "W_Target",
-                        "m_breakMaxImpulse": 3.0,
+                        "m_breakMaxImpulse": 10.0,
+                        "m_capturePullBaseSpeed": 3.0,
+                        "m_capturePullDistanceAccel": 2.0,
+                        "m_capturePullMaxDuration": 0.6000000238418579,
+                        "m_capturePullMinDuration": 0.07999999821186066,
                         "m_coreName": "W_Core",
+                        "m_eyeDistanceAccel": 4.0,
                         "m_eyeFloatMoveSpeed": 2.0,
                         "m_eyeMoveSpeed": 8.0,
                         "m_eyeName": "W_EYE",
                         "m_ignoreLayersMask": 0,
-                        "m_magnetizeInterval": 1.0,
+                        "m_magnetizeInterval": 0.5,
+                        "m_orbitAngularBlendDuration": 0.3499999940395355,
                         "m_orbitAngularSpeed": 2.0,
-                        "m_orbitMinRadius": 0.05000000074505806,
-                        "m_orbitRadiusScale": 0.25,
+                        "m_orbitMinRadius": 0.10000000149011612,
+                        "m_orbitRadiusScale": 0.30000001192092896,
                         "m_tendonName": "W_Tendon",
                         "m_tendonVisibleDelay": 1.0,
                         "m_weaponCombinedName": "Weapon(combined)"

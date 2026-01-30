@@ -11,6 +11,7 @@
 #include "Core/InputTypes.h"
 #include "Core/GameObject.h"
 #include "Components/TransformComponent.h"
+#include "Components/MaterialComponent.h"
 #include "PhysX/Components/Phy_RigidBodyComponent.h"
 #include "PhysX/Components/Phy_ColliderComponent.h"
 #include "PhysX/Components/Phy_MeshColliderComponent.h"
@@ -52,14 +53,6 @@ namespace Alice
             XMStoreFloat3(&scale, s);
             rotation = QuaternionToYPR_Rad(q);
             return true;
-        }
-
-        XMMATRIX BuildLocalMatrix(const XMFLOAT3& position, const XMFLOAT3& rotation, const XMFLOAT3& scale)
-        {
-            XMMATRIX S = XMMatrixScaling(scale.x, scale.y, scale.z);
-            XMMATRIX R = XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
-            XMMATRIX T = XMMatrixTranslation(position.x, position.y, position.z);
-            return S * R * T;
         }
 
         float Length(const XMFLOAT3& v)
@@ -107,6 +100,22 @@ namespace Alice
             XMFLOAT3 v{ dist(gen), dist(gen), dist(gen) };
             return Normalize(v);
         }
+
+        float Clamp(float v, float minV, float maxV)
+        {
+            return std::max(minV, std::min(maxV, v));
+        }
+
+        float SmoothStep(float t)
+        {
+            float clamped = Clamp(t, 0.0f, 1.0f);
+            return clamped * clamped * (3.0f - 2.0f * clamped);
+        }
+
+        float ComputeAcceleratedSpeed(float baseSpeed, float accel, float distance)
+        {
+            return std::max(0.0f, baseSpeed + accel * std::max(0.0f, distance));
+        }
     }
 
     REGISTER_SCRIPT(Gimmick);
@@ -115,7 +124,6 @@ namespace Alice
     {
         m_rng = std::mt19937(std::random_device{}());
         FindEntities();
-        CacheBindPoses();
 
         m_initialized = (m_weaponCombined != InvalidEntityId && m_core != InvalidEntityId && m_eye != InvalidEntityId);
         if (!m_initialized)
@@ -225,25 +233,6 @@ namespace Alice
         }
     }
 
-    void Gimmick::CacheBindPoses()
-    {
-        auto* world = GetWorld();
-        if (!world || m_core == InvalidEntityId)
-            return;
-
-        for (auto& shard : m_shards)
-        {
-            shard.bindLocal = ComputeBindLocal(shard.id);
-            shard.originalParent = world->GetParent(shard.id);
-        }
-
-        if (m_eye != InvalidEntityId)
-        {
-            m_eyeBindLocal = ComputeBindLocal(m_eye);
-            m_eyeOriginalParent = world->GetParent(m_eye);
-        }
-    }
-
     void Gimmick::AdvancePhase()
     {
         switch (m_phase)
@@ -275,6 +264,20 @@ namespace Alice
         if (!world)
             return;
 
+        auto prewarmHiddenPart = [&](EntityId id)
+        {
+            if (id == InvalidEntityId)
+                return;
+            SetColliderTrigger(id, true);
+            SetIgnoreLayers(id, m_ignoreLayersMask);
+            AddIgnoreSelfLayer(id);
+            // Keep kinematic + no gravity so it won't fall while hidden.
+            SetRigidBodyKinematic(id, true, false);
+            ClearRigidBodyVelocity(id);
+            SetVisible(id, false);
+            SetEnabled(id, true);
+        };
+
         m_phase = phase;
         m_phaseTime = 0.0f;
 
@@ -284,13 +287,13 @@ namespace Alice
             SetVisible(m_core, false);
             SetVisible(m_tendon, true);
             SetEnabled(m_tendon, false);
-            SetVisible(m_eye, false);
-            SetEnabled(m_eye, false);
+            SetMaterialTransparent(m_tendon, false);
+           // SetMaterialAlpha(m_tendon, 1.0f);
+            prewarmHiddenPart(m_eye);
 
             for (auto& shard : m_shards)
             {
-                SetVisible(shard.id, false);
-                SetEnabled(shard.id, false);
+                prewarmHiddenPart(shard.id);
             }
 
             ResetShardState();
@@ -305,13 +308,13 @@ namespace Alice
             SetVisible(m_core, false);
             SetVisible(m_tendon, true);
             SetEnabled(m_tendon, false);
-            SetVisible(m_eye, false);
-            SetEnabled(m_eye, false);
+            SetMaterialTransparent(m_tendon, false);
+           // SetMaterialAlpha(m_tendon, 1.0f);
+            prewarmHiddenPart(m_eye);
 
             for (auto& shard : m_shards)
             {
-                SetVisible(shard.id, false);
-                SetEnabled(shard.id, false);
+                prewarmHiddenPart(shard.id);
             }
 
             ResetShardState();
@@ -326,6 +329,8 @@ namespace Alice
             SetVisible(m_core, true);
             SetVisible(m_eye, true);
             SetEnabled(m_weaponCombined, false);
+            SetMaterialTransparent(m_tendon, false);
+            //SetMaterialAlpha(m_tendon, 1.0f);
 
             for (auto& shard : m_shards)
             {
@@ -378,6 +383,7 @@ namespace Alice
                     XMFLOAT3 jitter{ jitterDist(m_rng), jitterDist(m_rng), jitterDist(m_rng) };
                     tr->position = XMFLOAT3(spawnPos.x + jitter.x, spawnPos.y + jitter.y, spawnPos.z + jitter.z);
                     tr->rotation = spawnRot;
+                    tr->scale = XMFLOAT3(1.0f, 1.0f, 1.0f);
                     TeleportRigidBody(shard.id);
                     world->MarkTransformDirty(shard.id);
                 }
@@ -388,6 +394,7 @@ namespace Alice
                 XMFLOAT3 jitter{ jitterDist(m_rng), jitterDist(m_rng), jitterDist(m_rng) };
                 eyeTr->position = XMFLOAT3(spawnPos.x + jitter.x, spawnPos.y + jitter.y, spawnPos.z + jitter.z);
                 eyeTr->rotation = spawnRot;
+                eyeTr->scale = XMFLOAT3(1.0f, 1.0f, 1.0f);
                 TeleportRigidBody(m_eye);
                 world->MarkTransformDirty(m_eye);
             }
@@ -401,6 +408,7 @@ namespace Alice
         {
             ResetShardState();
             m_captureTimer = 0.0f;
+            m_magnetizeInitialized = false;
             m_eyeFloatAnchorValid = false;
             if (auto* tr = world->GetComponent<TransformComponent>(m_eye))
             {
@@ -443,6 +451,7 @@ namespace Alice
         {
             m_eyeArrived = false;
             m_tendonTimer = 0.0f;
+            m_tendonFading = false;
             SetColliderTrigger(m_eye, true);
             SetRigidBodyKinematic(m_eye, true, false);
             ClearRigidBodyVelocity(m_eye);
@@ -459,37 +468,51 @@ namespace Alice
         UpdateEyeFloat(dt);
         const XMFLOAT3 eyePos = GetEyeWorldPosition();
 
-        m_captureTimer += dt;
-        while (m_captureTimer >= m_magnetizeInterval)
+        if (!m_magnetizeInitialized)
         {
-            m_captureTimer -= m_magnetizeInterval;
+            m_magnetizeInitialized = true;
 
-            float bestDist = 0.0f;
-            size_t bestIndex = static_cast<size_t>(-1);
-
-            for (size_t i = 0; i < m_shards.size(); ++i)
+            float maxPullDistance = 0.0f;
+            for (auto& shard : m_shards)
             {
-                auto& shard = m_shards[i];
                 if (shard.captured)
                     continue;
                 if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
                 {
                     XMFLOAT3 delta{ tr->position.x - eyePos.x, tr->position.y - eyePos.y, tr->position.z - eyePos.z };
-                    float dist = Length(delta);
-                    if (bestIndex == static_cast<size_t>(-1) || dist < bestDist)
-                    {
-                        bestDist = dist;
-                        bestIndex = i;
-                    }
+                    float radius = std::max(m_orbitMinRadius, Length(delta));
+                    XMFLOAT3 baseDir = Normalize(delta);
+                    float scaledRadius = std::max(m_orbitMinRadius, radius * m_orbitRadiusScale);
+                    XMFLOAT3 targetPos{ eyePos.x + baseDir.x * scaledRadius,
+                                        eyePos.y + baseDir.y * scaledRadius,
+                                        eyePos.z + baseDir.z * scaledRadius };
+                    XMFLOAT3 pullDelta{ targetPos.x - tr->position.x,
+                                        targetPos.y - tr->position.y,
+                                        targetPos.z - tr->position.z };
+                    maxPullDistance = std::max(maxPullDistance, Length(pullDelta));
                 }
             }
 
-            if (bestIndex != static_cast<size_t>(-1))
+            float commonSpeed = ComputeAcceleratedSpeed(m_capturePullBaseSpeed, m_capturePullDistanceAccel, maxPullDistance);
+            float duration = (commonSpeed > 0.0f) ? (maxPullDistance / commonSpeed) : 0.0f;
+            if (m_capturePullTargetDuration > 0.0f)
+                duration = m_capturePullTargetDuration;
+            duration = Clamp(duration, m_capturePullMinDuration, m_capturePullMaxDuration);
+            commonSpeed = (duration > 0.0f) ? (maxPullDistance / duration) : 0.0f;
+            if (commonSpeed <= 0.0f)
+                commonSpeed = std::max(0.0f, m_capturePullBaseSpeed);
+
+            for (auto& shard : m_shards)
             {
-                auto& shard = m_shards[bestIndex];
+                if (shard.captured)
+                    continue;
+
                 shard.captured = true;
                 shard.pulling = true;
                 shard.pullTimer = 0.0f;
+                shard.orbitBlending = false;
+                shard.orbitBlendTimer = 0.0f;
+                shard.pullSpeed = commonSpeed;
 
                 if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
                 {
@@ -510,6 +533,17 @@ namespace Alice
                     shard.orbitBaseDir = baseDir;
                     shard.orbitAxis = axis;
                     shard.orbitAngle = 0.0f;
+
+                    float scaledRadius = std::max(m_orbitMinRadius, radius * m_orbitRadiusScale);
+                    XMFLOAT3 targetPos{ eyePos.x + baseDir.x * scaledRadius,
+                                        eyePos.y + baseDir.y * scaledRadius,
+                                        eyePos.z + baseDir.z * scaledRadius };
+                    XMFLOAT3 pullDelta{ targetPos.x - shard.pullStartPos.x,
+                                        targetPos.y - shard.pullStartPos.y,
+                                        targetPos.z - shard.pullStartPos.z };
+                    float pullDistance = Length(pullDelta);
+                    shard.pullDuration = (commonSpeed > 0.0f) ? (pullDistance / commonSpeed) : 0.0f;
+                    shard.orbitAngularSpeed = (radius > 0.001f) ? (commonSpeed / radius) : m_orbitAngularSpeed;
                 }
             }
         }
@@ -526,8 +560,22 @@ namespace Alice
         UpdateEyeFloat(dt);
         UpdateOrbitingShards(dt);
 
-        m_assembleTimer += dt;
-        if (m_nextAssembleIndex < m_assembleOrder.size() && m_assembleTimer >= m_assembleInterval)
+        bool assemblingInProgress = false;
+        for (const auto& shard : m_shards)
+        {
+            if (shard.assembling && !shard.assembled)
+            {
+                assemblingInProgress = true;
+                break;
+            }
+        }
+
+        if (!assemblingInProgress)
+            m_assembleTimer += dt;
+        else
+            m_assembleTimer = 0.0f;
+
+        if (!assemblingInProgress && m_nextAssembleIndex < m_assembleOrder.size() && m_assembleTimer >= m_assembleInterval)
         {
             size_t shardIndex = m_assembleOrder[m_nextAssembleIndex++];
             if (shardIndex < m_shards.size())
@@ -548,7 +596,16 @@ namespace Alice
             if (!GetBindTargetWorldPose(targetPos, targetRot, targetScale))
                 continue;
 
-            bool arrived = MoveTowards(shard.id, targetPos, targetRot, targetScale, m_assembleMoveSpeed, dt);
+            auto* tr = world->GetComponent<TransformComponent>(shard.id);
+            if (!tr)
+                continue;
+
+            DirectX::XMFLOAT3 delta{ targetPos.x - tr->position.x,
+                                     targetPos.y - tr->position.y,
+                                     targetPos.z - tr->position.z };
+            float dist = Length(delta);
+            float speed = ComputeAcceleratedSpeed(m_assembleMoveSpeed, m_assembleDistanceAccel, dist);
+            bool arrived = MoveTowards(shard.id, targetPos, targetRot, targetScale, speed, dt);
             if (arrived)
             {
                 shard.assembled = true;
@@ -580,27 +637,49 @@ namespace Alice
 
         if (!m_eyeArrived)
         {
-            bool arrived = MoveTowards(m_eye, targetPos, targetRot, targetScale, m_eyeMoveSpeed, dt);
-            if (arrived)
+            if (auto* tr = world->GetComponent<TransformComponent>(m_eye))
             {
-                m_eyeArrived = true;
-                if (m_bindTarget != InvalidEntityId)
-                    world->SetParent(m_eye, m_bindTarget, false);
-                if (auto* tr = world->GetComponent<TransformComponent>(m_eye))
+                DirectX::XMFLOAT3 delta{ targetPos.x - tr->position.x,
+                                         targetPos.y - tr->position.y,
+                                         targetPos.z - tr->position.z };
+                float dist = Length(delta);
+                float speed = ComputeAcceleratedSpeed(m_eyeMoveSpeed, m_eyeDistanceAccel, dist);
+                bool arrived = MoveTowards(m_eye, targetPos, targetRot, targetScale, speed, dt);
+                if (arrived)
                 {
-                    tr->position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-                    tr->rotation = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-                    tr->scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
-                    world->MarkTransformDirty(m_eye);
+                    m_eyeArrived = true;
+                    if (m_bindTarget != InvalidEntityId)
+                        world->SetParent(m_eye, m_bindTarget, false);
+                    if (auto* eyeTr = world->GetComponent<TransformComponent>(m_eye))
+                    {
+                        eyeTr->position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+                        eyeTr->rotation = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+                        eyeTr->scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+                        world->MarkTransformDirty(m_eye);
+                    }
                 }
             }
         }
         else
         {
-            m_tendonTimer += dt;
-            if (m_tendonTimer >= m_tendonVisibleDelay)
+            if (!m_tendonFading)
             {
+                m_tendonFading = true;
+                m_tendonTimer = 0.0f;
                 SetVisible(m_tendon, true);
+                SetMaterialTransparent(m_tendon, true);
+                //SetMaterialAlpha(m_tendon, 0.0f);
+            }
+
+            m_tendonTimer += dt;
+            float duration = std::max(0.001f, m_tendonVisibleDelay);
+            float t = Clamp(m_tendonTimer / duration, 0.0f, 1.0f);
+//             float alpha = SmoothStep(t);
+//             SetMaterialAlpha(m_tendon, alpha);
+            if (t >= 1.0f)
+            {
+     /*           SetMaterialAlpha(m_tendon, 1.0f);*/
+                SetMaterialTransparent(m_tendon, false);
             }
         }
     }
@@ -615,7 +694,7 @@ namespace Alice
         std::mt19937 gen(rd());
         std::uniform_real_distribution<float> impulseDist(0.0f, std::max(0.0f, m_breakMaxImpulse));
 
-        auto applyImpulse = [&](EntityId id)
+        auto applyImpulse = [&](EntityId id, const char* label)
         {
             auto* rb = world->GetComponent<Phy_RigidBodyComponent>(id);
             if (!rb || !rb->physicsActorHandle)
@@ -624,6 +703,18 @@ namespace Alice
             IRigidBody* body = rb->physicsActorHandle;
             if (!body || !body->IsValid() || !body->IsInWorld())
                 return;
+
+            if (auto* tr = world->GetComponent<TransformComponent>(id))
+            {
+                const float mass = body->GetMass();
+                const float invMass = (mass > 0.0f) ? (1.0f / mass) : 0.0f;
+                ALICE_LOG_INFO("[Gimmick] Break pre-impulse %s id=%llu scale=(%.4f, %.4f, %.4f) mass=%.6f invMass=%.3f kinematic=%d",
+                    (label ? label : ""),
+                    static_cast<unsigned long long>(id),
+                    tr->scale.x, tr->scale.y, tr->scale.z,
+                    mass, invMass,
+                    body->IsKinematic() ? 1 : 0);
+            }
 
             // 엔진 Sync 타이밍과 무관하게 즉시 dynamic 전환
             rb->isKinematic = false;
@@ -640,9 +731,9 @@ namespace Alice
 
 
         for (const auto& shard : m_shards)
-            applyImpulse(shard.id);
+            applyImpulse(shard.id, shard.name.c_str());
 
-        applyImpulse(m_eye);
+        applyImpulse(m_eye, "Eye");
     }
 
     bool Gimmick::CanApplyBreakImpulse() const
@@ -681,7 +772,13 @@ namespace Alice
             shard.orbitBaseDir = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
             shard.orbitRadius = 0.0f;
             shard.pullTimer = 0.0f;
+            shard.pullSpeed = 0.0f;
+            shard.orbitAngularSpeed = 0.0f;
+            shard.orbitAngularStartSpeed = 0.0f;
+            shard.orbitBlendTimer = 0.0f;
+            shard.orbitBlending = false;
         }
+        m_magnetizeInitialized = false;
     }
 
     void Gimmick::SetEnabled(EntityId id, bool enabled)
@@ -704,6 +801,28 @@ namespace Alice
         if (auto* tr = world->GetComponent<TransformComponent>(id))
         {
             tr->visible = visible;
+        }
+    }
+
+    //void Gimmick::SetMaterialAlpha(EntityId id, float alpha)
+    //{
+    //    auto* world = GetWorld();
+    //    if (!world || id == InvalidEntityId)
+    //        return;
+    //    if (auto* mat = world->GetComponent<MaterialComponent>(id))
+    //    {
+    //        mat->alpha = Clamp(alpha, 0.0f, 1.0f);
+    //    }
+    //}
+
+    void Gimmick::SetMaterialTransparent(EntityId id, bool transparent)
+    {
+        auto* world = GetWorld();
+        if (!world || id == InvalidEntityId)
+            return;
+        if (auto* mat = world->GetComponent<MaterialComponent>(id))
+        {
+            mat->transparent = transparent;
         }
     }
 
@@ -788,38 +907,6 @@ namespace Alice
 
         if (auto* rb = world->GetComponent<Phy_RigidBodyComponent>(id))
             rb->teleport = true;
-    }
-
-    Gimmick::LocalPose Gimmick::ComputeBindLocal(EntityId partId) const
-    {
-        LocalPose pose{};
-        auto* world = GetWorld();
-        if (!world || partId == InvalidEntityId || m_core == InvalidEntityId)
-            return pose;
-
-        XMMATRIX partWorld = world->ComputeWorldMatrix(partId);
-        const EntityId basis = (m_bindTarget != InvalidEntityId) ? m_bindTarget : m_core;
-        XMMATRIX coreWorld = world->ComputeWorldMatrix(basis);
-        XMVECTOR det;
-        XMMATRIX coreInv = XMMatrixInverse(&det, coreWorld);
-        XMMATRIX local = partWorld * coreInv;
-
-        DecomposeMatrix(local, pose.position, pose.rotation, pose.scale);
-        return pose;
-    }
-
-    bool Gimmick::ComputeWorldFromBind(const LocalPose& local, DirectX::XMFLOAT3& outPos,
-                                       DirectX::XMFLOAT3& outRot, DirectX::XMFLOAT3& outScale) const
-    {
-        auto* world = GetWorld();
-        if (!world || m_core == InvalidEntityId)
-            return false;
-
-        const EntityId basis = (m_bindTarget != InvalidEntityId) ? m_bindTarget : m_core;
-        XMMATRIX coreWorld = world->ComputeWorldMatrix(basis);
-        XMMATRIX localM = BuildLocalMatrix(local.position, local.rotation, local.scale);
-        XMMATRIX worldM = localM * coreWorld;
-        return DecomposeMatrix(worldM, outPos, outRot, outScale);
     }
 
     bool Gimmick::MoveTowards(EntityId id, const DirectX::XMFLOAT3& targetPos,
@@ -913,16 +1000,47 @@ namespace Alice
                 {
                     shard.pullTimer += dt;
                     float t = (shard.pullDuration > 0.0f) ? std::min(1.0f, shard.pullTimer / shard.pullDuration) : 1.0f;
-                    float smoothT = t * t * (3.0f - 2.0f * t);
+                    float smoothT = SmoothStep(t);
                     tr->position.x = shard.pullStartPos.x + (targetPos.x - shard.pullStartPos.x) * smoothT;
                     tr->position.y = shard.pullStartPos.y + (targetPos.y - shard.pullStartPos.y) * smoothT;
                     tr->position.z = shard.pullStartPos.z + (targetPos.z - shard.pullStartPos.z) * smoothT;
                     if (t >= 1.0f)
+                    {
                         shard.pulling = false;
+                        shard.orbitBlending = true;
+                        shard.orbitBlendTimer = 0.0f;
+
+                        XMFLOAT3 toEye{ tr->position.x - eyePos.x, tr->position.y - eyePos.y, tr->position.z - eyePos.z };
+                        float newRadius = Length(toEye);
+                        shard.orbitRadius = std::max(m_orbitMinRadius, newRadius);
+                        shard.orbitBaseDir = Normalize(toEye);
+                        if (shard.orbitRadius > 0.001f)
+                            shard.orbitAngularSpeed = std::max(0.0f, shard.pullSpeed / shard.orbitRadius);
+                        else
+                            shard.orbitAngularSpeed = m_orbitAngularSpeed;
+                        shard.orbitAngularStartSpeed = shard.orbitAngularSpeed;
+                    }
                 }
                 else
                 {
-                    shard.orbitAngle += m_orbitAngularSpeed * dt;
+                    if (shard.orbitAngularSpeed <= 0.0f)
+                        shard.orbitAngularSpeed = m_orbitAngularSpeed;
+
+                    if (shard.orbitBlending && m_orbitAngularBlendDuration > 0.0f)
+                    {
+                        shard.orbitBlendTimer += dt;
+                        float blendT = shard.orbitBlendTimer / m_orbitAngularBlendDuration;
+                        float smoothT = SmoothStep(blendT);
+                        shard.orbitAngularSpeed = shard.orbitAngularStartSpeed +
+                            (m_orbitAngularSpeed - shard.orbitAngularStartSpeed) * smoothT;
+                        if (blendT >= 1.0f)
+                        {
+                            shard.orbitBlending = false;
+                            shard.orbitAngularSpeed = m_orbitAngularSpeed;
+                        }
+                    }
+
+                    shard.orbitAngle += shard.orbitAngularSpeed * dt;
                     tr->position = targetPos;
                 }
                 TeleportRigidBody(shard.id);
@@ -972,17 +1090,4 @@ namespace Alice
         return DecomposeMatrix(basisWorld, outPos, outRot, outScale);
     }
 
-    DirectX::XMFLOAT3 Gimmick::GetCoreWorldPosition() const
-    {
-        auto* world = GetWorld();
-        if (!world || m_core == InvalidEntityId)
-            return DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-
-        DirectX::XMMATRIX coreWorld = world->ComputeWorldMatrix(m_core);
-        DirectX::XMVECTOR s, r, t;
-        DirectX::XMMatrixDecompose(&s, &r, &t, coreWorld);
-        DirectX::XMFLOAT3 pos;
-        DirectX::XMStoreFloat3(&pos, t);
-        return pos;
-    }
 }
