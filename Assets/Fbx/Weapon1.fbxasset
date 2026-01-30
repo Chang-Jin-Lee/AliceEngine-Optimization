@@ -1,0 +1,11 @@
+{
+    "materials": [
+        "Assets/Materials/Weapon1_0.mat",
+        "Assets/Materials/Weapon1_1.mat",
+        "Assets/Materials/Weapon1_2.mat",
+        "Assets/Materials/Weapon1_3.mat",
+        "Assets/Materials/Weapon1_4.mat"
+    ],
+    "mesh": "Weapon1",
+    "source_fbx": "Resource/Test/fbx/Weapon1.fbx"
+}

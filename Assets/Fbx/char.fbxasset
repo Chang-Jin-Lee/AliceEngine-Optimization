@@ -1,0 +1,23 @@
+{
+    "materials": [
+        "Assets/Materials/char_0.mat",
+        "Assets/Materials/char_1.mat",
+        "Assets/Materials/char_2.mat",
+        "Assets/Materials/char_3.mat",
+        "Assets/Materials/char_4.mat",
+        "Assets/Materials/char_5.mat",
+        "Assets/Materials/char_6.mat",
+        "Assets/Materials/char_7.mat",
+        "Assets/Materials/char_8.mat",
+        "Assets/Materials/char_9.mat",
+        "Assets/Materials/char_10.mat",
+        "Assets/Materials/char_11.mat",
+        "Assets/Materials/char_12.mat",
+        "Assets/Materials/char_13.mat",
+        "Assets/Materials/char_14.mat",
+        "Assets/Materials/char_15.mat",
+        "Assets/Materials/char_16.mat"
+    ],
+    "mesh": "char",
+    "source_fbx": "Resource/fbx/Study/char.fbx"
+}

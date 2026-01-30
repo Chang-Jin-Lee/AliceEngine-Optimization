@@ -1,0 +1,29 @@
+{
+    "name": "DamageY",
+    "keys": [
+        {
+            "time": 0.0,
+            "value": 0.0,
+            "inTangent": 0.0,
+            "outTangent": 0.0,
+            "interp": 2,
+            "tangentMode": 1
+        },
+        {
+            "time": 0.25,
+            "value": 1.0,
+            "inTangent": 0.0,
+            "outTangent": 0.0,
+            "interp": 2,
+            "tangentMode": 1
+        },
+        {
+            "time": 1.0,
+            "value": -0.2,
+            "inTangent": 0.0,
+            "outTangent": 0.0,
+            "interp": 2,
+            "tangentMode": 1
+        }
+    ]
+}

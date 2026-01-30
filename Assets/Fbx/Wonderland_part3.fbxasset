@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/Wonderland_part3_0.mat"
+    ],
+    "mesh": "Wonderland_part3",
+    "source_fbx": "Resource/fbx/Wonderland/Wonderland_part3.fbx"
+}

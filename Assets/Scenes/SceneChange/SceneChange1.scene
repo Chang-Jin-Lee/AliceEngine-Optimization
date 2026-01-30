@@ -1,0 +1,230 @@
+{
+    "entities": [
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "ambientOcclusion": 1.0,
+                "assetPath": "",
+                "color": {
+                    "x": 0.3552124500274658,
+                    "y": 1.0,
+                    "z": 0.0
+                },
+                "metalness": 1.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.009999999776482582,
+                "roughness": 0.0,
+                "shadingMode": -1,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrStrength": 1.0,
+                "transparent": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 3.000617742538452,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 11.067716598510742,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "guid": "5083617741050252772"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "ambientOcclusion": 1.0,
+                "assetPath": "",
+                "color": {
+                    "x": 0.0,
+                    "y": 1.0,
+                    "z": 0.17760610580444336
+                },
+                "metalness": 0.5049999952316284,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": -0.6700000166893005,
+                "roughness": 0.0,
+                "shadingMode": -1,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrStrength": 1.0,
+                "transparent": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -0.023843705654144287,
+                    "y": -2.3555243015289307,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 47.62660598754883,
+                    "y": 0.5068082213401794,
+                    "z": 20.796457290649414
+                }
+            },
+            "guid": "13111894040444351091",
+            "name": "Entity2"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "SceneSwitchExample",
+                    "props": {
+                        "targetSceneA": "Assets/Scenes/SceneChange/SceneChange2.scene",
+                        "targetSceneB": ""
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 1.405103087425232,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "guid": "6019181538089298767",
+            "name": "GameObject3"
+        },
+        {
+            "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
+                "aspectOverride": 0.0,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 2.0,
+                    "z": -19.707000732421875
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "guid": "3194661419505541374",
+            "name": "Camera1"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Weapon1_0.mat",
+                "color": {
+                    "x": 0.7019608020782471,
+                    "y": 0.7019608020782471,
+                    "z": 0.7019608020782471
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Weapon1.fbxasset",
+                "meshAssetPath": "Weapon1"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -1.585636854171753,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.009999999776482582,
+                    "y": 0.009999999776482582,
+                    "z": 0.009999999776482582
+                }
+            },
+            "guid": "6489649354442884182"
+        }
+    ],
+    "sceneName": "SceneChange1",
+    "version": 1
+}

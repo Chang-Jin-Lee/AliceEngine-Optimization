@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/Torus_0.mat"
+    ],
+    "mesh": "Torus",
+    "source_fbx": "Resource/fbx/Study/Torus.fbx"
+}

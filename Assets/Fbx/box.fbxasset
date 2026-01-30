@@ -1,0 +1,8 @@
+{
+    "materials": [
+        "Assets/Materials/box_0.mat",
+        "Assets/Materials/box_1.mat"
+    ],
+    "mesh": "box",
+    "source_fbx": "Resource/fbx/Study/box.fbx"
+}

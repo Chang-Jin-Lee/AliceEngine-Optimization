@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/Zombie_Run_0.mat"
+    ],
+    "mesh": "Zombie_Run",
+    "source_fbx": "Resource/fbx/Study/Zombie_Run.fbx"
+}

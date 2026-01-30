@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/tile_crack01_0.mat"
+    ],
+    "mesh": "tile_crack01",
+    "source_fbx": "Resource/Test/4_Resources/background/tile_pattern1/tile_crack01.fbx"
+}

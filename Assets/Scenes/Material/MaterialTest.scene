@@ -1,0 +1,80 @@
+{
+    "entities": [
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.05000000819563866,
+                "shadingMode": -1,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrStrength": 1.0,
+                "transparent": true
+            },
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "MaterialAlphaExample",
+                    "props": {
+                        "m_alphaStep": 0.10000000149011612,
+                        "m_autoTransparent": true,
+                        "m_valueStep": 0.05000000074505806
+                    }
+                }
+            ],
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -0.8659999966621399,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "guid": "4672080815437457773",
+            "name": "Cube"
+        }
+    ],
+    "sceneName": "MaterialTest",
+    "version": 1
+}

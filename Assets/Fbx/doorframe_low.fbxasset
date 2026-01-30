@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/doorframe_low_0.mat"
+    ],
+    "mesh": "doorframe_low",
+    "source_fbx": "Resource/Test/4_Resources/background/doorframe/doorframe_low.fbx"
+}

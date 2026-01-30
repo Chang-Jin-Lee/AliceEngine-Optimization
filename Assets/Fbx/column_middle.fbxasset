@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/column_middle_0.mat"
+    ],
+    "mesh": "column_middle",
+    "source_fbx": "Resource/Test/4_Resources/background/column/column_middle.fbx"
+}

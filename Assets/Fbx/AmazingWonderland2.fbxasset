@@ -1,0 +1,12 @@
+{
+    "materials": [
+        "Assets/Materials/AmazingWonderland2_0.mat",
+        "Assets/Materials/AmazingWonderland2_1.mat",
+        "Assets/Materials/AmazingWonderland2_2.mat",
+        "Assets/Materials/AmazingWonderland2_3.mat",
+        "Assets/Materials/AmazingWonderland2_4.mat",
+        "Assets/Materials/AmazingWonderland2_5.mat"
+    ],
+    "mesh": "AmazingWonderland2",
+    "source_fbx": "Resource/fbx/Alice3DGame/AmazingWonderland2.fbx"
+}

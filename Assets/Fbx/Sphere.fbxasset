@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/Sphere_0.mat"
+    ],
+    "mesh": "Sphere",
+    "source_fbx": "Resource/BasicMesh/Sphere.fbx"
+}

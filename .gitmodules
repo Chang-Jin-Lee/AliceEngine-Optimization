@@ -1,0 +1,17 @@
+[submodule "ThirdParty/ImGui"]
+	path = Engine/ThirdParty/ImGui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
+[submodule "ThirdParty/rttr"]
+	path = Engine/ThirdParty/rttr
+	url = https://github.com/Chang-Jin-Lee/rttr.git
+[submodule "ThirdParty/ImGuizmo"]
+	path = Engine/ThirdParty/ImGuizmo
+	url = https://github.com/Chang-Jin-Lee/ImGuizmo.git
+[submodule "ThirdParty/imoguizmo"]
+	path = Engine/ThirdParty/imoguizmo
+	url = https://github.com/Chang-Jin-Lee/imoguizmo.git
+[submodule "ThirdParty/imgui-node-editor"]
+	path = Engine/ThirdParty/imgui-node-editor
+	url = https://github.com/Chang-Jin-Lee/imgui-node-editor.git
+	branch = docking

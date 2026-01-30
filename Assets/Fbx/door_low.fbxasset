@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/door_low_0.mat"
+    ],
+    "mesh": "door_low",
+    "source_fbx": "Resource/Test/4_Resources/background/door/door_low.fbx"
+}

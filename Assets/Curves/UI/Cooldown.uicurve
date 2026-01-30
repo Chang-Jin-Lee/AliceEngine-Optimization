@@ -1,0 +1,21 @@
+{
+    "name": "Cooldown",
+    "keys": [
+        {
+            "time": 0.0,
+            "value": 0.0,
+            "inTangent": 0.0,
+            "outTangent": 0.0,
+            "interp": 1,
+            "tangentMode": 1
+        },
+        {
+            "time": 1.0,
+            "value": 1.0,
+            "inTangent": 0.0,
+            "outTangent": 0.0,
+            "interp": 1,
+            "tangentMode": 1
+        }
+    ]
+}

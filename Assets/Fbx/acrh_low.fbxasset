@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/acrh_low_0.mat"
+    ],
+    "mesh": "acrh_low",
+    "source_fbx": "Resource/Test/4_Resources/background/arch/acrh_low.fbx"
+}

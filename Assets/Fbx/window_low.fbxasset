@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/window_low_0.mat"
+    ],
+    "mesh": "window_low",
+    "source_fbx": "Resource/Test/4_Resources/background/window/window_low.fbx"
+}

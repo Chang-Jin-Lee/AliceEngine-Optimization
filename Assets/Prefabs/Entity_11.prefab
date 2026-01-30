@@ -1,0 +1,61 @@
+{
+    "Collider": {
+        "capsuleAlignYAxis": true,
+        "capsuleHalfHeight": 0.5,
+        "capsuleRadius": 0.30000001192092896,
+        "debugDraw": true,
+        "dynamicFriction": 0.5,
+        "halfExtents": {
+            "x": 1.0,
+            "y": 0.10000000149011612,
+            "z": 1.0
+        },
+        "ignoreLayers": 0,
+        "isTrigger": true,
+        "layerBits": 1,
+        "radius": 0.20000000298023224,
+        "restitution": 0.0,
+        "staticFriction": 0.5,
+        "type": "Sphere"
+    },
+    "RigidBody": {
+        "angularDamping": 0.05000000074505806,
+        "density": 1.0,
+        "enableCCD": false,
+        "enableSpeculativeCCD": false,
+        "gravityEnabled": false,
+        "isKinematic": true,
+        "linearDamping": 0.0,
+        "lockFlags": "None",
+        "massOverride": 0.0,
+        "maxAngularVelocity": 0.0,
+        "maxLinearVelocity": 0.0,
+        "resetVelocityOnTeleport": true,
+        "sleepThreshold": -1.0,
+        "solverPositionIterations": 4,
+        "solverVelocityIterations": 1,
+        "stabilizationThreshold": -1.0,
+        "startAwake": true,
+        "teleport": false
+    },
+    "Transform": {
+        "enabled": true,
+        "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        }
+    },
+    "name": "HitBox",
+    "version": 1
+}

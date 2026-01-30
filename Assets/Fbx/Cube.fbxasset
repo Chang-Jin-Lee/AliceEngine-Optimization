@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/Cube_0.mat"
+    ],
+    "mesh": "Cube",
+    "source_fbx": "Resource/BasicMesh/Cube.fbx"
+}

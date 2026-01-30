@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/EGOweapon_Tendon_0.mat"
+    ],
+    "mesh": "EGOweapon_Tendon",
+    "source_fbx": "Resource/Test/4_Resources/EGOweapon/EGOweapon_Tendon.fbx"
+}

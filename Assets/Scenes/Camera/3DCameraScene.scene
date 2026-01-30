@@ -1,0 +1,771 @@
+{
+    "entities": [
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "SceneSwitchExample",
+                    "props": {
+                        "m_targetName1": "",
+                        "m_targetName2": ""
+                    }
+                }
+            ],
+            "Transform": {
+                "position": {
+                    "x": -10.624564170837402,
+                    "y": 7.713817119598389,
+                    "z": -1.2783443927764893
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 351.4531555175781,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 0.9999999403953552,
+                    "z": 0.9999999403953552
+                }
+            },
+            "id": 68
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Cooked/Textures/Rapi/Rapi_Diffuse_embedded0.alice",
+                "assetPath": "Assets/Materials/Rapi_0.mat",
+                "color": {
+                    "x": 0.8957529067993164,
+                    "y": 0.8957529067993164,
+                    "z": 0.8957529067993164
+                },
+                "metalness": 0.0,
+                "normalStrength": 5.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.14000000059604645,
+                "roughness": 0.5,
+                "shadingMode": -1
+            },
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "CharacterMovement",
+                    "props": {
+                        "m_gravity": 18.0,
+                        "m_jumpSpeed": 6.5,
+                        "m_moveSpeed": 10.0
+                    }
+                }
+            ],
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 60.922822618624195
+            },
+            "SkinnedMesh": {
+                "boneCount": 180,
+                "instanceAssetPath": "Assets/Fbx/Rapi.fbxasset",
+                "meshAssetPath": "Rapi"
+            },
+            "Transform": {
+                "position": {
+                    "x": -1.84263014793396,
+                    "y": 0.0,
+                    "z": -20.471099853515625
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 3.344481945037842,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.05000000074505806,
+                    "y": 0.05000000074505806,
+                    "z": 0.05000000074505806
+                }
+            },
+            "id": 69,
+            "name": "Rapi"
+        },
+        {
+            "Camera": {
+                "aspectOverride": 0.0,
+                "farPlane": 5000.0,
+                "fovYRad": 1.047196626663208,
+                "nearPlane": 0.10000000149011612,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "CameraBlend": {
+                "duration": 0.6000000238418579,
+                "slowDuration": 0.30000001192092896,
+                "slowTimeScale": 0.20000000298023224,
+                "slowTriggerT": 0.5,
+                "targetName": "Camera3",
+                "useSmoothStep": true
+            },
+            "CameraFollow": {
+                "aimDistance": 18.0,
+                "aimFovDeg": 45.0,
+                "allowManualOrbitInLockOn": false,
+                "baseDistance": 35.0,
+                "bossIntroDistance": 45.0,
+                "bossIntroFovDeg": 75.0,
+                "cameraTimeScale": 1.0,
+                "combatDistance": 28.0,
+                "combatFovDeg": 65.0,
+                "deathDistance": 55.0,
+                "deathFovDeg": 50.0,
+                "enableInput": true,
+                "enableLockOn": true,
+                "enabled": true,
+                "exploreDistance": 35.0,
+                "exploreFovDeg": 60.0,
+                "fastTurnMultiplier": 2.5,
+                "fastTurnYawThresholdDeg": 90.0,
+                "fovDamping": 6.0,
+                "heightOffset": 8.569999694824219,
+                "lockOnAngleWeight": 1.5,
+                "lockOnDistance": 24.0,
+                "lockOnFovDeg": 55.0,
+                "lockOnMaxAngleDeg": 50.0,
+                "lockOnMaxDistance": 35.0,
+                "lockOnRotationDamping": 10.0,
+                "lockOnSwitchAngleDeg": 45.0,
+                "maxDistance": 60.0,
+                "minDistance": 8.0,
+                "mode": 0,
+                "pitchDeg": 22.123579025268555,
+                "pitchMaxDeg": 80.0,
+                "pitchMinDeg": -45.0,
+                "positionDamping": 8.0,
+                "rotationDamping": 12.0,
+                "sensitivity": 0.8399999737739563,
+                "shoulderOffset": 0.0,
+                "shoulderSide": 1.0,
+                "targetName": "Rapi",
+                "yawDeg": 11.84339714050293
+            },
+            "CameraInput": {
+                "blendTimeKey3": 0.6000000238418579,
+                "blendTimeKey4": 0.6000000238418579,
+                "blendTimeKey5": 0.800000011920929,
+                "cameraListCsv": "Camera1,Camera2,Camera3,Camera4,Camera5",
+                "enabled": true,
+                "lookAtTargetName": "Enemy",
+                "shakeAmplitudeKey4": 0.30000001192092896,
+                "shakeDecayKey4": 2.0,
+                "shakeDurationKey4": 0.4000000059604645,
+                "shakeFrequencyKey4": 20.0,
+                "slowDurationKey5": 0.30000001192092896,
+                "slowTimeScaleKey5": 0.20000000298023224,
+                "slowTriggerTKey5": 0.5
+            },
+            "CameraLookAt": {
+                "enabled": false,
+                "rotationDamping": 8.0,
+                "targetName": "Enemy"
+            },
+            "CameraShake": {
+                "amplitude": 0.0,
+                "decay": 2.0,
+                "duration": 0.0,
+                "enabled": true,
+                "frequency": 20.0
+            },
+            "CameraSpringArm": {
+                "distance": 35.0,
+                "distanceDamping": 6.0,
+                "enableCollision": true,
+                "enableZoom": true,
+                "enabled": true,
+                "maxDistance": 60.0,
+                "minDistance": 8.0,
+                "minHeight": -1000.0,
+                "probePadding": 0.20000000298023224,
+                "probeRadius": 0.3499999940395355,
+                "zoomSpeed": 0.009999999776482582
+            },
+            "Material": {
+                "albedoTexturePath": "",
+                "assetPath": "",
+                "color": {
+                    "x": 1.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.009999999776482582,
+                "roughness": 0.5,
+                "shadingMode": -1
+            },
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "CameraRigPreset",
+                    "props": {
+                        "m_applyEveryFrame": false,
+                        "m_blendTimeKey3": 0.6000000238418579,
+                        "m_blendTimeKey4": 0.6000000238418579,
+                        "m_blendTimeKey5": 0.800000011920929,
+                        "m_cameraListCsv": "Camera1,Camera2,Camera3,Camera4,Camera5",
+                        "m_followTargetName": "Rapi",
+                        "m_lookAtTargetName": "Enemy",
+                        "m_shakeAmplitudeKey4": 0.30000001192092896,
+                        "m_shakeDecayKey4": 2.0,
+                        "m_shakeDurationKey4": 0.4000000059604645,
+                        "m_shakeFrequencyKey4": 20.0,
+                        "m_slowDurationKey5": 0.30000001192092896,
+                        "m_slowTimeScaleKey5": 0.20000000298023224,
+                        "m_slowTriggerTKey5": 0.5,
+                        "m_springArmDistance": 35.0,
+                        "m_springArmMaxDistance": 60.0,
+                        "m_springArmMinDistance": 8.0,
+                        "m_springArmZoomSpeed": 0.009999999776482582
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "CameraController",
+                    "props": {
+                        "m_shakeAmplitude": 0.5,
+                        "m_shakeDecay": 2.0,
+                        "m_shakeDuration": 2.200000047683716,
+                        "m_shakeFrequency": 20.0,
+                        "m_sholderOffset": 4.0
+                    }
+                }
+            ],
+            "Transform": {
+                "position": {
+                    "x": -8.49720287322998,
+                    "y": 21.751176834106445,
+                    "z": -52.212486267089844
+                },
+                "rotation": {
+                    "x": 0.38612931966781616,
+                    "y": 0.20670628547668457,
+                    "z": -5.2154071283894154e-08
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "id": 70,
+            "name": "MainCamera"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "assetPath": "",
+                "color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "outlineWidth": -5.079999923706055,
+                "roughness": 1.0,
+                "shadingMode": -1
+            },
+            "Transform": {
+                "position": {
+                    "x": 0.18812775611877441,
+                    "y": -1.5509624481201172,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 150.4550018310547,
+                    "y": 1.0,
+                    "z": 118.77100372314453
+                }
+            },
+            "id": 71,
+            "name": "Ground"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "assetPath": "",
+                "color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "metalness": 1.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.009999999776482582,
+                "roughness": 0.0,
+                "shadingMode": -1
+            },
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "RotateAndScale",
+                    "props": {
+                        "m_pulseAmplitude": 0.25,
+                        "m_pulseSpeed": 2.0,
+                        "m_spinSpeed": 1.0
+                    }
+                }
+            ],
+            "Transform": {
+                "position": {
+                    "x": 4.098037242889404,
+                    "y": 8.976366996765137,
+                    "z": 12.8917236328125
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 308.7149658203125,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.219151258468628,
+                    "y": 1.219151258468628,
+                    "z": 1.219151258468628
+                }
+            },
+            "id": 72,
+            "name": "Entity5"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Cooked/Textures/Zombie_Run/Zombie_Run_Diffuse_embedded5.alice",
+                "assetPath": "Assets/Materials/Zombie_Run_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.009999999776482582,
+                "roughness": 0.5,
+                "shadingMode": -1
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 2350.485586215509
+            },
+            "SkinnedMesh": {
+                "boneCount": 67,
+                "instanceAssetPath": "Assets/Fbx/Zombie_Run.fbxasset",
+                "meshAssetPath": "Zombie_Run"
+            },
+            "Transform": {
+                "position": {
+                    "x": -15.32771110534668,
+                    "y": 0.0,
+                    "z": 22.052547454833984
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.07999999821186066,
+                    "y": 0.07999999821186066,
+                    "z": 0.07999999821186066
+                }
+            },
+            "id": 73
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Cooked/Textures/Tree/Tree_Diffuse_embedded7.alice",
+                "assetPath": "Assets/Materials/Tree_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": -0.699999988079071,
+                "roughness": 0.5,
+                "shadingMode": -1
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Tree.fbxasset",
+                "meshAssetPath": "Tree"
+            },
+            "Transform": {
+                "position": {
+                    "x": 16.755603790283203,
+                    "y": 0.0,
+                    "z": 16.532390594482422
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 5.0,
+                    "y": 5.0,
+                    "z": 5.0
+                }
+            },
+            "id": 74
+        },
+        {
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/zeldaPosed001.fbxasset",
+                "meshAssetPath": "zeldaPosed001"
+            },
+            "Transform": {
+                "position": {
+                    "x": 19.82941436767578,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": -0.005101541522890329,
+                    "y": 1.029744267463684,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.04000000283122063,
+                    "y": 0.03999999910593033,
+                    "z": 0.04000000283122063
+                }
+            },
+            "id": 75,
+            "name": "Enemy"
+        },
+        {
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 2255.279237420531
+            },
+            "SkinnedMesh": {
+                "boneCount": 16,
+                "instanceAssetPath": "Assets/Fbx/BoxHuman.fbxasset",
+                "meshAssetPath": "BoxHuman"
+            },
+            "Transform": {
+                "position": {
+                    "x": -18.724641799926758,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 11.27475643157959,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.029999999329447746,
+                    "y": 0.029999999329447746,
+                    "z": 0.029999999329447746
+                }
+            },
+            "id": 76
+        },
+        {
+            "Camera": {
+                "aspectOverride": 0.0,
+                "farPlane": 5000.0,
+                "fovYRad": 0.7853981852531433,
+                "nearPlane": 0.10000000149011612,
+                "primary": false,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "position": {
+                    "x": 19.534574508666992,
+                    "y": 9.538835525512695,
+                    "z": -13.315129280090332
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "id": 77,
+            "name": "Camera1"
+        },
+        {
+            "Camera": {
+                "aspectOverride": 0.0,
+                "farPlane": 5000.0,
+                "fovYRad": 0.7853981852531433,
+                "nearPlane": 0.10000000149011612,
+                "primary": false,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "position": {
+                    "x": 5.509352684020996,
+                    "y": 5.486000061035156,
+                    "z": 6.731231689453125
+                },
+                "rotation": {
+                    "x": -0.36651918292045593,
+                    "y": 0.8552463054656982,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.9999995231628418,
+                    "y": 0.9999999403953552,
+                    "z": 0.9999999403953552
+                }
+            },
+            "id": 78,
+            "name": "Camera2"
+        },
+        {
+            "Camera": {
+                "aspectOverride": 0.0,
+                "farPlane": 5000.0,
+                "fovYRad": 0.7853981852531433,
+                "nearPlane": 0.10000000149011612,
+                "primary": false,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "position": {
+                    "x": -19.898765563964844,
+                    "y": 5.294197082519531,
+                    "z": -15.394695281982422
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "id": 79,
+            "name": "Camera3"
+        },
+        {
+            "Camera": {
+                "aspectOverride": 0.0,
+                "farPlane": 5000.0,
+                "fovYRad": 0.7853981852531433,
+                "nearPlane": 0.10000000149011612,
+                "primary": false,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "position": {
+                    "x": 34.33367156982422,
+                    "y": 7.49192476272583,
+                    "z": 22.80388069152832
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": -2.2689099311828613,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.9999999403953552,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "id": 80,
+            "name": "Camera4"
+        },
+        {
+            "Camera": {
+                "aspectOverride": 0.0,
+                "farPlane": 5000.0,
+                "fovYRad": 0.7853981852531433,
+                "nearPlane": 0.10000000149011612,
+                "primary": false,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "position": {
+                    "x": -11.619190216064453,
+                    "y": 8.984113693237305,
+                    "z": 6.110073089599609
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "id": 81,
+            "name": "Camera5"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "assetPath": "Assets/Materials/Alice_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.906999945640564,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0010000000474974513,
+                "roughness": 0.5,
+                "shadingMode": -1
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 4,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 526.0881495517679
+            },
+            "SkinnedMesh": {
+                "boneCount": 248,
+                "instanceAssetPath": "Assets/Fbx/Alice.fbxasset",
+                "meshAssetPath": "Alice"
+            },
+            "Transform": {
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "id": 82
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "assetPath": "Assets/Materials/tile0120_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "metalness": 0.0,
+                "normalStrength": 0.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.009999999776482582,
+                "roughness": 0.5,
+                "shadingMode": -1
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/tile0120.fbxasset",
+                "meshAssetPath": "tile0120"
+            },
+            "Transform": {
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "id": 83
+        }
+    ],
+    "version": 1
+}

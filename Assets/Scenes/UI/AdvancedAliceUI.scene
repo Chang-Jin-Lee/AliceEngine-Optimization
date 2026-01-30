@@ -1,0 +1,1184 @@
+{
+    "entities": [
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "anchorMin": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UIRoot"
+            },
+            "guid": "9000000000000000001",
+            "name": "UIRoot"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": -0.0015312433242797852,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UIAnimation": {
+                "playOnStart": false,
+                "tracks": [
+                    {
+                        "name": "DropY",
+                        "property": "PositionY",
+                        "curvePath": "Assets/Curves/UI/Drop.uicurve",
+                        "duration": 0.6,
+                        "delay": 0.0,
+                        "from": 200.0,
+                        "to": 0.0,
+                        "loop": false,
+                        "pingPong": false,
+                        "useNormalizedTime": true,
+                        "additive": true
+                    }
+                ]
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/Image/Hanako.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": -581.2999877929688,
+                    "y": 200.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 160.0,
+                    "y": 160.0
+                },
+                "sortOrder": 1,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_DropImage"
+            },
+            "_parentGuid": "9000000000000000001",
+            "guid": "9000000000000000002",
+            "name": "UI_DropImage"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UIAnimation": {
+                "playOnStart": false,
+                "tracks": [
+                    {
+                        "name": "Cooldown",
+                        "property": "RadialFill",
+                        "curvePath": "Assets/Curves/UI/Cooldown.uicurve",
+                        "duration": 1.0,
+                        "delay": 0.0,
+                        "from": 1.0,
+                        "to": 0.0,
+                        "loop": false,
+                        "pingPong": false,
+                        "useNormalizedTime": true,
+                        "additive": false
+                    }
+                ]
+            },
+            "UIEffect": {
+                "globalAlpha": 1.0,
+                "glowAngle": 0.0,
+                "glowColor": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "glowEnabled": false,
+                "glowSpeed": 1.0,
+                "glowStrength": 0.800000011920929,
+                "glowWidth": 0.25,
+                "grayscale": 0.0,
+                "outlineColor": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineEnabled": false,
+                "outlineThickness": 1.0,
+                "radialAngleOffset": 0.0,
+                "radialClockwise": true,
+                "radialDim": 0.3499999940395355,
+                "radialEnabled": true,
+                "radialFill": 0.0009337663650512695,
+                "radialInner": 0.0,
+                "radialOuter": 0.5,
+                "radialSoftness": 0.009999999776482582,
+                "vitalAmplitude": 0.25,
+                "vitalBgColor": {
+                    "w": 0.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "vitalColor": {
+                    "w": 1.0,
+                    "x": 0.10000000149011612,
+                    "y": 1.0,
+                    "z": 0.20000000298023224
+                },
+                "vitalEnabled": false,
+                "vitalFrequency": 2.0,
+                "vitalSpeed": 1.5,
+                "vitalThickness": 0.019999999552965164
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/Image/Yuuka.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": -300.0,
+                    "y": 250.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 200.0,
+                    "y": 200.0
+                },
+                "sortOrder": 2,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_CooldownIcon"
+            },
+            "_parentGuid": "9000000000000000001",
+            "guid": "9000000000000000003",
+            "name": "UI_CooldownIcon"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UIButton": {
+                "disabledTexture": "Resource/Test/Image/Hanako_Specular.png",
+                "disabledTint": {
+                    "w": 1.0,
+                    "x": 0.4000000059604645,
+                    "y": 0.4000000059604645,
+                    "z": 0.4000000059604645
+                },
+                "enabled": true,
+                "hoveredTexture": "Resource/Test/Image/Hanako_Normal.png",
+                "hoveredTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "normalTexture": "Resource/Test/Image/Hanako_Specular.png",
+                "normalTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "pressedTexture": "Resource/Test/Image/Hanako.png",
+                "pressedTint": {
+                    "w": 1.0,
+                    "x": 0.8500000238418579,
+                    "y": 0.8500000238418579,
+                    "z": 0.8500000238418579
+                },
+                "state": "Normal"
+            },
+            "UIEffect": {
+                "globalAlpha": 1.0,
+                "glowAngle": 0.0,
+                "glowColor": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "glowEnabled": false,
+                "glowSpeed": 1.0,
+                "glowStrength": 0.800000011920929,
+                "glowWidth": 0.25,
+                "grayscale": 0.0,
+                "outlineColor": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "outlineEnabled": false,
+                "outlineThickness": 2.0,
+                "radialAngleOffset": 0.0,
+                "radialClockwise": true,
+                "radialDim": 0.3499999940395355,
+                "radialEnabled": false,
+                "radialFill": 1.0,
+                "radialInner": 0.0,
+                "radialOuter": 0.5,
+                "radialSoftness": 0.009999999776482582,
+                "vitalAmplitude": 0.25,
+                "vitalBgColor": {
+                    "w": 0.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "vitalColor": {
+                    "w": 1.0,
+                    "x": 0.10000000149011612,
+                    "y": 1.0,
+                    "z": 0.20000000298023224
+                },
+                "vitalEnabled": false,
+                "vitalFrequency": 2.0,
+                "vitalSpeed": 1.5,
+                "vitalThickness": 0.019999999552965164
+            },
+            "UIText": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 40.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "\ubc84\ud2bc",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 130.0,
+                    "y": 220.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 220.0,
+                    "y": 220.0
+                },
+                "sortOrder": 3,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_OutlineButton"
+            },
+            "_parentGuid": "9000000000000000001",
+            "guid": "9000000000000000004",
+            "name": "UI_OutlineButton"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UIHover3D": {
+                "enabled": true,
+                "maxAngle": 0.75,
+                "perspective": 0.004000000189989805,
+                "speed": 10.0
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/Image/Yuuka_Specular.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 450.0,
+                    "y": 220.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 200.0,
+                    "y": 200.0
+                },
+                "sortOrder": 4,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_HoverCoin"
+            },
+            "_parentGuid": "9000000000000000001",
+            "guid": "9000000000000000005",
+            "name": "UI_HoverCoin"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/Image/Hanako_Normal.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UIShake": {
+                "amplitude": 12.0,
+                "duration": 0.4000000059604645,
+                "frequency": 18.0
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": -415.0,
+                    "y": -124.5999984741211
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 200.0,
+                    "y": 200.0
+                },
+                "sortOrder": 5,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_ShakeImage"
+            },
+            "_parentGuid": "9000000000000000001",
+            "guid": "9000000000000000006",
+            "name": "UI_ShakeImage"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UIEffect": {
+                "globalAlpha": 1.0,
+                "glowAngle": 0.0,
+                "glowColor": {
+                    "w": 1.0,
+                    "x": 0.20000000298023224,
+                    "y": 0.800000011920929,
+                    "z": 1.0
+                },
+                "glowEnabled": true,
+                "glowSpeed": 1.2000000476837158,
+                "glowStrength": 0.800000011920929,
+                "glowWidth": 0.25,
+                "grayscale": 0.0,
+                "outlineColor": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineEnabled": false,
+                "outlineThickness": 1.0,
+                "radialAngleOffset": 0.0,
+                "radialClockwise": true,
+                "radialDim": 0.3499999940395355,
+                "radialEnabled": false,
+                "radialFill": 1.0,
+                "radialInner": 0.0,
+                "radialOuter": 0.5,
+                "radialSoftness": 0.009999999776482582,
+                "vitalAmplitude": 0.25,
+                "vitalBgColor": {
+                    "w": 0.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "vitalColor": {
+                    "w": 1.0,
+                    "x": 0.10000000149011612,
+                    "y": 1.0,
+                    "z": 0.20000000298023224
+                },
+                "vitalEnabled": false,
+                "vitalFrequency": 2.0,
+                "vitalSpeed": 1.5,
+                "vitalThickness": 0.019999999552965164
+            },
+            "UIGauge": {
+                "backgroundColor": {
+                    "w": 0.8999999761581421,
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "backgroundTexture": "Resource/Test/Image/Hanako_Specular.png",
+                "direction": "LeftToRight",
+                "fillColor": {
+                    "w": 1.0,
+                    "x": 0.20000000298023224,
+                    "y": 0.8999999761581421,
+                    "z": 0.30000001192092896
+                },
+                "fillTexture": "Resource/Test/Image/Hanako_Normal.png",
+                "maxValue": 1.0,
+                "minValue": 0.0,
+                "normalized": true,
+                "smoothing": 0.10000000149011612,
+                "value": 0.002912551164627075
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": -300.20001220703125
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 300.0,
+                    "y": 300.0
+                },
+                "sortOrder": 6,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_GlowGauge"
+            },
+            "_parentGuid": "9000000000000000001",
+            "guid": "9000000000000000007",
+            "name": "UI_GlowGauge"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 403.29998779296875,
+                    "y": -200.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 400.0,
+                    "y": 120.0
+                },
+                "sortOrder": 7,
+                "useAlignment": false
+            },
+            "UIVital": {
+                "amplitude": 0.30000001192092896,
+                "backgroundColor": {
+                    "w": 0.25,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "color": {
+                    "w": 1.0,
+                    "x": 0.10000000149011612,
+                    "y": 1.0,
+                    "z": 0.20000000298023224
+                },
+                "frequency": 2.0999999046325684,
+                "speed": 1.7400000095367432,
+                "thickness": 0.029999999329447746
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_VitalGraph"
+            },
+            "_parentGuid": "9000000000000000001",
+            "guid": "9000000000000000008",
+            "name": "UI_VitalGraph"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UIAnimation": {
+                "playOnStart": false,
+                "tracks": [
+                    {
+                        "name": "FadeInOut",
+                        "property": "TextAlpha",
+                        "curvePath": "Assets/Curves/UI/FadeInOut.uicurve",
+                        "duration": 1.0,
+                        "delay": 0.0,
+                        "from": 0.0,
+                        "to": 1.0,
+                        "loop": false,
+                        "pingPong": false,
+                        "useNormalizedTime": true,
+                        "additive": false
+                    }
+                ]
+            },
+            "UIText": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "color": {
+                    "w": 0.017666220664978027,
+                    "x": 1.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 46.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Fade In / Out",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 75.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 300.0,
+                    "y": 40.0
+                },
+                "sortOrder": 8,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_FadeText"
+            },
+            "_parentGuid": "9000000000000000001",
+            "guid": "9000000000000000009",
+            "name": "UI_FadeText"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.051225900650024414,
+                    "y": 2.29237699508667,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/Image/Yuuka.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "anchorMin": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "WorldIcon"
+            },
+            "guid": "9000000000000000010",
+            "name": "WorldIcon"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "AdvancedUIController",
+                    "props": {
+                        "rootWidgetName": "UIRoot"
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "guid": "9000000000000000011",
+            "name": "AdvancedUIController"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 3.0669922828674316,
+                    "y": 2.1140518188476562,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.009999999776482582,
+                    "y": 0.009999999776482582,
+                    "z": 0.009999999776482582
+                }
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 60.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Text",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 200.0,
+                    "y": 80.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "UI_Text"
+            },
+            "guid": "12471346800625000921",
+            "name": "UI_Text"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "SceneSwitchExample",
+                    "props": {
+                        "targetSceneA": "Assets/Scenes/UI/TestAliceUI.scene",
+                        "targetSceneB": ""
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "guid": "13779718170464517040",
+            "name": "GameObject143"
+        }
+    ],
+    "sceneName": "AdvancedAliceUI",
+    "version": 1
+}

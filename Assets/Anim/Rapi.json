@@ -1,0 +1,145 @@
+{
+  "blendGraphs": [
+    {
+      "nextId": 3,
+      "nodes": [
+        {
+          "clip": "Idle",
+          "id": 1,
+          "name": "Clip",
+          "outputs": [
+            {
+              "id": 2,
+              "name": "Pose 1"
+            }
+          ],
+          "pos": [
+            -2.0,
+            -82.0
+          ],
+          "type": "Clip"
+        }
+      ],
+      "stateId": 15987178197214944733
+    },
+    {
+      "nextId": 3,
+      "nodes": [
+        {
+          "clip": "Rapi整合ReIm_arm|Run",
+          "id": 1,
+          "name": "Clip",
+          "outputs": [
+            {
+              "id": 2,
+              "name": "Pose 1"
+            }
+          ],
+          "pos": [
+            -34.0,
+            -82.0
+          ],
+          "type": "Clip"
+        }
+      ],
+      "stateId": 4
+    },
+    {
+      "nextId": 9,
+      "nodes": [
+        {
+          "clip": "Rapi整合ReIm_arm|Idle",
+          "id": 1,
+          "name": "Clip",
+          "outputs": [
+            {
+              "id": 2,
+              "name": "Pose 1"
+            }
+          ],
+          "pos": [
+            -98.0,
+            -98.0
+          ],
+          "type": "Clip"
+        }
+      ],
+      "stateId": 1
+    }
+  ],
+  "fsm": {
+    "openState": 4,
+    "states": [
+      {
+        "clip": "Idle",
+        "id": 1,
+        "name": "Idle",
+        "pinIn": 2,
+        "pinOut": 3,
+        "playRate": 1.0,
+        "pos": [
+          -21.0,
+          -188.0
+        ]
+      },
+      {
+        "clip": "Run",
+        "id": 4,
+        "name": "Run",
+        "pinIn": 5,
+        "pinOut": 6,
+        "playRate": 1.0,
+        "pos": [
+          171.0,
+          -140.0
+        ]
+      }
+    ],
+    "trans": [
+      {
+        "blendTime": 0.20000000298023224,
+        "canInterrupt": true,
+        "conds": [
+          {
+            "b": false,
+            "f": 0.10000000149011612,
+            "i": 0,
+            "op": ">",
+            "param": "Speed",
+            "type": "Float"
+          }
+        ],
+        "fromOut": 3,
+        "id": 13,
+        "toIn": 5
+      }
+    ]
+  },
+  "params": [
+    {
+      "b": false,
+      "f": 0.0,
+      "i": 0,
+      "name": "Speed",
+      "trigger": false,
+      "type": "Float"
+    },
+    {
+      "b": false,
+      "f": 0.0,
+      "i": 0,
+      "name": "IsMoving",
+      "trigger": false,
+      "type": "Bool"
+    },
+    {
+      "b": false,
+      "f": 0.0,
+      "i": 0,
+      "name": "Fire",
+      "trigger": false,
+      "type": "Bool"
+    }
+  ],
+  "targetMesh": "Resource\\fbx\\Rapi\\Rapi.fbx"
+}

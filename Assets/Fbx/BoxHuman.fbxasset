@@ -1,0 +1,21 @@
+{
+    "materials": [
+        "Assets/Materials/BoxHuman_0.mat",
+        "Assets/Materials/BoxHuman_1.mat",
+        "Assets/Materials/BoxHuman_2.mat",
+        "Assets/Materials/BoxHuman_3.mat",
+        "Assets/Materials/BoxHuman_4.mat",
+        "Assets/Materials/BoxHuman_5.mat",
+        "Assets/Materials/BoxHuman_6.mat",
+        "Assets/Materials/BoxHuman_7.mat",
+        "Assets/Materials/BoxHuman_8.mat",
+        "Assets/Materials/BoxHuman_9.mat",
+        "Assets/Materials/BoxHuman_10.mat",
+        "Assets/Materials/BoxHuman_11.mat",
+        "Assets/Materials/BoxHuman_12.mat",
+        "Assets/Materials/BoxHuman_13.mat",
+        "Assets/Materials/BoxHuman_14.mat"
+    ],
+    "mesh": "BoxHuman",
+    "source_fbx": "Resource/fbx/Study/BoxHuman.fbx"
+}

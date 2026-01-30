@@ -1,0 +1,8 @@
+{
+    "materials": [
+        "Assets/Materials/Body_L_0.mat",
+        "Assets/Materials/Body_L_1.mat"
+    ],
+    "mesh": "Body_L",
+    "source_fbx": "Resource/Test/4_Resources/charecter/sample/Body_L.fbx"
+}

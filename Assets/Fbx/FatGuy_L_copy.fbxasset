@@ -1,0 +1,10 @@
+{
+    "materials": [
+        "Assets/Materials/FatGuy_L_copy_0.mat",
+        "Assets/Materials/FatGuy_L_copy_1.mat",
+        "Assets/Materials/FatGuy_L_copy_2.mat",
+        "Assets/Materials/FatGuy_L_copy_3.mat"
+    ],
+    "mesh": "FatGuy_L_copy",
+    "source_fbx": "Resource/fbx/FatGuy_L_copy.fbx"
+}

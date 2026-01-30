@@ -1,0 +1,988 @@
+#include "Gimmick.h"
+
+#include <algorithm>
+#include <cmath>
+#include <random>
+
+#include "Core/ScriptFactory.h"
+#include "Core/Logger.h"
+#include "Core/World.h"
+#include "Core/Input.h"
+#include "Core/InputTypes.h"
+#include "Core/GameObject.h"
+#include "Components/TransformComponent.h"
+#include "PhysX/Components/Phy_RigidBodyComponent.h"
+#include "PhysX/Components/Phy_ColliderComponent.h"
+#include "PhysX/Components/Phy_MeshColliderComponent.h"
+#include "PhysX/IPhysicsWorld.h"
+
+namespace Alice
+{
+    namespace
+    {
+        using namespace DirectX;
+
+        XMFLOAT3 QuaternionToYPR_Rad(FXMVECTOR q)
+        {
+            XMFLOAT4 qq;
+            XMStoreFloat4(&qq, q);
+            const float x = qq.x, y = qq.y, z = qq.z, w = qq.w;
+
+            float sinp = 2.0f * (w * x - y * z);
+            float pitch = (std::abs(sinp) >= 1.0f) ? std::copysign(XM_PIDIV2, sinp) : std::asin(sinp);
+
+            float siny_cosp = 2.0f * (w * y + x * z);
+            float cosy_cosp = 1.0f - 2.0f * (x * x + y * y);
+            float yaw = std::atan2(siny_cosp, cosy_cosp);
+
+            float sinr_cosp = 2.0f * (w * z + x * y);
+            float cosr_cosp = 1.0f - 2.0f * (x * x + z * z);
+            float roll = std::atan2(sinr_cosp, cosr_cosp);
+
+            return XMFLOAT3(pitch, yaw, roll);
+        }
+
+        bool DecomposeMatrix(const XMMATRIX& m, XMFLOAT3& position, XMFLOAT3& rotation, XMFLOAT3& scale)
+        {
+            XMVECTOR s, q, t;
+            if (!XMMatrixDecompose(&s, &q, &t, m))
+                return false;
+
+            XMStoreFloat3(&position, t);
+            XMStoreFloat3(&scale, s);
+            rotation = QuaternionToYPR_Rad(q);
+            return true;
+        }
+
+        XMMATRIX BuildLocalMatrix(const XMFLOAT3& position, const XMFLOAT3& rotation, const XMFLOAT3& scale)
+        {
+            XMMATRIX S = XMMatrixScaling(scale.x, scale.y, scale.z);
+            XMMATRIX R = XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
+            XMMATRIX T = XMMatrixTranslation(position.x, position.y, position.z);
+            return S * R * T;
+        }
+
+        float Length(const XMFLOAT3& v)
+        {
+            return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+        }
+
+        XMFLOAT3 Normalize(const XMFLOAT3& v)
+        {
+            float len = Length(v);
+            if (len <= 0.00001f)
+                return XMFLOAT3(0.0f, 1.0f, 0.0f);
+            return XMFLOAT3(v.x / len, v.y / len, v.z / len);
+        }
+
+        float Dot(const XMFLOAT3& a, const XMFLOAT3& b)
+        {
+            return a.x * b.x + a.y * b.y + a.z * b.z;
+        }
+
+        XMFLOAT3 Cross(const XMFLOAT3& a, const XMFLOAT3& b)
+        {
+            XMVECTOR va = XMLoadFloat3(&a);
+            XMVECTOR vb = XMLoadFloat3(&b);
+            XMVECTOR vc = XMVector3Cross(va, vb);
+            XMFLOAT3 out{};
+            XMStoreFloat3(&out, vc);
+            return out;
+        }
+
+        XMFLOAT3 RotateAroundAxis(const XMFLOAT3& v, const XMFLOAT3& axis, float angle)
+        {
+            XMVECTOR vv = XMLoadFloat3(&v);
+            XMVECTOR aa = XMLoadFloat3(&axis);
+            XMVECTOR q = XMQuaternionRotationAxis(aa, angle);
+            XMVECTOR rotated = XMVector3Rotate(vv, q);
+            XMFLOAT3 out{};
+            XMStoreFloat3(&out, rotated);
+            return out;
+        }
+
+        XMFLOAT3 RandomUnitVector(std::mt19937& gen)
+        {
+            std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+            XMFLOAT3 v{ dist(gen), dist(gen), dist(gen) };
+            return Normalize(v);
+        }
+    }
+
+    REGISTER_SCRIPT(Gimmick);
+
+    void Gimmick::Start()
+    {
+        m_rng = std::mt19937(std::random_device{}());
+        FindEntities();
+        CacheBindPoses();
+
+        m_initialized = (m_weaponCombined != InvalidEntityId && m_core != InvalidEntityId && m_eye != InvalidEntityId);
+        if (!m_initialized)
+        {
+            ALICE_LOG_WARN("[Gimmick] Missing required entities. WeaponCombined=%llu Core=%llu Eye=%llu",
+                static_cast<unsigned long long>(m_weaponCombined),
+                static_cast<unsigned long long>(m_core),
+                static_cast<unsigned long long>(m_eye));
+        }
+
+        EnterPhase(Phase::Normal);
+    }
+
+    void Gimmick::Update(float deltaTime)
+    {
+        if (!m_initialized)
+            return;
+
+        auto* input = Input();
+        if (input && input->GetKeyDown(KeyCode::Space))
+            AdvancePhase();
+
+        if (m_pendingBreakImpulse && CanApplyBreakImpulse())
+        {
+            ApplyBreakImpulse();
+            m_pendingBreakImpulse = false;
+        }
+
+        m_phaseTime += deltaTime;
+
+        switch (m_phase)
+        {
+        case Phase::Magnetize:
+            UpdateMagnetize(deltaTime);
+            break;
+        case Phase::AssembleShards:
+            UpdateAssembleShards(deltaTime);
+            break;
+        case Phase::AssembleEye:
+            UpdateAssembleEye(deltaTime);
+            break;
+        default:
+            break;
+        }
+    }
+
+    void Gimmick::FindEntities()
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        auto findByName = [&](const std::string& name) -> EntityId {
+            GameObject go = world->FindGameObject(name);
+            return go.IsValid() ? go.id() : InvalidEntityId;
+        };
+
+        m_weaponCombined = findByName(m_weaponCombinedName);
+        m_core = findByName(m_coreName);
+        m_tendon = findByName(m_tendonName);
+        m_eye = findByName(m_eyeName);
+        m_bindTarget = findByName(m_bindTargetName);
+
+        if (m_bindTarget == InvalidEntityId && !m_bindTargetName.empty())
+        {
+            ALICE_LOG_WARN("[Gimmick] Bind target not found: %s (fallback to Core)", m_bindTargetName.c_str());
+        }
+
+        m_shards.clear();
+        const char* shardNames[] =
+        {
+            "WB_Base",
+            "WB_Back",
+            "WB_FrontA",
+            "WB_FrontB",
+            "WB_FrontC",
+            "WB_FrontD"
+        };
+
+        for (const char* name : shardNames)
+        {
+            EntityId id = findByName(name);
+            if (id != InvalidEntityId)
+            {
+                ShardState shard{};
+                shard.id = id;
+                shard.name = name;
+                m_shards.push_back(shard);
+            }
+            else
+            {
+                ALICE_LOG_WARN("[Gimmick] Shard not found: %s", name);
+            }
+        }
+
+        m_assembleOrder.clear();
+        for (const char* name : shardNames)
+        {
+            for (size_t i = 0; i < m_shards.size(); ++i)
+            {
+                if (m_shards[i].name == name)
+                {
+                    m_assembleOrder.push_back(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    void Gimmick::CacheBindPoses()
+    {
+        auto* world = GetWorld();
+        if (!world || m_core == InvalidEntityId)
+            return;
+
+        for (auto& shard : m_shards)
+        {
+            shard.bindLocal = ComputeBindLocal(shard.id);
+            shard.originalParent = world->GetParent(shard.id);
+        }
+
+        if (m_eye != InvalidEntityId)
+        {
+            m_eyeBindLocal = ComputeBindLocal(m_eye);
+            m_eyeOriginalParent = world->GetParent(m_eye);
+        }
+    }
+
+    void Gimmick::AdvancePhase()
+    {
+        switch (m_phase)
+        {
+        case Phase::Normal:
+            EnterPhase(Phase::Break);
+            break;
+        case Phase::Break:
+            EnterPhase(Phase::Magnetize);
+            break;
+        case Phase::Magnetize:
+            EnterPhase(Phase::AssembleShards);
+            break;
+        case Phase::AssembleShards:
+            EnterPhase(Phase::AssembleEye);
+            break;
+        case Phase::AssembleEye:
+            EnterPhase(Phase::Restore);
+            break;
+        default:
+            EnterPhase(Phase::Normal);
+            break;
+        }
+    }
+
+    void Gimmick::EnterPhase(Phase phase)
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        m_phase = phase;
+        m_phaseTime = 0.0f;
+
+        if (phase == Phase::Restore)
+        {
+            SetEnabled(m_weaponCombined, true);
+            SetVisible(m_core, false);
+            SetVisible(m_tendon, true);
+            SetEnabled(m_tendon, false);
+            SetVisible(m_eye, false);
+            SetEnabled(m_eye, false);
+
+            for (auto& shard : m_shards)
+            {
+                SetVisible(shard.id, false);
+                SetEnabled(shard.id, false);
+            }
+
+            ResetShardState();
+            m_eyeFloatAnchorValid = false;
+            m_phase = Phase::Normal;
+            return;
+        }
+
+        if (phase == Phase::Normal)
+        {
+            SetEnabled(m_weaponCombined, true);
+            SetVisible(m_core, false);
+            SetVisible(m_tendon, true);
+            SetEnabled(m_tendon, false);
+            SetVisible(m_eye, false);
+            SetEnabled(m_eye, false);
+
+            for (auto& shard : m_shards)
+            {
+                SetVisible(shard.id, false);
+                SetEnabled(shard.id, false);
+            }
+
+            ResetShardState();
+            m_eyeFloatAnchorValid = false;
+            return;
+        }
+
+        if (phase == Phase::Break)
+        {
+            SetEnabled(m_tendon, true);
+            SetVisible(m_tendon, false);            
+            SetVisible(m_core, true);
+            SetVisible(m_eye, true);
+            SetEnabled(m_weaponCombined, false);
+
+            for (auto& shard : m_shards)
+            {
+                SetEnabled(shard.id, true);
+                SetVisible(shard.id, true);
+                SetColliderTrigger(shard.id, false);
+                SetIgnoreLayers(shard.id, m_ignoreLayersMask);
+                AddIgnoreSelfLayer(shard.id);
+                // Break 임펄스가 들어가기 전까지는 잠시 고정
+                SetRigidBodyKinematic(shard.id, true, false);
+                ClearRigidBodyVelocity(shard.id);                
+            }
+
+            if (m_eye != InvalidEntityId)
+            {
+                SetColliderTrigger(m_eye, false);
+                SetIgnoreLayers(m_eye, m_ignoreLayersMask);
+                AddIgnoreSelfLayer(m_eye);
+                // Break 임펄스가 들어가기 전까지는 잠시 고정
+                SetRigidBodyKinematic(m_eye, true, false);
+                ClearRigidBodyVelocity(m_eye);
+                SetEnabled(m_eye, true);
+            }
+
+            for (auto& shard : m_shards)
+            {
+                if (shard.id != InvalidEntityId)
+                    world->SetParent(shard.id, InvalidEntityId, true);
+            }
+            if (m_eye != InvalidEntityId)
+            {
+                world->SetParent(m_eye, InvalidEntityId, true);
+            }
+
+            XMFLOAT3 spawnPos{};
+            XMFLOAT3 spawnRot{};
+            XMFLOAT3 spawnScale{};
+            if (!GetBindTargetWorldPose(spawnPos, spawnRot, spawnScale))
+            {
+                spawnPos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+                spawnRot = XMFLOAT3(0.0f, 0.0f, 0.0f);
+            }
+
+            std::uniform_real_distribution<float> jitterDist(-0.2f, 0.2f);
+
+            for (auto& shard : m_shards)
+            {
+                if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
+                {
+                    XMFLOAT3 jitter{ jitterDist(m_rng), jitterDist(m_rng), jitterDist(m_rng) };
+                    tr->position = XMFLOAT3(spawnPos.x + jitter.x, spawnPos.y + jitter.y, spawnPos.z + jitter.z);
+                    tr->rotation = spawnRot;
+                    TeleportRigidBody(shard.id);
+                    world->MarkTransformDirty(shard.id);
+                }
+            }
+
+            if (auto* eyeTr = world->GetComponent<TransformComponent>(m_eye))
+            {
+                XMFLOAT3 jitter{ jitterDist(m_rng), jitterDist(m_rng), jitterDist(m_rng) };
+                eyeTr->position = XMFLOAT3(spawnPos.x + jitter.x, spawnPos.y + jitter.y, spawnPos.z + jitter.z);
+                eyeTr->rotation = spawnRot;
+                TeleportRigidBody(m_eye);
+                world->MarkTransformDirty(m_eye);
+            }
+
+            ResetShardState();
+            m_pendingBreakImpulse = true;
+            return;
+        }
+
+        if (phase == Phase::Magnetize)
+        {
+            ResetShardState();
+            m_captureTimer = 0.0f;
+            m_eyeFloatAnchorValid = false;
+            if (auto* tr = world->GetComponent<TransformComponent>(m_eye))
+            {
+                m_eyeFloatAnchor = tr->position;
+                m_eyeFloatAnchorValid = true;
+            }
+
+            SetColliderTrigger(m_eye, true);
+            SetRigidBodyKinematic(m_eye, true, false);
+            ClearRigidBodyVelocity(m_eye);
+
+            for (auto& shard : m_shards)
+            {
+                SetColliderTrigger(shard.id, true);
+                SetRigidBodyKinematic(shard.id, true, false);
+                ClearRigidBodyVelocity(shard.id);
+            }
+
+            return;
+        }
+
+        if (phase == Phase::AssembleShards)
+        {
+            m_nextAssembleIndex = 0;
+            m_assembleTimer = 0.0f;
+
+            for (auto& shard : m_shards)
+            {
+                shard.assembling = false;
+                shard.assembled = false;
+                SetColliderTrigger(shard.id, true);
+                SetRigidBodyKinematic(shard.id, true, false);
+                ClearRigidBodyVelocity(shard.id);
+            }
+
+            return;
+        }
+
+        if (phase == Phase::AssembleEye)
+        {
+            m_eyeArrived = false;
+            m_tendonTimer = 0.0f;
+            SetColliderTrigger(m_eye, true);
+            SetRigidBodyKinematic(m_eye, true, false);
+            ClearRigidBodyVelocity(m_eye);
+            return;
+        }
+    }
+
+    void Gimmick::UpdateMagnetize(float dt)
+    {
+        auto* world = GetWorld();
+        if (!world || m_eye == InvalidEntityId || m_core == InvalidEntityId)
+            return;
+
+        UpdateEyeFloat(dt);
+        const XMFLOAT3 eyePos = GetEyeWorldPosition();
+
+        m_captureTimer += dt;
+        while (m_captureTimer >= m_magnetizeInterval)
+        {
+            m_captureTimer -= m_magnetizeInterval;
+
+            float bestDist = 0.0f;
+            size_t bestIndex = static_cast<size_t>(-1);
+
+            for (size_t i = 0; i < m_shards.size(); ++i)
+            {
+                auto& shard = m_shards[i];
+                if (shard.captured)
+                    continue;
+                if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
+                {
+                    XMFLOAT3 delta{ tr->position.x - eyePos.x, tr->position.y - eyePos.y, tr->position.z - eyePos.z };
+                    float dist = Length(delta);
+                    if (bestIndex == static_cast<size_t>(-1) || dist < bestDist)
+                    {
+                        bestDist = dist;
+                        bestIndex = i;
+                    }
+                }
+            }
+
+            if (bestIndex != static_cast<size_t>(-1))
+            {
+                auto& shard = m_shards[bestIndex];
+                shard.captured = true;
+                shard.pulling = true;
+                shard.pullTimer = 0.0f;
+
+                if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
+                {
+                    shard.pullStartPos = tr->position;
+                    XMFLOAT3 delta{ tr->position.x - eyePos.x, tr->position.y - eyePos.y, tr->position.z - eyePos.z };
+                    float radius = std::max(m_orbitMinRadius, Length(delta));
+                    XMFLOAT3 baseDir = Normalize(delta);
+
+                    XMFLOAT3 axis = RandomUnitVector(m_rng);
+                    if (std::abs(Dot(axis, baseDir)) > 0.95f)
+                    {
+                        axis = Normalize(Cross(baseDir, XMFLOAT3(0.0f, 1.0f, 0.0f)));
+                        if (Length(axis) < 0.001f)
+                            axis = Normalize(Cross(baseDir, XMFLOAT3(1.0f, 0.0f, 0.0f)));
+                    }
+
+                    shard.orbitRadius = radius;
+                    shard.orbitBaseDir = baseDir;
+                    shard.orbitAxis = axis;
+                    shard.orbitAngle = 0.0f;
+                }
+            }
+        }
+
+        UpdateOrbitingShards(dt);
+    }
+
+    void Gimmick::UpdateAssembleShards(float dt)
+    {
+        auto* world = GetWorld();
+        if (!world || m_core == InvalidEntityId)
+            return;
+
+        UpdateEyeFloat(dt);
+        UpdateOrbitingShards(dt);
+
+        m_assembleTimer += dt;
+        if (m_nextAssembleIndex < m_assembleOrder.size() && m_assembleTimer >= m_assembleInterval)
+        {
+            size_t shardIndex = m_assembleOrder[m_nextAssembleIndex++];
+            if (shardIndex < m_shards.size())
+            {
+                m_shards[shardIndex].assembling = true;
+            }
+            m_assembleTimer = 0.0f;
+        }
+
+        for (auto& shard : m_shards)
+        {
+            if (!shard.assembling || shard.assembled)
+                continue;
+
+            DirectX::XMFLOAT3 targetPos{};
+            DirectX::XMFLOAT3 targetRot{};
+            DirectX::XMFLOAT3 targetScale{};
+            if (!GetBindTargetWorldPose(targetPos, targetRot, targetScale))
+                continue;
+
+            bool arrived = MoveTowards(shard.id, targetPos, targetRot, targetScale, m_assembleMoveSpeed, dt);
+            if (arrived)
+            {
+                shard.assembled = true;
+                shard.assembling = false;
+                if (m_bindTarget != InvalidEntityId)
+                    world->SetParent(shard.id, m_bindTarget, false);
+                if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
+                {
+                    tr->position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+                    tr->rotation = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+                    tr->scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+                    world->MarkTransformDirty(shard.id);
+                }
+            }
+        }
+    }
+
+    void Gimmick::UpdateAssembleEye(float dt)
+    {
+        auto* world = GetWorld();
+        if (!world || m_eye == InvalidEntityId)
+            return;
+
+        DirectX::XMFLOAT3 targetPos{};
+        DirectX::XMFLOAT3 targetRot{};
+        DirectX::XMFLOAT3 targetScale{};
+        if (!GetBindTargetWorldPose(targetPos, targetRot, targetScale))
+            return;
+
+        if (!m_eyeArrived)
+        {
+            bool arrived = MoveTowards(m_eye, targetPos, targetRot, targetScale, m_eyeMoveSpeed, dt);
+            if (arrived)
+            {
+                m_eyeArrived = true;
+                if (m_bindTarget != InvalidEntityId)
+                    world->SetParent(m_eye, m_bindTarget, false);
+                if (auto* tr = world->GetComponent<TransformComponent>(m_eye))
+                {
+                    tr->position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+                    tr->rotation = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+                    tr->scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+                    world->MarkTransformDirty(m_eye);
+                }
+            }
+        }
+        else
+        {
+            m_tendonTimer += dt;
+            if (m_tendonTimer >= m_tendonVisibleDelay)
+            {
+                SetVisible(m_tendon, true);
+            }
+        }
+    }
+
+    void Gimmick::ApplyBreakImpulse()
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> impulseDist(0.0f, std::max(0.0f, m_breakMaxImpulse));
+
+        auto applyImpulse = [&](EntityId id)
+        {
+            auto* rb = world->GetComponent<Phy_RigidBodyComponent>(id);
+            if (!rb || !rb->physicsActorHandle)
+                return;
+
+            IRigidBody* body = rb->physicsActorHandle;
+            if (!body || !body->IsValid() || !body->IsInWorld())
+                return;
+
+            // 엔진 Sync 타이밍과 무관하게 즉시 dynamic 전환
+            rb->isKinematic = false;
+            rb->gravityEnabled = true;
+            body->SetKinematic(false);
+            body->SetGravityEnabled(true);
+            ClearRigidBodyVelocity(id);
+            XMFLOAT3 dir = RandomUnitVector(gen);
+            float impulse = impulseDist(gen);
+            Vec3 impulseVec(dir.x * impulse, dir.y * impulse, dir.z * impulse);
+            body->AddImpulse(impulseVec);
+            body->WakeUp();
+        };
+
+
+        for (const auto& shard : m_shards)
+            applyImpulse(shard.id);
+
+        applyImpulse(m_eye);
+    }
+
+    bool Gimmick::CanApplyBreakImpulse() const
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return false;
+
+        auto ready = [&](EntityId id) -> bool
+        {
+            auto* rb = world->GetComponent<Phy_RigidBodyComponent>(id);
+            if (!rb || !rb->physicsActorHandle)
+                return false;
+            IRigidBody* body = rb->physicsActorHandle;
+            return body && body->IsValid() && body->IsInWorld();
+        };
+
+        for (const auto& shard : m_shards)
+        {
+            if (!ready(shard.id))
+                return false;
+        }
+        return ready(m_eye);
+    }
+
+    void Gimmick::ResetShardState()
+    {
+        for (auto& shard : m_shards)
+        {
+            shard.captured = false;
+            shard.pulling = false;
+            shard.assembling = false;
+            shard.assembled = false;
+            shard.orbitAngle = 0.0f;
+            shard.orbitAxis = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
+            shard.orbitBaseDir = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
+            shard.orbitRadius = 0.0f;
+            shard.pullTimer = 0.0f;
+        }
+    }
+
+    void Gimmick::SetEnabled(EntityId id, bool enabled)
+    {
+        auto* world = GetWorld();
+        if (!world || id == InvalidEntityId)
+            return;
+        if (auto* tr = world->GetComponent<TransformComponent>(id))
+        {
+            tr->enabled = enabled;
+            world->MarkTransformDirty(id);
+        }
+    }
+
+    void Gimmick::SetVisible(EntityId id, bool visible)
+    {
+        auto* world = GetWorld();
+        if (!world || id == InvalidEntityId)
+            return;
+        if (auto* tr = world->GetComponent<TransformComponent>(id))
+        {
+            tr->visible = visible;
+        }
+    }
+
+    void Gimmick::SetColliderTrigger(EntityId id, bool trigger)
+    {
+        auto* world = GetWorld();
+        if (!world || id == InvalidEntityId)
+            return;
+
+        if (auto* col = world->GetComponent<Phy_ColliderComponent>(id))
+            col->isTrigger = trigger;
+        if (auto* mc = world->GetComponent<Phy_MeshColliderComponent>(id))
+            mc->isTrigger = trigger;
+    }
+
+    void Gimmick::SetIgnoreLayers(EntityId id, uint32_t mask)
+    {
+        if (mask == 0u)
+            return;
+        auto* world = GetWorld();
+        if (!world || id == InvalidEntityId)
+            return;
+
+        if (auto* col = world->GetComponent<Phy_ColliderComponent>(id))
+            col->ignoreLayers = mask;
+        if (auto* mc = world->GetComponent<Phy_MeshColliderComponent>(id))
+            mc->ignoreLayers = mask;
+    }
+
+    void Gimmick::AddIgnoreSelfLayer(EntityId id)
+    {
+        auto* world = GetWorld();
+        if (!world || id == InvalidEntityId)
+            return;
+
+        if (auto* col = world->GetComponent<Phy_ColliderComponent>(id))
+            col->ignoreLayers |= col->layerBits;
+        if (auto* mc = world->GetComponent<Phy_MeshColliderComponent>(id))
+            mc->ignoreLayers |= mc->layerBits;
+    }
+
+    void Gimmick::SetRigidBodyKinematic(EntityId id, bool kinematic, bool gravityEnabled)
+    {
+        auto* world = GetWorld();
+        if (!world || id == InvalidEntityId)
+            return;
+
+        if (auto* rb = world->GetComponent<Phy_RigidBodyComponent>(id))
+        {
+            rb->isKinematic = kinematic;
+            rb->gravityEnabled = gravityEnabled;
+            rb->startAwake = true;
+        }
+    }
+
+    void Gimmick::ClearRigidBodyVelocity(EntityId id)
+    {
+        auto* world = GetWorld();
+        if (!world || id == InvalidEntityId)
+            return;
+
+        if (auto* rb = world->GetComponent<Phy_RigidBodyComponent>(id))
+        {
+            IRigidBody* body = rb->physicsActorHandle;
+            if (!body || !body->IsValid())
+                return;
+            if (!body->IsInWorld())
+                return;
+            if (body->IsKinematic())
+                return;
+
+            body->SetLinearVelocity(Vec3(0.0f, 0.0f, 0.0f));
+            body->SetAngularVelocity(Vec3(0.0f, 0.0f, 0.0f));
+        }
+    }
+
+    void Gimmick::TeleportRigidBody(EntityId id)
+    {
+        auto* world = GetWorld();
+        if (!world || id == InvalidEntityId)
+            return;
+
+        if (auto* rb = world->GetComponent<Phy_RigidBodyComponent>(id))
+            rb->teleport = true;
+    }
+
+    Gimmick::LocalPose Gimmick::ComputeBindLocal(EntityId partId) const
+    {
+        LocalPose pose{};
+        auto* world = GetWorld();
+        if (!world || partId == InvalidEntityId || m_core == InvalidEntityId)
+            return pose;
+
+        XMMATRIX partWorld = world->ComputeWorldMatrix(partId);
+        const EntityId basis = (m_bindTarget != InvalidEntityId) ? m_bindTarget : m_core;
+        XMMATRIX coreWorld = world->ComputeWorldMatrix(basis);
+        XMVECTOR det;
+        XMMATRIX coreInv = XMMatrixInverse(&det, coreWorld);
+        XMMATRIX local = partWorld * coreInv;
+
+        DecomposeMatrix(local, pose.position, pose.rotation, pose.scale);
+        return pose;
+    }
+
+    bool Gimmick::ComputeWorldFromBind(const LocalPose& local, DirectX::XMFLOAT3& outPos,
+                                       DirectX::XMFLOAT3& outRot, DirectX::XMFLOAT3& outScale) const
+    {
+        auto* world = GetWorld();
+        if (!world || m_core == InvalidEntityId)
+            return false;
+
+        const EntityId basis = (m_bindTarget != InvalidEntityId) ? m_bindTarget : m_core;
+        XMMATRIX coreWorld = world->ComputeWorldMatrix(basis);
+        XMMATRIX localM = BuildLocalMatrix(local.position, local.rotation, local.scale);
+        XMMATRIX worldM = localM * coreWorld;
+        return DecomposeMatrix(worldM, outPos, outRot, outScale);
+    }
+
+    bool Gimmick::MoveTowards(EntityId id, const DirectX::XMFLOAT3& targetPos,
+                              const DirectX::XMFLOAT3& targetRot, const DirectX::XMFLOAT3& targetScale,
+                              float speed, float dt)
+    {
+        auto* world = GetWorld();
+        if (!world || id == InvalidEntityId)
+            return true;
+
+        auto* tr = world->GetComponent<TransformComponent>(id);
+        if (!tr)
+            return true;
+
+        XMFLOAT3 delta{ targetPos.x - tr->position.x, targetPos.y - tr->position.y, targetPos.z - tr->position.z };
+        float dist = Length(delta);
+        if (dist <= m_arriveThreshold)
+        {
+            tr->position = targetPos;
+            tr->rotation = targetRot;
+            tr->scale = targetScale;
+            TeleportRigidBody(id);
+            world->MarkTransformDirty(id);
+            return true;
+        }
+
+        float step = speed * dt;
+        float t = (dist > 0.0f) ? std::min(1.0f, step / dist) : 1.0f;
+        tr->position.x += delta.x * t;
+        tr->position.y += delta.y * t;
+        tr->position.z += delta.z * t;
+        tr->rotation = targetRot;
+        tr->scale = targetScale;
+
+        TeleportRigidBody(id);
+        world->MarkTransformDirty(id);
+        return false;
+    }
+
+    void Gimmick::UpdateEyeFloat(float dt)
+    {
+        auto* world = GetWorld();
+        if (!world || m_eye == InvalidEntityId)
+            return;
+
+        auto* tr = world->GetComponent<TransformComponent>(m_eye);
+        if (!tr)
+            return;
+
+        DirectX::XMFLOAT3 eyeTargetPos{};
+        DirectX::XMFLOAT3 eyeTargetRot = tr->rotation;
+        DirectX::XMFLOAT3 eyeTargetScale = tr->scale;
+
+        if (!m_eyeFloatAnchorValid)
+        {
+            m_eyeFloatAnchor = tr->position;
+            m_eyeFloatAnchorValid = true;
+        }
+
+        const float floatHeight = 2.0f;
+        const float bobAmplitude = 0.08f;
+        const float bobSpeed = 2.0f;
+        eyeTargetPos = m_eyeFloatAnchor;
+        eyeTargetPos.y += floatHeight;
+        eyeTargetPos.y += std::sin(m_phaseTime * bobSpeed) * bobAmplitude;
+
+        MoveTowards(m_eye, eyeTargetPos, eyeTargetRot, eyeTargetScale, m_eyeFloatMoveSpeed, dt);
+    }
+
+    void Gimmick::UpdateOrbitingShards(float dt)
+    {
+        auto* world = GetWorld();
+        if (!world || m_eye == InvalidEntityId)
+            return;
+
+        const XMFLOAT3 eyePos = GetEyeWorldPosition();
+
+        for (auto& shard : m_shards)
+        {
+            if (!shard.captured || shard.assembling || shard.assembled)
+                continue;
+
+            const float radius = std::max(m_orbitMinRadius, shard.orbitRadius * m_orbitRadiusScale);
+            XMFLOAT3 rotatedDir = RotateAroundAxis(shard.orbitBaseDir, shard.orbitAxis, shard.orbitAngle);
+            XMFLOAT3 offset{ rotatedDir.x * radius, rotatedDir.y * radius, rotatedDir.z * radius };
+            XMFLOAT3 targetPos{ eyePos.x + offset.x, eyePos.y + offset.y, eyePos.z + offset.z };
+
+            if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
+            {
+                if (shard.pulling)
+                {
+                    shard.pullTimer += dt;
+                    float t = (shard.pullDuration > 0.0f) ? std::min(1.0f, shard.pullTimer / shard.pullDuration) : 1.0f;
+                    float smoothT = t * t * (3.0f - 2.0f * t);
+                    tr->position.x = shard.pullStartPos.x + (targetPos.x - shard.pullStartPos.x) * smoothT;
+                    tr->position.y = shard.pullStartPos.y + (targetPos.y - shard.pullStartPos.y) * smoothT;
+                    tr->position.z = shard.pullStartPos.z + (targetPos.z - shard.pullStartPos.z) * smoothT;
+                    if (t >= 1.0f)
+                        shard.pulling = false;
+                }
+                else
+                {
+                    shard.orbitAngle += m_orbitAngularSpeed * dt;
+                    tr->position = targetPos;
+                }
+                TeleportRigidBody(shard.id);
+                world->MarkTransformDirty(shard.id);
+            }
+        }
+    }
+
+    DirectX::XMFLOAT3 Gimmick::GetEyeWorldPosition() const
+    {
+        auto* world = GetWorld();
+        if (!world || m_eye == InvalidEntityId)
+            return DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+
+        if (auto* tr = world->GetComponent<TransformComponent>(m_eye))
+        {
+            return tr->position;
+        }
+
+        if (m_eyeFloatAnchorValid)
+        {
+            const float floatHeight = 2.0f;
+            const float bobAmplitude = 0.08f;
+            const float bobSpeed = 2.0f;
+            DirectX::XMFLOAT3 pos = m_eyeFloatAnchor;
+            pos.y += floatHeight;
+            pos.y += std::sin(m_phaseTime * bobSpeed) * bobAmplitude;
+            return pos;
+        }
+
+        return DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+    }
+
+    bool Gimmick::GetBindTargetWorldPose(DirectX::XMFLOAT3& outPos,
+                                         DirectX::XMFLOAT3& outRot,
+                                         DirectX::XMFLOAT3& outScale) const
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return false;
+
+        const EntityId basis = (m_bindTarget != InvalidEntityId) ? m_bindTarget : m_core;
+        if (basis == InvalidEntityId)
+            return false;
+
+        const XMMATRIX basisWorld = world->ComputeWorldMatrix(basis);
+        return DecomposeMatrix(basisWorld, outPos, outRot, outScale);
+    }
+
+    DirectX::XMFLOAT3 Gimmick::GetCoreWorldPosition() const
+    {
+        auto* world = GetWorld();
+        if (!world || m_core == InvalidEntityId)
+            return DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+
+        DirectX::XMMATRIX coreWorld = world->ComputeWorldMatrix(m_core);
+        DirectX::XMVECTOR s, r, t;
+        DirectX::XMMatrixDecompose(&s, &r, &t, coreWorld);
+        DirectX::XMFLOAT3 pos;
+        DirectX::XMStoreFloat3(&pos, t);
+        return pos;
+    }
+}

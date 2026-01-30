@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/EGOweapon_0.mat"
+    ],
+    "mesh": "EGOweapon",
+    "source_fbx": "Resource/Test/4_Resources/sample/EGOweapon.fbx"
+}

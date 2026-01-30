@@ -1,0 +1,12 @@
+{
+    "materials": [
+        "Assets/Materials/zeldaPosed001_0.mat",
+        "Assets/Materials/zeldaPosed001_1.mat",
+        "Assets/Materials/zeldaPosed001_2.mat",
+        "Assets/Materials/zeldaPosed001_3.mat",
+        "Assets/Materials/zeldaPosed001_4.mat",
+        "Assets/Materials/zeldaPosed001_5.mat"
+    ],
+    "mesh": "zeldaPosed001",
+    "source_fbx": "Resource/fbx/Study/zeldaPosed001.fbx"
+}

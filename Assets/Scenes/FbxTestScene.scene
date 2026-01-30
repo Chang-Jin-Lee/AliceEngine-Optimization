@@ -1,0 +1,497 @@
+{
+    "entities": [
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "SceneSwitchExample",
+                    "props": {
+                        "targetSceneA": "",
+                        "targetSceneB": ""
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -10.624564170837402,
+                    "y": 7.713817119598389,
+                    "z": -1.2783443927764893
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 125.37767028808594,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 0.9999999403953552,
+                    "z": 0.9999999403953552
+                }
+            },
+            "guid": "7477935796848511194"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Cooked/Textures/Rapi/Rapi_Diffuse_embedded0.alice",
+                "assetPath": "Assets/Materials/Rapi_0.mat",
+                "color": {
+                    "x": 0.8957529067993164,
+                    "y": 0.8957529067993164,
+                    "z": 0.8957529067993164
+                },
+                "metalness": 0.37400001287460327,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.3499999940395355,
+                "roughness": 0.5,
+                "shadingMode": 6
+            },
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "CharacterMovement",
+                    "props": {
+                        "m_gravity": 18.0,
+                        "m_jumpSpeed": 6.5,
+                        "m_moveSpeed": 10.0
+                    }
+                }
+            ],
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 2.5489883422851563
+            },
+            "SkinnedMesh": {
+                "boneCount": 180,
+                "instanceAssetPath": "Assets/Fbx/Rapi.fbxasset",
+                "meshAssetPath": "Rapi"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.6150085926055908,
+                    "y": -2.885891774440097e-07,
+                    "z": 19.64412498474121
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.12910181283950806,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 0.020000014454126358,
+                    "y": 0.019999999552965164,
+                    "z": 0.020000014454126358
+                }
+            },
+            "guid": "16859229937910775299",
+            "name": "Rapi"
+        },
+        {
+            "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
+                "aspectOverride": 0.0,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "Material": {
+                "albedoTexturePath": "",
+                "assetPath": "",
+                "color": {
+                    "x": 1.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.009999999776482582,
+                "roughness": 0.5,
+                "shadingMode": -1
+            },
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "CameraManager",
+                    "props": {}
+                },
+                {
+                    "enabled": true,
+                    "name": "CameraFollow",
+                    "props": {
+                        "m_currentPitch": 20.0,
+                        "m_currentYaw": 0.0,
+                        "m_distance": 35.0,
+                        "m_heightOffset": 1.5,
+                        "m_maxDistance": 55.0,
+                        "m_minDistance": 10.0,
+                        "m_offsetX": 0.0,
+                        "m_offsetY": 28.0,
+                        "m_offsetZ": -13.0,
+                        "m_sensitivity": 0.20000000298023224,
+                        "m_smoothSpeed": 0.0,
+                        "m_zoomSpeed": 0.009999999776482582
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 8.08913803100586,
+                    "y": 25.636682510375977,
+                    "z": -24.46961784362793
+                },
+                "rotation": {
+                    "x": 0.760963499546051,
+                    "y": -0.25481805205345154,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "guid": "8220945929085222902",
+            "name": "MainCamera"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "assetPath": "Assets/Materials/Wonderland_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.009999999776482582,
+                "roughness": 0.5,
+                "shadingMode": -1
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -12.113309860229492,
+                    "y": 1.0823888778686523,
+                    "z": -8.318202018737793
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "guid": "4740355796229510190"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "assetPath": "",
+                "color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "metalness": 0.9580000042915344,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.009999999776482582,
+                "roughness": 0.0,
+                "shadingMode": -1
+            },
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "RotateAndScale",
+                    "props": {
+                        "m_pulseAmplitude": 0.25,
+                        "m_pulseSpeed": 2.0,
+                        "m_spinSpeed": 1.0
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 4.098037242889404,
+                    "y": 8.976366996765137,
+                    "z": 12.8917236328125
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 87.10411071777344,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.3630249798297882,
+                    "y": 0.3630249798297882,
+                    "z": 0.3630249798297882
+                }
+            },
+            "guid": "9449244595271015294",
+            "name": "Entity5"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Cooked/Textures/Zombie_Run/Zombie_Run_Diffuse_embedded5.alice",
+                "assetPath": "Assets/Materials/Zombie_Run_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.009999999776482582,
+                "roughness": 0.5,
+                "shadingMode": -1
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.18256618082523346
+            },
+            "SkinnedMesh": {
+                "boneCount": 67,
+                "instanceAssetPath": "Assets/Fbx/Zombie_Run.fbxasset",
+                "meshAssetPath": "Zombie_Run"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -15.32771110534668,
+                    "y": 0.0,
+                    "z": 22.052547454833984
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.07999999821186066,
+                    "y": 0.07999999821186066,
+                    "z": 0.07999999821186066
+                }
+            },
+            "guid": "14072471608577870576"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Cooked/Textures/Tree/Tree_Diffuse_embedded7.alice",
+                "assetPath": "Assets/Materials/Tree_0.mat",
+                "color": {
+                    "x": 0.6949806809425354,
+                    "y": 0.6949806809425354,
+                    "z": 0.6949806809425354
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": -0.019999999552965164,
+                "roughness": 0.5,
+                "shadingMode": -1
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Tree.fbxasset",
+                "meshAssetPath": "Tree"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 18.572389602661133,
+                    "y": 0.006640393752604723,
+                    "z": 25.023319244384766
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 5.0,
+                    "y": 5.0,
+                    "z": 5.0
+                }
+            },
+            "guid": "16819920235467305905"
+        },
+        {
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/zeldaPosed001.fbxasset",
+                "meshAssetPath": "zeldaPosed001"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 24.447452545166016,
+                    "y": 0.0,
+                    "z": 1.3271478414535522
+                },
+                "rotation": {
+                    "x": -0.005101540591567755,
+                    "y": 1.029744267463684,
+                    "z": -6.985010347904108e-10
+                },
+                "scale": {
+                    "x": 0.03999999910593033,
+                    "y": 0.03999999910593033,
+                    "z": 0.04000001400709152
+                }
+            },
+            "guid": "10429484067661407845"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "assetPath": "",
+                "color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.009999999776482582,
+                "roughness": 0.5,
+                "shadingMode": -1
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": false,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 16,
+                "instanceAssetPath": "Assets/Fbx/BoxHuman.fbxasset",
+                "meshAssetPath": "BoxHuman"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -18.724641799926758,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 11.27475643157959,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.029999999329447746,
+                    "y": 0.029999999329447746,
+                    "z": 0.029999999329447746
+                }
+            },
+            "guid": "12802623038226170550"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.009999999776482582,
+                "roughness": 0.5,
+                "shadingMode": -1
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": -1.3672938346862793,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 200.0,
+                    "y": 1.0,
+                    "z": 200.0
+                }
+            },
+            "guid": "10490679053836075734",
+            "name": "Cube(FBX)"
+        }
+    ],
+    "sceneName": "FbxTestScene",
+    "version": 1
+}

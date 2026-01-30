@@ -1,0 +1,29 @@
+{
+    "name": "DamageX",
+    "keys": [
+        {
+            "time": 0.0,
+            "value": 0.0,
+            "inTangent": 0.0,
+            "outTangent": 0.0,
+            "interp": 2,
+            "tangentMode": 1
+        },
+        {
+            "time": 0.3,
+            "value": 0.6,
+            "inTangent": 0.0,
+            "outTangent": 0.0,
+            "interp": 2,
+            "tangentMode": 1
+        },
+        {
+            "time": 1.0,
+            "value": 0.2,
+            "inTangent": 0.0,
+            "outTangent": 0.0,
+            "interp": 2,
+            "tangentMode": 1
+        }
+    ]
+}

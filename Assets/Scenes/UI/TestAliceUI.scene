@@ -1,0 +1,424 @@
+{
+    "entities": [
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "UIImageController",
+                    "props": {
+                        "rootWidgetName": "TargetImage"
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.5604997873306274,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 1.0
+                }
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/Image/Hanako.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 362.8999938964844,
+                    "y": 187.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 256.0,
+                    "y": 256.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "TargetImage"
+            },
+            "guid": "7124715353307675000",
+            "name": "TargetImage"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "UITextController",
+                    "props": {
+                        "rootWidgetName": "TargetText"
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UIText": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 70.0,
+                "lineSpacing": 2.0,
+                "maxWidth": 0.0,
+                "text": "W 키가 눌렸음",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": -240.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 420.0,
+                    "y": 60.0
+                },
+                "sortOrder": 1,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "TargetText"
+            },
+            "guid": "2489823647798193782",
+            "name": "TargetText"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "UIButtonController",
+                    "props": {
+                        "rootWidgetName": "TargetButton"
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -1.4184041023254395,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UIButton": {
+                "disabledTexture": "Resource/Test/Image/Hanako_Specular.png",
+                "disabledTint": {
+                    "w": 1.0,
+                    "x": 0.4000000059604645,
+                    "y": 0.4000000059604645,
+                    "z": 0.4000000059604645
+                },
+                "enabled": true,
+                "hoveredTexture": "Resource/Test/Image/Hanako_Normal.png",
+                "hoveredTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "normalTexture": "Resource/Test/Image/Hanako_Specular.png",
+                "normalTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "pressedTexture": "Resource/Test/Image/Hanako.png",
+                "pressedTint": {
+                    "w": 1.0,
+                    "x": 0.8500000238418579,
+                    "y": 0.8500000238418579,
+                    "z": 0.8500000238418579
+                },
+                "state": "Normal"
+            },
+            "UIText": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "color": {
+                    "w": 1.0,
+                    "x": 0.19304990768432617,
+                    "y": 0.0,
+                    "z": 1.0
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 60.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "버튼입니다",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": -20.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 280.0,
+                    "y": 280.0
+                },
+                "sortOrder": 2,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "TargetButton"
+            },
+            "guid": "13865287342599251520",
+            "name": "TargetButton"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "UIGaugeController",
+                    "props": {
+                        "rootWidgetName": "TargetGauge"
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.8488515615463257,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UIGauge": {
+                "backgroundColor": {
+                    "w": 0.800000011920929,
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "backgroundTexture": "Resource/Test/Image/Hanako_Specular.png",
+                "direction": "LeftToRight",
+                "fillColor": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.40926647186279297,
+                    "z": 1.0
+                },
+                "fillTexture": "Resource/Test/Image/Hanako_Normal.png",
+                "maxValue": 1.0,
+                "minValue": 0.0,
+                "normalized": false,
+                "smoothing": 0.10000000149011612,
+                "value": 0.6500000357627869
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": -98.80000305175781
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 320.0,
+                    "y": 28.0
+                },
+                "sortOrder": 3,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "TargetGauge"
+            },
+            "guid": "1102842527072772255",
+            "name": "TargetGauge"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "SceneSwitchExample",
+                    "props": {
+                        "targetSceneA": "Assets/Scenes/UI/AdvancedAliceUI.scene",
+                        "targetSceneB": ""
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "guid": "152825248170633588",
+            "name": "GameObject148"
+        }
+    ],
+    "sceneName": "TestAliceUI",
+    "version": 1
+}

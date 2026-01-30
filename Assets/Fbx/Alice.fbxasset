@@ -1,0 +1,30 @@
+{
+    "materials": [
+        "Assets/Materials/Alice_0.mat",
+        "Assets/Materials/Alice_1.mat",
+        "Assets/Materials/Alice_2.mat",
+        "Assets/Materials/Alice_3.mat",
+        "Assets/Materials/Alice_4.mat",
+        "Assets/Materials/Alice_5.mat",
+        "Assets/Materials/Alice_6.mat",
+        "Assets/Materials/Alice_7.mat",
+        "Assets/Materials/Alice_8.mat",
+        "Assets/Materials/Alice_9.mat",
+        "Assets/Materials/Alice_10.mat",
+        "Assets/Materials/Alice_11.mat",
+        "Assets/Materials/Alice_12.mat",
+        "Assets/Materials/Alice_13.mat",
+        "Assets/Materials/Alice_14.mat",
+        "Assets/Materials/Alice_15.mat",
+        "Assets/Materials/Alice_16.mat",
+        "Assets/Materials/Alice_17.mat",
+        "Assets/Materials/Alice_18.mat",
+        "Assets/Materials/Alice_19.mat",
+        "Assets/Materials/Alice_20.mat",
+        "Assets/Materials/Alice_21.mat",
+        "Assets/Materials/Alice_22.mat",
+        "Assets/Materials/Alice_23.mat"
+    ],
+    "mesh": "Alice",
+    "source_fbx": "Resource/Test/fbx/Alice3DGame/Alice.fbx"
+}
