@@ -161,15 +161,6 @@ namespace Alice
         return go.IsValid() ? go.id() : InvalidEntityId;
     }
 
-    static float WrapAngleRad(float rad)
-    {
-        constexpr float kPi = 3.14159265358979323846f;
-        constexpr float kTwoPi = kPi * 2.0f;
-        while (rad > kPi) rad -= kTwoPi;
-        while (rad < -kPi) rad += kTwoPi;
-        return rad;
-    }
-
     static void UpdateHealthHitInfo(World& world,
                                     const Combat::HitEvent& hit,
                                     const Combat::ResolveOutput& resolved,
@@ -421,38 +412,9 @@ namespace Alice
                 float inputZ = payload.move.y;
                 float dx = inputX;
                 float dz = inputZ;
-                bool lockOnActive = false;
                 const bool isPlayer = (entityId == playerId);
-                EntityId lockOnTargetId = InvalidEntityId;
 
-                if (isPlayer && m_state->playerLockOnActive)
-                {
-                    lockOnTargetId = m_state->playerLockOnTarget;
-                    if (lockOnTargetId != InvalidEntityId)
-                    {
-                        if (const auto* selfTr = world.GetComponent<TransformComponent>(entityId))
-                        {
-                            if (const auto* targetTr = world.GetComponent<TransformComponent>(lockOnTargetId))
-                            {
-                                const float fx = targetTr->position.x - selfTr->position.x;
-                                const float fz = targetTr->position.z - selfTr->position.z;
-                                const float flen = std::sqrt(fx * fx + fz * fz);
-                                if (flen > 0.0001f)
-                                {
-                                    const float fwdX = fx / flen;
-                                    const float fwdZ = fz / flen;
-                                    const float rightX = fwdZ;
-                                    const float rightZ = -fwdX;
-                                    dx = rightX * inputX + fwdX * inputZ;
-                                    dz = rightZ * inputX + fwdZ * inputZ;
-                                    lockOnActive = true;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (!lockOnActive && isPlayer && payload.useCameraRelative && camBasis.valid)
+                if (isPlayer && payload.useCameraRelative && camBasis.valid)
                 {
                     dx = camBasis.rightX * inputX + camBasis.forwardX * inputZ;
                     dz = camBasis.rightZ * inputX + camBasis.forwardZ * inputZ;
@@ -474,27 +436,9 @@ namespace Alice
                         dx, dz, payload.speed);
                 }
 
-                if (auto* tr = world.GetComponent<TransformComponent>(entityId))
+                if (payload.faceMove && (dx != 0.0f || dz != 0.0f))
                 {
-                    if (lockOnActive && lockOnTargetId != InvalidEntityId)
-                    {
-                        if (const auto* targetTr = world.GetComponent<TransformComponent>(lockOnTargetId))
-                        {
-                            const float toX = targetTr->position.x - tr->position.x;
-                            const float toZ = targetTr->position.z - tr->position.z;
-                            if (std::abs(toX) > 0.0001f || std::abs(toZ) > 0.0001f)
-                            {
-                                const float desiredYaw = std::atan2(toX, toZ) + offsetRad;
-                                const float deltaYaw = WrapAngleRad(desiredYaw - tr->rotation.y);
-                                const float turnAlpha = std::clamp(m_lockOnTurnSpeed * deltaTime, 0.0f, 1.0f);
-                                const float yawRad = (m_lockOnTurnSpeed > 0.0f)
-                                    ? (tr->rotation.y + deltaYaw * turnAlpha)
-                                    : desiredYaw;
-                                tr->SetRotation(0.0f, yawRad * kRadToDeg, 0.0f);
-                            }
-                        }
-                    }
-                    else if (payload.faceMove && (dx != 0.0f || dz != 0.0f))
+                    if (auto* tr = world.GetComponent<TransformComponent>(entityId))
                     {
                         const float yawRad = std::atan2(dx, dz) + offsetRad;
                         tr->SetRotation(0.0f, yawRad * kRadToDeg, 0.0f);

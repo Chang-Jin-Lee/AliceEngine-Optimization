@@ -506,6 +506,7 @@ namespace Alice
             .property("shoulderSide", &CameraFollowComponent::shoulderSide)
             .property("enableInput", &CameraFollowComponent::enableInput)
             .property("sensitivity", &CameraFollowComponent::sensitivity)
+            .property("invertMouse", &CameraFollowComponent::invertMouse)
             .property("yawDeg", &CameraFollowComponent::yawDeg)
             .property("pitchDeg", &CameraFollowComponent::pitchDeg)
             .property("pitchMinDeg", &CameraFollowComponent::pitchMinDeg)

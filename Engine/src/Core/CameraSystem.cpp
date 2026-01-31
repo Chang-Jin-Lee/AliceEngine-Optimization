@@ -270,8 +270,9 @@ namespace Alice
                 // 마우스 잠금 상태에서 바로 회전 (드래그 조건 제거)
                 float dx = static_cast<float>(input.GetMouseDelta().x);
                 float dy = static_cast<float>(input.GetMouseDelta().y);
-                followComp->yawDeg -= dx * followComp->sensitivity;
-                followComp->pitchDeg -= dy * followComp->sensitivity;
+                const float mouseFlip = followComp->invertMouse ? -1.0f : 1.0f;
+                followComp->yawDeg += mouseFlip * dx * followComp->sensitivity;
+                followComp->pitchDeg += mouseFlip * dy * followComp->sensitivity;
                 followComp->pitchDeg = std::clamp(followComp->pitchDeg, followComp->pitchMinDeg, followComp->pitchMaxDeg);
             }
         }

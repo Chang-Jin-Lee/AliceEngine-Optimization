@@ -22,6 +22,7 @@ namespace Alice
         // 입력/회전
         bool enableInput{ true };
         float sensitivity{ 0.2f };
+        bool invertMouse{ false }; // when true, invert both X/Y for camera input
         float yawDeg{ 0.0f };
         float pitchDeg{ 20.0f };
         float pitchMinDeg{ -45.0f };

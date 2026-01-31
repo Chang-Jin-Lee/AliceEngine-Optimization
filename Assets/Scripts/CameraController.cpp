@@ -227,8 +227,9 @@ namespace Alice
 
         if (input->GetMouseButton(MouseCode::Left))
         {
-            follow->yawDeg   -= input->GetMouseDeltaX() * follow->sensitivity;
-            follow->pitchDeg -= input->GetMouseDeltaY() * follow->sensitivity;
+            const float mouseFlip = follow->invertMouse ? -1.0f : 1.0f;
+            follow->yawDeg   += mouseFlip * input->GetMouseDeltaX() * follow->sensitivity;
+            follow->pitchDeg += mouseFlip * input->GetMouseDeltaY() * follow->sensitivity;
             follow->pitchDeg = std::clamp(follow->pitchDeg, follow->pitchMinDeg, follow->pitchMaxDeg);
         }
     }
