@@ -9543,6 +9543,7 @@ namespace Alice
 				// Clip picker (SkinnedMesh animation list)
 				{
 					std::vector<std::string> clipNames;
+					std::vector<double> clipDurations;
 					const auto* animComp = world.GetComponent<AdvancedAnimationComponent>(_selectedEntity);
 					if (m_skinnedRegistry)
 					{
@@ -9552,7 +9553,12 @@ namespace Alice
 							{
 								std::shared_ptr<SkinnedMeshGPU> mesh = m_skinnedRegistry->Find(skinned->meshAssetPath);
 								if (mesh && mesh->sourceModel)
+								{
 									clipNames = mesh->sourceModel->GetAnimationNames();
+									clipDurations.reserve(clipNames.size());
+									for (size_t i = 0; i < clipNames.size(); ++i)
+										clipDurations.push_back(mesh->sourceModel->GetClipDurationSec(static_cast<int>(i)));
+								}
 							}
 						}
 					}
@@ -9582,6 +9588,17 @@ namespace Alice
 						case AttackDriverClipSource::Explicit:
 						default: return clip.clipName;
 						}
+					};
+
+					auto ResolveClipDurationForUI = [&](const std::string& clipName) -> double {
+						if (clipName.empty())
+							return 0.0;
+						for (size_t i = 0; i < clipNames.size(); ++i)
+						{
+							if (clipNames[i] == clipName)
+								return (i < clipDurations.size()) ? clipDurations[i] : 0.0;
+						}
+						return 0.0;
 					};
 
 					for (size_t i = 0; i < driver->clips.size(); ++i)
@@ -9693,6 +9710,12 @@ namespace Alice
 							{
 								ImGui::Text("Clip: %s", resolvedName.empty() ? "(none)" : resolvedName.c_str());
 							}
+
+							const double clipDuration = ResolveClipDurationForUI(resolvedName);
+							if (clipDuration > 0.0)
+								ImGui::Text("Duration: %.3f sec", clipDuration);
+							else
+								ImGui::TextDisabled("Duration: (unknown)");
 
 							changed |= ImGui::DragFloat("Start Time (sec)", &clip.startTimeSec, 0.01f, 0.0f, 60.0f);
 							changed |= ImGui::DragFloat("End Time (sec)", &clip.endTimeSec, 0.01f, 0.0f, 60.0f);

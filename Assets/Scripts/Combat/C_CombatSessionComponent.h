@@ -35,6 +35,9 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_idleClip, "Idle");
         ALICE_PROPERTY(std::string, m_moveClip, "Walk");
         ALICE_PROPERTY(float, m_moveBlendSpeed, 8.0f);
+        ALICE_PROPERTY(std::string, m_attackSlowClipName, "swing");
+        ALICE_PROPERTY(float, m_attackSlowSpeed, 0.7f);
+        ALICE_PROPERTY(float, m_lockOnTurnSpeed, 12.0f);
         ALICE_PROPERTY(float, m_rotationOffsetDeg, 180.0f);
 
         void ForceReset();

@@ -52,6 +52,7 @@ namespace Alice
             j["startTimeSec"] = clip.startTimeSec;
             j["endTimeSec"] = clip.endTimeSec;
             j["enabled"] = clip.enabled;
+            j["canBeInterrupted"] = clip.canBeInterrupted;
             return j;
         }
 
@@ -104,6 +105,13 @@ namespace Alice
                     out.enabled = it->get<bool>();
                 else if (it->is_number())
                     out.enabled = (it->get<double>() != 0.0);
+            }
+            if (auto it = j.find("canBeInterrupted"); it != j.end())
+            {
+                if (it->is_boolean())
+                    out.canBeInterrupted = it->get<bool>();
+                else if (it->is_number())
+                    out.canBeInterrupted = (it->get<double>() != 0.0);
             }
 
             return true;

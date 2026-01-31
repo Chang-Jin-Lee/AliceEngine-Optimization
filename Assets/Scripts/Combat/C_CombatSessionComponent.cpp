@@ -13,6 +13,9 @@
 #include "Components/HealthComponent.h"
 #include "Components/AttackDriverComponent.h"
 #include "Components/AdvancedAnimationComponent.h"
+#include "Components/CameraComponent.h"
+#include "Components/CameraFollowComponent.h"
+#include "Components/CameraLookAtComponent.h"
 #include "PhysX/Components/Phy_CCTComponent.h"
 #include "Components/TransformComponent.h"
 
@@ -57,6 +60,8 @@ namespace Alice
         AnimOverrideState bossAnim{};
         float playerMoveBlend = 0.0f;
         float bossMoveBlend = 0.0f;
+        bool playerLockOnActive = false;
+        EntityId playerLockOnTarget = InvalidEntityId;
 
         void Init()
         {
@@ -72,6 +77,8 @@ namespace Alice
             bossAnim = {};
             playerMoveBlend = 0.0f;
             bossMoveBlend = 0.0f;
+            playerLockOnActive = false;
+            playerLockOnTarget = InvalidEntityId;
         }
     };
 
@@ -120,6 +127,47 @@ namespace Alice
         if (a.hurtboxEntity != b.hurtboxEntity)
             return a.hurtboxEntity < b.hurtboxEntity;
         return a.part < b.part;
+    }
+
+    struct MoveBasis
+    {
+        bool valid = false;
+        float forwardX = 0.0f;
+        float forwardZ = 1.0f;
+        float rightX = 1.0f;
+        float rightZ = 0.0f;
+    };
+
+    static MoveBasis BuildYawBasis(float yawRad)
+    {
+        MoveBasis basis{};
+        basis.forwardX = std::sin(yawRad);
+        basis.forwardZ = std::cos(yawRad);
+        basis.rightX = std::cos(yawRad);
+        basis.rightZ = -std::sin(yawRad);
+        basis.valid = true;
+        return basis;
+    }
+
+    static EntityId ResolvePrimaryCamera(World& world)
+    {
+        for (auto&& [entityId, cam] : world.GetComponents<CameraComponent>())
+        {
+            if (cam.primary)
+                return entityId;
+        }
+
+        auto go = world.FindGameObject("MainCamera");
+        return go.IsValid() ? go.id() : InvalidEntityId;
+    }
+
+    static float WrapAngleRad(float rad)
+    {
+        constexpr float kPi = 3.14159265358979323846f;
+        constexpr float kTwoPi = kPi * 2.0f;
+        while (rad > kPi) rad -= kTwoPi;
+        while (rad < -kPi) rad += kTwoPi;
+        return rad;
     }
 
     static void UpdateHealthHitInfo(World& world,
@@ -259,6 +307,72 @@ namespace Alice
                 bossIntent = brain->Think(deltaTime, playerId);
         }
 
+        constexpr float kDegToRad = 0.01745329252f;
+
+        const EntityId cameraId = ResolvePrimaryCamera(world);
+        auto* camFollow = (cameraId != InvalidEntityId) ? world.GetComponent<CameraFollowComponent>(cameraId) : nullptr;
+        auto* camLookAt = (cameraId != InvalidEntityId) ? world.GetComponent<CameraLookAtComponent>(cameraId) : nullptr;
+        auto* camTr = (cameraId != InvalidEntityId) ? world.GetComponent<TransformComponent>(cameraId) : nullptr;
+
+        MoveBasis camBasis{};
+        if (cameraId != InvalidEntityId)
+        {
+            float yawRad = 0.0f;
+            bool hasYaw = false;
+            if (camFollow && camFollow->enabled)
+            {
+                yawRad = camFollow->yawDeg * kDegToRad;
+                hasYaw = true;
+            }
+            else if (camTr)
+            {
+                yawRad = camTr->rotation.y;
+                hasYaw = true;
+            }
+            if (hasYaw)
+                camBasis = BuildYawBasis(yawRad);
+        }
+
+        const bool canLockOn = (camFollow && camFollow->enableLockOn);
+        if (playerIntent.lockOnToggle && canLockOn)
+        {
+            if (m_state->playerLockOnActive)
+            {
+                m_state->playerLockOnActive = false;
+                m_state->playerLockOnTarget = InvalidEntityId;
+            }
+            else
+            {
+                m_state->playerLockOnActive = true;
+                m_state->playerLockOnTarget = bossId;
+            }
+        }
+
+        if (m_state->playerLockOnActive)
+            m_state->playerLockOnTarget = bossId;
+
+        if (camFollow)
+        {
+            camFollow->lockOnActive = m_state->playerLockOnActive;
+            if (m_state->playerLockOnActive)
+            {
+                camFollow->lockOnTargetId = m_state->playerLockOnTarget;
+                camFollow->mode = 2;
+            }
+            else
+            {
+                camFollow->lockOnTargetId = InvalidEntityId;
+                camFollow->mode = 0;
+            }
+        }
+
+        if (camLookAt)
+        {
+            camLookAt->enabled = m_state->playerLockOnActive;
+            if (m_state->playerLockOnActive)
+                camLookAt->targetName = m_bossName.empty() ? std::string("Enemy") : m_bossName;
+        }
+
         Combat::Sensors sPlayer = m_state->player.BuildSensors(world, bossId, deltaTime);
         Combat::Sensors sBoss = m_state->boss.BuildSensors(world, playerId, deltaTime);
 
@@ -285,6 +399,9 @@ namespace Alice
                              const Combat::Intent& intent,
                              const std::vector<Combat::Command>& cmds)
         {
+            constexpr float kRadToDeg = 57.2957795f;
+            const float offsetRad = m_rotationOffsetDeg * kDegToRad;
+
             for (const auto& cmd : cmds)
             {
                 if (cmd.type != Combat::CommandType::RequestMove)
@@ -300,8 +417,47 @@ namespace Alice
                     }
                     continue;
                 }
-                float dx = payload.move.x;
-                float dz = payload.move.y;
+                float inputX = payload.move.x;
+                float inputZ = payload.move.y;
+                float dx = inputX;
+                float dz = inputZ;
+                bool lockOnActive = false;
+                const bool isPlayer = (entityId == playerId);
+                EntityId lockOnTargetId = InvalidEntityId;
+
+                if (isPlayer && m_state->playerLockOnActive)
+                {
+                    lockOnTargetId = m_state->playerLockOnTarget;
+                    if (lockOnTargetId != InvalidEntityId)
+                    {
+                        if (const auto* selfTr = world.GetComponent<TransformComponent>(entityId))
+                        {
+                            if (const auto* targetTr = world.GetComponent<TransformComponent>(lockOnTargetId))
+                            {
+                                const float fx = targetTr->position.x - selfTr->position.x;
+                                const float fz = targetTr->position.z - selfTr->position.z;
+                                const float flen = std::sqrt(fx * fx + fz * fz);
+                                if (flen > 0.0001f)
+                                {
+                                    const float fwdX = fx / flen;
+                                    const float fwdZ = fz / flen;
+                                    const float rightX = fwdZ;
+                                    const float rightZ = -fwdX;
+                                    dx = rightX * inputX + fwdX * inputZ;
+                                    dz = rightZ * inputX + fwdZ * inputZ;
+                                    lockOnActive = true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!lockOnActive && isPlayer && payload.useCameraRelative && camBasis.valid)
+                {
+                    dx = camBasis.rightX * inputX + camBasis.forwardX * inputZ;
+                    dz = camBasis.rightZ * inputX + camBasis.forwardZ * inputZ;
+                }
+
                 const float len = std::sqrt(dx * dx + dz * dz);
                 if (len > 0.0001f)
                 {
@@ -311,20 +467,37 @@ namespace Alice
                 cct->desiredVelocity.x = dx * payload.speed;
                 cct->desiredVelocity.z = dz * payload.speed;
                 cct->desiredVelocity.y = 0.0f;
-                if (m_enableLogs && (payload.move.x != 0.0f || payload.move.y != 0.0f))
+                if (m_enableLogs && (dx != 0.0f || dz != 0.0f))
                 {
                     ALICE_LOG_INFO("[CombatSession] Move entity=%llu dir(%.2f,%.2f) speed=%.2f",
                         static_cast<unsigned long long>(entityId),
-                        payload.move.x, payload.move.y, payload.speed);
+                        dx, dz, payload.speed);
                 }
 
-                if (payload.move.x != 0.0f || payload.move.y != 0.0f)
+                if (auto* tr = world.GetComponent<TransformComponent>(entityId))
                 {
-                    if (auto* tr = world.GetComponent<TransformComponent>(entityId))
+                    if (lockOnActive && lockOnTargetId != InvalidEntityId)
                     {
-                        const float yawRad = std::atan2(payload.move.x, payload.move.y);
-                        const float yawDeg = yawRad * 57.2957795f + m_rotationOffsetDeg;
-                        tr->SetRotation(0.0f, yawDeg, 0.0f);
+                        if (const auto* targetTr = world.GetComponent<TransformComponent>(lockOnTargetId))
+                        {
+                            const float toX = targetTr->position.x - tr->position.x;
+                            const float toZ = targetTr->position.z - tr->position.z;
+                            if (std::abs(toX) > 0.0001f || std::abs(toZ) > 0.0001f)
+                            {
+                                const float desiredYaw = std::atan2(toX, toZ) + offsetRad;
+                                const float deltaYaw = WrapAngleRad(desiredYaw - tr->rotation.y);
+                                const float turnAlpha = std::clamp(m_lockOnTurnSpeed * deltaTime, 0.0f, 1.0f);
+                                const float yawRad = (m_lockOnTurnSpeed > 0.0f)
+                                    ? (tr->rotation.y + deltaYaw * turnAlpha)
+                                    : desiredYaw;
+                                tr->SetRotation(0.0f, yawRad * kRadToDeg, 0.0f);
+                            }
+                        }
+                    }
+                    else if (payload.faceMove && (dx != 0.0f || dz != 0.0f))
+                    {
+                        const float yawRad = std::atan2(dx, dz) + offsetRad;
+                        tr->SetRotation(0.0f, yawRad * kRadToDeg, 0.0f);
                     }
                 }
             }
@@ -418,6 +591,19 @@ namespace Alice
                 return {};
             };
 
+            auto ResolveOverrideSpeed = [&](EntityId targetId,
+                                            Combat::ActionState state,
+                                            const std::string& name) -> float
+            {
+                if (state != Combat::ActionState::Attack)
+                    return 1.0f;
+                if (targetId != playerId)
+                    return 1.0f;
+                if (m_attackSlowClipName.empty() || name != m_attackSlowClipName)
+                    return 1.0f;
+                return std::max(0.0f, m_attackSlowSpeed);
+            };
+
             std::string clipName;
             bool loop = false;
             if (curr == Combat::ActionState::Attack)
@@ -455,6 +641,8 @@ namespace Alice
                 anim->base.blend01 = moveBlend;
             }
 
+            const float overrideSpeed = ResolveOverrideSpeed(entityId, curr, clipName);
+
             auto BeginBlendToOverride = [&](const std::string& nextClip, bool nextLoop) {
                 if (!animState.overrideActive)
                 {
@@ -473,8 +661,8 @@ namespace Alice
                     anim->base.clipB = nextClip;
                     anim->base.timeA = 0.0f;
                     anim->base.timeB = 0.0f;
-                    anim->base.speedA = 1.0f;
-                    anim->base.speedB = 1.0f;
+                    anim->base.speedA = overrideSpeed;
+                    anim->base.speedB = overrideSpeed;
                     anim->base.loopA = nextLoop;
                     anim->base.loopB = nextLoop;
                     anim->base.blend01 = 0.0f;
@@ -490,7 +678,7 @@ namespace Alice
                 anim->base.autoAdvance = true;
                 anim->base.clipB = nextClip;
                 anim->base.timeB = 0.0f;
-                anim->base.speedB = 1.0f;
+                anim->base.speedB = overrideSpeed;
                 anim->base.loopB = nextLoop;
                 anim->base.blend01 = 0.0f;
             };
@@ -580,6 +768,11 @@ namespace Alice
             }
 
             StepBlend();
+            if (animState.overrideActive && !animState.blending)
+            {
+                anim->base.speedA = overrideSpeed;
+                anim->base.speedB = overrideSpeed;
+            }
             prev = curr;
         };
 
