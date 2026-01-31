@@ -29,9 +29,7 @@
 #include <memory>
 
 // Forward declaration
-class UIWorldManager;
 class UIRenderer;
-class UISceneManager;
 
 namespace Alice
 {
@@ -151,7 +149,6 @@ namespace Alice
                           bool& pvdEnabled,
                           std::string& pvdHost,
                           int& pvdPort,
-                          class UIWorldManager* uiWorldManager,
 						  bool& isDebugDraw
 						  );
 
@@ -295,7 +292,6 @@ namespace Alice
     public:
         void SetSkinnedMeshRegistry(SkinnedMeshRegistry* registry) { m_skinnedRegistry = registry; }
         void SetInputSystem(InputSystem* inputSystem) { m_inputSystem = inputSystem; }
-        void SetUIWorldManager(class UIWorldManager* uiWorldManager) { m_uiWorldManager = uiWorldManager; }
 		void SetAliceUIRenderer(UIRenderer* renderer);
 
         /// Default PostProcess Settings를 가져옵니다 (PostProcessVolumeSystem에서 사용)
@@ -311,15 +307,12 @@ namespace Alice
 
 
 		// UI
-        void CreateUIImage();
 		EntityId CreateAliceUIRoot(World& world, std::string_view name);
 		EntityId CreateAliceUIImage(World& world);
 		EntityId CreateAliceUIText(World& world);
 		EntityId CreateAliceUIButton(World& world);
 		EntityId CreateAliceUIGauge(World& world);
 		EntityId CreateAliceUIWorldImage(World& world);
-		void RenderUIHeirarcy();
-		void DrawUIInspector(UISceneManager& manager, UIWorld& uiWorld, unsigned long uiEntityID);
 
 		// Undo 시스템
 		void PushCommand(std::unique_ptr<struct ICommand> cmd);
@@ -330,11 +323,7 @@ namespace Alice
 		ID3D11RenderDevice* m_renderDevice = nullptr;
 		SkinnedMeshRegistry* m_skinnedRegistry = nullptr;
 		InputSystem* m_inputSystem = nullptr;
-		UIWorldManager* m_uiWorldManager = nullptr;
 		UIRenderer* m_aliceUIRenderer = nullptr;
-		
-		// UI 엔티티 선택 상태 (0이면 선택되지 않음)
-		unsigned long m_selectedUIEntity = 0;
 
         bool               m_scriptBuilded = false;
 

@@ -14,7 +14,6 @@
 
 #include "Core/Entity.h"
 #include "Core/World.h"
-#include "UI/UIWorldManager.h"
 #include "Rendering/Camera.h"
 #include "Rendering/D3D11/ID3D11RenderDevice.h"
 #include "Rendering/SkinnedMeshRegistry.h"
@@ -57,7 +56,6 @@ namespace Alice
         /// @param shadingMode 셰이딩 모드
         /// @param enableFillLight 보조광 사용 여부
         /// @param skinnedCommands 스키닝 메시 드로우 커맨드 목록
-        /// @param uiWorld UI 월드 매니저 (2D UI 렌더링용)
         /// @param editorMode 에디터 모드 여부
         /// @param isPlaying 재생 중 여부
         void Render(const World& world,
@@ -67,7 +65,6 @@ namespace Alice
                     int shadingMode,
                     bool enableFillLight,
                     const std::vector<SkinnedDrawCommand>& skinnedCommands,
-                    UIWorldManager& uiWorld,
                     bool editorMode = false,
                     bool isPlaying = false);
 
@@ -184,12 +181,6 @@ namespace Alice
 
 
 		void SetSwordRenderSystem(TrailEffectRenderSystem* pSwordRenderSystem) { m_trailRenderSystem = pSwordRenderSystem; }
-
-        /// UI 텍스처를 최종 렌더 타겟에 합성합니다.
-        /// @param uiWorld UIWorldManager 참조 (UI SRV 획득용)
-        /// @param targetRTV 최종 렌더 타겟 (백버퍼 또는 에디터 뷰포트)
-        /// @param viewport 뷰포트 영역
-        void RenderUI(UIWorldManager& uiWorld, ID3D11RenderTargetView* targetRTV, const D3D11_VIEWPORT& viewport);
 
         /// AliceUI 렌더러 주입
         void SetUIRenderer(UIRenderer* renderer) { m_uiRenderer = renderer; }
@@ -492,9 +483,5 @@ namespace Alice
         bool m_hasDefaultPostProcessSettings = false;
 
         // ==== UI 합성 리소스 ====
-        Microsoft::WRL::ComPtr<ID3D11VertexShader>     m_uiQuadVS;
-        Microsoft::WRL::ComPtr<ID3D11PixelShader>      m_uiCompositePS;
-        
-        bool CreateUIResources();
     };
 }

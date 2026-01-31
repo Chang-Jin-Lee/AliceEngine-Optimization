@@ -9,9 +9,6 @@
 #include "Core/ScriptFactory.h"
 #include "Core/Logger.h"
 
-#include "UI/UIScriptSystem.h"
-#include "UI/IUIScript.h"
-
 namespace Alice
 {
     namespace
@@ -50,9 +47,6 @@ namespace Alice
             {
                 ALICE_LOG_WARN("ScriptHotReload: failed to load DLL \"%ls\"", dllPath.c_str());
                 SetDynamicScriptFunctions(nullptr, nullptr, nullptr);
-                // UI 스크립트 비활성화
-                UIScriptSystem::SetFactory(
-                    [](const std::string&) -> std::unique_ptr<IUIScript> { return {}; });
                 return false;
             }
 
@@ -68,45 +62,7 @@ namespace Alice
                 ALICE_LOG_WARN("ScriptHotReload: DLL \"%ls\" is missing required world script exports", dllPath.c_str());
                 ::FreeLibrary(mod);
                 SetDynamicScriptFunctions(nullptr, nullptr, nullptr);
-                UIScriptSystem::SetFactory(
-                    [](const std::string&) -> std::unique_ptr<IUIScript> { return {}; });
                 return false;
-            }
-
-            // UI 스크립트 생성 함수 및 이름 목록 함수 (선택적)
-            using DynamicUIScriptCreateFunc = IUIScript* (*)(const char* name);
-            using DynamicUIScriptCountFunc = int (*)(void);
-            using DynamicUIScriptGetNameFunc = bool (*)(int index, char* outName, int maxLen);
-            
-            auto uiCreateFn = reinterpret_cast<DynamicUIScriptCreateFunc>(
-                ::GetProcAddress(mod, "Alice_CreateDynamicUIScript"));
-            auto uiGetCountFn = reinterpret_cast<DynamicUIScriptCountFunc>(
-                ::GetProcAddress(mod, "Alice_GetDynamicUIScriptCount"));
-            auto uiGetNameFn = reinterpret_cast<DynamicUIScriptGetNameFunc>(
-                ::GetProcAddress(mod, "Alice_GetDynamicUIScriptName"));
-
-            if (uiCreateFn)
-            {
-                UIScriptSystem::SetFactory(
-                    [uiCreateFn](const std::string& name) -> std::unique_ptr<IUIScript>
-                    {
-                        if (!uiCreateFn) return {};
-                        if (auto* raw = uiCreateFn(name.c_str()))
-                            return std::unique_ptr<IUIScript>(raw);
-                        return {};
-                    });
-                
-                // UI 스크립트 이름 목록 함수들도 등록
-                if (uiGetCountFn && uiGetNameFn)
-                {
-                    UIScriptSystem::SetDynamicUIScriptFunctions(uiGetCountFn, uiGetNameFn);
-                }
-            }
-            else
-            {
-                UIScriptSystem::SetFactory(
-                    [](const std::string&) -> std::unique_ptr<IUIScript> { return {}; });
-                UIScriptSystem::SetDynamicUIScriptFunctions(nullptr, nullptr);
             }
 
             g_ScriptModule = mod;
@@ -137,9 +93,6 @@ namespace Alice
 
         // 동적 스크립트 함수 포인터 해제
         SetDynamicScriptFunctions(nullptr, nullptr, nullptr);
-        UIScriptSystem::SetFactory(
-            [](const std::string&) -> std::unique_ptr<IUIScript> { return {}; });
-        UIScriptSystem::SetDynamicUIScriptFunctions(nullptr, nullptr);
 
         ALICE_LOG_INFO("ScriptHotReload: unloaded script DLL");
     }

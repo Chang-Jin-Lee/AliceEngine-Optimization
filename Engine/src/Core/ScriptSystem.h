@@ -8,9 +8,6 @@
 #include "Core/InputTypes.h"
 #include <directXTK/Keyboard.h>
 
-// 전방 선언
-class UIWorldManager;
-
 namespace Alice
 {
     class World;
@@ -63,7 +60,7 @@ namespace Alice
         bool HasPendingSceneRequests() const;
         
         // 씬 요청 커밋 (엔진이 안전 지점에서만 호출)
-        void CommitSceneRequests(World& world, UIWorldManager* uiWorldManager = nullptr);
+        void CommitSceneRequests(World& world);
 
         // === editormode ===
         void SetEditorMode(const bool& isEditor) { m_editorMode = isEditor; }
@@ -77,7 +74,7 @@ namespace Alice
         void CallLateUpdate(World& world, float deltaTime);
         void CallPostCombatUpdate(World& world, float deltaTime);
         void CallFixedUpdate(World& world, float fixedDt);
-        void ProcessSceneRequests(World& world, UIWorldManager* uiWorldManager = nullptr);
+        void ProcessSceneRequests(World& world);
         bool GetKeyInternal(KeyCode key) const;
         bool GetMouseButtonInternal(MouseCode button) const;
 

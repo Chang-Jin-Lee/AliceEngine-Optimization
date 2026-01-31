@@ -61,9 +61,6 @@
 #include "PhysX/Module/PhysicsModule.h" // 물리 모듈
 #include "PhysX/PhysicsSystem.h" // 물리 시스템
 
-//UI
-#include "UI/UIWorldManager.h"
-
 // 문자열 변환 / ImGui 래퍼
 #include "Core/StringUtils.h"
 #include "Core/ImGuiEx.h"
@@ -109,7 +106,6 @@ namespace Alice
 		EntityId m_selectedEntity{ InvalidEntityId }; // 현재 선택된 엔티티 (하이러키)
 
 		World          m_world;
-		UIWorldManager m_uiWorld;
 		UIRenderer     m_aliceUIRenderer;
 		Camera         m_camera;
 		InputSystem    m_inputSystem;
@@ -207,7 +203,6 @@ namespace Alice
 		bool InitializeScene(const std::filesystem::path& exeDir);
 		bool InitializePhysicsSystemAndWorldCallbacks();
 		void InitializePostLoadBindings(Engine& owner);
-		void InitializeEnsureUIResourcesAfterSceneLoad();
 		void SavePvdSettings(const std::filesystem::path& exeDir);
 
 		// =========================
