@@ -7,6 +7,8 @@
 #include "Components/TransformComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/AttackDriverComponent.h"
+#include "Components/IDComponent.h"
+#include "Components/WeaponTraceComponent.h"
 #include "PhysX/Components/Phy_CCTComponent.h"
 
 namespace Alice
@@ -53,6 +55,39 @@ namespace Alice
                 clip.source = AttackDriverClipSource::Explicit;
                 clip.clipName = "swing";
                 driver->clips.push_back(clip);
+            }
+
+            auto* world = GetWorld();
+            if (world)
+            {
+                const bool traceMissing = (driver->traceGuid == 0)
+                    || (world->FindEntityByGuid(driver->traceGuid) == InvalidEntityId);
+                if (traceMissing)
+                {
+                    const auto* idc = GetComponent<IDComponent>();
+                    const uint64_t ownerGuid = idc ? idc->guid : 0;
+                    const std::string ownerName = world->GetEntityName(id);
+
+                    for (auto&& [traceId, trace] : world->GetComponents<WeaponTraceComponent>())
+                    {
+                        const bool matchGuid = (ownerGuid != 0 && trace.ownerGuid == ownerGuid);
+                        const bool matchName = (!ownerName.empty() && trace.ownerNameDebug == ownerName);
+                        if (!matchGuid && !matchName)
+                            continue;
+
+                        if (auto* traceIdc = world->GetComponent<IDComponent>(traceId))
+                        {
+                            driver->traceGuid = traceIdc->guid;
+                            if (m_enableLogs)
+                            {
+                                ALICE_LOG_INFO("[Input] Auto-bound AttackDriver.traceGuid=%llu (trace entity=%llu)",
+                                    static_cast<unsigned long long>(driver->traceGuid),
+                                    static_cast<unsigned long long>(traceId));
+                            }
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
