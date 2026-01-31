@@ -3,7 +3,7 @@
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/ECS/GameObject.h"
 #include "CameraFollow.h"
-#include "AddGetRemoveComponentTest.h"
+#include "../AddGetRemoveComponentTest.h"
 
 namespace Alice
 {
