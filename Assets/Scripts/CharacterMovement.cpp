@@ -1,8 +1,8 @@
 ﻿// 캐릭터를 카메라 방향 기준으로 앞뒤좌우로 움직이게 하는 스크립트
 //#include "CharacterMovement.h"
-// #include "Core/ScriptFactory.h"
-//#include "Core/Logger.h"
-//#include "Core/GameObject.h"
+// #include "Runtime/Scripting/ScriptFactory.h"
+//#include "Runtime/Foundation/Logger.h"
+//#include "Runtime/ECS/GameObject.h"
 //#include <cmath>
 //
 //#ifndef M_PI
@@ -108,10 +108,10 @@
 
 // 캐릭터를 그냥 단순히 앞뒤좌우로 움직이게 하는 스크립트
 #include "CharacterMovement.h"
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
-#include "Core/GameObject.h"
-#include "Core/Input.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/GameObject.h"
+#include "Runtime/Input/Input.h"
 #include <cmath>
 
 #ifndef M_PI

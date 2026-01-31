@@ -1,12 +1,12 @@
 ﻿#include "C_PlayerInputSourceComponent.h"
 
-#include "Core/ScriptFactory.h"
-#include "Core/ScriptAPI.h"
-#include "Core/World.h"
-#include "Components/TransformComponent.h"
-#include "Components/HealthComponent.h"
-#include "Components/AttackDriverComponent.h"
-#include "PhysX/Components/Phy_CCTComponent.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Scripting/ScriptAPI.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Gameplay/Combat/HealthComponent.h"
+#include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
+#include "Runtime/Physics/Components/Phy_CCTComponent.h"
 
 namespace Alice
 {

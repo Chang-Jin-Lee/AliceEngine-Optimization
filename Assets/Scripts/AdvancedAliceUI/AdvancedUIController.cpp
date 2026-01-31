@@ -1,9 +1,9 @@
 #include "AdvancedUIController.h"
 
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
 #include <cmath>
-#include "Core/World.h"
+#include "Runtime/ECS/World.h"
 
 namespace Alice
 {

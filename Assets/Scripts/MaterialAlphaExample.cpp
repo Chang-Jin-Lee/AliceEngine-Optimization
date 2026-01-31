@@ -1,10 +1,10 @@
 #include "MaterialAlphaExample.h"
 
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
-#include "Core/World.h"
-#include "Components/MaterialComponent.h"
-#include "Components/SkinnedMeshComponent.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
 
 #include <algorithm>
 

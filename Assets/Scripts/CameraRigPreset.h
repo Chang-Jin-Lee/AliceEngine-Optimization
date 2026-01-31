@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "Core/IScript.h"
-#include "Core/ScriptReflection.h"
+#include "Runtime/Scripting/IScript.h"
+#include "Runtime/Scripting/ScriptReflection.h"
 
 namespace Alice
 {

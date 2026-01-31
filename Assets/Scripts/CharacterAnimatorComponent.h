@@ -5,9 +5,9 @@
 #include <cstdint>
 #include <DirectXMath.h>
 
-#include "Core/IScript.h"
-#include "Core/ScriptReflection.h"
-#include "Core/GameObject.h"
+#include "Runtime/Scripting/IScript.h"
+#include "Runtime/Scripting/ScriptReflection.h"
+#include "Runtime/ECS/GameObject.h"
 
 // [수정] ComputeEffectComponent 헤더 포함 (필요 시) 혹은 전방 선언
 // 여기서는 cpp에서 포함하고, 구조체는 GameObject를 들고 있으므로 그대로 둡니다.

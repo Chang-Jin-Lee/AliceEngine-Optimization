@@ -1,10 +1,10 @@
 #include "CameraDirector.h"
-#include "Core/ScriptFactory.h"
-#include "Core/GameObject.h"
-#include "Core/World.h"
-#include "Components/TransformComponent.h"
-#include "Components/CameraComponent.h"
-#include "Rendering/Camera.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/ECS/GameObject.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Rendering/Components/CameraComponent.h"
+#include "Runtime/Rendering/Camera.h"
 
 #include <algorithm>
 #include <cmath>

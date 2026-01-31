@@ -87,290 +87,271 @@ add_compile_definitions(NOMINMAX)
 # ==========================================
 set(ENGINE_SOURCES
     # 엔진 계층
-    ${ALICE_SRC_DIR}/Engine/Engine.cpp
-    ${ALICE_SRC_DIR}/Engine/EngineInitialize.cpp
-    ${ALICE_SRC_DIR}/Engine/EngineUpdate.cpp
-    ${ALICE_SRC_DIR}/Engine/EngineRender.cpp
-    ${ALICE_SRC_DIR}/Engine/EnginePhysics.cpp
-    ${ALICE_SRC_DIR}/Engine/EngineWindow.cpp
-    ${ALICE_SRC_DIR}/Editor/ViewportPicker.cpp
-    ${ALICE_SRC_DIR}/Editor/EditorCore.cpp
-    ${ALICE_SRC_DIR}/Editor/Blueprint/AnimBlueprintEditor.cpp
+    ${ALICE_SRC_DIR}/Runtime/Engine/Engine.cpp
+    ${ALICE_SRC_DIR}/Runtime/Engine/EngineInitialize.cpp
+    ${ALICE_SRC_DIR}/Runtime/Engine/EngineUpdate.cpp
+    ${ALICE_SRC_DIR}/Runtime/Engine/EngineRender.cpp
+    ${ALICE_SRC_DIR}/Runtime/Engine/EnginePhysics.cpp
+    ${ALICE_SRC_DIR}/Runtime/Engine/EngineWindow.cpp
+    ${ALICE_SRC_DIR}/Editor/Core/ViewportPicker.cpp
+    ${ALICE_SRC_DIR}/Editor/Core/EditorCore.cpp
+    ${ALICE_SRC_DIR}/Editor/Tools/Blueprint/AnimBlueprintEditor.cpp
 
     # 코어(ECS 스타일)
-    ${ALICE_SRC_DIR}/Core/World.cpp
-    ${ALICE_SRC_DIR}/Core/ThreadSafety.cpp
-    ${ALICE_SRC_DIR}/Core/IScript.cpp
-    ${ALICE_SRC_DIR}/Core/ScriptFactory.cpp
-    ${ALICE_SRC_DIR}/Core/ScriptSystem.cpp
-    ${ALICE_SRC_DIR}/Core/ScriptHotReload.cpp
-    ${ALICE_SRC_DIR}/Core/Prefab.cpp
-    ${ALICE_SRC_DIR}/Core/Material.cpp
-    ${ALICE_SRC_DIR}/Core/SceneFile.cpp
-    ${ALICE_SRC_DIR}/Core/ComponentRegistry.cpp
-    ${ALICE_SRC_DIR}/Core/EditorComponentRegistry.cpp
-    ${ALICE_SRC_DIR}/Core/CameraSystem.cpp
-    ${ALICE_SRC_DIR}/Core/ResourceManager.cpp
-    ${ALICE_SRC_DIR}/Core/Scene.cpp
-    ${ALICE_SRC_DIR}/Core/TimeSystem.cpp
-    ${ALICE_SRC_DIR}/Core/InputSystem.cpp
-    ${ALICE_SRC_DIR}/Core/Logger.cpp
-    ${ALICE_SRC_DIR}/Core/Singleton.cpp
-    ${ALICE_SRC_DIR}/Core/Helper.cpp
-    ${ALICE_SRC_DIR}/Core/Vertex.cpp
-    ${ALICE_SRC_DIR}/Core/Input.cpp
-    ${ALICE_SRC_DIR}/Core/AdvancedAnimSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/ECS/World.cpp
+    ${ALICE_SRC_DIR}/Runtime/Foundation/ThreadSafety.cpp
+    ${ALICE_SRC_DIR}/Runtime/Scripting/IScript.cpp
+    ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptFactory.cpp
+    ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptHotReload.cpp
+    ${ALICE_SRC_DIR}/Runtime/Resources/Prefab.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Data/Material.cpp
+    ${ALICE_SRC_DIR}/Runtime/Resources/SceneFile.cpp
+    ${ALICE_SRC_DIR}/Runtime/ECS/ComponentRegistry.cpp
+    ${ALICE_SRC_DIR}/Runtime/ECS/EditorComponentRegistry.cpp
+    ${ALICE_SRC_DIR}/Runtime/Engine/CameraSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Resources/ResourceManager.cpp
+    ${ALICE_SRC_DIR}/Runtime/Resources/Scene.cpp
+    ${ALICE_SRC_DIR}/Runtime/Engine/TimeSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Input/InputSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Foundation/Logger.cpp
+    ${ALICE_SRC_DIR}/Runtime/Foundation/Singleton.cpp
+    ${ALICE_SRC_DIR}/Runtime/Foundation/Helper.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Data/Vertex.cpp
+    ${ALICE_SRC_DIR}/Runtime/Input/Input.cpp
+    ${ALICE_SRC_DIR}/Runtime/Engine/AdvancedAnimSystem.cpp
 
     # Audio
-    ${ALICE_SRC_DIR}/Audio/AudioSystem.cpp
-    ${ALICE_SRC_DIR}/Audio/SoundManager.cpp
+    ${ALICE_SRC_DIR}/Runtime/Audio/AudioSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Audio/SoundManager.cpp
 
     # FBX/3D 모델 로더
-    ${ALICE_SRC_DIR}/3Dmodel/FbxMaterial.cpp
-    ${ALICE_SRC_DIR}/3Dmodel/FbxModel.cpp
-    ${ALICE_SRC_DIR}/3Dmodel/FbxSkeleton.cpp
-    ${ALICE_SRC_DIR}/3Dmodel/FbxGeometry.cpp
-    ${ALICE_SRC_DIR}/3Dmodel/FbxAnimation.cpp
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxMaterial.cpp
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxModel.cpp
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxSkeleton.cpp
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxGeometry.cpp
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxAnimation.cpp
 
     # AnimBlueprint
-    ${ALICE_SRC_DIR}/Game/AnimBlueprintAsset.cpp
-    ${ALICE_SRC_DIR}/Game/SocketAttachmentSystem.cpp
-    ${ALICE_SRC_DIR}/Game/SocketWorldUpdateSystem.cpp
-    ${ALICE_SRC_DIR}/Game/HurtboxFactory.cpp
-    ${ALICE_SRC_DIR}/Game/WeaponTraceSystem.cpp
-    ${ALICE_SRC_DIR}/Game/CombatSystem.cpp
-    ${ALICE_SRC_DIR}/Game/AttackDriverSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Animation/AnimBlueprintAsset.cpp
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Sockets/SocketAttachmentSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Sockets/SocketWorldUpdateSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/HurtboxFactory.cpp
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/WeaponTraceSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/CombatSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/AttackDriverSystem.cpp
 
     # 렌더링 계층
-    ${ALICE_SRC_DIR}/Rendering/Camera.cpp
-    ${ALICE_SRC_DIR}/Rendering/D3D11/D3D11RenderDevice.cpp
-    ${ALICE_SRC_DIR}/Rendering/ForwardRenderSystem.cpp
-    ${ALICE_SRC_DIR}/Rendering/DeferredRenderSystem.cpp
-    ${ALICE_SRC_DIR}/Rendering/SkinnedMeshRegistry.cpp
-    ${ALICE_SRC_DIR}/Rendering/DebugDrawSystem.cpp
-    ${ALICE_SRC_DIR}/Rendering/TrailEffectRenderSystem.cpp
-    ${ALICE_SRC_DIR}/Rendering/TrailEffectRenderSystem.h
-    ${ALICE_SRC_DIR}/Rendering/PostProcessVolumeSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Camera.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/D3D11/D3D11RenderDevice.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ForwardRenderSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/DeferredRenderSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/SkinnedMeshRegistry.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/DebugDrawSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/TrailEffectRenderSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/TrailEffectRenderSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/PostProcessVolumeSystem.cpp
     
-    #PhysX
-    ${ALICE_SRC_DIR}/PhysX/PhysXContext.cpp
-    ${ALICE_SRC_DIR}/PhysX/PhysXWorld_Actors.cpp
-    ${ALICE_SRC_DIR}/PhysX/PhysXWorld_Core.cpp
-    ${ALICE_SRC_DIR}/PhysX/PhysXWorld_Joints.cpp
-    ${ALICE_SRC_DIR}/PhysX/PhysXWorld_Queries.cpp
-    ${ALICE_SRC_DIR}/PhysX/PhysicsSystem.cpp
-    #Physx Module
-    ${ALICE_SRC_DIR}/PhysX/Module/PhysicsDebug.cpp
-    ${ALICE_SRC_DIR}/PhysX/Module/PhysicsModule.cpp
-
-
-    
-    
-    
+    # PhysX
+    ${ALICE_SRC_DIR}/Runtime/Physics/PhysXContext.cpp
+    ${ALICE_SRC_DIR}/Runtime/Physics/PhysXWorld_Actors.cpp
+    ${ALICE_SRC_DIR}/Runtime/Physics/PhysXWorld_Core.cpp
+    ${ALICE_SRC_DIR}/Runtime/Physics/PhysXWorld_Joints.cpp
+    ${ALICE_SRC_DIR}/Runtime/Physics/PhysXWorld_Queries.cpp
+    ${ALICE_SRC_DIR}/Runtime/Physics/PhysicsSystem.cpp
+    # Physx Module
+    ${ALICE_SRC_DIR}/Runtime/Physics/Module/PhysicsDebug.cpp
+    ${ALICE_SRC_DIR}/Runtime/Physics/Module/PhysicsModule.cpp
 
     # 쉐이더 코드 묶음
-    ${ALICE_SRC_DIR}/Rendering/ShaderCode/CommonShaderCode.cpp
-    ${ALICE_SRC_DIR}/Rendering/ShaderCode/DeferredShader.cpp
-    ${ALICE_SRC_DIR}/Rendering/ShaderCode/ForwardShader.cpp
-    ${ALICE_SRC_DIR}/Rendering/EffectSystem.cpp
-    ${ALICE_SRC_DIR}/Rendering/ShaderCode/TrailEffectShader.cpp
-    ${ALICE_SRC_DIR}/Rendering/ComputeEffectSystem.cpp
-    ${ALICE_SRC_DIR}/Rendering/DebugDrawComponentSystem.cpp
-
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ShaderCode/CommonShaderCode.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ShaderCode/DeferredShader.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ShaderCode/ForwardShader.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/EffectSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ShaderCode/TrailEffectShader.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ComputeEffectSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/DebugDrawComponentSystem.cpp
 
     # AliceUI (Shader 기반 UI)
-    ${ALICE_SRC_DIR}/AliceUI/UIFont.cpp
-    ${ALICE_SRC_DIR}/AliceUI/UIRenderer.cpp
-    ${ALICE_SRC_DIR}/AliceUI/UIShaderCode.cpp
-    ${ALICE_SRC_DIR}/AliceUI/UICurveAsset.cpp
+    ${ALICE_SRC_DIR}/Runtime/UI/UIFont.cpp
+    ${ALICE_SRC_DIR}/Runtime/UI/UIRenderer.cpp
+    ${ALICE_SRC_DIR}/Runtime/UI/UIShaderCode.cpp
+    ${ALICE_SRC_DIR}/Runtime/UI/UICurveAsset.cpp
 )
 
 set(ENGINE_HEADERS
     # 엔진 계층
-    ${ALICE_SRC_DIR}/Engine/Engine.h
-    ${ALICE_SRC_DIR}/Engine/EngineImpl.h
-    ${ALICE_SRC_DIR}/Editor/ViewportPicker.h
-    ${ALICE_SRC_DIR}/Editor/EditorCore.h
-    ${ALICE_SRC_DIR}/Editor/Blueprint/AnimBlueprintEditor.h
+    ${ALICE_SRC_DIR}/Runtime/Engine/Engine.h
+    ${ALICE_SRC_DIR}/Runtime/Engine/EngineImpl.h
+    ${ALICE_SRC_DIR}/Editor/Core/ViewportPicker.h
+    ${ALICE_SRC_DIR}/Editor/Core/EditorCore.h
+    ${ALICE_SRC_DIR}/Editor/Tools/Blueprint/AnimBlueprintEditor.h
 
     # 코어
-    ${ALICE_SRC_DIR}/Core/World.h
-    ${ALICE_SRC_DIR}/Core/ThreadSafety.h
-    ${ALICE_SRC_DIR}/Core/GameObject.h
-    ${ALICE_SRC_DIR}/Core/Delegate.h
-    ${ALICE_SRC_DIR}/Core/IScript.h
-    ${ALICE_SRC_DIR}/Core/ScriptFactory.h
-    ${ALICE_SRC_DIR}/Core/ScriptSystem.h
-    ${ALICE_SRC_DIR}/Core/ScriptAPI.h
-    ${ALICE_SRC_DIR}/Core/ScriptHotReload.h
-    ${ALICE_SRC_DIR}/Core/Prefab.h
-    ${ALICE_SRC_DIR}/Core/Material.h
-    ${ALICE_SRC_DIR}/Core/Logger.h
-    ${ALICE_SRC_DIR}/Core/CameraSystem.h
-    ${ALICE_SRC_DIR}/Core/SceneFile.h
-    ${ALICE_SRC_DIR}/Core/SceneFileHelper.h
-    ${ALICE_SRC_DIR}/Core/ReflectionSerializer.h
-    ${ALICE_SRC_DIR}/Core/ReflectionUI.h
-    ${ALICE_SRC_DIR}/Core/ComponentRegistry.h
-    ${ALICE_SRC_DIR}/Core/EditorComponentRegistry.h
-    ${ALICE_SRC_DIR}/Core/EditorComponentRegistry.inl
-    ${ALICE_SRC_DIR}/Core/Component.h
-    ${ALICE_SRC_DIR}/Core/Entity.h
-    ${ALICE_SRC_DIR}/Core/System.h
-    ${ALICE_SRC_DIR}/Core/StringUtils.h
-    ${ALICE_SRC_DIR}/Core/ResourceManager.h
-    ${ALICE_SRC_DIR}/Core/Scene.h
-    ${ALICE_SRC_DIR}/Core/TimeSystem.h
-    ${ALICE_SRC_DIR}/Core/InputSystem.h
-    ${ALICE_SRC_DIR}/Core/ImGuiEx.h
-    ${ALICE_SRC_DIR}/Core/Input.h
-    ${ALICE_SRC_DIR}/Core/Singleton.h
-    ${ALICE_SRC_DIR}/Core/Helper.h
-    ${ALICE_SRC_DIR}/Core/Vertex.h
-    ${ALICE_SRC_DIR}/Core/AdvancedAnimSystem.h
-    ${ALICE_SRC_DIR}/Core/JsonRttr.h
-    ${ALICE_SRC_DIR}/Core/InputTypes.h
+    ${ALICE_SRC_DIR}/Runtime/ECS/World.h
+    ${ALICE_SRC_DIR}/Runtime/Foundation/ThreadSafety.h
+    ${ALICE_SRC_DIR}/Runtime/ECS/GameObject.h
+    ${ALICE_SRC_DIR}/Runtime/Foundation/Delegate.h
+    ${ALICE_SRC_DIR}/Runtime/Scripting/IScript.h
+    ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptFactory.h
+    ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptAPI.h
+    ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptHotReload.h
+    ${ALICE_SRC_DIR}/Runtime/Resources/Prefab.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Data/Material.h
+    ${ALICE_SRC_DIR}/Runtime/Foundation/Logger.h
+    ${ALICE_SRC_DIR}/Runtime/Engine/CameraSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Resources/SceneFile.h
+    ${ALICE_SRC_DIR}/Runtime/Resources/SceneFileHelper.h
+    ${ALICE_SRC_DIR}/Runtime/Resources/Serialization/ReflectionSerializer.h
+    ${ALICE_SRC_DIR}/Editor/Core/ReflectionUI.h
+    ${ALICE_SRC_DIR}/Runtime/ECS/ComponentRegistry.h
+    ${ALICE_SRC_DIR}/Runtime/ECS/EditorComponentRegistry.h
+    ${ALICE_SRC_DIR}/Runtime/ECS/EditorComponentRegistry.inl
+    ${ALICE_SRC_DIR}/Runtime/ECS/Component.h
+    ${ALICE_SRC_DIR}/Runtime/ECS/Entity.h
+    ${ALICE_SRC_DIR}/Runtime/ECS/System.h
+    ${ALICE_SRC_DIR}/Runtime/Foundation/StringUtils.h
+    ${ALICE_SRC_DIR}/Runtime/Resources/ResourceManager.h
+    ${ALICE_SRC_DIR}/Runtime/Resources/Scene.h
+    ${ALICE_SRC_DIR}/Runtime/Engine/TimeSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Input/InputSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Foundation/ImGuiEx.h
+    ${ALICE_SRC_DIR}/Runtime/Input/Input.h
+    ${ALICE_SRC_DIR}/Runtime/Foundation/Singleton.h
+    ${ALICE_SRC_DIR}/Runtime/Foundation/Helper.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Data/Vertex.h
+    ${ALICE_SRC_DIR}/Runtime/Engine/AdvancedAnimSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Resources/Serialization/JsonRttr.h
+    ${ALICE_SRC_DIR}/Runtime/Input/InputTypes.h
 
     # Audio
-    ${ALICE_SRC_DIR}/Audio/AudioSystem.h
-    ${ALICE_SRC_DIR}/Audio/SoundManager.h
+    ${ALICE_SRC_DIR}/Runtime/Audio/AudioSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Audio/SoundManager.h
 
-    
     # 컴포넌트들
-    ${ALICE_SRC_DIR}/Components/ComponentStorage.h
-    ${ALICE_SRC_DIR}/Components/CameraBlendComponent.h
-    ${ALICE_SRC_DIR}/Components/CameraComponent.h
-    ${ALICE_SRC_DIR}/Components/CameraFollowComponent.h
-    ${ALICE_SRC_DIR}/Components/CameraInputComponent.h
-    ${ALICE_SRC_DIR}/Components/CameraLookAtComponent.h
-    ${ALICE_SRC_DIR}/Components/CameraShakeComponent.h
-    ${ALICE_SRC_DIR}/Components/CameraSpringArmComponent.h
-    ${ALICE_SRC_DIR}/Components/AdvancedAnimationComponent.h
-    ${ALICE_SRC_DIR}/Components/DebugDrawBoxComponent.h
-    ${ALICE_SRC_DIR}/Components/AdvancedAnimator.h
-    ${ALICE_SRC_DIR}/Components/SoundBoxComponent.h
-    ${ALICE_SRC_DIR}/Components/AudioListenerComponent.h
-    ${ALICE_SRC_DIR}/Components/AudioSourceComponent.h
-    ${ALICE_SRC_DIR}/Components/MaterialComponent.h
-    ${ALICE_SRC_DIR}/Components/PointLightComponent.h
-    ${ALICE_SRC_DIR}/Components/RectLightComponent.h
-    ${ALICE_SRC_DIR}/Components/ScriptComponent.h
-    ${ALICE_SRC_DIR}/Components/SkinnedAnimationComponent.h
-    ${ALICE_SRC_DIR}/Components/SkinnedMeshComponent.h
-    ${ALICE_SRC_DIR}/Components/SpotLightComponent.h
-    ${ALICE_SRC_DIR}/Components/TransformComponent.h
-    ${ALICE_SRC_DIR}/Components/TrailEffectComponent.h
-    ${ALICE_SRC_DIR}/Components/EffectComponent.h
-    ${ALICE_SRC_DIR}/Components/SocketAttachmentComponent.h
-    ${ALICE_SRC_DIR}/Components/SocketPoseOutputComponent.h
-    ${ALICE_SRC_DIR}/Components/HurtboxComponent.h
-    ${ALICE_SRC_DIR}/Components/WeaponTraceComponent.h
-    ${ALICE_SRC_DIR}/Components/HealthComponent.h
-    ${ALICE_SRC_DIR}/Components/AttackDriverComponent.h
-    ${ALICE_SRC_DIR}/Components/PostProcessVolumeComponent.h
+    ${ALICE_SRC_DIR}/Runtime/ECS/Components/ComponentStorage.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/CameraBlendComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/CameraComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/CameraFollowComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/CameraInputComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/CameraLookAtComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/CameraShakeComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/CameraSpringArmComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Animation/AdvancedAnimationComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/DebugDrawBoxComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Animation/AdvancedAnimator.h
+    ${ALICE_SRC_DIR}/Runtime/Audio/Components/SoundBoxComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Audio/Components/AudioListenerComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Audio/Components/AudioSourceComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/MaterialComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/PointLightComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/RectLightComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Scripting/Components/ScriptComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/SkinnedAnimationComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/SkinnedMeshComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/SpotLightComponent.h
+    ${ALICE_SRC_DIR}/Runtime/ECS/Components/TransformComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/TrailEffectComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/EffectComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Sockets/SocketAttachmentComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Sockets/SocketPoseOutputComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/HurtboxComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/WeaponTraceComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/HealthComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/AttackDriverComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/PostProcessVolumeComponent.h
 
     # FBX/3D 모델 로더 헤더
-    ${ALICE_SRC_DIR}/3Dmodel/FbxMaterial.h
-    ${ALICE_SRC_DIR}/3Dmodel/FbxModel.h
-    ${ALICE_SRC_DIR}/3Dmodel/FbxSkeleton.h
-    ${ALICE_SRC_DIR}/3Dmodel/FbxTypes.h
-    ${ALICE_SRC_DIR}/3Dmodel/FbxGeometry.h
-    ${ALICE_SRC_DIR}/3Dmodel/FbxAnimation.h
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxMaterial.h
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxModel.h
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxSkeleton.h
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxTypes.h
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxGeometry.h
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxAnimation.h
 
     # 렌더링 계층
-    ${ALICE_SRC_DIR}/Rendering/Camera.h
-    ${ALICE_SRC_DIR}/Rendering/ForwardRenderSystem.h
-    ${ALICE_SRC_DIR}/Rendering/DeferredRenderSystem.h
-    ${ALICE_SRC_DIR}/Rendering/SkinnedMeshRegistry.h
-    ${ALICE_SRC_DIR}/Rendering/IRenderDevice.h
-    ${ALICE_SRC_DIR}/Rendering/D3D11/D3D11RenderDevice.h
-    ${ALICE_SRC_DIR}/Rendering/D3D11/ID3D11RenderDevice.h
-    ${ALICE_SRC_DIR}/Rendering/DebugDrawSystem.h
-    ${ALICE_SRC_DIR}/Rendering/DebugDrawComponentSystem.h
-    ${ALICE_SRC_DIR}/Rendering/RenderTypes.h
-    ${ALICE_SRC_DIR}/Rendering/TrailEffectRenderSystem.h
-    ${ALICE_SRC_DIR}/Rendering/PostProcessSettings.h
-    ${ALICE_SRC_DIR}/Rendering/PostProcessVolumeSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Camera.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ForwardRenderSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/DeferredRenderSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/SkinnedMeshRegistry.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/IRenderDevice.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/D3D11/D3D11RenderDevice.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/D3D11/ID3D11RenderDevice.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/DebugDrawSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/DebugDrawComponentSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/RenderTypes.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/TrailEffectRenderSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/PostProcessSettings.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/PostProcessVolumeSystem.h
     
     # 쉐이더 코드 묶음
-    ${ALICE_SRC_DIR}/Rendering/ShaderCode/CommonShaderCode.h
-    ${ALICE_SRC_DIR}/Rendering/ShaderCode/DeferredShader.h
-    ${ALICE_SRC_DIR}/Rendering/ShaderCode/ForwardShader.h
-    ${ALICE_SRC_DIR}/Rendering/EffectSystem.h
-    ${ALICE_SRC_DIR}/Rendering/ShaderCode/TrailEffectShader.h
-    ${ALICE_SRC_DIR}/Game/AdvancedAnimSystem.h
-    ${ALICE_SRC_DIR}/Game/SocketAttachmentSystem.h
-    ${ALICE_SRC_DIR}/Game/SocketWorldUpdateSystem.h
-    ${ALICE_SRC_DIR}/Game/HurtboxFactory.h
-    ${ALICE_SRC_DIR}/Game/WeaponTraceSystem.h
-    ${ALICE_SRC_DIR}/Game/CombatPhysicsLayers.h
-    ${ALICE_SRC_DIR}/Game/CombatHitEvent.h
-    ${ALICE_SRC_DIR}/Game/CombatSystem.h
-    ${ALICE_SRC_DIR}/Game/AttackDriverSystem.h
-    #PhysX 물리
-    ${ALICE_SRC_DIR}/PhysX/IPhysicsWorld.h
-    ${ALICE_SRC_DIR}/PhysX/PhysicsMath.h
-    ${ALICE_SRC_DIR}/PhysX/PhysXContext.h
-    ${ALICE_SRC_DIR}/PhysX/PhysXWorld.h
-    ${ALICE_SRC_DIR}/PhysX/PhysXWorld_Internal.h
-    ${ALICE_SRC_DIR}/PhysX/PhysicsSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ShaderCode/CommonShaderCode.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ShaderCode/DeferredShader.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ShaderCode/ForwardShader.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/EffectSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ShaderCode/TrailEffectShader.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Animation/AdvancedAnimSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Sockets/SocketAttachmentSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Sockets/SocketWorldUpdateSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/HurtboxFactory.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/WeaponTraceSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/CombatPhysicsLayers.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/CombatHitEvent.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/CombatSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Combat/AttackDriverSystem.h
+    # PhysX 물리
+    ${ALICE_SRC_DIR}/Runtime/Physics/IPhysicsWorld.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/PhysicsMath.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/PhysXContext.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/PhysXWorld.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/PhysXWorld_Internal.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/PhysicsSystem.h
 
-    #Module
-    ${ALICE_SRC_DIR}/PhysX/Module/PhysicsDebug.h
-    ${ALICE_SRC_DIR}/PhysX/Module/PhysicsEcsBridge.h
-    ${ALICE_SRC_DIR}/PhysX/Module/PhysicsModule.h
-    #Components
-    ${ALICE_SRC_DIR}/PhysX/Components/Phy_CCTComponent.h
-    ${ALICE_SRC_DIR}/PhysX/Components/Phy_SettingsComponent.h
-    ${ALICE_SRC_DIR}/PhysX/Components/Phy_ColliderComponent.h
-    ${ALICE_SRC_DIR}/PhysX/Components/Phy_RigidBodyComponent.h    
-    ${ALICE_SRC_DIR}/PhysX/Components/Phy_TerrainHeightFieldComponent.h
-    ${ALICE_SRC_DIR}/PhysX/Components/Phy_MeshColliderComponent.h
-    ${ALICE_SRC_DIR}/PhysX/Components/Phy_CCTComponent.h
-    ${ALICE_SRC_DIR}/PhysX/Components/Phy_JointComponent.h
-
-
-
-
+    # Module
+    ${ALICE_SRC_DIR}/Runtime/Physics/Module/PhysicsDebug.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/Module/PhysicsEcsBridge.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/Module/PhysicsModule.h
+    # Components
+    ${ALICE_SRC_DIR}/Runtime/Physics/Components/Phy_CCTComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/Components/Phy_SettingsComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/Components/Phy_ColliderComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/Components/Phy_RigidBodyComponent.h    
+    ${ALICE_SRC_DIR}/Runtime/Physics/Components/Phy_TerrainHeightFieldComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/Components/Phy_MeshColliderComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/Components/Phy_CCTComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/Components/Phy_JointComponent.h
 
     # AliceUI (Shader 기반 UI)
-    ${ALICE_SRC_DIR}/AliceUI/UICommon.h
-    ${ALICE_SRC_DIR}/AliceUI/UIWidgetComponent.h
-    ${ALICE_SRC_DIR}/AliceUI/UITransformComponent.h
-    ${ALICE_SRC_DIR}/AliceUI/UIImageComponent.h
-    ${ALICE_SRC_DIR}/AliceUI/UITextComponent.h
-    ${ALICE_SRC_DIR}/AliceUI/UIButtonComponent.h
-    ${ALICE_SRC_DIR}/AliceUI/UIGaugeComponent.h
-    ${ALICE_SRC_DIR}/AliceUI/UIEffectComponent.h
-    ${ALICE_SRC_DIR}/AliceUI/UIAnimationComponent.h
-    ${ALICE_SRC_DIR}/AliceUI/UIShakeComponent.h
-    ${ALICE_SRC_DIR}/AliceUI/UIHover3DComponent.h
-    ${ALICE_SRC_DIR}/AliceUI/UIVitalComponent.h
-    ${ALICE_SRC_DIR}/AliceUI/UICurveAsset.h
-    ${ALICE_SRC_DIR}/AliceUI/UIFont.h
-    ${ALICE_SRC_DIR}/AliceUI/UIRenderer.h
-    ${ALICE_SRC_DIR}/AliceUI/UIShaderCode.h
-    ${ALICE_SRC_DIR}/AliceUI/BindWidget.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UICommon.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UIWidgetComponent.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UITransformComponent.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UIImageComponent.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UITextComponent.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UIButtonComponent.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UIGaugeComponent.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UIEffectComponent.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UIAnimationComponent.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UIShakeComponent.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UIHover3DComponent.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UIVitalComponent.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UICurveAsset.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UIFont.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UIRenderer.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UIShaderCode.h
+    ${ALICE_SRC_DIR}/Runtime/UI/BindWidget.h
 
     # json
-    ${ALICE_SRC_DIR}/json/json.hpp
-    ${ALICE_SRC_DIR}/json/json_fwd.hpp
+    ${ALICE_SRC_DIR}/ThirdParty/json/json.hpp
+    ${ALICE_SRC_DIR}/ThirdParty/json/json_fwd.hpp
 
-    ${ALICE_SRC_DIR}/Rendering/EffectSystem.h
-    ${ALICE_SRC_DIR}/Rendering/ShaderCode/TrailEffectShader.h
-    ${ALICE_SRC_DIR}/Rendering/ShaderCode/TrailEffectShader.h
-    ${ALICE_SRC_DIR}/PhysX/Components/Phy_CCTComponent.h
-    ${ALICE_SRC_DIR}/Rendering/ShaderCode/TrailEffectShader.h
-    ${ALICE_SRC_DIR}/PhysX/Components/Phy_CCTComponent.h
-    ${ALICE_SRC_DIR}/Rendering/ShaderCode/TrailEffectShader.h
-    ${ALICE_SRC_DIR}/PhysX/Components/Phy_CCTComponent.h
-    ${ALICE_SRC_DIR}/Components/ComputeEffectComponent.h
-    ${ALICE_SRC_DIR}/Rendering/ComputeEffectSystem.h
-    ${ALICE_SRC_DIR}/Rendering/ShaderCode/ComputeEffectShader.h
-    ${ALICE_SRC_DIR}/Core/SocketSerialization.h
-
-
-
+    ${ALICE_SRC_DIR}/Runtime/Rendering/EffectSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ShaderCode/TrailEffectShader.h
+    ${ALICE_SRC_DIR}/Runtime/Physics/Components/Phy_CCTComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Components/ComputeEffectComponent.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ComputeEffectSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/ShaderCode/ComputeEffectShader.h
+    ${ALICE_SRC_DIR}/Runtime/Resources/Serialization/SocketSerialization.h
 )
 
 add_library(Engine STATIC
@@ -413,27 +394,27 @@ endif()
 # ==========================================
 # 공통 게임 코드
 set(APP_COMMON_SOURCES
-    ${ALICE_SRC_DIR}/Scenes/SampleScene.cpp
-    ${ALICE_SRC_DIR}/Game/FbxImporter.cpp
-    ${ALICE_SRC_DIR}/Game/FbxAsset.cpp
+    ${ALICE_SRC_DIR}/Samples/Scenes/SampleScene.cpp
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxImporter.cpp
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxAsset.cpp
 )
 
 set(APP_HEADERS
-    ${ALICE_SRC_DIR}/Scenes/SampleScene.h
-    ${ALICE_SRC_DIR}/Game/FbxImporter.h
-    ${ALICE_SRC_DIR}/Game/FbxAsset.h
-    ${ALICE_SRC_DIR}/Game/SkinnedMeshSystem.h
-    ${ALICE_SRC_DIR}/Core/AdvancedAnimSystem.h
+    ${ALICE_SRC_DIR}/Samples/Scenes/SampleScene.h
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxImporter.h
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxAsset.h
+    ${ALICE_SRC_DIR}/Runtime/Gameplay/Animation/SkinnedMeshSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Engine/AdvancedAnimSystem.h
 )
 
 # 1. Launch (에디터/툴 모드) 엔트리 포인트
 set(LAUNCH_MAIN
-    ${ALICE_SRC_DIR}/Sandbox/Main.cpp
+    ${ALICE_SRC_DIR}/Samples/Sandbox/Main.cpp
 )
 
 # 2. AlicePlayer (순수 게임 모드) 엔트리 포인트
 set(PLAYER_MAIN
-    ${ALICE_SRC_DIR}/Sandbox/GameMain.cpp
+    ${ALICE_SRC_DIR}/Samples/Sandbox/GameMain.cpp
 )
 
 # [Target 1] Launch (기존 AliceGame/AliceRenderer)
@@ -554,42 +535,6 @@ foreach(target Launch AlicePlayer)
 endforeach()
 
 # ==========================================
-# [ThirdParty] ImGui Node Editor
-# ==========================================
-
-# 경로 반영
-#set(IMGUI_NODE_EDITOR_INCLUDE "${IMGUI_NODE_EDITOR_DIR}")
-#set(IMGUI_NODE_EDITOR_SOURCE  "${IMGUI_NODE_EDITOR_DIR}")
-#
-#if(NOT EXISTS "${IMGUI_NODE_EDITOR_SOURCE}/imgui_node_editor.cpp")
-#    message(FATAL_ERROR
-#        "오류: imgui-node-editor 소스를 찾을 수 없습니다!\n"
-#        "경로 확인: ${IMGUI_NODE_EDITOR_SOURCE}\n"
-#        "cpp/h 파일들이 하위 폴더 없이 해당 위치에 바로 있는지 확인해주세요."
-#    )
-#endif()
-#
-#add_library(imgui_node_editor STATIC
-#    ${IMGUI_NODE_EDITOR_SOURCE}/crude_json.cpp
-#    ${IMGUI_NODE_EDITOR_SOURCE}/imgui_canvas.cpp
-#    ${IMGUI_NODE_EDITOR_SOURCE}/imgui_node_editor.cpp
-#    ${IMGUI_NODE_EDITOR_SOURCE}/imgui_node_editor_api.cpp
-#)
-#
-#target_include_directories(imgui_node_editor PUBLIC
-#    ${IMGUI_NODE_EDITOR_INCLUDE}
-#)
-#
-#target_link_libraries(imgui_node_editor PUBLIC
-#    imgui
-#)
-#
-#target_compile_definitions(imgui_node_editor PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
-
-# Engine에서 쓰는게 보통이니 Engine에만 물림(실행파일에는 중복 링크 X)
-#target_link_libraries(Engine PUBLIC imgui_node_editor)
-
-# ==========================================
 # [설정] 컴파일 옵션 및 vcpkg 적용
 # ==========================================
 if(MSVC)
@@ -689,7 +634,6 @@ endforeach()
 # PhysX
 # ==========================================
 if(MSVC)
-
   foreach(t Launch AlicePlayer)
     target_link_options(${t} PRIVATE
       "$<$<CONFIG:Debug>:/NODEFAULTLIB:PhysXExtensions_static_64.lib>"
@@ -734,8 +678,6 @@ if(MSVC)
         )
     endforeach()
 endif()
-
-
 
 # ==========================================
 # [Post-Build] FMOD DLL 복사

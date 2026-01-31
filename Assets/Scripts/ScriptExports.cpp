@@ -1,6 +1,6 @@
-﻿#include "Core/IScript.h"
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
+﻿#include "Runtime/Scripting/IScript.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
 
 // 동적 스크립트 DLL이 내보내는 간단한 C API 입니다.
 // - 엔진 쪽에서 GetProcAddress 로 이 함수들을 찾아서

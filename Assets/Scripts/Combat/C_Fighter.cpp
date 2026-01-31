@@ -3,12 +3,12 @@
 #include <DirectXMath.h>
 #include <cmath>
 
-#include "Core/World.h"
-#include "Components/TransformComponent.h"
-#include "Components/HealthComponent.h"
-#include "Components/AttackDriverComponent.h"
-#include "PhysX/Components/Phy_CCTComponent.h"
-#include "PhysX/IPhysicsWorld.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Gameplay/Combat/HealthComponent.h"
+#include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
+#include "Runtime/Physics/Components/Phy_CCTComponent.h"
+#include "Runtime/Physics/IPhysicsWorld.h"
 
 namespace Alice::Combat
 {

@@ -3,9 +3,9 @@
 키보드/마우스 입력을 읽어서 Combat::Intent(이동·공격·가드·회피 등)로 변환.
 플레이어가 조작하는 캐릭터 엔티티 (플레이어 엔티티).
 */
-#include "Core/IScript.h"
-#include "Core/ScriptReflection.h"
-#include "Core/InputTypes.h"
+#include "Runtime/Scripting/IScript.h"
+#include "Runtime/Scripting/ScriptReflection.h"
+#include "Runtime/Input/InputTypes.h"
 
 #include "C_CombatContracts.h"
 

@@ -1,8 +1,8 @@
 #include "UIHudExample.h"
 
-#include "Core/ScriptFactory.h"
-#include "Core/World.h"
-#include "Core/Logger.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/Foundation/Logger.h"
 
 #include <rttr/registration>
 #include <algorithm>

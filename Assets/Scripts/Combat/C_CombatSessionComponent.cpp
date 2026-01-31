@@ -4,15 +4,15 @@
 #include <algorithm>
 #include <cmath>
 
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
-#include "Core/World.h"
-#include "Components/IDComponent.h"
-#include "Components/HealthComponent.h"
-#include "Components/AttackDriverComponent.h"
-#include "Components/AdvancedAnimationComponent.h"
-#include "PhysX/Components/Phy_CCTComponent.h"
-#include "Components/TransformComponent.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/ECS/Components/IDComponent.h"
+#include "Runtime/Gameplay/Combat/HealthComponent.h"
+#include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
+#include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
+#include "Runtime/Physics/Components/Phy_CCTComponent.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
 
 #include "C_CombatContracts.h"
 #include "C_CombatEventBus.h"
