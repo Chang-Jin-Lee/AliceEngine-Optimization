@@ -7,6 +7,7 @@
 #include "Runtime/Gameplay/Combat/HealthComponent.h"
 #include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
 #include "Runtime/Physics/Components/Phy_CCTComponent.h"
+#include "Runtime/Foundation/Logger.h"
 //TODO : Include 확인 해야함
 
 namespace Alice

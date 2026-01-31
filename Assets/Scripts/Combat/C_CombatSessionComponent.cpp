@@ -8,6 +8,7 @@
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/ECS/World.h"
+#include "Runtime/ECS/GameObject.h"
 #include "Runtime/ECS/Components/IDComponent.h"
 #include "Runtime/Gameplay/Combat/HealthComponent.h"
 #include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
