@@ -29,6 +29,15 @@ namespace Alice::Combat
         float m_stateTime = 0.0f;
         bool m_attackCommitted = false;
         bool m_prevHitActive = false;
+        Vec2 m_lastMoveDir{};
+        bool m_lastMoveValid = false;
+        Vec2 m_dodgeDir{};
+        bool m_dodgeDirValid = false;
+        float m_dodgeDurationSec = 0.6f;
+        float m_dodgeMoveDurationSec = 0.5f;
+        float m_dodgeDistance = 3.0f;
+        float m_dodgeMoveTimer = 0.0f;
+        bool m_dodgeMoveStopped = false;
 
         void Enter(ActionState next);
     };

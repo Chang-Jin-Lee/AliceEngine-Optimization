@@ -15,7 +15,7 @@
 #include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
 #include "Runtime/Physics/Components/Phy_CCTComponent.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
-//TODO : Include È®ÀÎÇØ¾ßÇÔ
+//TODO : Include È®ï¿½ï¿½ï¿½Ø¾ï¿½ï¿½ï¿½
 
 #include "C_CombatContracts.h"
 #include "C_CombatEventBus.h"
@@ -40,6 +40,20 @@ namespace Alice
             float blendTimer = 0.0f;
             std::string overrideClip{};
             bool overrideLoop = false;
+            std::string attackClip{};
+            bool heavyToggle = false;
+        };
+
+        struct AttackMoveState
+        {
+            bool configured = false;
+            bool active = false;
+            bool heavy = false;
+            float timerSec = 0.0f;
+            float startSec = 0.0f;
+            float endSec = 0.0f;
+            Combat::Vec2 dir{};
+            float speed = 0.0f;
         };
 
         Combat::Fighter player{};
@@ -56,6 +70,8 @@ namespace Alice
         Combat::ActionState prevBossState = Combat::ActionState::Idle;
         AnimOverrideState playerAnim{};
         AnimOverrideState bossAnim{};
+        AttackMoveState playerAttackMove{};
+        AttackMoveState bossAttackMove{};
         float playerMoveBlend = 0.0f;
         float bossMoveBlend = 0.0f;
         bool playerLockOnActive = false;
@@ -73,6 +89,8 @@ namespace Alice
             bus.ClearAll();
             playerAnim = {};
             bossAnim = {};
+            playerAttackMove = {};
+            bossAttackMove = {};
             playerMoveBlend = 0.0f;
             bossMoveBlend = 0.0f;
             playerLockOnActive = false;
@@ -243,7 +261,6 @@ namespace Alice
         if (m_state)
             m_state->Init();
     }
-
     void C_CombatSessionComponent::Update(float deltaTime)
     {
         if (!m_state || !GetWorld())
@@ -374,6 +391,210 @@ namespace Alice
         auto outPlayer = m_state->playerFsm.Update(playerId, playerIntent, sPlayer, ePlayer, deltaTime);
         auto outBoss = m_state->bossFsm.Update(bossId, bossIntent, sBoss, eBoss, deltaTime);
 
+        const float attackForwardOffsetRad = m_rotationOffsetDeg * kDegToRad;
+
+        auto ResolveAttackMoveDir = [&](EntityId entityId,
+                                        const Combat::Intent& intent,
+                                        bool useCameraBasis) -> Combat::Vec2
+        {
+            float dx = 0.0f;
+            float dz = 0.0f;
+            const float inputMag = std::abs(intent.move.x) + std::abs(intent.move.y);
+            if (inputMag > 0.001f)
+            {
+                dx = intent.move.x;
+                dz = intent.move.y;
+                if (useCameraBasis && camBasis.valid)
+                {
+                    const float inputX = dx;
+                    const float inputZ = dz;
+                    dx = camBasis.rightX * inputX + camBasis.forwardX * inputZ;
+                    dz = camBasis.rightZ * inputX + camBasis.forwardZ * inputZ;
+                }
+            }
+            else if (auto* tr = world.GetComponent<TransformComponent>(entityId))
+            {
+                const float yawRad = tr->rotation.y - attackForwardOffsetRad;
+                dx = std::sin(yawRad);
+                dz = std::cos(yawRad);
+            }
+
+            const float len = std::sqrt(dx * dx + dz * dz);
+            if (len > 0.0001f)
+            {
+                dx /= len;
+                dz /= len;
+            }
+            else
+            {
+                dx = 0.0f;
+                dz = 0.0f;
+            }
+
+            return { dx, dz };
+        };
+
+        auto TryGetClipTime = [&](EntityId entityId, const std::string& clip, float& outTime) -> bool
+        {
+            if (clip.empty())
+                return false;
+
+            auto* anim = world.GetComponent<AdvancedAnimationComponent>(entityId);
+            if (!anim)
+                return false;
+
+            if (anim->base.clipA == clip)
+            {
+                outTime = anim->base.timeA;
+                return true;
+            }
+            if (anim->base.clipB == clip)
+            {
+                outTime = anim->base.timeB;
+                return true;
+            }
+            if (anim->upper.clipA == clip)
+            {
+                outTime = anim->upper.timeA;
+                return true;
+            }
+            if (anim->upper.clipB == clip)
+            {
+                outTime = anim->upper.timeB;
+                return true;
+            }
+            if (anim->additive.clip == clip)
+            {
+                outTime = anim->additive.time;
+                return true;
+            }
+
+            return false;
+        };
+
+        auto TryGetAttackClipTime = [&](EntityId entityId,
+                                        const SessionState::AttackMoveState& moveState,
+                                        float& outTime) -> bool
+        {
+            if (moveState.heavy)
+            {
+                if (TryGetClipTime(entityId, m_heavyAttackClipA, outTime))
+                    return true;
+                if (TryGetClipTime(entityId, m_heavyAttackClipB, outTime))
+                    return true;
+            }
+            else
+            {
+                if (TryGetClipTime(entityId, m_lightAttackClip, outTime))
+                    return true;
+            }
+
+            if (TryGetClipTime(entityId, m_lightAttackClip, outTime))
+                return true;
+            if (TryGetClipTime(entityId, m_heavyAttackClipA, outTime))
+                return true;
+            if (TryGetClipTime(entityId, m_heavyAttackClipB, outTime))
+                return true;
+
+            return false;
+        };
+
+        auto UpdateAttackMove = [&](SessionState::AttackMoveState& moveState,
+                                    EntityId entityId,
+                                    const Combat::Intent& intent,
+                                    Combat::ActionState curr,
+                                    Combat::ActionState prev,
+                                    bool useCameraBasis,
+                                    std::vector<Combat::Command>& cmds,
+                                    float deltaTime,
+                                    float lightDist,
+                                    float heavyDist,
+                                    float lightStart,
+                                    float heavyStart,
+                                    float lightDuration,
+                                    float heavyDuration)
+        {
+            if (curr != Combat::ActionState::Attack)
+            {
+                moveState = {};
+                return;
+            }
+
+            if (prev != Combat::ActionState::Attack)
+            {
+                const bool heavy = intent.heavyAttackPressed;
+                const float dist = heavy ? heavyDist : lightDist;
+                const float startSec = heavy ? heavyStart : lightStart;
+                const float duration = heavy ? heavyDuration : lightDuration;
+
+                if (dist > 0.0f && duration > 0.0f)
+                {
+                    moveState.configured = true;
+                    moveState.heavy = heavy;
+                    moveState.timerSec = 0.0f;
+                    moveState.startSec = std::max(0.0f, startSec);
+                    moveState.endSec = moveState.startSec + duration;
+                    moveState.dir = ResolveAttackMoveDir(entityId, intent, useCameraBasis);
+
+                    const float dirLen = std::sqrt(moveState.dir.x * moveState.dir.x + moveState.dir.y * moveState.dir.y);
+                    if (dirLen <= 0.0001f)
+                    {
+                        moveState = {};
+                        return;
+                    }
+
+                    moveState.speed = dist / duration;
+                }
+                else
+                {
+                    moveState = {};
+                }
+
+                moveState.active = false;
+                return;
+            }
+
+            if (!moveState.configured)
+            {
+                moveState.active = false;
+                return;
+            }
+
+            // TODO: temp feel-tuning. Use real animation timing / root-motion later.
+            moveState.timerSec += deltaTime;
+            const bool withinWindow = (moveState.timerSec >= moveState.startSec && moveState.timerSec <= moveState.endSec);
+            moveState.active = withinWindow;
+
+            if (withinWindow)
+            {
+                if (m_debugAttackMoveTime)
+                {
+                    ALICE_LOG_INFO("[AttackMove] entity=%llu heavy=%d t=%.3f window=[%.3f, %.3f]",
+                        static_cast<unsigned long long>(entityId),
+                        moveState.heavy ? 1 : 0,
+                        moveState.timerSec,
+                        moveState.startSec,
+                        moveState.endSec);
+                }
+                cmds.push_back({ Combat::CommandType::RequestMove,
+                    Combat::CmdRequestMove{ entityId, moveState.dir, moveState.speed, false, false } });
+            }
+        };
+
+        UpdateAttackMove(m_state->playerAttackMove,
+                         playerId,
+                         playerIntent,
+                         outPlayer.state,
+                         m_state->prevPlayerState,
+                         true,
+                         outPlayer.commands,
+                         deltaTime,
+                         m_lightAttackMoveDistance,
+                         m_heavyAttackMoveDistance,
+                         m_lightAttackMoveStartSec,
+                         m_heavyAttackMoveStartSec,
+                         m_lightAttackMoveDurationSec,
+                         m_heavyAttackMoveDurationSec);
         m_state->player.state = outPlayer.state;
         m_state->player.flags = outPlayer.flags;
         m_state->boss.state = outBoss.state;
@@ -447,9 +668,9 @@ namespace Alice
         ApplyMove(playerId, playerIntent, outPlayer.commands);
         ApplyMove(bossId, bossIntent, outBoss.commands);
 
-        auto StopIfNotMoving = [&](EntityId entityId, Combat::ActionState state)
+        auto StopIfNotMoving = [&](EntityId entityId, Combat::ActionState state, const SessionState::AttackMoveState& attackMove)
         {
-            if (state == Combat::ActionState::Move || state == Combat::ActionState::Dodge)
+            if (state == Combat::ActionState::Move || state == Combat::ActionState::Dodge || (state == Combat::ActionState::Attack && attackMove.active))
                 return;
             auto* cct = world.GetComponent<Phy_CCTComponent>(entityId);
             if (!cct)
@@ -458,8 +679,8 @@ namespace Alice
             cct->desiredVelocity.z = 0.0f;
             cct->desiredVelocity.y = 0.0f;
         };
-        StopIfNotMoving(playerId, outPlayer.state);
-        StopIfNotMoving(bossId, outBoss.state);
+        StopIfNotMoving(playerId, outPlayer.state, m_state->playerAttackMove);
+        StopIfNotMoving(bossId, outBoss.state, m_state->bossAttackMove);
 
         if (m_enableLogs)
         {
@@ -489,6 +710,52 @@ namespace Alice
             const float t = std::clamp(speed * dt, 0.0f, 1.0f);
             return current + (target - current) * t;
         };
+        auto ResolveHeavyAttackClip = [&](SessionState::AnimOverrideState& animState) -> std::string {
+            if (!m_heavyAttackClipA.empty() && !m_heavyAttackClipB.empty())
+            {
+                animState.heavyToggle = !animState.heavyToggle;
+                return animState.heavyToggle ? m_heavyAttackClipA : m_heavyAttackClipB;
+            }
+            if (!m_heavyAttackClipA.empty())
+                return m_heavyAttackClipA;
+            if (!m_heavyAttackClipB.empty())
+                return m_heavyAttackClipB;
+            return {};
+        };
+
+        auto SelectAttackClip = [&](const Combat::Intent& intent,
+                                    SessionState::AnimOverrideState& animState) -> std::string {
+            if (intent.heavyAttackPressed)
+            {
+                std::string heavy = ResolveHeavyAttackClip(animState);
+                if (!heavy.empty())
+                    return heavy;
+            }
+            if (intent.lightAttackPressed && !m_lightAttackClip.empty())
+                return m_lightAttackClip;
+            if (!m_lightAttackClip.empty())
+                return m_lightAttackClip;
+            return {};
+        };
+
+        auto UpdateAttackClip = [&](const Combat::Intent& intent,
+                                    Combat::ActionState curr,
+                                    Combat::ActionState prev,
+                                    SessionState::AnimOverrideState& animState) {
+            if (curr == Combat::ActionState::Attack)
+            {
+                if (intent.heavyAttackPressed || intent.lightAttackPressed || prev != Combat::ActionState::Attack || animState.attackClip.empty())
+                    animState.attackClip = SelectAttackClip(intent, animState);
+            }
+            else
+            {
+                animState.attackClip.clear();
+            }
+        };
+
+        UpdateAttackClip(playerIntent, outPlayer.state, m_state->prevPlayerState, m_state->playerAnim);
+        if (outBoss.state != Combat::ActionState::Attack)
+            m_state->bossAnim.attackClip.clear();
 
         auto ApplyAnimByState = [&](EntityId entityId,
                                     Combat::ActionState curr,
@@ -550,11 +817,15 @@ namespace Alice
             bool loop = false;
             if (curr == Combat::ActionState::Attack)
             {
-                clipName = resolveClipByType(AttackDriverNotifyType::Attack);
+                clipName = animState.attackClip.empty()
+                    ? resolveClipByType(AttackDriverNotifyType::Attack)
+                    : animState.attackClip;
             }
             else if (curr == Combat::ActionState::Dodge)
             {
-                clipName = resolveClipByType(AttackDriverNotifyType::Dodge);
+                clipName = m_dodgeClip.empty()
+                    ? resolveClipByType(AttackDriverNotifyType::Dodge)
+                    : m_dodgeClip;
             }
             else if (curr == Combat::ActionState::Guard)
             {
@@ -820,3 +1091,24 @@ namespace Alice
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

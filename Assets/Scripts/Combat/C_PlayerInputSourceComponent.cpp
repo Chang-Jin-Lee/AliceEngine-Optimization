@@ -8,7 +8,7 @@
 #include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
 #include "Runtime/Physics/Components/Phy_CCTComponent.h"
 #include "Runtime/Foundation/Logger.h"
-//TODO : Include È®ÀÎ ÇØ¾ßÇÔ
+//TODO : Include È®ï¿½ï¿½ ï¿½Ø¾ï¿½ï¿½ï¿½
 
 namespace Alice
 {
@@ -98,6 +98,11 @@ namespace Alice
 
     void C_PlayerInputSourceComponent::Update(float deltaTime)
     {
+        auto* world = GetWorld();
+        // Avoid consuming one-frame input edges twice when CombatSession also queries intent.
+        if (world && world->IsScriptCombatEnabled())
+            return;
+
         m_cached = GetIntent(deltaTime);
     }
 
@@ -215,3 +220,5 @@ namespace Alice
         return intent;
     }
 }
+
+

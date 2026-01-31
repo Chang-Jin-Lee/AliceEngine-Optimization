@@ -23,6 +23,12 @@ namespace Alice::Combat
         m_stateTime = 0.0f;
         m_attackCommitted = false;
         m_prevHitActive = false;
+        m_lastMoveDir = {};
+        m_lastMoveValid = false;
+        m_dodgeDir = {};
+        m_dodgeDirValid = false;
+        m_dodgeMoveTimer = 0.0f;
+        m_dodgeMoveStopped = false;
     }
 
     void ActionFsm::Enter(ActionState next)
@@ -68,8 +74,66 @@ namespace Alice::Combat
         if (m_state != ActionState::Dead && m_state != ActionState::Hitstun && m_state != ActionState::Groggy)
         {
             const bool hasMove = (Abs(intent.move.x) + Abs(intent.move.y)) > 0.001f;
+            const bool wantsAttack = intent.lightAttackPressed
+                || intent.heavyAttackPressed
+                || (intent.attackPressed && !intent.attackHeld);
+            auto Normalize = [](const Vec2& v, Vec2& out) -> bool {
+                const float len = std::sqrt(v.x * v.x + v.y * v.y);
+                if (len < 0.0001f)
+                    return false;
+                out.x = v.x / len;
+                out.y = v.y / len;
+                return true;
+            };
+            Vec2 moveDir{};
+            const bool moveDirValid = Normalize(intent.move, moveDir);
+            if (moveDirValid)
+            {
+                m_lastMoveDir = moveDir;
+                m_lastMoveValid = true;
+            }
 
-            if (m_state == ActionState::Attack)
+            auto BeginDodge = [&]() {
+                Enter(ActionState::Dodge);
+                m_dodgeMoveTimer = 0.0f;
+                m_dodgeMoveStopped = false;
+                m_dodgeDirValid = Normalize(intent.move, m_dodgeDir);
+                if (!m_dodgeDirValid && m_lastMoveValid)
+                {
+                    m_dodgeDir = m_lastMoveDir;
+                    m_dodgeDirValid = true;
+                }
+                const float moveDuration = (m_dodgeMoveDurationSec > 0.0f) ? m_dodgeMoveDurationSec : 0.0f;
+                const float dodgeSpeed = (moveDuration > 0.0f)
+                    ? (m_dodgeDistance / moveDuration)
+                    : sensors.moveSpeed;
+                const Vec2 move = m_dodgeDirValid ? m_dodgeDir : Vec2{ 0.0f, 0.0f };
+                out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, move, dodgeSpeed, true, true } });
+            };
+
+            if (m_state == ActionState::Dodge)
+            {
+                m_dodgeMoveTimer += dtSec;
+                if (!m_dodgeMoveStopped && m_dodgeMoveTimer >= m_dodgeMoveDurationSec)
+                {
+                    m_dodgeMoveStopped = true;
+                    out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, {0.0f, 0.0f}, 0.0f, true, false } });
+                }
+                if (m_stateTime >= m_dodgeDurationSec)
+                {
+                    if (hasMove)
+                    {
+                        Enter(ActionState::Move);
+                        out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, intent.move, sensors.moveSpeed, true, true } });
+                    }
+                    else
+                    {
+                        Enter(ActionState::Idle);
+                        out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, {0.0f, 0.0f}, 0.0f, true, false } });
+                    }
+                }
+            }
+            else if (m_state == ActionState::Attack)
             {
                 if (sensors.attackStateDurationSec > 0.0f)
                 {
@@ -95,7 +159,7 @@ namespace Alice::Combat
                     {
                         if (intent.dodgePressed && sensors.stamina >= 10.0f)
                         {
-                            Enter(ActionState::Dodge);
+                            BeginDodge();
                         }
                         else if (intent.guardHeld)
                         {
@@ -121,7 +185,7 @@ namespace Alice::Combat
             }
             else if (intent.dodgePressed && sensors.stamina >= 10.0f)
             {
-                Enter(ActionState::Dodge);
+                BeginDodge();
             }
             else if (intent.guardHeld)
             {
@@ -130,7 +194,7 @@ namespace Alice::Combat
                     Enter(ActionState::Guard);
                 }
             }
-            else if (intent.attackPressed && sensors.stamina >= 15.0f)
+            else if (wantsAttack && sensors.stamina >= 15.0f)
             {
                 Enter(ActionState::Attack);
             }

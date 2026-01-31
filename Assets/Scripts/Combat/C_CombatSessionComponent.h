@@ -35,6 +35,19 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_idleClip, "Idle");
         ALICE_PROPERTY(std::string, m_moveClip, "Walk");
         ALICE_PROPERTY(float, m_moveBlendSpeed, 8.0f);
+        // TODO: temp feel-tuning; replace with data-driven settings later.
+        ALICE_PROPERTY(std::string, m_lightAttackClip, "alice-Apose_arm|Swing");
+        ALICE_PROPERTY(std::string, m_heavyAttackClipA, "");
+        ALICE_PROPERTY(std::string, m_heavyAttackClipB, "");
+        ALICE_PROPERTY(std::string, m_dodgeClip, "");
+        // TODO: temp feel-tuning; move to per-attack data.
+        ALICE_PROPERTY(float, m_lightAttackMoveDistance, 0.7f);
+        ALICE_PROPERTY(float, m_heavyAttackMoveDistance, 1.2f);
+        ALICE_PROPERTY(float, m_lightAttackMoveStartSec, 1.75f);
+        ALICE_PROPERTY(float, m_heavyAttackMoveStartSec, 2.2f);
+        ALICE_PROPERTY(float, m_lightAttackMoveDurationSec, 0.05f);
+        ALICE_PROPERTY(float, m_heavyAttackMoveDurationSec, 0.05f);
+        ALICE_PROPERTY(bool, m_debugAttackMoveTime, false);
         ALICE_PROPERTY(std::string, m_attackSlowClipName, "swing");
         ALICE_PROPERTY(float, m_attackSlowSpeed, 0.7f);
         ALICE_PROPERTY(float, m_rotationOffsetDeg, 180.0f);

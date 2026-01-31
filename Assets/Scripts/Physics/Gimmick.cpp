@@ -143,7 +143,7 @@ namespace Alice
             return;
 
         auto* input = Input();
-        if (input && input->GetKeyDown(KeyCode::Space))
+        if (input && input->GetKeyDown(KeyCode::G))
             AdvancePhase();
 
         if (m_pendingBreakImpulse && CanApplyBreakImpulse())

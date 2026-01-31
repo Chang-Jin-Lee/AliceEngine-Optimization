@@ -328,5 +328,11 @@ namespace Alice
             TriggerShake(Get_m_shakeAmplitude(), Get_m_shakeFrequency(), 
                         Get_m_shakeDuration(), Get_m_shakeDecay());
         }
+
+        if (!m_preview)
+        {
+            UpdateOrbit();
+            UpdateZoom();
+        }
     }
 }
