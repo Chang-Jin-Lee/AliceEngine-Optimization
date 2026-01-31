@@ -581,6 +581,8 @@ namespace Alice
                         return;
                     if (driverComp->cancelAttackRequested)
                         return;
+                    if (world.IsScriptCombatEnabled())
+                        return;
                     EntityId traceId = ResolveTraceEntity(world, *driverComp, entityId);
                     ActivateTrace(world, traceId);
                 }, driver.notifyTag);
@@ -590,6 +592,8 @@ namespace Alice
                         return;
                     auto* driverComp = world.GetComponent<AttackDriverComponent>(entityId);
                     if (!driverComp)
+                        return;
+                    if (world.IsScriptCombatEnabled())
                         return;
                     EntityId traceId = ResolveTraceEntity(world, *driverComp, entityId);
                     DeactivateTrace(world, traceId);
@@ -696,16 +700,19 @@ namespace Alice
                 ApplyHealthState(world, entityId, driver);
                 LogChanges();
 
-                auto* trace = world.GetComponent<WeaponTraceComponent>(traceId);
-                if (driver.attackActive)
+                if (!world.IsScriptCombatEnabled())
                 {
-                    if (trace && !trace->active)
-                        ActivateTrace(world, traceId);
-                }
-                else
-                {
-                    if (trace && trace->active)
-                        DeactivateTrace(world, traceId);
+                    auto* trace = world.GetComponent<WeaponTraceComponent>(traceId);
+                    if (driver.attackActive)
+                    {
+                        if (trace && !trace->active)
+                            ActivateTrace(world, traceId);
+                    }
+                    else
+                    {
+                        if (trace && trace->active)
+                            DeactivateTrace(world, traceId);
+                    }
                 }
                 continue;
             }
@@ -790,16 +797,19 @@ namespace Alice
             ApplyHealthState(world, entityId, driver);
             LogChanges();
 
-            auto* trace = world.GetComponent<WeaponTraceComponent>(traceId);
-            if (driver.attackActive)
+            if (!world.IsScriptCombatEnabled())
             {
-                if (trace && !trace->active)
-                    ActivateTrace(world, traceId);
-            }
-            else
-            {
-                if (trace && trace->active)
-                    DeactivateTrace(world, traceId);
+                auto* trace = world.GetComponent<WeaponTraceComponent>(traceId);
+                if (driver.attackActive)
+                {
+                    if (trace && !trace->active)
+                        ActivateTrace(world, traceId);
+                }
+                else
+                {
+                    if (trace && trace->active)
+                        DeactivateTrace(world, traceId);
+                }
             }
         }
     }

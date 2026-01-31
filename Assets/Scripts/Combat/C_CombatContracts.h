@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 /*
 * 전투 시스템 전체에서 쓰는 타입·상수 정의. EntityId, Team, ActionState, Intent, Sensors, CombatEvent, Command, FsmOutput, ResolveOutput 등. 스크립트가 아니라 헤더만 있음.
 */
@@ -60,6 +60,18 @@ namespace Alice::Combat
         bool guardHeld = false;
         bool dodgePressed = false;
         bool lockOnToggle = false;
+        bool lightAttackPressed = false;
+        bool heavyAttackPressed = false;
+        bool attackHeld = false;
+        float attackHeldSec = 0.0f;
+        bool guardPressed = false;
+        bool guardReleased = false;
+        float guardHeldSec = 0.0f;
+        bool parryWindowActive = false;
+        bool itemPressed = false;
+        bool interactPressed = false;
+        bool ragePressed = false;
+        bool runHeld = false;
     };
 
     struct Sensors
@@ -81,6 +93,7 @@ namespace Alice::Combat
         bool guardWindowActive = false;
         bool dodgeWindowActive = false;
         bool invulnActive = false;
+        bool canBeHitstunned = true;
 
         float groggyDuration = 1.5f;
         float moveSpeed = 5.0f;

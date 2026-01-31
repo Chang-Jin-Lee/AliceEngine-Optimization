@@ -77,6 +77,9 @@ namespace Alice::Combat
                     if (driver->attackCancelable)
                         driver->cancelAttackRequested = true;
                 }
+                EntityId traceId = ResolveTraceEntity(world, p.target);
+                if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
+                    trace->active = false;
                 break;
             }
             case CommandType::DisableTrace:
@@ -92,7 +95,19 @@ namespace Alice::Combat
                 auto p = std::get<CmdEnableTrace>(cmd.payload);
                 EntityId traceId = ResolveTraceEntity(world, p.weaponOrOwner);
                 if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
-                    trace->active = true;
+                {
+                    if (!trace->active)
+                    {
+                        trace->attackInstanceId++;
+                        trace->active = true;
+                        trace->hasPrevBasis = false;
+                        trace->hasPrevShapes = false;
+                        trace->prevCentersWS.clear();
+                        trace->prevRotsWS.clear();
+                        trace->hitVictims.clear();
+                        trace->lastAttackInstanceId = trace->attackInstanceId;
+                    }
+                }
                 break;
             }
             case CommandType::EnterHitstun:

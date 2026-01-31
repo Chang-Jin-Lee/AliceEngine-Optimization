@@ -29,7 +29,14 @@ namespace Alice
         ALICE_PROPERTY(int, m_keyAttack, static_cast<int>(KeyCode::J));
         ALICE_PROPERTY(int, m_keyDodge, static_cast<int>(KeyCode::Space));
         ALICE_PROPERTY(int, m_keyGuard, static_cast<int>(KeyCode::K));
+        ALICE_PROPERTY(int, m_keyItem, static_cast<int>(KeyCode::Z));
+        ALICE_PROPERTY(int, m_keyInteract, static_cast<int>(KeyCode::F));
+        ALICE_PROPERTY(int, m_keyRage, static_cast<int>(KeyCode::E));
         ALICE_PROPERTY(bool, m_useMouseAttack, true);
+        ALICE_PROPERTY(bool, m_useMouseLockOn, true);
+        ALICE_PROPERTY(int, m_mouseLockOnButton, static_cast<int>(MouseCode::Middle));
+        ALICE_PROPERTY(float, m_attackHoldThresholdSec, 0.35f);
+        ALICE_PROPERTY(float, m_parryWindowSec, 0.5f);
         /// CCT ?? ?? (m/s). Intent.move ??? ??? desiredVelocity? ???.
         ALICE_PROPERTY(float, m_moveSpeed, 5.0f);
 
@@ -37,5 +44,9 @@ namespace Alice
         void EnsurePlayerComponents();
 
         Combat::Intent m_cached{};
+        bool m_attackHeldPrev = false;
+        float m_attackHeldSec = 0.0f;
+        bool m_guardHeldPrev = false;
+        float m_guardHeldSec = 0.0f;
     };
 }

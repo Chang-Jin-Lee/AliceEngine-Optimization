@@ -25,6 +25,7 @@ namespace Alice
         ALICE_PROPERTY(uint64_t, m_playerGuid, 0);
         ALICE_PROPERTY(uint64_t, m_bossGuid, 0);
         ALICE_PROPERTY(bool, m_enableLogs, false);
+        ALICE_PROPERTY(float, m_animBlendSec, 0.12f);
 
         void ForceReset();
         ALICE_FUNC(ForceReset);

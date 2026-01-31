@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 /*
 Intent + Sensors + 이벤트로 상태(Idle/Move/Attack/Dodge/Guard/Hitstun/Groggy/Dead) 전이, FsmOutput(상태·플래그·Command 목록) 반환.
 C_CombatSession이 playerFsm, bossFsm 2개 보유.
@@ -28,6 +28,7 @@ namespace Alice::Combat
         ActionState m_state = ActionState::Idle;
         float m_stateTime = 0.0f;
         bool m_attackCommitted = false;
+        bool m_prevHitActive = false;
 
         void Enter(ActionState next);
     };

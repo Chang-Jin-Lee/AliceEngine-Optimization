@@ -1,8 +1,9 @@
-﻿#include "C_CombatSessionComponent.h"
+#include "C_CombatSessionComponent.h"
 
 #include <unordered_map>
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #include "Core/ScriptFactory.h"
 #include "Core/Logger.h"
@@ -27,8 +28,22 @@ namespace Alice
 {
     struct C_CombatSessionComponent::SessionState
     {
+        struct AnimOverrideState
+        {
+            bool saved = false;
+            AdvancedAnimLayer savedBase{};
+            bool overrideActive = false;
+            bool blending = false;
+            bool blendingToOverride = false;
+            float blendTimer = 0.0f;
+            std::string overrideClip{};
+            bool overrideLoop = false;
+        };
+
         Combat::Fighter player{};
         Combat::Fighter boss{};
+        Combat::FighterSnapshot playerSnapshot{};
+        Combat::FighterSnapshot bossSnapshot{};
         Combat::ActionFsm playerFsm{};
         Combat::ActionFsm bossFsm{};
         Combat::CombatEventBus bus{};
@@ -37,15 +52,21 @@ namespace Alice
         std::unordered_map<EntityId, Combat::Fighter*> fighterMap;
         Combat::ActionState prevPlayerState = Combat::ActionState::Idle;
         Combat::ActionState prevBossState = Combat::ActionState::Idle;
+        AnimOverrideState playerAnim{};
+        AnimOverrideState bossAnim{};
 
         void Init()
         {
             fighterMap.clear();
             player = Combat::Fighter{};
             boss = Combat::Fighter{};
+            playerSnapshot = Combat::FighterSnapshot{};
+            bossSnapshot = Combat::FighterSnapshot{};
             playerFsm.Reset();
             bossFsm.Reset();
             bus.ClearAll();
+            playerAnim = {};
+            bossAnim = {};
         }
     };
 
@@ -128,21 +149,6 @@ namespace Alice
 
         if (!wasHit && !wasGuard && !wasGuardBreak && !wasParry && victim.flags.invulnActive)
             hc->dodgeAvoidedThisFrame = true;
-    }
-
-    static Combat::ActionFlags BuildFlagsFromSensors(const Combat::Sensors& sensors,
-                                                     Combat::ActionState state)
-    {
-        Combat::ActionFlags flags{};
-        flags.hitActive = sensors.attackWindowActive;
-        flags.guardActive = sensors.guardWindowActive;
-        flags.invulnActive = sensors.dodgeWindowActive || sensors.invulnActive;
-        flags.parryWindowActive = false;
-        flags.canBeInterrupted = (state != Combat::ActionState::Dodge)
-            && (state != Combat::ActionState::Hitstun)
-            && (state != Combat::ActionState::Groggy)
-            && (state != Combat::ActionState::Dead);
-        return flags;
     }
 
     EntityId C_CombatSessionComponent::ResolveEntity(uint64_t guid) const
@@ -234,20 +240,14 @@ namespace Alice
         const auto& eBoss = m_state->bus.PeekDeferred(bossId);
 
         auto outPlayer = m_state->playerFsm.Update(playerId, playerIntent, sPlayer, ePlayer, deltaTime);
-        std::vector<Combat::CombatEvent> bossEvents;
-        bossEvents.reserve(eBoss.size());
-        for (const auto& ev : eBoss)
-        {
-            if (ev.type == Combat::CombatEventType::OnHit)
-                continue;
-            bossEvents.push_back(ev);
-        }
-        auto outBoss = m_state->bossFsm.Update(bossId, bossIntent, sBoss, bossEvents, deltaTime);
+        auto outBoss = m_state->bossFsm.Update(bossId, bossIntent, sBoss, eBoss, deltaTime);
 
         m_state->player.state = outPlayer.state;
         m_state->player.flags = outPlayer.flags;
         m_state->boss.state = outBoss.state;
         m_state->boss.flags = outBoss.flags;
+        m_state->playerSnapshot = m_state->player.Snapshot();
+        m_state->bossSnapshot = m_state->boss.Snapshot();
 
         m_state->bus.ClearDeferred(playerId);
         m_state->bus.ClearDeferred(bossId);
@@ -278,10 +278,27 @@ namespace Alice
         ApplyMove(outPlayer.commands);
         ApplyMove(outBoss.commands);
 
-        auto ApplyAnimByState = [&](EntityId entityId, Combat::ActionState curr, Combat::ActionState& prev) {
-            if (curr == prev)
-                return;
+        auto ApplyTraceCommands = [&](const std::vector<Combat::Command>& cmds)
+        {
+            std::vector<Combat::Command> traceCmds;
+            for (const auto& cmd : cmds)
+            {
+                if (cmd.type == Combat::CommandType::EnableTrace ||
+                    cmd.type == Combat::CommandType::DisableTrace)
+                {
+                    traceCmds.push_back(cmd);
+                }
+            }
+            if (!traceCmds.empty())
+                m_state->apply.ApplyImmediate(world, m_state->fighterMap, m_state->bus, traceCmds, true);
+        };
+        ApplyTraceCommands(outPlayer.commands);
+        ApplyTraceCommands(outBoss.commands);
 
+        auto ApplyAnimByState = [&](EntityId entityId,
+                                    Combat::ActionState curr,
+                                    Combat::ActionState& prev,
+                                    SessionState::AnimOverrideState& animState) {
             auto* anim = world.GetComponent<AdvancedAnimationComponent>(entityId);
             auto* driver = world.GetComponent<AttackDriverComponent>(entityId);
             if (!anim || !driver)
@@ -289,6 +306,14 @@ namespace Alice
                 prev = curr;
                 return;
             }
+
+            anim->enabled = true;
+            anim->playing = true;
+            anim->upper.enabled = false;
+            anim->additive.enabled = false;
+            anim->ik.enabled = false;
+            for (auto& ik : anim->ikChains)
+                ik.enabled = false;
 
             auto resolveClipByType = [&](AttackDriverNotifyType type) -> std::string {
                 for (const auto& clip : driver->clips)
@@ -312,8 +337,6 @@ namespace Alice
 
             std::string clipName;
             bool loop = false;
-            bool immediate = true;
-
             if (curr == Combat::ActionState::Attack)
             {
                 clipName = resolveClipByType(AttackDriverNotifyType::Attack);
@@ -326,25 +349,143 @@ namespace Alice
             {
                 clipName = resolveClipByType(AttackDriverNotifyType::Guard);
                 loop = true;
-                immediate = false;
             }
 
-            if (!clipName.empty())
-            {
-                anim->enabled = true;
-                anim->playing = true;
-                anim->base.clipA = clipName;
-                anim->base.autoAdvance = true;
-                anim->base.loopA = loop;
-                if (immediate)
+            const bool wantsOverride = !clipName.empty()
+                && (curr == Combat::ActionState::Attack
+                    || curr == Combat::ActionState::Dodge
+                    || curr == Combat::ActionState::Guard);
+
+            auto BeginBlendToOverride = [&](const std::string& nextClip, bool nextLoop) {
+                if (!animState.overrideActive)
+                {
+                    animState.savedBase = anim->base;
+                    animState.saved = true;
+                }
+
+                animState.overrideActive = true;
+                animState.overrideClip = nextClip;
+                animState.overrideLoop = nextLoop;
+
+                if (m_animBlendSec <= 0.0f)
+                {
+                    anim->base.autoAdvance = true;
+                    anim->base.clipA = nextClip;
+                    anim->base.clipB = nextClip;
                     anim->base.timeA = 0.0f;
+                    anim->base.timeB = 0.0f;
+                    anim->base.speedA = 1.0f;
+                    anim->base.speedB = 1.0f;
+                    anim->base.loopA = nextLoop;
+                    anim->base.loopB = nextLoop;
+                    anim->base.blend01 = 0.0f;
+                    animState.blending = false;
+                    animState.blendingToOverride = true;
+                    return;
+                }
+
+                animState.blending = true;
+                animState.blendingToOverride = true;
+                animState.blendTimer = 0.0f;
+
+                anim->base.autoAdvance = true;
+                anim->base.clipB = nextClip;
+                anim->base.timeB = 0.0f;
+                anim->base.speedB = 1.0f;
+                anim->base.loopB = nextLoop;
+                anim->base.blend01 = 0.0f;
+            };
+
+            auto BeginBlendToSaved = [&]() {
+                if (!animState.saved)
+                {
+                    animState.overrideActive = false;
+                    animState.overrideClip.clear();
+                    animState.blending = false;
+                    return;
+                }
+
+                if (m_animBlendSec <= 0.0f)
+                {
+                    anim->base = animState.savedBase;
+                    anim->base.timeA = 0.0f;
+                    anim->base.timeB = 0.0f;
+                    animState.overrideActive = false;
+                    animState.overrideClip.clear();
+                    animState.saved = false;
+                    animState.blending = false;
+                    return;
+                }
+
+                animState.blending = true;
+                animState.blendingToOverride = false;
+                animState.blendTimer = 0.0f;
+
+                anim->base.autoAdvance = true;
+                anim->base.clipB = animState.savedBase.clipA;
+                anim->base.timeB = 0.0f;
+                anim->base.speedB = animState.savedBase.speedA;
+                anim->base.loopB = animState.savedBase.loopA;
+                anim->base.blend01 = 0.0f;
+            };
+
+            auto StepBlend = [&]() {
+                if (!animState.blending || m_animBlendSec <= 0.0f)
+                    return;
+
+                animState.blendTimer += deltaTime;
+                float alpha = animState.blendTimer / m_animBlendSec;
+                if (alpha > 1.0f)
+                    alpha = 1.0f;
+
+                anim->base.blend01 = alpha;
+
+                if (alpha >= 1.0f)
+                {
+                    if (animState.blendingToOverride)
+                    {
+                        anim->base.clipA = animState.overrideClip;
+                        anim->base.timeA = anim->base.timeB;
+                        anim->base.speedA = anim->base.speedB;
+                        anim->base.loopA = animState.overrideLoop;
+                        anim->base.clipB = animState.overrideClip;
+                        anim->base.timeB = anim->base.timeA;
+                        anim->base.blend01 = 0.0f;
+                        animState.blending = false;
+                    }
+                    else
+                    {
+                        anim->base = animState.savedBase;
+                        anim->base.timeA = 0.0f;
+                        anim->base.timeB = 0.0f;
+                        animState.overrideActive = false;
+                        animState.overrideClip.clear();
+                        animState.saved = false;
+                        animState.blending = false;
+                    }
+                }
+            };
+
+            if (wantsOverride)
+            {
+                const bool clipChanged = !animState.overrideActive
+                    || animState.overrideClip != clipName
+                    || animState.overrideLoop != loop;
+                if (clipChanged)
+                    BeginBlendToOverride(clipName, loop);
+            }
+            else if (animState.overrideActive)
+            {
+                if (!animState.blending || animState.blendingToOverride)
+                    BeginBlendToSaved();
             }
 
+            StepBlend();
             prev = curr;
         };
 
-        ApplyAnimByState(playerId, outPlayer.state, m_state->prevPlayerState);
-        ApplyAnimByState(bossId, outBoss.state, m_state->prevBossState);
+        ApplyAnimByState(playerId, outPlayer.state, m_state->prevPlayerState, m_state->playerAnim);
+        ApplyAnimByState(bossId, outBoss.state, m_state->prevBossState, m_state->bossAnim);
     }
 
     void C_CombatSessionComponent::PostCombatUpdate(float deltaTime)
@@ -393,22 +534,13 @@ namespace Alice
             }
         }
 
-        Combat::Sensors sPlayer = m_state->player.BuildSensors(world, bossId, deltaTime);
-        Combat::Sensors sBoss = m_state->boss.BuildSensors(world, playerId, deltaTime);
-        m_state->player.hp = sPlayer.hp;
-        m_state->boss.hp = sBoss.hp;
-        m_state->player.flags = BuildFlagsFromSensors(sPlayer, m_state->player.state);
-        m_state->boss.flags = BuildFlagsFromSensors(sBoss, m_state->boss.state);
-
         bool bossGroggyTriggered = false;
         for (const auto& hit : m_state->bus.Hits())
         {
-            Combat::FighterSnapshot attacker = (hit.attackerOwner == playerId)
-                ? m_state->player.Snapshot()
-                : m_state->boss.Snapshot();
-            Combat::FighterSnapshot victim = (hit.victimOwner == playerId)
-                ? m_state->player.Snapshot()
-                : m_state->boss.Snapshot();
+            const Combat::FighterSnapshot& playerSnap = m_state->playerSnapshot;
+            const Combat::FighterSnapshot& bossSnap = m_state->bossSnapshot;
+            Combat::FighterSnapshot attacker = (hit.attackerOwner == playerId) ? playerSnap : bossSnap;
+            Combat::FighterSnapshot victim = (hit.victimOwner == playerId) ? playerSnap : bossSnap;
 
             auto resolved = m_state->resolver.ResolveOne(hit, attacker, victim);
 

@@ -1,4 +1,4 @@
-﻿#include "C_Fighter.h"
+#include "C_Fighter.h"
 
 #include <DirectXMath.h>
 #include <cmath>
@@ -20,6 +20,7 @@ namespace Alice::Combat
         s.stamina = stamina;
         s.moveSpeed = moveSpeed;
         s.targetId = targetId;
+    s.canBeHitstunned = canBeHitstunned;
 
         if (auto* cct = world.GetComponent<Phy_CCTComponent>(id))
         {
