@@ -625,6 +625,46 @@ namespace Alice
 
             EntityId traceId = ResolveTraceEntity(world, driver, entityId);
             auto* anim = world.GetComponent<AdvancedAnimationComponent>(entityId);
+            auto UpdateAttackStateDuration = [&](AttackDriverComponent& target,
+                                                 const AdvancedAnimationComponent* adv,
+                                                 const SkinnedMeshComponent* skinned) {
+                if (target.attackStateDurationSec > 0.0f)
+                {
+                    target.attackStateDurationAutoSec = target.attackStateDurationSec;
+                    return;
+                }
+
+                target.attackStateDurationAutoSec = 0.0f;
+                if (!m_registry || !skinned)
+                    return;
+
+                for (const auto& clip : target.clips)
+                {
+                    if (!clip.enabled || clip.type != AttackDriverNotifyType::Attack)
+                        continue;
+
+                    std::string name;
+                    if (adv)
+                        name = ResolveClipName(clip, *adv);
+                    else
+                    {
+                        if (clip.source != AttackDriverClipSource::Explicit)
+                            continue;
+                        name = clip.clipName;
+                    }
+
+                    if (name.empty())
+                        continue;
+
+                    const aiAnimation* animClip = ResolveClip(m_registry, skinned, name);
+                    const float duration = GetClipDurationSec(animClip);
+                    if (duration > 0.0f)
+                    {
+                        target.attackStateDurationAutoSec = duration;
+                        return;
+                    }
+                }
+            };
             if (!anim)
             {
                 ResetDriverState(driver);
@@ -645,6 +685,7 @@ namespace Alice
                 }
 
                 const auto* skinnedMesh = world.GetComponent<SkinnedMeshComponent>(entityId);
+                UpdateAttackStateDuration(driver, nullptr, skinnedMesh);
                 std::string currentClipName;
                 if (!TryResolveSkinnedClipName(m_registry, skinnedMesh, skinnedAnim->clipIndex, currentClipName))
                 {
@@ -731,6 +772,7 @@ namespace Alice
             ResetHistory(driver.prevSkinned);
 
             const auto* skinnedMesh = world.GetComponent<SkinnedMeshComponent>(entityId);
+            UpdateAttackStateDuration(driver, anim, skinnedMesh);
             auto BuildState = [&](const std::string& clipName,
                                   float currTime,
                                   float speed,

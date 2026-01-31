@@ -93,6 +93,7 @@ namespace Alice::Combat
         bool guardWindowActive = false;
         bool dodgeWindowActive = false;
         bool invulnActive = false;
+        float attackStateDurationSec = 0.0f;
         bool canBeHitstunned = true;
 
         float groggyDuration = 1.5f;

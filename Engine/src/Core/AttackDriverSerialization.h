@@ -113,6 +113,8 @@ namespace Alice
         {
             Json j = Json::object();
             j["traceGuid"] = std::to_string(ad.traceGuid);
+            if (ad.attackStateDurationSec > 0.0f)
+                j["attackStateDurationSec"] = ad.attackStateDurationSec;
 
             Json clips = Json::array();
             for (const auto& clip : ad.clips)
@@ -129,6 +131,8 @@ namespace Alice
 
             if (auto it = j.find("traceGuid"); it != j.end())
                 ad.traceGuid = ParseGuidOrZero(*it);
+            if (auto it = j.find("attackStateDurationSec"); it != j.end() && it->is_number())
+                ad.attackStateDurationSec = static_cast<float>(it->get<double>());
 
             ad.clips.clear();
             if (auto itClips = j.find("clips"); itClips != j.end())

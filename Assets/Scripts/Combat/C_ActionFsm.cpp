@@ -71,7 +71,23 @@ namespace Alice::Combat
 
             if (m_state == ActionState::Attack)
             {
-                if (!m_attackCommitted)
+                if (sensors.attackStateDurationSec > 0.0f)
+                {
+                    if (m_stateTime >= sensors.attackStateDurationSec)
+                    {
+                        if (hasMove)
+                        {
+                            Enter(ActionState::Move);
+                            out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, intent.move, sensors.moveSpeed, true, true } });
+                        }
+                        else
+                        {
+                            Enter(ActionState::Idle);
+                            out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, {0.0f, 0.0f}, 0.0f, true, false } });
+                        }
+                    }
+                }
+                else if (!m_attackCommitted)
                 {
                     if (sensors.attackWindowActive)
                         m_attackCommitted = true;

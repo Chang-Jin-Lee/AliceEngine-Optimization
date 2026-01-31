@@ -52,6 +52,9 @@ namespace Alice
 		// AnimNotify 타이밍 목록
 		std::vector<AttackDriverClip> clips;
 
+		// 공격 상태 유지 시간(애니 전체 길이). 0 이하면 자동 계산값 사용.
+		float attackStateDurationSec = 0.0f;
+
 		// 내부 상태
 		std::uint64_t registeredHash = 0;
 		std::uint64_t notifyTag = 0;
@@ -62,6 +65,7 @@ namespace Alice
 		bool guardActive = false;
 		bool attackCancelable = true;
 		bool cancelAttackRequested = false;
+		float attackStateDurationAutoSec = 0.0f;
 
 		// 이전 프레임 시간 캐시 (직렬화 금지)
 		AttackDriverClipHistory prevBaseA;

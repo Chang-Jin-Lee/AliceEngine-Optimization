@@ -43,6 +43,9 @@ namespace Alice::Combat
             s.attackWindowActive = driver->attackActive;
             s.guardWindowActive = s.guardWindowActive || driver->guardActive;
             s.dodgeWindowActive = s.dodgeWindowActive || driver->dodgeActive;
+            s.attackStateDurationSec = (driver->attackStateDurationSec > 0.0f)
+                ? driver->attackStateDurationSec
+                : driver->attackStateDurationAutoSec;
         }
 
         const auto* selfTr = world.GetComponent<TransformComponent>(id);
