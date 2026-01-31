@@ -100,7 +100,7 @@ namespace Alice
 		return (m_pendingScene != nullptr) || m_pendingSceneFile.has_value();
 	}
 
-	bool SceneManager::CommitPendingSceneChange(World& world, UIWorldManager* uiWorldManager)
+	bool SceneManager::CommitPendingSceneChange(World& world)
 	{
 		// pending 데이터 추출
 		std::unique_ptr<IScene> pendingScene = std::move(m_pendingScene);
@@ -137,7 +137,7 @@ namespace Alice
 			// 파일 기반 로드면 "현재 코드 씬" 개념이 없어질 수 있으니 비워둠
 			m_currentScene.reset();
 
-			const bool ok = SceneFile::LoadAuto(world, m_resources, path, uiWorldManager);
+			const bool ok = SceneFile::LoadAuto(world, m_resources, path);
 
 			if (ok)
 			{

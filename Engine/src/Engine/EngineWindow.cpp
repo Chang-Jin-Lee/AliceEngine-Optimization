@@ -82,12 +82,6 @@ namespace Alice
 			m_computeEffectSystem->Resize(width, height);
 		}
 
-		if(m_uiWorld.m_d3dDev)
-		{
-			// UI 시스템 리사이즈 (텍스처 재생성)
-			//m_uiWorld.Create2DTex(width, height);
-		}
-		
 	}
 
 	LRESULT Engine::Impl::HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

@@ -9,9 +9,6 @@
 #include "Core/Entity.h"
 #include "Core/World.h"
 
-// 전방 선언
-class UIWorldManager;
-
 namespace Alice
 {
 	class ResourceManager;
@@ -82,7 +79,7 @@ namespace Alice
 
 		/// 엔진이 "프레임 경계"에서만 호출해야 하는 커밋 API
 		/// 성공 시 true
-		bool CommitPendingSceneChange(World& world, UIWorldManager* uiWorldManager = nullptr);
+		bool CommitPendingSceneChange(World& world);
 
 		/// 현재 씬 이름을 반환합니다 (없으면 nullptr)
 		const char* GetCurrentSceneName() const { return m_currentSceneName.c_str(); };

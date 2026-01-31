@@ -104,7 +104,7 @@ namespace Alice
 
 		// BuildSettings.txt 에서 시작 씬(.scene 파일)을 읽어와 World 에 로드합니다.
 		// - scenes 섹션은 "index: path" 형식으로 저장되어 있다고 가정합니다.
-		bool LoadStartupSceneFromBuildSettings(World& world, const ResourceManager& resources, const std::filesystem::path& exeDir, UIWorldManager* uiWorldManager = nullptr)
+		bool LoadStartupSceneFromBuildSettings(World& world, const ResourceManager& resources, const std::filesystem::path& exeDir)
 		{
 			namespace fs = std::filesystem;
 
@@ -132,18 +132,18 @@ namespace Alice
 			if (target.empty() && !scenes.empty()) target = scenes[0];
 			if (target.empty()) return false;
 
-		const fs::path logicalScene = fs::path(target);
-		ALICE_LOG_INFO("Loading Startup Scene: %s (uiWorldManager=%p)", logicalScene.string().c_str(), uiWorldManager);
+			const fs::path logicalScene = fs::path(target);
+			ALICE_LOG_INFO("Loading Startup Scene: %s", logicalScene.string().c_str());
 
-		// gameMode에서는 Assets/... 가 Metas/Chunks 로 패킹되어 있으므로 LoadAuto를 사용합니다.
-		if (!SceneFile::LoadAuto(world, resources, logicalScene, uiWorldManager))
-		{
-			ALICE_LOG_ERRORF("Scene Load Failed: %s", logicalScene.string().c_str());
-			return false;
-		}
+			// gameMode에서는 Assets/... 가 Metas/Chunks 로 패킹되어 있으므로 LoadAuto를 사용합니다.
+			if (!SceneFile::LoadAuto(world, resources, logicalScene))
+			{
+				ALICE_LOG_ERRORF("Scene Load Failed: %s", logicalScene.string().c_str());
+				return false;
+			}
 
-		ALICE_LOG_INFO("Startup Scene loaded successfully: %s", logicalScene.string().c_str());
-		return true;
+			ALICE_LOG_INFO("Startup Scene loaded successfully: %s", logicalScene.string().c_str());
+			return true;
 		}
 	}
 
@@ -178,8 +178,6 @@ namespace Alice
 		if (!InitializePhysicsSystemAndWorldCallbacks()) return false;
 
 		InitializePostLoadBindings(owner);
-		InitializeEnsureUIResourcesAfterSceneLoad();
-
 		ALICE_LOG_INFO("Engine::Initialize: Success (Entities: %zu)",
 			m_world.GetComponents<TransformComponent>().size());
 
@@ -362,8 +360,6 @@ namespace Alice
 			return false;
 		}
 
-		m_uiWorld.Initalize(device, context, m_width, m_height, m_inputSystem);
-
 		if (!m_aliceUIRenderer.Initialize(device, context, &m_resourceManager))
 			ALICE_LOG_ERRORF("[AliceUI] UIRenderer Initialize failed.");
 
@@ -405,7 +401,7 @@ namespace Alice
 		if (!m_editorMode)
 		{
 			isSceneLoaded = LoadStartupSceneFromBuildSettings(
-				m_world, m_resourceManager, exeDir, &m_uiWorld);
+				m_world, m_resourceManager, exeDir);
 		}
 
 		if (!isSceneLoaded)
@@ -450,12 +446,6 @@ namespace Alice
 		m_scriptSystem.onTrimVideoMemory.BindObject(&owner, &Engine::TrimVideoMemory);
 		m_scriptSystem.onAfterSceneLoaded.BindObject(&owner, &Engine::RefreshPhysicsForCurrentWorld);
 	}
-
-	void Engine::Impl::InitializeEnsureUIResourcesAfterSceneLoad()
-	{
-		m_uiWorld.EnsureAllUIResources();
-	}
-
 
 	void Engine::Impl::SavePvdSettings(const std::filesystem::path& exeDir)
 	{

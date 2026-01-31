@@ -321,13 +321,6 @@ namespace Alice
             ALICE_LOG_WARN("DeferredRenderSystem::Initialize: CreateIblResources failed (optional).");
         }
 
-        // UI 리소스 생성
-        if (!CreateUIResources())
-        {
-            ALICE_LOG_ERRORF("DeferredRenderSystem::Initialize: CreateUIResources failed.");
-            return false;
-        }
-
         ALICE_LOG_INFO("DeferredRenderSystem::Initialize: success.");
         return true;
     }
@@ -2143,7 +2136,6 @@ namespace Alice
                                       int shadingMode,
                                       bool enableFillLight,
                                       const std::vector<SkinnedDrawCommand>& skinnedCommands,
-                                      UIWorldManager& uiWorld,
                                       bool editorMode,
                                       bool isPlaying)
     {
@@ -2326,11 +2318,6 @@ namespace Alice
             if (m_uiRenderer)
             {
                 m_uiRenderer->RenderScreen(world, camera, m_viewportRTV.Get(), viewport.Width, viewport.Height);
-            }
-            else
-            {
-                uiWorld.Render();  // D2D → UI 텍스처 렌더링
-                RenderUI(uiWorld, m_viewportRTV.Get(), viewport);
             }
         }
 
@@ -4655,104 +4642,4 @@ namespace Alice
         RenderToneMapping(toneMapInputSRV, backBufferRTV, viewport);
     }
 
-    bool DeferredRenderSystem::CreateUIResources()
-    {
-        ALICE_LOG_INFO("DeferredRenderSystem::CreateUIResources: begin");
-
-        // UI Quad Vertex Shader 컴파일 (DeferredShader::UIRenderVS 사용)
-        ComPtr<ID3DBlob> vsBlob;
-        ComPtr<ID3DBlob> errorBlob;
-        HRESULT hr = D3DCompile(
-            DeferredShader::UIRenderVS, strlen(DeferredShader::UIRenderVS),
-            "UIRenderVS", nullptr, nullptr, "main", "vs_5_0",
-            D3DCOMPILE_ENABLE_STRICTNESS, 0, &vsBlob, &errorBlob);
-        if (FAILED(hr))
-        {
-            if (errorBlob)
-                ALICE_LOG_ERRORF("DeferredRenderSystem::CreateUIResources: VS compile failed: %s",
-                    static_cast<const char*>(errorBlob->GetBufferPointer()));
-            return false;
-        }
-
-        hr = m_device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(),
-            nullptr, m_uiQuadVS.GetAddressOf());
-        if (FAILED(hr))
-        {
-            ALICE_LOG_ERRORF("DeferredRenderSystem::CreateUIResources: CreateVertexShader failed.");
-            return false;
-        }
-
-        // UI Composite Pixel Shader 컴파일 (DeferredShader::UIRenderPS 사용)
-        ComPtr<ID3DBlob> psBlob;
-        hr = D3DCompile(
-            DeferredShader::UIRenderPS, strlen(DeferredShader::UIRenderPS),
-            "UIRenderPS", nullptr, nullptr, "main", "ps_5_0",
-            D3DCOMPILE_ENABLE_STRICTNESS, 0, &psBlob, &errorBlob);
-        if (FAILED(hr))
-        {
-            if (errorBlob)
-                ALICE_LOG_ERRORF("DeferredRenderSystem::CreateUIResources: PS compile failed: %s",
-                    static_cast<const char*>(errorBlob->GetBufferPointer()));
-            return false;
-        }
-
-        hr = m_device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(),
-            nullptr, m_uiCompositePS.GetAddressOf());
-        if (FAILED(hr))
-        {
-            ALICE_LOG_ERRORF("DeferredRenderSystem::CreateUIResources: CreatePixelShader failed.");
-            return false;
-        }
-
-        ALICE_LOG_INFO("DeferredRenderSystem::CreateUIResources: success");
-        return true;
-    }
-
-    void DeferredRenderSystem::RenderUI(UIWorldManager& uiWorld, ID3D11RenderTargetView* targetRTV, const D3D11_VIEWPORT& viewport)
-    {
-
-        ID3D11ShaderResourceView* uiSrv = uiWorld.GetUISRV();
-        if (!uiSrv)
-        {
-            return; // UI 텍스처가 없으면 건너뜀
-        }
-
-        // 1) 렌더 타겟 설정 (톤매핑 후 백버퍼 또는 에디터 뷰포트)
-        m_context->OMSetRenderTargets(1, &targetRTV, nullptr);
-        m_context->RSSetViewports(1, &viewport);
-
-        // 2) Depth OFF
-        m_context->OMSetDepthStencilState(nullptr, 0);
-
-        // 3) 알파 블렌딩 ON
-        float blendFactor[4] = { 0,0,0,0 };
-        m_context->OMSetBlendState(m_alphaBlendState.Get(), blendFactor, 0xffffffff);
-
-        // 4) IA 비우기 (SV_VertexID 방식이라 VB/IL 필요 없음)
-        m_context->IASetInputLayout(nullptr);
-        ID3D11Buffer* nullVB = nullptr;
-        UINT stride = 0, offset = 0;
-        m_context->IASetVertexBuffers(0, 1, &nullVB, &stride, &offset);
-        m_context->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
-        m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-        // 5) UI 텍스처 SRV 바인딩 (t101 슬롯 - DeferredShader::UIRenderPS에서 사용)
-        m_context->PSSetShaderResources(101, 1, &uiSrv);
-
-        // 6) 샘플러 바인딩
-        ID3D11SamplerState* sampler = m_samplerLinear.Get();
-        m_context->PSSetSamplers(0, 1, &sampler);
-
-        // 7) 셰이더 바인딩
-        m_context->VSSetShader(m_uiQuadVS.Get(), nullptr, 0);
-        m_context->PSSetShader(m_uiCompositePS.Get(), nullptr, 0);
-
-        // 8) Draw (6 vertices = fullscreen quad)
-        m_context->Draw(6, 0);
-
-        // 9) 정리 (다음 패스에 영향 방지)
-        ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
-        m_context->PSSetShaderResources(101, 1, nullSRV);
-        m_context->OMSetBlendState(nullptr, blendFactor, 0xffffffff);
-    }
 }

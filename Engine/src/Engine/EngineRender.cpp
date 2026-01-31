@@ -146,7 +146,6 @@ namespace Alice
 			m_selectedEntity, m_viewportPicker, m_cameraMoveSpeed,
 			m_useForwardRendering,
 			m_pvdEnabled, m_pvdHost, m_pvdPort,
-			&m_uiWorld,
 			m_debugDraw
 		);
 
@@ -423,8 +422,7 @@ namespace Alice
 		{
 			m_forwardRenderSystem->Render(
 				m_world, m_camera, renderEntity, cameraIDs,
-				finalShadingMode, m_useFillLight, m_skinnedDrawCommands,
-				m_uiWorld
+				finalShadingMode, m_useFillLight, m_skinnedDrawCommands
 			);
 		}
 		else
@@ -432,7 +430,7 @@ namespace Alice
 			m_deferredRenderSystem->Render(
 				m_world, m_camera, renderEntity, cameraIDs,
 				finalShadingMode, m_useFillLight, m_skinnedDrawCommands,
-				m_uiWorld, m_editorMode, m_isPlaying
+				m_editorMode, m_isPlaying
 			);
 		}
 	}

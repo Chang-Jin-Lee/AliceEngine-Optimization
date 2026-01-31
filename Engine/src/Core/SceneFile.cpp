@@ -50,8 +50,6 @@
 #include "AliceUI/UIHover3DComponent.h"
 #include "AliceUI/UIVitalComponent.h"
 
-#include "UI/UIWorldManager.h"
-
 #include <wrl/client.h>
 #include <dxgi.h>
 #include <dxgi1_3.h>
@@ -1613,9 +1611,8 @@ namespace Alice
             return LoadFromRoot(world, root);
         }
 
-        bool LoadAuto(World& world, const ResourceManager& resources, const std::filesystem::path& logicalPath, UIWorldManager* uiWorldManager)
+        bool LoadAuto(World& world, const ResourceManager& resources, const std::filesystem::path& logicalPath)
         {
-            (void)uiWorldManager;
             // (1) 에디터: 실제 파일
             // (2) 게임  : Assets/... 는 Metas/Chunks 로 패킹되어 있으므로, 바이트 로드 후 JSON 파싱
             const std::filesystem::path resolved = resources.Resolve(logicalPath);
@@ -1646,23 +1643,7 @@ namespace Alice
             ALICE_LOG_INFO("[SceneFile] LoadAuto: file load. logical=\"%s\" resolved=\"%s\"",
                            logicalPath.generic_string().c_str(),
                            resolvedStr.c_str());
-            return Load(world, resolved, nullptr);
-        }
-        
-        bool Save(const World& world, const std::filesystem::path& path, UIWorldManager* uiWorldManager)
-        {
-            (void)uiWorldManager;
-            // World 저장
-            if (!Save(world, path)) return false;
-            return true;
-        }
-        
-        bool Load(World& world, const std::filesystem::path& path, UIWorldManager* uiWorldManager)
-        {
-            (void)uiWorldManager;
-            // World 로드
-            if (!Load(world, path)) return false;
-            return true;
+            return Load(world, resolved);
         }
     }
 }

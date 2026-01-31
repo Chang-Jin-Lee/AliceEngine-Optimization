@@ -93,10 +93,10 @@ namespace Alice
 			m_physicsEventQueue.clear();
 
 			if (m_scriptSystem.HasPendingSceneRequests())
-				m_scriptSystem.CommitSceneRequests(m_world, &m_uiWorld);
+				m_scriptSystem.CommitSceneRequests(m_world);
 
 			if (m_sceneManager && m_sceneManager->HasPendingSceneChange())
-				m_sceneManager->CommitPendingSceneChange(m_world, &m_uiWorld);
+				m_sceneManager->CommitPendingSceneChange(m_world);
 
 			sceneChangedThisFrame = true;
 			m_skipPhysicsNextFrame = true;
@@ -252,7 +252,6 @@ namespace Alice
 
 	void Engine::Impl::UpdateUI(float /*dt*/)
 	{
-		//m_uiWorld.Update(m_width, m_height);
 		m_aliceUIRenderer.Update(m_world, m_inputSystem, m_camera,
 			static_cast<float>(m_width), static_cast<float>(m_height), m_timer.DeltaTime());
 
