@@ -1,8 +1,8 @@
 #include "UIButtonController.h"
 
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
-#include "Core/World.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/World.h"
 
 namespace Alice
 {

@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Core/IScript.h"
-#include "Core/ScriptReflection.h"
+#include "Runtime/Scripting/IScript.h"
+#include "Runtime/Scripting/ScriptReflection.h"
 
 #include <string>
 #include <vector>
 #include <cstdint>
 #include <random>
 
-#include "Core/Entity.h"
+#include "Runtime/ECS/Entity.h"
 #include <DirectXMath.h>
 
 namespace Alice

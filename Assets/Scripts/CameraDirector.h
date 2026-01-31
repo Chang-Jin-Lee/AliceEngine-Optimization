@@ -5,9 +5,9 @@
 
 #include <DirectXMath.h>
 
-#include "Core/IScript.h"
-#include "Core/ScriptReflection.h"
-#include "Core/Entity.h"
+#include "Runtime/Scripting/IScript.h"
+#include "Runtime/Scripting/ScriptReflection.h"
+#include "Runtime/ECS/Entity.h"
 
 namespace Alice
 {

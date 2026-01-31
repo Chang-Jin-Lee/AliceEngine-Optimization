@@ -4,18 +4,18 @@
 #include <cmath>
 #include <random>
 
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
-#include "Core/World.h"
-#include "Core/Input.h"
-#include "Core/InputTypes.h"
-#include "Core/GameObject.h"
-#include "Components/TransformComponent.h"
-#include "Components/MaterialComponent.h"
-#include "PhysX/Components/Phy_RigidBodyComponent.h"
-#include "PhysX/Components/Phy_ColliderComponent.h"
-#include "PhysX/Components/Phy_MeshColliderComponent.h"
-#include "PhysX/IPhysicsWorld.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/Input/Input.h"
+#include "Runtime/Input/InputTypes.h"
+#include "Runtime/ECS/GameObject.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Physics/Components/Phy_RigidBodyComponent.h"
+#include "Runtime/Physics/Components/Phy_ColliderComponent.h"
+#include "Runtime/Physics/Components/Phy_MeshColliderComponent.h"
+#include "Runtime/Physics/IPhysicsWorld.h"
+//TODO : Include 확인 해야함
 
 namespace Alice
 {

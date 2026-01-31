@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Core/Entity.h"
+#include "Runtime/ECS/Entity.h"
 #include "C_CombatContracts.h"
 
 namespace Alice

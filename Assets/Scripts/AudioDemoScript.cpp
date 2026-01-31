@@ -1,12 +1,12 @@
 #include "AudioDemoScript.h"
 
-#include "Core/ScriptFactory.h"
-#include "Core/GameObject.h"
-#include "Core/Helper.h"
-#include "Core/Logger.h"
-#include "Core/InputTypes.h"
-#include "Components/AudioSourceComponent.h"
-#include "Audio/SoundManager.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/ECS/GameObject.h"
+#include "Runtime/Foundation/Helper.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/Input/InputTypes.h"
+#include "Runtime/Audio/Components/AudioSourceComponent.h"
+#include "Runtime/Audio/SoundManager.h"
 
 namespace Alice
 {

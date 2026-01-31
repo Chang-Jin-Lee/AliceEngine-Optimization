@@ -4,15 +4,15 @@
 #include <cmath>
 #include <functional>
 
-#include "Core/ScriptFactory.h"
-#include "Core/GameObject.h"
-#include "Core/InputTypes.h"
-#include "Core/Logger.h"
-#include "Core/World.h"
-#include "Components/AdvancedAnimationComponent.h"
-#include "Components/TransformComponent.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/ECS/GameObject.h"
+#include "Runtime/Input/InputTypes.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
 // [추가] ComputeEffectComponent 헤더 포함
-#include "Components/ComputeEffectComponent.h"
+#include "Runtime/Rendering/Components/ComputeEffectComponent.h"
 
 namespace Alice
 {

@@ -1,9 +1,9 @@
 #include "TrailEffect.h"
-#include "Core/World.h"
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
-#include "Components/TransformComponent.h"
-#include "Components/TrailEffectComponent.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Rendering/Components/TrailEffectComponent.h"
 #include <cmath>
 #include <DirectXMath.h>
 

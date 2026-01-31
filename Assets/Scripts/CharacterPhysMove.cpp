@@ -1,11 +1,11 @@
 #include "CharacterPhysMove.h"
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
-#include "Core/GameObject.h"
-#include "Core/World.h"
-#include "Core/Input.h"
-#include "PhysX/Components/Phy_CCTComponent.h"
-#include "Components/TransformComponent.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/GameObject.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/Input/Input.h"
+#include "Runtime/Physics/Components/Phy_CCTComponent.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
 #include <cmath>
 
 #ifndef M_PI

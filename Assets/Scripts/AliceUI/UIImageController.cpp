@@ -1,9 +1,9 @@
 #include "UIImageController.h"
 
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
-#include "Core/World.h"
-#include "Core/InputTypes.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/Input/InputTypes.h"
 
 namespace Alice
 {

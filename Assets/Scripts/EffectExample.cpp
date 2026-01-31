@@ -1,9 +1,9 @@
 #include "EffectExample.h"
-#include "Core/World.h"
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
-#include "Components/EffectComponent.h"
-#include "Components/TransformComponent.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/Rendering/Components/EffectComponent.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
 #include <cmath>
 
 namespace Alice

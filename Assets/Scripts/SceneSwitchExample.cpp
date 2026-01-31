@@ -1,6 +1,6 @@
 ﻿#include "SceneSwitchExample.h"
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
 namespace Alice
 {
     REGISTER_SCRIPT(SceneSwitchExample);

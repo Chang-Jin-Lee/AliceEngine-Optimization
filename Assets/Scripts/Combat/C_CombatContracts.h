@@ -9,8 +9,8 @@
 
 #include <DirectXMath.h>
 
-#include "Core/Entity.h"
-#include "Game/CombatHitEvent.h"
+#include "Runtime/ECS/Entity.h"
+#include "Runtime/Gameplay/Combat/CombatHitEvent.h"
 
 namespace Alice::Combat
 {

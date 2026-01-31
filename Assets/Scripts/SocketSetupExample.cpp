@@ -1,8 +1,8 @@
 #include "SocketSetupExample.h"
 
-#include "Core/ScriptFactory.h"
-#include "Core/GameObject.h"
-#include "Components/SocketComponent.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/ECS/GameObject.h"
+#include "Runtime/Gameplay/Sockets/SocketComponent.h"
 
 namespace Alice
 {

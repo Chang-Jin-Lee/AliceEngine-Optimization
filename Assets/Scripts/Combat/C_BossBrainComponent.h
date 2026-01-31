@@ -3,8 +3,8 @@
 * 보스 AI. 타겟(플레이어)과의 거리/각도 보고 공격·이동 등 Combat::Intent 생성.
 * 보스/적 캐릭터 엔티티 (보스 엔티티).
 */
-#include "Core/IScript.h"
-#include "Core/ScriptReflection.h"
+#include "Runtime/Scripting/IScript.h"
+#include "Runtime/Scripting/ScriptReflection.h"
 
 #include "C_CombatContracts.h"
 

@@ -4,20 +4,20 @@
 #include <vector>
 #include <random>
 
-#include "Core/IScript.h"
-#include "Core/ScriptReflection.h"
-#include "AliceUI/BindWidget.h"
-#include "AliceUI/UIAnimationComponent.h"
-#include "AliceUI/UIEffectComponent.h"
-#include "AliceUI/UIShakeComponent.h"
-#include "AliceUI/UIHover3DComponent.h"
-#include "AliceUI/UIButtonComponent.h"
-#include "AliceUI/UIGaugeComponent.h"
-#include "AliceUI/UITextComponent.h"
-#include "AliceUI/UIWidgetComponent.h"
-#include "AliceUI/UITransformComponent.h"
-#include "Core/InputTypes.h"
-#include "Components/TransformComponent.h"
+#include "Runtime/Scripting/IScript.h"
+#include "Runtime/Scripting/ScriptReflection.h"
+#include "Runtime/UI/BindWidget.h"
+#include "Runtime/UI/UIAnimationComponent.h"
+#include "Runtime/UI/UIEffectComponent.h"
+#include "Runtime/UI/UIShakeComponent.h"
+#include "Runtime/UI/UIHover3DComponent.h"
+#include "Runtime/UI/UIButtonComponent.h"
+#include "Runtime/UI/UIGaugeComponent.h"
+#include "Runtime/UI/UITextComponent.h"
+#include "Runtime/UI/UIWidgetComponent.h"
+#include "Runtime/UI/UITransformComponent.h"
+#include "Runtime/Input/InputTypes.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
 
 namespace Alice
 {

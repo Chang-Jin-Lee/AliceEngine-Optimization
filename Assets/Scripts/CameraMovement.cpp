@@ -1,10 +1,10 @@
 #pragma once
 #include "CameraMovement.h"
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
-#include "Core/GameObject.h"
-#include "Core/Input.h" // Input 클래스가 있다고 가정
-#include "Core/InputTypes.h" // MouseCode 사용을 위해
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/GameObject.h"
+#include "Runtime/Input/Input.h" // Input 클래스가 있다고 가정
+#include "Runtime/Input/InputTypes.h" // MouseCode 사용을 위해
 #include <cmath>
 
 #ifndef M_PI

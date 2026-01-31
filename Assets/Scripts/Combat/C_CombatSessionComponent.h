@@ -4,9 +4,9 @@
 * 씬의 매니저용 엔티티 (빈 오브젝트 등). m_playerGuid, m_bossGuid로 플레이어/보스 엔티티를 찾음.
 */
 
-#include "Core/IScript.h"
-#include "Core/ScriptReflection.h"
-#include "Core/Entity.h"
+#include "Runtime/Scripting/IScript.h"
+#include "Runtime/Scripting/ScriptReflection.h"
+#include "Runtime/ECS/Entity.h"
 #include <memory>
 #include <string>
 
