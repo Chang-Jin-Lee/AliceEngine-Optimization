@@ -1,7 +1,7 @@
 #include "CameraManager.h"
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
-#include "Core/GameObject.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/GameObject.h"
 #include "CameraFollow.h"
 #include "AddGetRemoveComponentTest.h"
 

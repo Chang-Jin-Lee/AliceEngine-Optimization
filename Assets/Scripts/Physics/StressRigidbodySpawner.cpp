@@ -1,11 +1,11 @@
 #include "StressRigidbodySpawner.h"
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
-#include "Core/World.h"
-#include "Core/Prefab.h"
-#include "Core/Input.h"
-#include "Core/GameObject.h"
-#include "Components/TransformComponent.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/Resources/Prefab.h"
+#include "Runtime/Input/Input.h"
+#include "Runtime/ECS/GameObject.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
 #include <cmath>
 #include <filesystem>
 

@@ -1,9 +1,9 @@
 #include "Phy_TerrainHeightFieldComponent.h"
-#include "Core/ScriptFactory.h"
-#include "Core/Logger.h"
-#include "Core/GameObject.h"
-#include "PhysX/Components/Phy_TerrainHeightFieldComponent.h"
-#include "Components/TransformComponent.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/GameObject.h"
+#include "Runtime/Physics/Components/Phy_TerrainHeightFieldComponent.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
 #include <cmath>
 #include <algorithm>
 #include <random>

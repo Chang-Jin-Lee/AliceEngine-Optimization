@@ -1,15 +1,15 @@
 #include "CameraRigPreset.h"
-#include "Core/ScriptFactory.h"
-#include "Core/GameObject.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/ECS/GameObject.h"
 
-#include "Components/CameraComponent.h"
-#include "Components/CameraInputComponent.h"
-#include "Components/CameraBlendComponent.h"
-#include "Components/CameraShakeComponent.h"
-#include "Components/CameraSpringArmComponent.h"
-#include "Components/CameraFollowComponent.h"
-#include "Components/CameraLookAtComponent.h"
-#include "Components/TransformComponent.h"
+#include "Runtime/Rendering/Components/CameraComponent.h"
+#include "Runtime/Rendering/Components/CameraInputComponent.h"
+#include "Runtime/Rendering/Components/CameraBlendComponent.h"
+#include "Runtime/Rendering/Components/CameraShakeComponent.h"
+#include "Runtime/Rendering/Components/CameraSpringArmComponent.h"
+#include "Runtime/Rendering/Components/CameraFollowComponent.h"
+#include "Runtime/Rendering/Components/CameraLookAtComponent.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
 
 #include <DirectXMath.h>
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Core/IScript.h"
-#include "Core/ScriptReflection.h"
+#include "Runtime/Scripting/IScript.h"
+#include "Runtime/Scripting/ScriptReflection.h"
 #include <string>
 #include <vector>
-#include "Core/Entity.h"
+#include "Runtime/ECS/Entity.h"
 
 namespace Alice
 {

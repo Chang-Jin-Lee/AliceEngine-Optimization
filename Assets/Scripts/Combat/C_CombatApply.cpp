@@ -2,10 +2,10 @@
 
 #include <algorithm>
 
-#include "Core/World.h"
-#include "Components/HealthComponent.h"
-#include "Components/AttackDriverComponent.h"
-#include "Components/WeaponTraceComponent.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/Gameplay/Combat/HealthComponent.h"
+#include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
+#include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
 #include "C_CombatEventBus.h"
 #include "C_Fighter.h"
 

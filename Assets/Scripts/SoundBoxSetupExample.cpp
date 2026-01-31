@@ -1,10 +1,10 @@
 #include "SoundBoxSetupExample.h"
 
-#include "Core/ScriptFactory.h"
-#include "Core/GameObject.h"
-#include "Core/World.h"       // FindGameObject 사용을 위해 필요
-#include "Core/Logger.h"      // 로그 출력을 위해 권장
-#include "Components/SoundBoxComponent.h"
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/ECS/GameObject.h"
+#include "Runtime/ECS/World.h"       // FindGameObject 사용을 위해 필요
+#include "Runtime/Foundation/Logger.h"      // 로그 출력을 위해 권장
+#include "Runtime/Audio/Components/SoundBoxComponent.h"
 
 namespace Alice
 {

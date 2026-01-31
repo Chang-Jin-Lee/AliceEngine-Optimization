@@ -3,9 +3,9 @@
 #include <array>
 #include <string>
 
-#include "Core/IScript.h"
-#include "Core/ScriptReflection.h"
-#include "AliceUI/BindWidget.h"
+#include "Runtime/Scripting/IScript.h"
+#include "Runtime/Scripting/ScriptReflection.h"
+#include "Runtime/UI/BindWidget.h"
 
 namespace Alice
 {
