@@ -38,7 +38,7 @@ namespace Alice
         float bloomKnee = 0.5f;
 
         bool bOverride_BloomIntensity = false;
-        float bloomIntensity = 0.5f;
+        float bloomIntensity = 0.0f;
 
         bool bOverride_BloomGaussianIntensity = false;
         float bloomGaussianIntensity = 1.0f;
@@ -80,7 +80,7 @@ namespace Alice
             );
             settings.bloomThreshold = 1.0f;
             settings.bloomKnee = 0.5f;
-            settings.bloomIntensity = 0.5f;
+            settings.bloomIntensity = 0.0f;
             settings.bloomGaussianIntensity = 1.0f;
             settings.bloomRadius = 1.0f;
             settings.bloomDownsample = 2;
