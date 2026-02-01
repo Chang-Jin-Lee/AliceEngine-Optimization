@@ -6,6 +6,8 @@
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Gameplay/Combat/HealthComponent.h"
 #include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
+#include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
+#include "Runtime/ECS/Components/IDComponent.h"
 #include "Runtime/Physics/Components/Phy_CCTComponent.h"
 #include "Runtime/Foundation/Logger.h"
 //TODO : Include Ȯ�� �ؾ���
