@@ -2,6 +2,7 @@
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/ECS/GameObject.h"
+#include "Runtime/Rendering/Components/CameraComponent.h"
 #include "CameraFollow.h"
 #include "AddGetRemoveComponentTest.h"
 
@@ -14,6 +15,8 @@ namespace Alice
         auto go = gameObject();
         if (!go.IsValid())
             return;
+
+        CameraComponent;
 
         // 현재 GameObject에 붙어 있는 CameraComponent를 가져옵니다.
         auto* cam = go.GetComponent<CameraComponent>();

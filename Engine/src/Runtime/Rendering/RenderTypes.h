@@ -79,7 +79,7 @@ namespace Alice
     struct BloomSettings
     {
         bool enabled = true;          // Bloom 활성화
-        float intensity = 0.5f;      // Bloom 합성 강도 (최종 합성 시 적용)
+        float intensity = 0.0f;      // Bloom 합성 강도 (최종 합성 시 적용)
         float gaussianIntensity = 1.0f; // Gaussian 블러 강도 (블러 단계에서 적용)
         float threshold = 1.0f;      // 밝기 추출 기준
         float knee = 0.5f;            // Soft threshold (0~1)

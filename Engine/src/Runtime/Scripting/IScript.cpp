@@ -1,6 +1,7 @@
-﻿#include "Runtime/Scripting/IScript.h"
+#include "Runtime/Scripting/IScript.h"
 #include "Runtime/ECS/World.h"
 #include "Runtime/ECS/GameObject.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
 
 namespace Alice
 {

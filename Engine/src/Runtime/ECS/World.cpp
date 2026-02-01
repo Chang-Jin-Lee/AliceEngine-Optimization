@@ -5,6 +5,11 @@
 #include "Runtime/ECS/Components/IDComponent.h"
 #include "Runtime/Rendering/Components/DebugDrawBoxComponent.h"
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
+#include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/CameraComponent.h"
+#include "Runtime/Rendering/Components/PointLightComponent.h"
+#include "Runtime/Rendering/Components/SpotLightComponent.h"
+#include "Runtime/Rendering/Components/RectLightComponent.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include <random>
 #include <algorithm>
