@@ -83,6 +83,8 @@ namespace Alice
 		float bossMoveBlend = 0.0f;
 		bool playerLockOnActive = false;
 		EntityId playerLockOnTarget = InvalidEntityId;
+		bool playerAttackFacingLocked = false;
+		float playerAttackFacingYawRad = 0.0f;
 
 		void Init()
 		{
@@ -102,6 +104,8 @@ namespace Alice
 			bossMoveBlend = 0.0f;
 			playerLockOnActive = false;
 			playerLockOnTarget = InvalidEntityId;
+			playerAttackFacingLocked = false;
+			playerAttackFacingYawRad = 0.0f;
 		}
 	};
 
@@ -456,14 +460,61 @@ namespace Alice
 				camLookAt->targetName = m_bossName.empty() ? std::string("Enemy") : m_bossName;
 		}
 
-		auto FacePlayerForAttackGuard = [&]() {
+		Combat::Sensors sPlayer = m_state->player.BuildSensors(world, bossId, deltaTime);
+		Combat::Sensors sBoss = m_state->boss.BuildSensors(world, playerId, deltaTime);
+
+		auto RecomputeTargetInFront = [&](EntityId selfId,
+			EntityId targetId,
+			Combat::Sensors& s,
+			Combat::Fighter& fighter)
+		{
+			auto* selfTr = world.GetComponent<TransformComponent>(selfId);
+			auto* targetTr = world.GetComponent<TransformComponent>(targetId);
+			if (!selfTr || !targetTr)
+				return;
+
+			const float dx = targetTr->position.x - selfTr->position.x;
+			const float dz = targetTr->position.z - selfTr->position.z;
+			const float dist = std::sqrt(dx * dx + dz * dz);
+			if (dist <= 0.0001f)
+				return;
+
+			const float offsetRad = m_rotationOffsetDeg * kDegToRad;
+			const float yawRad = selfTr->rotation.y - offsetRad;
+			const float fx = std::sin(yawRad);
+			const float fz = std::cos(yawRad);
+			const float tx = dx / dist;
+			const float tz = dz / dist;
+			const float dot = fx * tx + fz * tz;
+			s.targetInFront = (dot >= 0.0f);
+			fighter.lastTargetInFront = s.targetInFront;
+		};
+		RecomputeTargetInFront(playerId, bossId, sPlayer, m_state->player);
+		RecomputeTargetInFront(bossId, playerId, sBoss, m_state->boss);
+
+		m_state->player.hp = sPlayer.hp;
+		m_state->boss.hp = sBoss.hp;
+		m_state->player.weaponDurability = sPlayer.weaponDurability;
+		m_state->player.weaponDurabilityMax = sPlayer.weaponDurabilityMax;
+		m_state->player.weakRemainingSec = sPlayer.weakRemainingSec;
+		m_state->boss.weaponDurability = sBoss.weaponDurability;
+		m_state->boss.weaponDurabilityMax = sBoss.weaponDurabilityMax;
+		m_state->boss.weakRemainingSec = sBoss.weakRemainingSec;
+
+		const auto& ePlayer = m_state->bus.PeekDeferred(playerId);
+		const auto& eBoss = m_state->bus.PeekDeferred(bossId);
+
+		auto outPlayer = m_state->playerFsm.Update(playerId, playerIntent, sPlayer, ePlayer, deltaTime);
+		auto outBoss = m_state->bossFsm.Update(bossId, bossIntent, sBoss, eBoss, deltaTime);
+
+		auto FacePlayerForAttackGuard = [&](Combat::ActionState curr, Combat::ActionState prev) {
 			const bool wantsAttack = playerIntent.lightAttackPressed
 				|| playerIntent.heavyAttackPressed
 				|| (playerIntent.attackPressed && !playerIntent.attackHeld);
 			const bool wantsGuard = playerIntent.guardHeld || playerIntent.guardPressed;
-			const bool inAttack = (m_state->player.state == Combat::ActionState::Attack);
-			const bool inGuard = (m_state->player.state == Combat::ActionState::Guard
-				|| m_state->player.state == Combat::ActionState::JustGuardSuccess);
+			const bool inAttack = (curr == Combat::ActionState::Attack);
+			const bool inGuard = (curr == Combat::ActionState::Guard
+				|| curr == Combat::ActionState::JustGuardSuccess);
 			if (!(wantsAttack || wantsGuard || inAttack || inGuard))
 				return;
 
@@ -472,6 +523,59 @@ namespace Alice
 				return;
 
 			const float offsetRad = m_rotationOffsetDeg * kDegToRad;
+			const bool attackStarted = (curr == Combat::ActionState::Attack && prev != Combat::ActionState::Attack);
+			const bool attackEnded = (curr != Combat::ActionState::Attack && prev == Combat::ActionState::Attack);
+			if (attackEnded)
+				m_state->playerAttackFacingLocked = false;
+
+			if (attackStarted)
+			{
+				float dx = 0.0f;
+				float dz = 0.0f;
+				bool hasDir = false;
+
+				if (m_state->playerLockOnActive && m_state->playerLockOnTarget != InvalidEntityId)
+				{
+					if (auto* targetTr = world.GetComponent<TransformComponent>(m_state->playerLockOnTarget))
+					{
+						dx = targetTr->position.x - playerTr->position.x;
+						dz = targetTr->position.z - playerTr->position.z;
+						const float len = std::sqrt(dx * dx + dz * dz);
+						if (len > 0.0001f)
+						{
+							dx /= len;
+							dz /= len;
+							hasDir = true;
+						}
+					}
+				}
+
+				if (!hasDir && camBasis.valid)
+				{
+					dx = camBasis.forwardX;
+					dz = camBasis.forwardZ;
+					const float len = std::sqrt(dx * dx + dz * dz);
+					if (len > 0.0001f)
+					{
+						dx /= len;
+						dz /= len;
+						hasDir = true;
+					}
+				}
+
+				if (hasDir)
+				{
+					m_state->playerAttackFacingLocked = true;
+					m_state->playerAttackFacingYawRad = std::atan2(dx, dz) + offsetRad;
+				}
+			}
+
+			if (inAttack && m_state->playerAttackFacingLocked)
+			{
+				playerTr->SetRotation(0.0f, m_state->playerAttackFacingYawRad * kRadToDeg, 0.0f);
+				return;
+			}
+
 			float dx = 0.0f;
 			float dz = 0.0f;
 			bool hasDir = false;
@@ -511,25 +615,7 @@ namespace Alice
 				playerTr->SetRotation(0.0f, yawRad * kRadToDeg, 0.0f);
 			}
 		};
-		FacePlayerForAttackGuard();
-
-		Combat::Sensors sPlayer = m_state->player.BuildSensors(world, bossId, deltaTime);
-		Combat::Sensors sBoss = m_state->boss.BuildSensors(world, playerId, deltaTime);
-
-		m_state->player.hp = sPlayer.hp;
-		m_state->boss.hp = sBoss.hp;
-		m_state->player.weaponDurability = sPlayer.weaponDurability;
-		m_state->player.weaponDurabilityMax = sPlayer.weaponDurabilityMax;
-		m_state->player.weakRemainingSec = sPlayer.weakRemainingSec;
-		m_state->boss.weaponDurability = sBoss.weaponDurability;
-		m_state->boss.weaponDurabilityMax = sBoss.weaponDurabilityMax;
-		m_state->boss.weakRemainingSec = sBoss.weakRemainingSec;
-
-		const auto& ePlayer = m_state->bus.PeekDeferred(playerId);
-		const auto& eBoss = m_state->bus.PeekDeferred(bossId);
-
-		auto outPlayer = m_state->playerFsm.Update(playerId, playerIntent, sPlayer, ePlayer, deltaTime);
-		auto outBoss = m_state->bossFsm.Update(bossId, bossIntent, sBoss, eBoss, deltaTime);
+		FacePlayerForAttackGuard(outPlayer.state, m_state->prevPlayerState);
 
 		const float attackForwardOffsetRad = m_rotationOffsetDeg * kDegToRad;
 
@@ -796,7 +882,10 @@ namespace Alice
 							dx, dz, payload.speed);
 					}
 
-					if (payload.faceMove && (dx != 0.0f || dz != 0.0f))
+					const bool lockFacing = (entityId == playerId
+						&& outPlayer.state == Combat::ActionState::Attack
+						&& m_state->playerAttackFacingLocked);
+					if (!lockFacing && payload.faceMove && (dx != 0.0f || dz != 0.0f))
 					{
 						if (auto* tr = world.GetComponent<TransformComponent>(entityId))
 						{
