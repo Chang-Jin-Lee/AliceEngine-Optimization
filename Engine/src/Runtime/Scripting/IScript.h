@@ -8,13 +8,12 @@
 #include <rttr/type>
 
 #include "Runtime/ECS/Entity.h"
-#include "Runtime/Scripting/ScriptAPI.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Scripting/ScriptAPI.h"
 
 namespace Alice
 {
     class World;
-    struct TransformComponent;
     class GameObject;
 
     /// 모든 스크립트가 상속해야 하는 기본 베이스 클래스입니다.

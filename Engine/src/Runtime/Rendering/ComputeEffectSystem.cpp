@@ -9,6 +9,8 @@
 #include <d3dcompiler.h>
 #include "Runtime/Rendering/ShaderCode/ComputeEffectShader.h"
 #include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Rendering/Components/ComputeEffectComponent.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;

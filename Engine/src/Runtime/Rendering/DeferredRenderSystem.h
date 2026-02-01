@@ -19,6 +19,7 @@
 #include "Runtime/Rendering/SkinnedMeshRegistry.h"
 #include "Runtime/Rendering/RenderTypes.h"
 #include "Runtime/Rendering/PostProcessVolumeSystem.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
 
 namespace Alice
 {

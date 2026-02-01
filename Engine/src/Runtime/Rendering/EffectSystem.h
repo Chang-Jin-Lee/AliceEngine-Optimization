@@ -4,6 +4,7 @@
 #include <wrl/client.h>
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <directxtk/SimpleMath.h>
 
 #include "Runtime/Rendering/Camera.h"
 #include "Runtime/Rendering/D3D11/ID3D11RenderDevice.h"
