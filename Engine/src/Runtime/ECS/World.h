@@ -10,57 +10,28 @@
 #include <typeindex>
 #include <functional>
 
+#include <DirectXMath.h>
+
 #include "Runtime/ECS/Entity.h"
 #include "Runtime/Scripting/IScript.h"
 #include "Runtime/Scripting/Components/ScriptComponent.h"
 #include "Runtime/ECS/Components/ComponentStorage.h"
 
-// 컴포넌트 헤더들
-#include "Runtime/ECS/Components/IDComponent.h"
-#include "Runtime/ECS/Components/TransformComponent.h"
-#include "Runtime/Rendering/Components/MaterialComponent.h"
-#include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
-#include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
-#include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
-#include "Runtime/Audio/Components/SoundBoxComponent.h"
-#include "Runtime/Audio/Components/AudioListenerComponent.h"
-#include "Runtime/Audio/Components/AudioSourceComponent.h"
-#include "Runtime/Rendering/Components/CameraComponent.h"
-#include "Runtime/Rendering/Components/CameraFollowComponent.h"
-#include "Runtime/Rendering/Components/CameraSpringArmComponent.h"
-#include "Runtime/Rendering/Components/CameraLookAtComponent.h"
-#include "Runtime/Rendering/Components/CameraShakeComponent.h"
-#include "Runtime/Rendering/Components/CameraBlendComponent.h"
-#include "Runtime/Rendering/Components/CameraInputComponent.h"
-#include "Runtime/Rendering/Components/PointLightComponent.h"
-#include "Runtime/Rendering/Components/SpotLightComponent.h"
-#include "Runtime/Rendering/Components/RectLightComponent.h"
-#include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
-#include "Runtime/Rendering/Components/EffectComponent.h"
-#include "Runtime/Rendering/Components/TrailEffectComponent.h"
-#include "Runtime/Rendering/Components/ComputeEffectComponent.h"
-#include "Runtime/Gameplay/Sockets/SocketAttachmentComponent.h"
-#include "Runtime/Gameplay/Combat/HurtboxComponent.h"
-#include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
-#include "Runtime/Gameplay/Combat/HealthComponent.h"
-#include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
 #include "Runtime/Gameplay/Combat/CombatHitEvent.h"
-
-
-// 물리 컴포넌트들
-#include "Runtime/Physics/Components/Phy_RigidBodyComponent.h"
-#include "Runtime/Physics/Components/Phy_ColliderComponent.h"
-#include "Runtime/Physics/Components/Phy_MeshColliderComponent.h"
-#include "Runtime/Physics/Components/Phy_SettingsComponent.h"
-#include "Runtime/Physics/Components/Phy_TerrainHeightFieldComponent.h"
-#include "Runtime/Physics/Components/Phy_CCTComponent.h"
-#include "Runtime/Physics/Components/Phy_JointComponent.h"
 
 class IPhysicsWorld; // 물리 인터페이스 전방선언
 
 namespace Alice
 {
     class GameObject;
+    struct TransformComponent;
+    class PostProcessVolumeComponent;
+    struct DebugDrawBoxComponent;
+    class CameraComponent;
+    struct PointLightComponent;
+    struct SpotLightComponent;
+    struct RectLightComponent;
+    struct MaterialComponent;
 
     class World
     {

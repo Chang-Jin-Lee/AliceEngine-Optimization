@@ -1,0 +1,208 @@
+#include "Editor/Core/EditorCore.h"
+#include "Editor/Core/EditorCommands.h"
+#include "Editor/Core/EditorUIState.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Importing/FbxModel.h"
+#include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
+#include <DirectXMath.h>
+#include <cmath>
+
+namespace Alice
+{
+	void EditorCore::DrawInspectorTransform(World& world, const EntityId& _selectedEntity)
+	{
+		if (auto* transform =
+			world.GetComponent<TransformComponent>(_selectedEntity)) {
+			if (ImGui::CollapsingHeader("Transform",
+				ImGuiTreeNodeFlags_DefaultOpen)) {
+				// 편집 시작 시 old state 저장
+				static EntityId lastEditedEntity = InvalidEntityId;
+				static TransformCommand::TransformData editStartTransform;
+				static bool isEditing = false;
+
+				// 편집 시작 감지
+				if (ImGui::IsItemActive() && !isEditing)
+				{
+					editStartTransform.position = transform->position;
+					editStartTransform.rotation = transform->rotation;
+					editStartTransform.scale = transform->scale;
+					editStartTransform.enabled = transform->enabled;
+					editStartTransform.visible = transform->visible;
+					isEditing = true;
+					lastEditedEntity = _selectedEntity;
+				}
+				else if (lastEditedEntity != _selectedEntity)
+				{
+					// 다른 엔티티로 변경: 상태 리셋
+					isEditing = false;
+					lastEditedEntity = _selectedEntity;
+				}
+
+				bool changed = false;
+				bool anyTransformItemActive = false;
+				bool anyTransformItemActivated = false;
+
+				// ---- Position
+				{
+					auto r = ReflectionUI::RenderProperty(*transform, "position", "Position");
+					changed |= r.changed;
+					anyTransformItemActive |= ImGui::IsItemActive();
+					anyTransformItemActivated |= ImGui::IsItemActivated();
+				}
+
+				// ---- Rotation
+				{
+					// 라디안(Radian) -> 디그리(Degree) 변환하여 표시
+					DirectX::XMFLOAT3 rotDeg;
+					rotDeg.x = DirectX::XMConvertToDegrees(transform->rotation.x);
+					rotDeg.y = DirectX::XMConvertToDegrees(transform->rotation.y);
+					rotDeg.z = DirectX::XMConvertToDegrees(transform->rotation.z);
+
+					// ImGui로 직접 그림 (ReflectionUI 대신 사용)
+					if (ImGui::DragFloat3("Rotation", &rotDeg.x, 0.1f))
+					{
+						// 변경된 디그리 값을 다시 라디안으로 변환하여 저장
+						transform->rotation.x = DirectX::XMConvertToRadians(rotDeg.x);
+						transform->rotation.y = DirectX::XMConvertToRadians(rotDeg.y);
+						transform->rotation.z = DirectX::XMConvertToRadians(rotDeg.z);
+						changed = true;
+					}
+
+					// Undo/Redo 로직 유지를 위한 상태 플래그 갱신
+					anyTransformItemActive |= ImGui::IsItemActive();
+					anyTransformItemActivated |= ImGui::IsItemActivated();
+				}
+
+				// ---- Scale
+				{
+					auto r = ReflectionUI::RenderProperty(*transform, "scale", "Scale");
+					changed |= r.changed;
+					anyTransformItemActive |= ImGui::IsItemActive();
+					anyTransformItemActivated |= ImGui::IsItemActivated();
+				}
+
+				// ---- Enabled
+				{
+					auto r = ReflectionUI::RenderProperty(*transform, "enabled", "Enabled");
+					changed |= r.changed;
+					anyTransformItemActive |= ImGui::IsItemActive();
+					anyTransformItemActivated |= ImGui::IsItemActivated();
+				}
+
+				// ---- Render Enabled
+				{
+					auto r = ReflectionUI::RenderProperty(*transform, "visible", "Visible");
+					changed |= r.changed;
+					anyTransformItemActive |= ImGui::IsItemActive();
+					anyTransformItemActivated |= ImGui::IsItemActivated();
+				}
+
+				// === 편집 시작 감지 (Transform 위젯 중 하나라도 막 활성화됐을 때)
+				if (!isEditing && anyTransformItemActivated)
+				{
+					isEditing = true;
+					lastEditedEntity = _selectedEntity;
+
+					editStartTransform.position = transform->position;
+					editStartTransform.rotation = transform->rotation;
+					editStartTransform.scale = transform->scale;
+					editStartTransform.enabled = transform->enabled;
+					editStartTransform.visible = transform->visible;
+				}
+
+				// === Transform 변경 시: 물리 텔레포트 + 월드행렬 캐시 무효화 + dirty
+				if (changed)
+				{
+					if (auto* rigidBody = world.GetComponent<Phy_RigidBodyComponent>(_selectedEntity))
+						rigidBody->teleport = true;
+
+					if (auto* cct = world.GetComponent<Phy_CCTComponent>(_selectedEntity))
+						cct->teleport = true;
+
+					// PostProcessVolumeComponent가 있으면 DebugDrawBoxComponent 업데이트
+					if (auto* volume = world.GetComponent<PostProcessVolumeComponent>(_selectedEntity))
+					{
+						world.UpdatePostProcessVolumeDebugBox(_selectedEntity, *volume);
+					}
+
+					world.MarkTransformDirty(_selectedEntity);
+					g_SceneDirty = true;
+				}
+
+				// === 편집 종료 감지: Transform 위젯이 더 이상 Active가 아닐 때
+				if (isEditing && lastEditedEntity == _selectedEntity && !anyTransformItemActive)
+				{
+					TransformCommand::TransformData newTransform;
+					newTransform.position = transform->position;
+					newTransform.rotation = transform->rotation;
+					newTransform.scale = transform->scale;
+					newTransform.enabled = transform->enabled;
+					newTransform.visible = transform->visible;
+
+					// float 비교(너무 타이트하면 커맨드가 과하게 쌓임)
+					constexpr float kEps = 1e-5f;
+					auto NE = [](float a, float b) { return std::fabs(a - b) > kEps; };
+
+					bool hasChanged =
+						NE(editStartTransform.position.x, newTransform.position.x) ||
+						NE(editStartTransform.position.y, newTransform.position.y) ||
+						NE(editStartTransform.position.z, newTransform.position.z) ||
+						NE(editStartTransform.rotation.x, newTransform.rotation.x) ||
+						NE(editStartTransform.rotation.y, newTransform.rotation.y) ||
+						NE(editStartTransform.rotation.z, newTransform.rotation.z) ||
+						NE(editStartTransform.scale.x, newTransform.scale.x) ||
+						NE(editStartTransform.scale.y, newTransform.scale.y) ||
+						NE(editStartTransform.scale.z, newTransform.scale.z) ||
+						(editStartTransform.enabled != newTransform.enabled) ||
+						(editStartTransform.visible != newTransform.visible);
+
+					if (hasChanged)
+					{
+						PushCommand(std::make_unique<TransformCommand>(
+							_selectedEntity, editStartTransform, newTransform));
+					}
+
+					isEditing = false;
+				}
+			}
+		}
+	}
+
+
+	void EditorCore::DrawInspectorAnimationStatus(World& world, const EntityId& _selectedEntity)
+	{
+		if (auto* anim = world.GetComponent<SkinnedAnimationComponent>(_selectedEntity))
+		{
+			if (ImGui::CollapsingHeader("Animation Status", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::Text("Playing: %s", anim->playing ? "Yes" : "No");
+				ImGui::Text("Speed: %.2f", anim->speed);
+				ImGui::Text("Clip Index: %d", anim->clipIndex);
+				ImGui::Text("Time: %.3f sec", anim->timeSec);
+
+				// SkinnedMesh가 있으면 애니메이션 이름도 표시
+				if (auto* skinned = world.GetComponent<SkinnedMeshComponent>(_selectedEntity))
+				{
+					if (m_skinnedRegistry)
+					{
+						auto mesh = m_skinnedRegistry->Find(skinned->meshAssetPath);
+						if (mesh && mesh->sourceModel)
+						{
+							const auto& names = mesh->sourceModel->GetAnimationNames();
+							if (anim->clipIndex >= 0 && anim->clipIndex < (int)names.size())
+							{
+								ImGui::Text("Clip Name: %s", names[(size_t)anim->clipIndex].c_str());
+								const double dur = mesh->sourceModel->GetClipDurationSec(anim->clipIndex);
+								if (dur > 0.0)
+								{
+									ImGui::Text("Duration: %.3f sec", dur);
+									ImGui::Text("Progress: %.1f%%", (anim->timeSec / dur) * 100.0);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -5,6 +5,9 @@
 #include "Runtime/Resources/ResourceManager.h"
 #include <Runtime/Importing/FbxAsset.h>
 #include <Runtime/Rendering/Data/Material.h>
+#include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
 
 namespace Alice
 {
