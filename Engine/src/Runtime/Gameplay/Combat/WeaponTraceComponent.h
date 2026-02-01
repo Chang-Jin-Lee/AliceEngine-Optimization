@@ -51,6 +51,13 @@ namespace Alice
         bool active = false;
         bool debugDraw = false;
         float baseDamage = 10.0f;
+        float guardDurabilityCost = 0.0f;
+        float guardLockSec = 0.25f;
+        float parryLockSec = 0.0f;
+        float parryGroggyGain = 10.0f;
+        float guardBreakWeakSec = 1.5f;
+        float guardBreakPushbackSpeed = 3.0f;
+        float guardBreakPushbackDuration = 0.25f;
         uint32_t teamId = 0;
         uint32_t attackInstanceId = 0;
         uint32_t targetLayerBits = 0;

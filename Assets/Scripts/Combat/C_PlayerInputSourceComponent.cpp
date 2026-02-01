@@ -184,7 +184,7 @@ namespace Alice
         intent.guardPressed = guardPressed;
         intent.guardReleased = guardReleased;
         intent.guardHeldSec = guardHeld ? m_guardHeldSec : 0.0f;
-        intent.parryWindowActive = guardHeld && (m_guardHeldSec <= m_parryWindowSec);
+        intent.parryTapWindowSec = m_parryWindowSec;
 
         intent.dodgePressed = input->GetKeyDown(toKey(m_keyDodge));
         intent.itemPressed = input->GetKeyDown(toKey(m_keyItem));

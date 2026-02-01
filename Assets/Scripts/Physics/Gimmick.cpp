@@ -11,6 +11,10 @@
 #include "Runtime/Input/InputTypes.h"
 #include "Runtime/ECS/GameObject.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/ECS/Components/IDComponent.h"
+#include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
+#include "Runtime/Gameplay/Combat/HealthComponent.h"
+#include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
 #include "Runtime/Physics/Components/Phy_RigidBodyComponent.h"
 #include "Runtime/Physics/Components/Phy_ColliderComponent.h"
 #include "Runtime/Physics/Components/Phy_MeshColliderComponent.h"
@@ -143,8 +147,24 @@ namespace Alice
             return;
 
         auto* input = Input();
+        bool triggerBreak = false;
         if (input && input->GetKeyDown(KeyCode::G))
-            AdvancePhase();
+            triggerBreak = true;
+        if (!triggerBreak)
+        {
+            const bool guardBroken = IsGuardBroken();
+            if (guardBroken && !m_guardBreakLatched)
+            {
+                triggerBreak = true;
+                m_guardBreakLatched = true;
+            }
+            else if (!guardBroken)
+            {
+                m_guardBreakLatched = false;
+            }
+        }
+        if (input && input->GetKeyDown(KeyCode::R))
+            DebugEnableEnemyWeaponTrace();
 
         if (m_pendingBreakImpulse && CanApplyBreakImpulse())
         {
@@ -156,6 +176,10 @@ namespace Alice
 
         switch (m_phase)
         {
+        case Phase::Normal:
+            if (triggerBreak)
+                EnterPhase(Phase::Break);
+            break;
         case Phase::Magnetize:
             UpdateMagnetize(deltaTime);
             break;
@@ -168,6 +192,161 @@ namespace Alice
         default:
             break;
         }
+
+        if (m_phase == Phase::Break)
+        {
+            if (m_phaseTime >= m_breakScatterDurationSec)
+                EnterPhase(Phase::Magnetize);
+        }
+        else if (m_phase == Phase::Magnetize)
+        {
+            if (AreShardsCaptured())
+            {
+                m_captureCompleteTimer += deltaTime;
+                if (m_captureCompleteTimer >= m_captureCompleteDelaySec)
+                    EnterPhase(Phase::AssembleShards);
+            }
+            else
+            {
+                m_captureCompleteTimer = 0.0f;
+            }
+        }
+        else if (m_phase == Phase::AssembleShards)
+        {
+            if (AreShardsAssembled() && m_assembleFinishTimer >= m_shardAssembleFinishDelaySec)
+                EnterPhase(Phase::AssembleEye);
+        }
+        else if (m_phase == Phase::AssembleEye)
+        {
+            if (m_eyeArrived && m_tendonFading && m_tendonTimer >= m_tendonVisibleDelay)
+                EnterPhase(Phase::Normal);
+        }
+    }
+
+    void Gimmick::DebugEnableEnemyWeaponTrace()
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        auto go = world->FindGameObject(m_enemyName);
+        EntityId enemyId = go.IsValid() ? go.id() : InvalidEntityId;
+        if (enemyId == InvalidEntityId)
+        {
+            ALICE_LOG_WARN("[Gimmick] Enemy not found: %s", m_enemyName.c_str());
+            return;
+        }
+
+        auto activateTrace = [&](WeaponTraceComponent& trace)
+        {
+            if (!trace.active)
+            {
+                trace.attackInstanceId++;
+                trace.lastAttackInstanceId = trace.attackInstanceId;
+                trace.hasPrevBasis = false;
+                trace.hasPrevShapes = false;
+                trace.prevCentersWS.clear();
+                trace.prevRotsWS.clear();
+                trace.hitVictims.clear();
+            }
+            trace.active = true;
+        };
+
+        EntityId traceId = InvalidEntityId;
+        if (auto* driver = world->GetComponent<AttackDriverComponent>(enemyId))
+        {
+            if (driver->traceGuid != 0)
+                traceId = world->FindEntityByGuid(driver->traceGuid);
+        }
+        if (traceId == InvalidEntityId)
+        {
+            if (world->GetComponent<WeaponTraceComponent>(enemyId))
+                traceId = enemyId;
+        }
+        if (traceId == InvalidEntityId)
+        {
+            const auto* idc = world->GetComponent<IDComponent>(enemyId);
+            const uint64_t enemyGuid = idc ? idc->guid : 0;
+            for (auto&& [id, trace] : world->GetComponents<WeaponTraceComponent>())
+            {
+                const bool matchGuid = (enemyGuid != 0 && trace.ownerGuid == enemyGuid);
+                const bool matchName = (!m_enemyName.empty() && trace.ownerNameDebug == m_enemyName);
+                if (matchGuid || matchName)
+                {
+                    traceId = id;
+                    break;
+                }
+            }
+        }
+
+        if (traceId == InvalidEntityId)
+        {
+            ALICE_LOG_WARN("[Gimmick] Enemy weapon trace not found for %s", m_enemyName.c_str());
+            return;
+        }
+
+        if (auto* trace = world->GetComponent<WeaponTraceComponent>(traceId))
+        {
+            m_enemyTraceForced = !m_enemyTraceForced;
+            if (m_enemyTraceForced)
+            {
+                activateTrace(*trace);
+                ALICE_LOG_INFO("[Gimmick] Enemy weapon trace enabled. enemy=%s trace=%llu",
+                    m_enemyName.c_str(),
+                    static_cast<unsigned long long>(traceId));
+            }
+            else
+            {
+                trace->active = false;
+                ALICE_LOG_INFO("[Gimmick] Enemy weapon trace disabled. enemy=%s trace=%llu",
+                    m_enemyName.c_str(),
+                    static_cast<unsigned long long>(traceId));
+            }
+        }
+    }
+
+    bool Gimmick::IsGuardBroken() const
+    {
+        auto* world = GetWorld();
+        if (!world || m_guardBreakOwnerName.empty())
+            return false;
+
+        auto go = world->FindGameObject(m_guardBreakOwnerName);
+        EntityId ownerId = go.IsValid() ? go.id() : InvalidEntityId;
+        if (ownerId == InvalidEntityId)
+            return false;
+
+        auto* hc = world->GetComponent<HealthComponent>(ownerId);
+        if (!hc || hc->weaponDurabilityMax <= 0.0f)
+            return false;
+
+        return hc->weaponDurability <= 0.0f;
+    }
+
+    bool Gimmick::AreShardsCaptured() const
+    {
+        if (m_shards.empty())
+            return false;
+
+        for (const auto& shard : m_shards)
+        {
+            if (!shard.captured || shard.pulling)
+                return false;
+        }
+        return true;
+    }
+
+    bool Gimmick::AreShardsAssembled() const
+    {
+        if (m_shards.empty())
+            return false;
+
+        for (const auto& shard : m_shards)
+        {
+            if (!shard.assembled)
+                return false;
+        }
+        return true;
     }
 
     void Gimmick::FindEntities()
@@ -298,6 +477,7 @@ namespace Alice
 
             ResetShardState();
             m_eyeFloatAnchorValid = false;
+            m_assembleFinishTimer = 0.0f;
             m_phase = Phase::Normal;
             return;
         }
@@ -319,6 +499,7 @@ namespace Alice
 
             ResetShardState();
             m_eyeFloatAnchorValid = false;
+            m_assembleFinishTimer = 0.0f;
             return;
         }
 
@@ -408,6 +589,7 @@ namespace Alice
         {
             ResetShardState();
             m_captureTimer = 0.0f;
+            m_captureCompleteTimer = 0.0f;
             m_magnetizeInitialized = false;
             m_eyeFloatAnchorValid = false;
             if (auto* tr = world->GetComponent<TransformComponent>(m_eye))
@@ -434,6 +616,7 @@ namespace Alice
         {
             m_nextAssembleIndex = 0;
             m_assembleTimer = 0.0f;
+            m_assembleFinishTimer = 0.0f;
 
             for (auto& shard : m_shards)
             {
@@ -561,6 +744,7 @@ namespace Alice
         UpdateOrbitingShards(dt);
 
         bool assemblingInProgress = false;
+        bool anyAssembledMissing = false;
         for (const auto& shard : m_shards)
         {
             if (shard.assembling && !shard.assembled)
@@ -568,7 +752,13 @@ namespace Alice
                 assemblingInProgress = true;
                 break;
             }
+            if (!shard.assembled)
+                anyAssembledMissing = true;
         }
+        if (!anyAssembledMissing)
+            m_assembleFinishTimer += dt;
+        else
+            m_assembleFinishTimer = 0.0f;
 
         if (!assemblingInProgress)
             m_assembleTimer += dt;
@@ -722,6 +912,13 @@ namespace Alice
             ClearRigidBodyVelocity(id);
             XMFLOAT3 dir = RandomUnitVector(gen);
             float impulse = impulseDist(gen);
+            const float mass = body->GetMass();
+            if (mass > 0.0f && m_breakMaxSpeed > 0.0f)
+            {
+                const float speed = impulse / mass;
+                if (speed > m_breakMaxSpeed)
+                    impulse = m_breakMaxSpeed * mass;
+            }
             Vec3 impulseVec(dir.x * impulse, dir.y * impulse, dir.z * impulse);
             body->AddImpulse(impulseVec);
             body->WakeUp();

@@ -32,6 +32,23 @@ namespace Alice
                 health.invulnRemaining = std::max(0.0f, health.invulnRemaining - dtSec);
             }
 
+            if (health.weakRemainingSec > 0.0f)
+            {
+                health.weakRemainingSec = std::max(0.0f, health.weakRemainingSec - dtSec);
+            }
+
+            if (health.pushbackRemainingSec > 0.0f)
+            {
+                health.pushbackRemainingSec = std::max(0.0f, health.pushbackRemainingSec - dtSec);
+            }
+
+            if (health.weaponDurabilityMax > 0.0f)
+            {
+                if (health.weaponDurability > health.weaponDurabilityMax)
+                    health.weaponDurability = health.weaponDurabilityMax;
+            }
+            health.weaponDurability = std::max(0.0f, health.weaponDurability);
+
             if (health.currentHealth <= 0.0f)
             {
                 health.currentHealth = 0.0f;
