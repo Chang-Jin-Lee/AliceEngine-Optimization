@@ -105,6 +105,13 @@ namespace Alice
 		}
 	};
 
+    void C_CombatSessionComponent::SessionStateDeleter::operator()(SessionState* ptr) const
+    {
+        delete ptr;
+    }
+
+    C_CombatSessionComponent::~C_CombatSessionComponent() = default;
+
 	REGISTER_SCRIPT(C_CombatSessionComponent);
 
 	static IScript* FindScriptOnEntity(World& world, EntityId entityId, const char* name)
@@ -245,8 +252,8 @@ namespace Alice
 
 	void C_CombatSessionComponent::Start()
 	{
-		if (!m_state)
-			m_state = std::make_unique<SessionState>();
+        if (!m_state)
+            m_state.reset(new SessionState());
 		m_state->Init();
 
 		if (auto* world = GetWorld())
@@ -255,8 +262,8 @@ namespace Alice
 
 	void C_CombatSessionComponent::OnEnable()
 	{
-		if (!m_state)
-			m_state = std::make_unique<SessionState>();
+        if (!m_state)
+            m_state.reset(new SessionState());
 
 		if (auto* world = GetWorld())
 			world->SetScriptCombatEnabled(true);
@@ -270,6 +277,26 @@ namespace Alice
 		if (auto* world = GetWorld())
 			world->SetScriptCombatEnabled(false);
 	}
+
+    Combat::ActionState C_CombatSessionComponent::GetPlayerState() const
+    {
+        return m_state ? m_state->player.state : Combat::ActionState::Idle;
+    }
+
+    Combat::ActionState C_CombatSessionComponent::GetBossState() const
+    {
+        return m_state ? m_state->boss.state : Combat::ActionState::Idle;
+    }
+
+    Combat::ActionFlags C_CombatSessionComponent::GetPlayerFlags() const
+    {
+        return m_state ? m_state->player.flags : Combat::ActionFlags{};
+    }
+
+    Combat::ActionFlags C_CombatSessionComponent::GetBossFlags() const
+    {
+        return m_state ? m_state->boss.flags : Combat::ActionFlags{};
+    }
 
 	void C_CombatSessionComponent::ForceReset()
 	{
@@ -363,6 +390,7 @@ namespace Alice
 		UpdateDriverInput(bossId, bossIntent);
 
 		constexpr float kDegToRad = 0.01745329252f;
+		constexpr float kRadToDeg = 57.2957795f;
 
 		const EntityId cameraId = ResolvePrimaryCamera(world);
 		auto* camFollow = (cameraId != InvalidEntityId) ? world.GetComponent<CameraFollowComponent>(cameraId) : nullptr;
@@ -427,6 +455,63 @@ namespace Alice
 			if (m_state->playerLockOnActive)
 				camLookAt->targetName = m_bossName.empty() ? std::string("Enemy") : m_bossName;
 		}
+
+		auto FacePlayerForAttackGuard = [&]() {
+			const bool wantsAttack = playerIntent.lightAttackPressed
+				|| playerIntent.heavyAttackPressed
+				|| (playerIntent.attackPressed && !playerIntent.attackHeld);
+			const bool wantsGuard = playerIntent.guardHeld || playerIntent.guardPressed;
+			const bool inAttack = (m_state->player.state == Combat::ActionState::Attack);
+			const bool inGuard = (m_state->player.state == Combat::ActionState::Guard
+				|| m_state->player.state == Combat::ActionState::JustGuardSuccess);
+			if (!(wantsAttack || wantsGuard || inAttack || inGuard))
+				return;
+
+			auto* playerTr = world.GetComponent<TransformComponent>(playerId);
+			if (!playerTr)
+				return;
+
+			const float offsetRad = m_rotationOffsetDeg * kDegToRad;
+			float dx = 0.0f;
+			float dz = 0.0f;
+			bool hasDir = false;
+
+			if (m_state->playerLockOnActive && m_state->playerLockOnTarget != InvalidEntityId)
+			{
+				if (auto* targetTr = world.GetComponent<TransformComponent>(m_state->playerLockOnTarget))
+				{
+					dx = targetTr->position.x - playerTr->position.x;
+					dz = targetTr->position.z - playerTr->position.z;
+					const float len = std::sqrt(dx * dx + dz * dz);
+					if (len > 0.0001f)
+					{
+						dx /= len;
+						dz /= len;
+						hasDir = true;
+					}
+				}
+			}
+
+			if (!hasDir && camBasis.valid)
+			{
+				dx = camBasis.forwardX;
+				dz = camBasis.forwardZ;
+				const float len = std::sqrt(dx * dx + dz * dz);
+				if (len > 0.0001f)
+				{
+					dx /= len;
+					dz /= len;
+					hasDir = true;
+				}
+			}
+
+			if (hasDir)
+			{
+				const float yawRad = std::atan2(dx, dz) + offsetRad;
+				playerTr->SetRotation(0.0f, yawRad * kRadToDeg, 0.0f);
+			}
+		};
+		FacePlayerForAttackGuard();
 
 		Combat::Sensors sPlayer = m_state->player.BuildSensors(world, bossId, deltaTime);
 		Combat::Sensors sBoss = m_state->boss.BuildSensors(world, playerId, deltaTime);

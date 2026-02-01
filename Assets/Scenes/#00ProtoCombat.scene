@@ -76,19 +76,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.013304853811860085,
-                    "y": 1.2138030529022217,
-                    "z": 0.6989530920982361
+                    "x": -1.668532133102417,
+                    "y": 1.2194688320159912,
+                    "z": -2.0701076984405518
                 },
                 "rotation": {
-                    "x": -0.11455748975276947,
-                    "y": -0.8526932001113892,
-                    "z": -0.010262844152748585
+                    "x": -0.06158122420310974,
+                    "y": 2.696335792541504,
+                    "z": -0.012244763784110546
                 },
                 "scale": {
-                    "x": 1.000000238418579,
-                    "y": 0.9999995231628418,
-                    "z": 0.9999996423721313
+                    "x": 0.9999997615814209,
+                    "y": 0.9999996423721313,
+                    "z": 0.9999995231628418
                 },
                 "visible": false
             },
@@ -171,19 +171,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -8.608028292655945e-05,
-                    "y": 0.974619448184967,
-                    "z": 0.7113170027732849
+                    "x": -1.6650631427764893,
+                    "y": 0.9773899912834167,
+                    "z": -2.082052707672119
                 },
                 "rotation": {
-                    "x": -0.05719435587525368,
-                    "y": -0.8138881921768188,
-                    "z": 0.00038565986324101686
+                    "x": -0.031048433855175972,
+                    "y": 2.829996109008789,
+                    "z": 0.001395374652929604
                 },
                 "scale": {
-                    "x": 1.0,
-                    "y": 0.9999994039535522,
-                    "z": 0.9999996423721313
+                    "x": 0.9999998807907104,
+                    "y": 0.9999993443489075,
+                    "z": 0.999999463558197
                 },
                 "visible": false
             },
@@ -266,19 +266,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.028668204322457314,
-                    "y": 0.30117127299308777,
-                    "z": 0.554097592830658
+                    "x": -1.5642340183258057,
+                    "y": 0.2987954616546631,
+                    "z": -1.9575705528259277
                 },
                 "rotation": {
-                    "x": 0.08554583042860031,
-                    "y": 0.5432662963867188,
-                    "z": 2.8998944759368896
+                    "x": 0.09436745941638947,
+                    "y": -2.2044405937194824,
+                    "z": 2.875559091567993
                 },
                 "scale": {
-                    "x": 0.9999995231628418,
+                    "x": 0.9999994039535522,
                     "y": 1.000000238418579,
-                    "z": 1.0
+                    "z": 1.0000001192092896
                 },
                 "visible": false
             },
@@ -361,19 +361,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.0332120805978775,
-                    "y": 0.30889183282852173,
-                    "z": 0.8418304920196533
+                    "x": -1.7610843181610107,
+                    "y": 0.29904866218566895,
+                    "z": -2.166940450668335
                 },
                 "rotation": {
-                    "x": 0.010144690982997417,
-                    "y": -2.2064852714538574,
-                    "z": -2.606767416000366
+                    "x": 0.028893213719129562,
+                    "y": 1.3406180143356323,
+                    "z": -2.7267701625823975
                 },
                 "scale": {
-                    "x": 0.9999993443489075,
-                    "y": 0.9999992251396179,
-                    "z": 0.9999997615814209
+                    "x": 0.999999463558197,
+                    "y": 0.999999463558197,
+                    "z": 0.9999998211860657
                 },
                 "visible": false
             },
@@ -408,7 +408,7 @@
                     "loopB": true,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 2.2198126316070557,
+                    "timeA": 0.3820064663887024,
                     "timeB": 0.0
                 },
                 "enabled": true,
@@ -483,7 +483,7 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.3499999940395355,
                 "teleport": false,
-                "verticalVelocity": -0.05373329669237137
+                "verticalVelocity": 0.0
             },
             "Health": {
                 "alive": true,
@@ -717,7 +717,7 @@
                 "enabled": true,
                 "position": {
                     "x": -0.715033233165741,
-                    "y": 0.02837538719177246,
+                    "y": 0.049999773502349854,
                     "z": -0.20856717228889465
                 },
                 "rotation": {
@@ -801,25 +801,25 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.10625267028808594,
-                    "y": 0.8802034854888916,
-                    "z": -0.08382445573806763
+                    "x": -0.10552728176116943,
+                    "y": 0.9030770063400269,
+                    "z": -0.08406853675842285
                 },
                 "rotation": {
-                    "x": 0.720921516418457,
-                    "y": -0.7402799725532532,
-                    "z": -3.040099620819092
+                    "x": 0.7177685499191284,
+                    "y": -0.7367841601371765,
+                    "z": -3.0370192527770996
                 },
                 "scale": {
-                    "x": 1.0000004768371582,
-                    "y": 1.0,
-                    "z": 1.0000005960464478
+                    "x": 0.9999998807907104,
+                    "y": 1.000000238418579,
+                    "z": 0.9999997019767761
                 },
                 "visible": true
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 632,
+                "attackInstanceId": 845,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "guardBreakPushbackDuration": 0.25,
@@ -984,19 +984,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.7045239210128784,
-                    "y": 1.3526839017868042,
-                    "z": -0.19730143249034882
+                    "x": -0.7051274180412292,
+                    "y": 1.3743157386779785,
+                    "z": -0.19790466129779816
                 },
                 "rotation": {
-                    "x": -0.055957160890102386,
-                    "y": -2.3559608459472656,
-                    "z": 0.0029954323545098305
+                    "x": -0.05252270773053169,
+                    "y": -2.3559610843658447,
+                    "z": 0.0029950174503028393
                 },
                 "scale": {
                     "x": 1.0,
                     "y": 0.9999995231628418,
-                    "z": 0.9999996423721313
+                    "z": 0.9999995827674866
                 },
                 "visible": false
             },
@@ -1080,18 +1080,18 @@
                 "enabled": true,
                 "position": {
                     "x": -0.6991845369338989,
-                    "y": 1.039896845817566,
+                    "y": 1.061521291732788,
                     "z": -0.19271846115589142
                 },
                 "rotation": {
-                    "x": 0.008967122063040733,
-                    "y": 0.7854854464530945,
-                    "z": -3.130343437194824
+                    "x": 0.008961650542914867,
+                    "y": 0.7854925990104675,
+                    "z": -3.1294333934783936
                 },
                 "scale": {
                     "x": 1.0,
-                    "y": 0.9999998807907104,
-                    "z": 0.9999998211860657
+                    "y": 0.9999995231628418,
+                    "z": 0.9999995231628418
                 },
                 "visible": false
             },
@@ -1174,19 +1174,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.598875880241394,
-                    "y": 1.052839994430542,
-                    "z": -0.3872556686401367
+                    "x": -0.5988826155662537,
+                    "y": 1.0744280815124512,
+                    "z": -0.3871507942676544
                 },
                 "rotation": {
-                    "x": 0.5813047289848328,
-                    "y": -0.8594670295715332,
-                    "z": -2.9873054027557373
+                    "x": 0.5810948610305786,
+                    "y": -0.8561277985572815,
+                    "z": -2.9839887619018555
                 },
                 "scale": {
-                    "x": 1.0000001192092896,
-                    "y": 0.9999997615814209,
-                    "z": 1.0000001192092896
+                    "x": 0.9999999403953552,
+                    "y": 0.9999999403953552,
+                    "z": 0.9999999403953552
                 },
                 "visible": false
             },
@@ -1269,19 +1269,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.8955628871917725,
-                    "y": 1.0540745258331299,
-                    "z": -0.09015387296676636
+                    "x": -0.8955562114715576,
+                    "y": 1.075683355331421,
+                    "z": -0.0902458131313324
                 },
                 "rotation": {
-                    "x": -0.5871963500976563,
-                    "y": -0.7129895687103271,
-                    "z": -2.989391803741455
+                    "x": -0.5867747664451599,
+                    "y": -0.7151132822036743,
+                    "z": -2.9841339588165283
                 },
                 "scale": {
-                    "x": 1.0000001192092896,
-                    "y": 0.9999998807907104,
-                    "z": 0.9999997019767761
+                    "x": 0.9999997019767761,
+                    "y": 0.9999997019767761,
+                    "z": 0.9999999403953552
                 },
                 "visible": false
             },
@@ -1364,19 +1364,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.6394283771514893,
-                    "y": 0.5349205732345581,
-                    "z": -0.247946634888649
+                    "x": -0.6393691897392273,
+                    "y": 0.5566189289093018,
+                    "z": -0.24800661206245422
                 },
                 "rotation": {
-                    "x": 0.2697790861129761,
-                    "y": 0.792131781578064,
-                    "z": -3.083279848098755
+                    "x": 0.2687511444091797,
+                    "y": 0.7921252250671387,
+                    "z": -3.083461284637451
                 },
                 "scale": {
                     "x": 1.0000040531158447,
-                    "y": 1.000001072883606,
-                    "z": 1.0000009536743164
+                    "y": 1.0000009536743164,
+                    "z": 1.000001072883606
                 },
                 "visible": false
             },
@@ -1459,19 +1459,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.7548206448554993,
-                    "y": 0.5373271107673645,
-                    "z": -0.09830165654420853
+                    "x": -0.7546352744102478,
+                    "y": 0.5589162707328796,
+                    "z": -0.09822135418653488
                 },
                 "rotation": {
-                    "x": 0.08054828643798828,
-                    "y": 0.7656936049461365,
-                    "z": 3.0062503814697266
+                    "x": 0.0812174379825592,
+                    "y": 0.7655891180038452,
+                    "z": 3.006049871444702
                 },
                 "scale": {
                     "x": 1.0000044107437134,
-                    "y": 1.000001072883606,
-                    "z": 1.0000005960464478
+                    "y": 1.0000005960464478,
+                    "z": 1.000000238418579
                 },
                 "visible": false
             },
@@ -3771,6 +3771,84 @@
                         "m_playerName": "Player",
                         "m_rotationOffsetDeg": 180.0
                     }
+                },
+                {
+                    "enabled": true,
+                    "name": "CombatHudScript",
+                    "props": {
+                        "activeStateTextFontSize": 32.0,
+                        "activeTextAlpha": 1.0,
+                        "activeTextColor": {
+                            "w": 1.0,
+                            "x": 1.0,
+                            "y": 0.8999999761581421,
+                            "z": 0.20000000298023224
+                        },
+                        "activeWindowTextColor": {
+                            "w": 1.0,
+                            "x": 0.20000000298023224,
+                            "y": 1.0,
+                            "z": 0.4000000059604645
+                        },
+                        "activeWindowTextFontSize": 30.0,
+                        "bossActiveStateFontSize": 34.0,
+                        "bossActiveWindowFontSize": 32.0,
+                        "bossEntityName": "Enemy",
+                        "bossHeightOffset": 1.600000023841858,
+                        "bossHpGaugeName": "UI_BossHP_Gauge",
+                        "bossRightOffset": 0.800000011920929,
+                        "bossStateAttackTextName": "UI_BossState_Attack",
+                        "bossStateDodgeTextName": "UI_BossState_Dodge",
+                        "bossStateFontSize": 26.0,
+                        "bossStateGuardTextName": "UI_BossState_Guard",
+                        "bossStateIdleTextName": "UI_BossState_Idle",
+                        "bossStateMoveTextName": "UI_BossState_Move",
+                        "bossUseWorldSpace": true,
+                        "bossWindowFontSize": 26.0,
+                        "bossWindowTextName": "UI_BossWindow",
+                        "inactiveTextAlpha": 0.3499999940395355,
+                        "inactiveTextColor": {
+                            "w": 1.0,
+                            "x": 0.8999999761581421,
+                            "y": 0.8999999761581421,
+                            "z": 0.8999999761581421
+                        },
+                        "inactiveWindowTextColor": {
+                            "w": 1.0,
+                            "x": 0.8999999761581421,
+                            "y": 0.8999999761581421,
+                            "z": 0.8999999761581421
+                        },
+                        "playerActiveStateFontSize": 38.0,
+                        "playerActiveWindowFontSize": 36.0,
+                        "playerEntityName": "Player",
+                        "playerHeightOffset": 1.600000023841858,
+                        "playerHpGaugeName": "UI_PlayerHP_Gauge",
+                        "playerRightOffset": 0.800000011920929,
+                        "playerScreenLineSpacing": 40.0,
+                        "playerScreenPosX": -300.0,
+                        "playerScreenPosY": -300.0,
+                        "playerStateAttackTextName": "UI_PlayerState_Attack",
+                        "playerStateDodgeTextName": "UI_PlayerState_Dodge",
+                        "playerStateFontSize": 30.0,
+                        "playerStateGuardTextName": "UI_PlayerState_Guard",
+                        "playerStateIdleTextName": "UI_PlayerState_Idle",
+                        "playerStateMoveTextName": "UI_PlayerState_Move",
+                        "playerUseWorldSpace": false,
+                        "playerWindowFontSize": 30.0,
+                        "playerWindowTextName": "UI_PlayerWindow",
+                        "sessionEntityName": "SceneManager",
+                        "stateTextFontSize": 26.0,
+                        "useWorldSpace": true,
+                        "weaponGaugeName": "UI_WeaponDurability_Gauge",
+                        "windowTextFontSize": 26.0,
+                        "worldAttachAsChild": true,
+                        "worldAutoScaleBySize": true,
+                        "worldBillboard": true,
+                        "worldLineSpacing": 0.15000000596046448,
+                        "worldScale": 0.009999999776482582,
+                        "worldTargetSize": 0.6000000238418579
+                    }
                 }
             ],
             "Transform": {
@@ -3797,7 +3875,7 @@
         },
         {
             "Camera": {
-                "FOV": 59.999935150146484,
+                "FOV": 59.99999237060547,
                 "Far Plane": 1000.0,
                 "Near Plane": 0.10000000149011612,
                 "aspectOverride": 0.0,
@@ -3844,7 +3922,7 @@
                 "maxDistance": 8.079999923706055,
                 "minDistance": 0.0,
                 "mode": 0,
-                "pitchDeg": 46.39025115966797,
+                "pitchDeg": 24.238554000854492,
                 "pitchMaxDeg": 80.0,
                 "pitchMinDeg": -45.0,
                 "positionDamping": 8.0,
@@ -3853,7 +3931,7 @@
                 "shoulderOffset": 0.0,
                 "shoulderSide": 1.0,
                 "targetName": "Player",
-                "yawDeg": -139.76393127441406
+                "yawDeg": -26.16840171813965
             },
             "CameraInput": {
                 "blendTimeKey3": 0.6000000238418579,
@@ -3883,7 +3961,7 @@
                 "frequency": 20.0
             },
             "CameraSpringArm": {
-                "distance": 1.0,
+                "distance": 1.0000413656234741,
                 "distanceDamping": 6.0,
                 "enableCollision": false,
                 "enableZoom": true,
@@ -3935,14 +4013,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.4760431945323944,
-                    "y": 1.964055061340332,
-                    "z": 1.1990879774093628
+                    "x": -1.279558777809143,
+                    "y": 1.6506022214889526,
+                    "z": -2.840608596801758
                 },
                 "rotation": {
-                    "x": 0.8096626400947571,
-                    "y": -2.439340829849243,
-                    "z": 1.1920930376163597e-07
+                    "x": 0.4230425953865051,
+                    "y": -0.45672479271888733,
+                    "z": -1.4901161193847656e-08
                 },
                 "scale": {
                     "x": 1.0,
@@ -3973,17 +4051,17 @@
                 },
                 "base": {
                     "autoAdvance": true,
-                    "blend01": 0.068329356610775,
+                    "blend01": 0.05292833596467972,
                     "clipA": "rig|Tia_IDLE",
-                    "clipB": "rig|Tia_Run",
+                    "clipB": "rig|Tia_Normal_Attack_1",
                     "enabled": true,
                     "layerAlpha": 1.0,
                     "loopA": true,
-                    "loopB": true,
+                    "loopB": false,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.5882541537284851,
-                    "timeB": 0.17158985137939453
+                    "timeA": 0.0741109848022461,
+                    "timeB": 0.006351400166749954
                 },
                 "enabled": true,
                 "ik": {
@@ -4084,11 +4162,11 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.3499999940395355,
                 "teleport": false,
-                "verticalVelocity": -0.05373329669237137
+                "verticalVelocity": 0.0
             },
             "Health": {
                 "alive": true,
-                "currentHealth": 100.0,
+                "currentHealth": 50.0,
                 "dodgeActive": false,
                 "dodgeAvoidedThisFrame": false,
                 "groggy": 0.0,
@@ -4101,18 +4179,18 @@
                 "hitThisFrame": false,
                 "invulnDuration": 0.0,
                 "invulnRemaining": 0.0,
-                "lastHitAttacker": 6,
+                "lastHitAttacker": 94,
                 "lastHitDamage": 10.0,
                 "lastHitNormalWS": {
-                    "x": 0.2650235593318939,
-                    "y": -0.4707629084587097,
-                    "z": -0.8415133357048035
+                    "x": 0.42675915360450745,
+                    "y": 0.5297666788101196,
+                    "z": -0.7329555749893188
                 },
-                "lastHitPart": 11,
+                "lastHitPart": 31,
                 "lastHitPosWS": {
-                    "x": 0.02238423377275467,
-                    "y": 0.826365053653717,
-                    "z": 0.6313084959983826
+                    "x": -0.24762558937072754,
+                    "y": 0.32638251781463623,
+                    "z": 1.0613775253295898
                 },
                 "maxHealth": 100.0,
                 "pushbackDir": {
@@ -4297,13 +4375,13 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.03051174245774746,
-                    "y": 0.049999773502349854,
-                    "z": 0.6725447177886963
+                    "x": -1.6817561388015747,
+                    "y": 0.050000011920928955,
+                    "z": -2.022096633911133
                 },
                 "rotation": {
                     "x": 0.0,
-                    "y": 5.441287994384766,
+                    "y": 2.6848678588867188,
                     "z": 0.0
                 },
                 "scale": {
@@ -5089,19 +5167,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.12376891821622849,
-                    "y": 0.9216744899749756,
-                    "z": 1.0166984796524048
+                    "x": -1.684130311012268,
+                    "y": 0.9097716212272644,
+                    "z": -2.404330253601074
                 },
                 "rotation": {
-                    "x": -0.06838984787464142,
-                    "y": -1.4504534006118774,
-                    "z": 2.031684398651123
+                    "x": -0.05104188993573189,
+                    "y": 2.092892646789551,
+                    "z": 2.0356686115264893
                 },
                 "scale": {
-                    "x": 0.999999463558197,
-                    "y": 0.9999997019767761,
-                    "z": 0.9999996423721313
+                    "x": 0.9999996423721313,
+                    "y": 0.9999997615814209,
+                    "z": 0.9999998211860657
                 },
                 "visible": false
             },
@@ -5283,25 +5361,25 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.12376891821622849,
-                    "y": 0.9216744899749756,
-                    "z": 1.0166984796524048
+                    "x": -1.684130311012268,
+                    "y": 0.9097716212272644,
+                    "z": -2.404330253601074
                 },
                 "rotation": {
-                    "x": -0.06838984787464142,
-                    "y": -1.4504534006118774,
-                    "z": 2.031684398651123
+                    "x": -0.05104188993573189,
+                    "y": 2.092892646789551,
+                    "z": 2.0356686115264893
                 },
                 "scale": {
-                    "x": 0.999999463558197,
-                    "y": 0.9999997019767761,
-                    "z": 0.9999996423721313
+                    "x": 0.9999996423721313,
+                    "y": 0.9999997615814209,
+                    "z": 0.9999998211860657
                 },
                 "visible": true
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 297,
+                "attackInstanceId": 320,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "guardBreakPushbackDuration": 0.25,
@@ -5589,6 +5667,1216 @@
             },
             "guid": "5375417323062141179",
             "name": "Camera4"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 6.129827499389648,
+                    "y": 1.6499989032745361,
+                    "z": -33.74386978149414
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.0023076923098415136,
+                    "y": 0.0023076923098415136,
+                    "z": 0.0023076923098415136
+                },
+                "visible": false
+            },
+            "UIGauge": {
+                "backgroundColor": {
+                    "w": 0.8999999761581421,
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "backgroundTexture": "",
+                "direction": "LeftToRight",
+                "fillColor": {
+                    "w": 1.0,
+                    "x": 0.20000000298023224,
+                    "y": 0.8999999761581421,
+                    "z": 0.20000000298023224
+                },
+                "fillTexture": "",
+                "maxValue": 1.0,
+                "minValue": 0.0,
+                "normalized": true,
+                "smoothing": 0.0,
+                "value": 0.5
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -300.0,
+                    "y": -300.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 260.0,
+                    "y": 20.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_PlayerHP_Gauge"
+            },
+            "guid": "15100000000000000001",
+            "name": "UI_PlayerHP_Gauge"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 6.129827499389648,
+                    "y": 1.499998927116394,
+                    "z": -33.74386978149414
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.0023076923098415136,
+                    "y": 0.0023076923098415136,
+                    "z": 0.0023076923098415136
+                },
+                "visible": false
+            },
+            "UIGauge": {
+                "backgroundColor": {
+                    "w": 0.8999999761581421,
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "backgroundTexture": "",
+                "direction": "LeftToRight",
+                "fillColor": {
+                    "w": 1.0,
+                    "x": 0.20000000298023224,
+                    "y": 0.6000000238418579,
+                    "z": 0.8999999761581421
+                },
+                "fillTexture": "",
+                "maxValue": 1.0,
+                "minValue": 0.0,
+                "normalized": true,
+                "smoothing": 0.0,
+                "value": 0.0
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -300.0,
+                    "y": -260.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 260.0,
+                    "y": 16.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_WeaponDurability_Gauge"
+            },
+            "guid": "15100000000000000002",
+            "name": "UI_WeaponDurability_Gauge"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.800000011920929,
+                    "y": 1.600000023841858,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.0023076923098415136,
+                    "y": 0.0023076923098415136,
+                    "z": 0.0023076923098415136
+                },
+                "visible": false
+            },
+            "UIGauge": {
+                "backgroundColor": {
+                    "w": 0.8999999761581421,
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "backgroundTexture": "",
+                "direction": "LeftToRight",
+                "fillColor": {
+                    "w": 1.0,
+                    "x": 0.8999999761581421,
+                    "y": 0.20000000298023224,
+                    "z": 0.20000000298023224
+                },
+                "fillTexture": "",
+                "maxValue": 1.0,
+                "minValue": 0.0,
+                "normalized": true,
+                "smoothing": 0.0,
+                "value": 1.0
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 260.0,
+                    "y": 20.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "UI_BossHP_Gauge"
+            },
+            "_parentGuid": "3451982848192160413",
+            "guid": "15100000000000000003",
+            "name": "UI_BossHP_Gauge"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 6.129827499389648,
+                    "y": 1.349998950958252,
+                    "z": -33.74386978149414
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.001875000074505806,
+                    "y": 0.001875000074505806,
+                    "z": 0.001875000074505806
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 30.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "None",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -300.0,
+                    "y": -220.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 320.0,
+                    "y": 24.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_PlayerWindow"
+            },
+            "guid": "15100000000000000004",
+            "name": "UI_PlayerWindow"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.800000011920929,
+                    "y": 1.4500000476837158,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.001875000074505806,
+                    "y": 0.001875000074505806,
+                    "z": 0.001875000074505806
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 26.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "None",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 320.0,
+                    "y": 24.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "UI_BossWindow"
+            },
+            "_parentGuid": "3451982848192160413",
+            "guid": "15100000000000000005",
+            "name": "UI_BossWindow"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 6.129827499389648,
+                    "y": 1.1999988555908203,
+                    "z": -33.74386978149414
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.005000000353902578,
+                    "y": 0.005000000353902578,
+                    "z": 0.005000000353902578
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 30.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Idle",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -300.0,
+                    "y": -180.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 120.0,
+                    "y": 20.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_PlayerState_Idle"
+            },
+            "guid": "15100000000000000006",
+            "name": "UI_PlayerState_Idle"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 6.129827499389648,
+                    "y": 1.0499988794326782,
+                    "z": -33.74386978149414
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.005000000353902578,
+                    "y": 0.005000000353902578,
+                    "z": 0.005000000353902578
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 30.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Move",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -300.0,
+                    "y": -140.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 120.0,
+                    "y": 20.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_PlayerState_Move"
+            },
+            "guid": "15100000000000000007",
+            "name": "UI_PlayerState_Move"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 6.129827499389648,
+                    "y": 0.8999989032745361,
+                    "z": -33.74386978149414
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.005000000353902578,
+                    "y": 0.005000000353902578,
+                    "z": 0.005000000353902578
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 0.8999999761581421,
+                    "z": 0.20000000298023224
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 38.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Attack",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -300.0,
+                    "y": -100.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 120.0,
+                    "y": 20.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_PlayerState_Attack"
+            },
+            "guid": "15100000000000000008",
+            "name": "UI_PlayerState_Attack"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 6.129827499389648,
+                    "y": 0.749998927116394,
+                    "z": -33.74386978149414
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.005000000353902578,
+                    "y": 0.005000000353902578,
+                    "z": 0.005000000353902578
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 30.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Guard",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -300.0,
+                    "y": -60.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 120.0,
+                    "y": 20.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_PlayerState_Guard"
+            },
+            "guid": "15100000000000000009",
+            "name": "UI_PlayerState_Guard"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 6.129827499389648,
+                    "y": 0.599998950958252,
+                    "z": -33.74386978149414
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.005000000353902578,
+                    "y": 0.005000000353902578,
+                    "z": 0.005000000353902578
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 30.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Dodge",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -300.0,
+                    "y": -20.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 120.0,
+                    "y": 20.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_PlayerState_Dodge"
+            },
+            "guid": "15100000000000000010",
+            "name": "UI_PlayerState_Dodge"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.800000011920929,
+                    "y": 1.2999999523162842,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.005000000353902578,
+                    "y": 0.005000000353902578,
+                    "z": 0.005000000353902578
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 0.8999999761581421,
+                    "z": 0.20000000298023224
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 34.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Idle",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 120.0,
+                    "y": 20.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "UI_BossState_Idle"
+            },
+            "_parentGuid": "3451982848192160413",
+            "guid": "15100000000000000011",
+            "name": "UI_BossState_Idle"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.800000011920929,
+                    "y": 1.149999976158142,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.005000000353902578,
+                    "y": 0.005000000353902578,
+                    "z": 0.005000000353902578
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 26.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Move",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 120.0,
+                    "y": 20.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "UI_BossState_Move"
+            },
+            "_parentGuid": "3451982848192160413",
+            "guid": "15100000000000000012",
+            "name": "UI_BossState_Move"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.800000011920929,
+                    "y": 1.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.005000000353902578,
+                    "y": 0.005000000353902578,
+                    "z": 0.005000000353902578
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 26.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Attack",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 120.0,
+                    "y": 20.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "UI_BossState_Attack"
+            },
+            "_parentGuid": "3451982848192160413",
+            "guid": "15100000000000000013",
+            "name": "UI_BossState_Attack"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.800000011920929,
+                    "y": 0.8500000238418579,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.005000000353902578,
+                    "y": 0.005000000353902578,
+                    "z": 0.005000000353902578
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 26.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Guard",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 120.0,
+                    "y": 20.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "UI_BossState_Guard"
+            },
+            "_parentGuid": "3451982848192160413",
+            "guid": "15100000000000000014",
+            "name": "UI_BossState_Guard"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.800000011920929,
+                    "y": 0.7000000476837158,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.005000000353902578,
+                    "y": 0.005000000353902578,
+                    "z": 0.005000000353902578
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 26.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Dodge",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 120.0,
+                    "y": 20.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "UI_BossState_Dodge"
+            },
+            "_parentGuid": "3451982848192160413",
+            "guid": "15100000000000000015",
+            "name": "UI_BossState_Dodge"
         }
     ],
     "sceneName": "#00ProtoCombat",

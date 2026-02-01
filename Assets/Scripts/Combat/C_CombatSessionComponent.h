@@ -9,6 +9,7 @@
 #include "Runtime/ECS/Entity.h"
 #include <memory>
 #include <string>
+#include "C_CombatContracts.h"
 
 namespace Alice
 {
@@ -22,6 +23,12 @@ namespace Alice
         void PostCombatUpdate(float deltaTime) override;
         void OnEnable() override;
         void OnDisable() override;
+        ~C_CombatSessionComponent() override;
+
+        Combat::ActionState GetPlayerState() const;
+        Combat::ActionState GetBossState() const;
+        Combat::ActionFlags GetPlayerFlags() const;
+        Combat::ActionFlags GetBossFlags() const;
 
         // Entity resolution (GUID preferred, name fallback when enabled)
         ALICE_PROPERTY(uint64_t, m_playerGuid, 0);
@@ -103,6 +110,10 @@ namespace Alice
         EntityId ResolveEntityByName(const std::string& name) const;
 
         struct SessionState;
-        std::unique_ptr<SessionState> m_state;
+        struct SessionStateDeleter
+        {
+            void operator()(SessionState* ptr) const;
+        };
+        std::unique_ptr<SessionState, SessionStateDeleter> m_state;
     };
 }
