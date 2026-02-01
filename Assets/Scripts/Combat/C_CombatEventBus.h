@@ -1,6 +1,6 @@
-﻿#pragma once
+#pragma once
 /*
-* 프레임 단위 Hit 이벤트 수집, 지연 CombatEvent(OnHit/OnGuarded/OnParried 등) 보관·조회.
+ * 프레임 단위 Hit 이벤트 수집, 지연 CombatEvent(OnHit/OnGuarded/OnParrySuccess 등) 보관·조회.
 * C_CombatSession이 하나 보유하고 매 프레임 ClearFrame.
 */
 #include <unordered_map>

@@ -227,8 +227,9 @@ namespace Alice
 
         if (input->GetMouseButton(MouseCode::Left))
         {
-            follow->yawDeg   -= input->GetMouseDeltaX() * follow->sensitivity;
-            follow->pitchDeg -= input->GetMouseDeltaY() * follow->sensitivity;
+            const float mouseFlip = follow->invertMouse ? -1.0f : 1.0f;
+            follow->yawDeg   += mouseFlip * input->GetMouseDeltaX() * follow->sensitivity;
+            follow->pitchDeg += mouseFlip * input->GetMouseDeltaY() * follow->sensitivity;
             follow->pitchDeg = std::clamp(follow->pitchDeg, follow->pitchMinDeg, follow->pitchMaxDeg);
         }
     }
@@ -326,6 +327,12 @@ namespace Alice
             // 리플렉션으로 노출된 쉐이크 파라미터 사용
             TriggerShake(Get_m_shakeAmplitude(), Get_m_shakeFrequency(), 
                         Get_m_shakeDuration(), Get_m_shakeDecay());
+        }
+
+        if (!m_preview)
+        {
+            UpdateOrbit();
+            UpdateZoom();
         }
     }
 }
