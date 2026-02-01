@@ -95,7 +95,34 @@ set(ENGINE_SOURCES
     ${ALICE_SRC_DIR}/Runtime/Engine/EngineWindow.cpp
     ${ALICE_SRC_DIR}/Editor/Core/ViewportPicker.cpp
     ${ALICE_SRC_DIR}/Editor/Core/EditorCore.cpp
+    ${ALICE_SRC_DIR}/Editor/Core/EditorUndoRedo.cpp
+    ${ALICE_SRC_DIR}/Editor/UI/EditorDocking.cpp
+    ${ALICE_SRC_DIR}/Editor/UI/EditorMainMenuBar.cpp
+    ${ALICE_SRC_DIR}/Editor/UI/EditorSceneLoadFlow.cpp
+    ${ALICE_SRC_DIR}/Editor/Panels/HierarchyPanel.cpp
+    ${ALICE_SRC_DIR}/Editor/Panels/InspectorPanel.cpp
+    ${ALICE_SRC_DIR}/Editor/Inspector/Inspector_Transform.cpp
+    ${ALICE_SRC_DIR}/Editor/Inspector/Inspector_Scripting.cpp
+    ${ALICE_SRC_DIR}/Editor/Inspector/Inspector_Rendering.cpp
+    ${ALICE_SRC_DIR}/Editor/Inspector/Inspector_Physics.cpp
+    ${ALICE_SRC_DIR}/Editor/Inspector/Inspector_Camera.cpp
+    ${ALICE_SRC_DIR}/Editor/Inspector/Inspector_Combat.cpp
+    ${ALICE_SRC_DIR}/Editor/Inspector/Inspector_Socket.cpp
+    ${ALICE_SRC_DIR}/Editor/Panels/ProjectPanel.cpp
+    ${ALICE_SRC_DIR}/Editor/Panels/GameViewportPanel.cpp
+    ${ALICE_SRC_DIR}/Editor/Panels/CameraPanel.cpp
+    ${ALICE_SRC_DIR}/Editor/Panels/LightingPanel.cpp
+    ${ALICE_SRC_DIR}/Editor/Tools/PvdSettingsWindow.cpp
+    ${ALICE_SRC_DIR}/Editor/Tools/BuildGameWindow.cpp
     ${ALICE_SRC_DIR}/Editor/Tools/Blueprint/AnimBlueprintEditor.cpp
+    ${ALICE_SRC_DIR}/Editor/Scripting/ScriptReloadHelpers.cpp
+    ${ALICE_SRC_DIR}/Editor/Project/DirectoryTree.cpp
+    ${ALICE_SRC_DIR}/Editor/Scene/SceneIO.cpp
+    ${ALICE_SRC_DIR}/Editor/Scene/StartupSceneLoader.cpp
+    ${ALICE_SRC_DIR}/Editor/Scene/AssetInstantiation.cpp
+    ${ALICE_SRC_DIR}/Editor/UI/AliceUIFactory.cpp
+    ${ALICE_SRC_DIR}/Editor/AssetEditors/MaterialAssetEditor.cpp
+    ${ALICE_SRC_DIR}/Editor/AssetEditors/UICurveAssetEditor.cpp
 
     # 코어(ECS 스타일)
     ${ALICE_SRC_DIR}/Runtime/ECS/World.cpp
@@ -185,6 +212,8 @@ set(ENGINE_HEADERS
     ${ALICE_SRC_DIR}/Runtime/Engine/EngineImpl.h
     ${ALICE_SRC_DIR}/Editor/Core/ViewportPicker.h
     ${ALICE_SRC_DIR}/Editor/Core/EditorCore.h
+    ${ALICE_SRC_DIR}/Editor/Core/EditorUndoRedo.h
+    ${ALICE_SRC_DIR}/Editor/Scripting/ScriptReloadHelpers.h
     ${ALICE_SRC_DIR}/Editor/Tools/Blueprint/AnimBlueprintEditor.h
 
     # 코어
@@ -539,9 +568,9 @@ endforeach()
 # ==========================================
 if(MSVC)
     # 경고 레벨
-    target_compile_options(Engine      PRIVATE /W4 /permissive- /bigobj)
-    target_compile_options(Launch      PRIVATE /W4 /permissive- /bigobj)
-    target_compile_options(AlicePlayer PRIVATE /W4 /permissive- /bigobj)
+    target_compile_options(Engine      PRIVATE /W4 /permissive- /bigobj /MP)
+    target_compile_options(Launch      PRIVATE /W4 /permissive- /bigobj /MP)
+    target_compile_options(AlicePlayer PRIVATE /W4 /permissive- /bigobj /MP)
 
     # Include 경로 추가 (상단에서 설정한 VCPKG_ROOT 사용)
     target_include_directories(Engine

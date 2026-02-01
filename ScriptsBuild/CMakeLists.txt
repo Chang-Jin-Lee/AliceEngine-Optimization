@@ -205,5 +205,5 @@ if(MSVC)
     # target_link_options(AliceScripts PRIVATE "/DEBUG:NONE")
 
     # 소스 파일 UTF-8 인코딩 명시 (C4819 경고 방지)
-    target_compile_options(AliceScripts PRIVATE "/utf-8")
+    target_compile_options(AliceScripts PRIVATE "/utf-8" "/MP")
 endif()
