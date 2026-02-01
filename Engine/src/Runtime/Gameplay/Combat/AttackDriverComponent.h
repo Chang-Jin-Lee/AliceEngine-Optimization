@@ -13,6 +13,7 @@ namespace Alice
 		Attack = 0,
 		Dodge = 1,
 		Guard = 2,
+		Parry = 3,
 	};
 
 	enum class AttackDriverClipSource : std::uint8_t
@@ -63,9 +64,19 @@ namespace Alice
 		bool attackActive = false;
 		bool dodgeActive = false;
 		bool guardActive = false;
+		bool parryActive = false;
 		bool attackCancelable = true;
 		bool cancelAttackRequested = false;
 		float attackStateDurationAutoSec = 0.0f;
+		bool guardInputHeld = false;
+		bool guardInputPressed = false;
+		bool guardInputReleased = false;
+		float guardLockRemainingSec = 0.0f;
+		bool guardLockActive = false;
+		float parryOverrideRemainingSec = 0.0f;
+		bool parryUsedThisPress = false;
+		std::uint8_t parryTapCredit = 0;
+		bool guardSessionActive = false;
 
 		// 이전 프레임 시간 캐시 (직렬화 금지)
 		AttackDriverClipHistory prevBaseA;

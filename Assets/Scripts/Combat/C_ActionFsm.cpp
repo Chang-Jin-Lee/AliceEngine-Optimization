@@ -21,8 +21,8 @@ namespace Alice::Combat
     {
         m_state = ActionState::Idle;
         m_stateTime = 0.0f;
-        m_attackCommitted = false;
         m_prevHitActive = false;
+        m_attackWindowSeen = false;
         m_lastMoveDir = {};
         m_lastMoveValid = false;
         m_dodgeDir = {};
@@ -37,11 +37,8 @@ namespace Alice::Combat
         {
             m_state = next;
             m_stateTime = 0.0f;
-            if (m_state != ActionState::Attack)
-                m_attackCommitted = false;
-            else
-                m_attackCommitted = false;
             m_prevHitActive = false;
+            m_attackWindowSeen = false;
         }
     }
 
@@ -60,6 +57,15 @@ namespace Alice::Combat
             Enter(ActionState::Dead);
         }
 
+        if (HasEvent(events, CombatEventType::OnGuardBreak) && m_state != ActionState::Dead)
+        {
+            Enter(ActionState::GuardBreakWeak);
+        }
+        else if (HasEvent(events, CombatEventType::OnParrySuccess) && m_state != ActionState::Dead)
+        {
+            Enter(ActionState::JustGuardSuccess);
+        }
+
         if (HasEvent(events, CombatEventType::OnGroggy) && m_state != ActionState::Dead)
         {
             Enter(ActionState::Groggy);
@@ -71,9 +77,50 @@ namespace Alice::Combat
                 Enter(ActionState::Hitstun);
         }
 
-        if (m_state != ActionState::Dead && m_state != ActionState::Hitstun && m_state != ActionState::Groggy)
+        const bool hasMove = (Abs(intent.move.x) + Abs(intent.move.y)) > 0.001f;
+        const bool wantsGuard = (intent.guardHeld || sensors.guardLockActive) && !sensors.weakActive;
+
+        auto EnterIdleOrMove = [&]() {
+            if (hasMove)
+            {
+                Enter(ActionState::Move);
+                out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, intent.move, sensors.moveSpeed, true, true } });
+            }
+            else
+            {
+                Enter(ActionState::Idle);
+                out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, {0.0f, 0.0f}, 0.0f, true, false } });
+            }
+        };
+
+        if (m_state == ActionState::JustGuardSuccess)
         {
-            const bool hasMove = (Abs(intent.move.x) + Abs(intent.move.y)) > 0.001f;
+            if (m_stateTime >= m_justGuardDurationSec)
+            {
+                if (wantsGuard)
+                    Enter(ActionState::Guard);
+                else
+                    EnterIdleOrMove();
+            }
+        }
+
+        if (m_state == ActionState::GuardBreakWeak)
+        {
+            if (sensors.weakRemainingSec <= 0.0f)
+            {
+                if (wantsGuard)
+                    Enter(ActionState::Guard);
+                else
+                    EnterIdleOrMove();
+            }
+        }
+
+        if (m_state != ActionState::Dead
+            && m_state != ActionState::Hitstun
+            && m_state != ActionState::Groggy
+            && m_state != ActionState::GuardBreakWeak
+            && m_state != ActionState::JustGuardSuccess)
+        {
             const bool wantsAttack = intent.lightAttackPressed
                 || intent.heavyAttackPressed
                 || (intent.attackPressed && !intent.attackHeld);
@@ -135,59 +182,54 @@ namespace Alice::Combat
             }
             else if (m_state == ActionState::Attack)
             {
-                if (sensors.attackStateDurationSec > 0.0f)
+                if (sensors.attackWindowActive)
+                    m_attackWindowSeen = true;
+
+                const float attackDuration = (sensors.attackStateDurationSec > 0.0f)
+                    ? sensors.attackStateDurationSec
+                    : m_attackFallbackDurationSec;
+                const bool attackFinished = (attackDuration > 0.0f) && (m_stateTime >= attackDuration);
+                const bool preWindow = !sensors.attackWindowActive && !m_attackWindowSeen;
+                const bool postWindow = !sensors.attackWindowActive && m_attackWindowSeen;
+                const bool canGuardCancel = preWindow
+                    && sensors.attackCancelable
+                    && wantsGuard;
+                const bool canDodgeCancel = postWindow
+                    && sensors.attackCancelable
+                    && intent.dodgePressed
+                    && sensors.stamina >= 10.0f;
+
+                if (canDodgeCancel)
                 {
-                    if (m_stateTime >= sensors.attackStateDurationSec)
-                    {
-                        if (hasMove)
-                        {
-                            Enter(ActionState::Move);
-                            out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, intent.move, sensors.moveSpeed, true, true } });
-                        }
-                        else
-                        {
-                            Enter(ActionState::Idle);
-                            out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, {0.0f, 0.0f}, 0.0f, true, false } });
-                        }
-                    }
+                    BeginDodge();
                 }
-                else if (!m_attackCommitted)
+                else if (canGuardCancel)
                 {
-                    if (sensors.attackWindowActive)
-                        m_attackCommitted = true;
+                    Enter(ActionState::Guard);
+                }
+                else if (attackFinished)
+                {
+                    if (wantsGuard)
+                    {
+                        Enter(ActionState::Guard);
+                    }
+                    else if (hasMove)
+                    {
+                        Enter(ActionState::Move);
+                        out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, intent.move, sensors.moveSpeed, true, true } });
+                    }
                     else
                     {
-                        if (intent.dodgePressed && sensors.stamina >= 10.0f)
-                        {
-                            BeginDodge();
-                        }
-                        else if (intent.guardHeld)
-                        {
-                            Enter(ActionState::Guard);
-                        }
-                        else if (hasMove)
-                        {
-                            Enter(ActionState::Move);
-                            out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, intent.move, sensors.moveSpeed, true, true } });
-                        }
-                        else
-                        {
-                            Enter(ActionState::Idle);
-                            out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, {0.0f, 0.0f}, 0.0f, true, false } });
-                        }
-                    }
-                }
-                else
-                {
-                    if (!sensors.attackWindowActive && m_stateTime > 0.05f)
                         Enter(ActionState::Idle);
+                        out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, {0.0f, 0.0f}, 0.0f, true, false } });
+                    }
                 }
             }
             else if (intent.dodgePressed && sensors.stamina >= 10.0f)
             {
                 BeginDodge();
             }
-            else if (intent.guardHeld)
+            else if (wantsGuard)
             {
                 if (m_state != ActionState::Guard)
                 {
@@ -216,10 +258,14 @@ namespace Alice::Combat
         ActionFlags flags{};
         // Flags are pass-through windows from sensors (single source of truth).
         flags.hitActive = sensors.attackWindowActive;
-        flags.guardActive = sensors.guardWindowActive;
+        flags.guardActive = sensors.guardWindowActive && !sensors.weakActive;
         flags.invulnActive = sensors.dodgeWindowActive || sensors.invulnActive;
-        flags.parryWindowActive = false;
-        flags.canBeInterrupted = (m_state != ActionState::Dodge) && (m_state != ActionState::Dead) && (m_state != ActionState::Groggy);
+        flags.parryWindowActive = sensors.parryWindowActive && !sensors.weakActive;
+        flags.canBeInterrupted = (m_state != ActionState::Dodge)
+            && (m_state != ActionState::Dead)
+            && (m_state != ActionState::Groggy)
+            && (m_state != ActionState::GuardBreakWeak)
+            && (m_state != ActionState::JustGuardSuccess);
 
         if (m_state == ActionState::Hitstun)
         {

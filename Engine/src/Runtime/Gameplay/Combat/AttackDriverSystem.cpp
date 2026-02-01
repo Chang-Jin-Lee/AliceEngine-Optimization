@@ -373,6 +373,7 @@ namespace Alice
             driver.attackActive = false;
             driver.dodgeActive = false;
             driver.guardActive = false;
+            driver.parryActive = false;
             driver.attackCancelable = true;
         }
 
@@ -399,6 +400,9 @@ namespace Alice
             case AttackDriverNotifyType::Guard:
                 driver.guardActive = driver.guardActive || active;
                 break;
+            case AttackDriverNotifyType::Parry:
+                driver.parryActive = driver.parryActive || active;
+                break;
             case AttackDriverNotifyType::Attack:
             default:
                 driver.attackActive = driver.attackActive || active;
@@ -406,6 +410,17 @@ namespace Alice
                     driver.attackCancelable = false;
                 break;
             }
+        }
+
+        void ApplyInputOverrides(AttackDriverComponent& driver)
+        {
+            driver.guardLockActive = (driver.guardLockRemainingSec > 0.0f);
+            if (driver.guardInputHeld || driver.guardLockActive)
+                driver.guardActive = true;
+            if (driver.parryOverrideRemainingSec > 0.0f)
+                driver.parryActive = true;
+            if (driver.parryUsedThisPress)
+                driver.parryActive = false;
         }
 
         bool IsClipWindowActiveSkinned(const AttackDriverClip& clip,
@@ -617,10 +632,12 @@ namespace Alice
             const bool prevAttack = driver.attackActive;
             const bool prevDodge = driver.dodgeActive;
             const bool prevGuard = driver.guardActive;
+            const bool prevParry = driver.parryActive;
             auto LogChanges = [&]() {
                 LogStateChange(entityId, "Attack", prevAttack, driver.attackActive);
                 LogStateChange(entityId, "Dodge", prevDodge, driver.dodgeActive);
                 LogStateChange(entityId, "Guard", prevGuard, driver.guardActive);
+                LogStateChange(entityId, "Parry", prevParry, driver.parryActive);
             };
 
             EntityId traceId = ResolveTraceEntity(world, driver, entityId);
@@ -678,6 +695,7 @@ namespace Alice
                 if (!skinnedAnim || !skinnedAnim->playing)
                 {
                     ResetHistory(driver.prevSkinned);
+                    ApplyInputOverrides(driver);
                     ApplyHealthState(world, entityId, driver);
                     LogChanges();
                     DeactivateTrace(world, traceId);
@@ -690,6 +708,7 @@ namespace Alice
                 if (!TryResolveSkinnedClipName(m_registry, skinnedMesh, skinnedAnim->clipIndex, currentClipName))
                 {
                     ResetHistory(driver.prevSkinned);
+                    ApplyInputOverrides(driver);
                     ApplyHealthState(world, entityId, driver);
                     LogChanges();
                     DeactivateTrace(world, traceId);
@@ -738,6 +757,7 @@ namespace Alice
                 if (!driver.attackActive)
                     driver.cancelAttackRequested = false;
 
+                ApplyInputOverrides(driver);
                 ApplyHealthState(world, entityId, driver);
                 LogChanges();
 
@@ -762,6 +782,7 @@ namespace Alice
             {
                 ResetDriverState(driver);
                 ResetDriverHistories(driver);
+                ApplyInputOverrides(driver);
                 ApplyHealthState(world, entityId, driver);
                 LogChanges();
                 DeactivateTrace(world, traceId);
@@ -836,6 +857,7 @@ namespace Alice
             if (!driver.attackActive)
                 driver.cancelAttackRequested = false;
 
+            ApplyInputOverrides(driver);
             ApplyHealthState(world, entityId, driver);
             LogChanges();
 

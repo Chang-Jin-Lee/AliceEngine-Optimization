@@ -42,6 +42,10 @@ namespace Alice
             bool overrideLoop = false;
             std::string attackClip{};
             bool heavyToggle = false;
+            bool guardEnterActive = false;
+            bool guardExitActive = false;
+            float guardEnterTimer = 0.0f;
+            float guardExitTimer = 0.0f;
         };
 
         struct AttackMoveState
@@ -194,7 +198,7 @@ namespace Alice
         const bool wasHit = HasDeferredEvent(resolved, Combat::CombatEventType::OnHit);
         const bool wasGuard = HasDeferredEvent(resolved, Combat::CombatEventType::OnGuarded);
         const bool wasGuardBreak = HasDeferredEvent(resolved, Combat::CombatEventType::OnGuardBreak);
-        const bool wasParry = HasDeferredEvent(resolved, Combat::CombatEventType::OnParried);
+        const bool wasParry = HasDeferredEvent(resolved, Combat::CombatEventType::OnParrySuccess);
 
         if (wasHit || wasGuard || wasGuardBreak || wasParry)
             hc->hitThisFrame = true;
@@ -313,6 +317,40 @@ namespace Alice
                 bossIntent = brain->Think(deltaTime, playerId);
         }
 
+        auto UpdateDriverInput = [&](EntityId entityId, const Combat::Intent& intent)
+        {
+            if (auto* driver = world.GetComponent<AttackDriverComponent>(entityId))
+            {
+                driver->guardInputHeld = intent.guardHeld;
+                driver->guardInputPressed = intent.guardPressed;
+                driver->guardInputReleased = intent.guardReleased;
+                driver->guardLockRemainingSec = std::max(0.0f, driver->guardLockRemainingSec - deltaTime);
+                driver->parryOverrideRemainingSec = std::max(0.0f, driver->parryOverrideRemainingSec - deltaTime);
+                const bool sessionActive = intent.guardHeld || intent.guardPressed || driver->guardLockRemainingSec > 0.0f;
+                if (!sessionActive)
+                {
+                    driver->guardSessionActive = false;
+                    driver->parryTapCredit = 0;
+                }
+                else if (!driver->guardSessionActive)
+                {
+                    driver->guardSessionActive = true;
+                    driver->parryTapCredit = 1;
+                }
+
+                if (intent.guardPressed && driver->parryTapCredit > 0)
+                {
+                    driver->parryTapCredit = 0;
+                    driver->parryUsedThisPress = false;
+                    if (intent.parryTapWindowSec > 0.0f)
+                        driver->parryOverrideRemainingSec = std::max(driver->parryOverrideRemainingSec, intent.parryTapWindowSec);
+                }
+            }
+        };
+
+        UpdateDriverInput(playerId, playerIntent);
+        UpdateDriverInput(bossId, bossIntent);
+
         constexpr float kDegToRad = 0.01745329252f;
 
         const EntityId cameraId = ResolvePrimaryCamera(world);
@@ -384,6 +422,12 @@ namespace Alice
 
         m_state->player.hp = sPlayer.hp;
         m_state->boss.hp = sBoss.hp;
+        m_state->player.weaponDurability = sPlayer.weaponDurability;
+        m_state->player.weaponDurabilityMax = sPlayer.weaponDurabilityMax;
+        m_state->player.weakRemainingSec = sPlayer.weakRemainingSec;
+        m_state->boss.weaponDurability = sBoss.weaponDurability;
+        m_state->boss.weaponDurabilityMax = sBoss.weaponDurabilityMax;
+        m_state->boss.weakRemainingSec = sBoss.weakRemainingSec;
 
         const auto& ePlayer = m_state->bus.PeekDeferred(playerId);
         const auto& eBoss = m_state->bus.PeekDeferred(bossId);
@@ -673,6 +717,11 @@ namespace Alice
         {
             if (state == Combat::ActionState::Move || state == Combat::ActionState::Dodge || (state == Combat::ActionState::Attack && attackMove.active))
                 return;
+            if (auto* hc = world.GetComponent<HealthComponent>(entityId))
+            {
+                if (hc->pushbackRemainingSec > 0.0f && hc->pushbackSpeed > 0.0f)
+                    return;
+            }
             auto* cct = world.GetComponent<Phy_CCTComponent>(entityId);
             if (!cct)
                 return;
@@ -682,6 +731,28 @@ namespace Alice
         };
         StopIfNotMoving(playerId, outPlayer.state, m_state->playerAttackMove);
         StopIfNotMoving(bossId, outBoss.state, m_state->bossAttackMove);
+
+        auto ApplyPushback = [&](EntityId entityId)
+        {
+            auto* hc = world.GetComponent<HealthComponent>(entityId);
+            if (!hc || hc->pushbackRemainingSec <= 0.0f || hc->pushbackSpeed <= 0.0f)
+                return;
+
+            const float dx = hc->pushbackDir.x;
+            const float dz = hc->pushbackDir.z;
+            const float len = std::sqrt(dx * dx + dz * dz);
+            if (len <= 0.0001f)
+                return;
+
+            if (auto* cct = world.GetComponent<Phy_CCTComponent>(entityId))
+            {
+                cct->desiredVelocity.x += (dx / len) * hc->pushbackSpeed;
+                cct->desiredVelocity.z += (dz / len) * hc->pushbackSpeed;
+            }
+        };
+
+        ApplyPushback(playerId);
+        ApplyPushback(bossId);
 
         if (m_enableLogs)
         {
@@ -814,6 +885,28 @@ namespace Alice
                 return std::max(0.0f, m_attackSlowSpeed);
             };
 
+            const bool enteringGuard = (curr == Combat::ActionState::Guard && prev != Combat::ActionState::Guard);
+            const bool exitingGuard = (prev == Combat::ActionState::Guard
+                && curr != Combat::ActionState::Guard
+                && (curr == Combat::ActionState::Idle || curr == Combat::ActionState::Move));
+            if (enteringGuard && !m_guardEnterClip.empty() && m_guardEnterDurationSec > 0.0f)
+            {
+                animState.guardEnterActive = true;
+                animState.guardEnterTimer = 0.0f;
+            }
+            if (exitingGuard && !m_guardExitClip.empty() && m_guardExitDurationSec > 0.0f)
+            {
+                animState.guardExitActive = true;
+                animState.guardExitTimer = 0.0f;
+            }
+            if (curr == Combat::ActionState::Attack || curr == Combat::ActionState::Dodge
+                || curr == Combat::ActionState::Hitstun || curr == Combat::ActionState::Groggy
+                || curr == Combat::ActionState::Dead)
+            {
+                animState.guardEnterActive = false;
+                animState.guardExitActive = false;
+            }
+
             std::string clipName;
             bool loop = false;
             if (curr == Combat::ActionState::Attack)
@@ -828,16 +921,34 @@ namespace Alice
                     ? resolveClipByType(AttackDriverNotifyType::Dodge)
                     : m_dodgeClip;
             }
-            else if (curr == Combat::ActionState::Guard)
+            else if (curr == Combat::ActionState::Guard || curr == Combat::ActionState::JustGuardSuccess)
             {
-                clipName = resolveClipByType(AttackDriverNotifyType::Guard);
-                loop = true;
+                if (animState.guardEnterActive)
+                {
+                    clipName = m_guardEnterClip;
+                    loop = false;
+                }
+                else
+                {
+                    const std::string guardLoop = !m_guardLoopClip.empty()
+                        ? m_guardLoopClip
+                        : resolveClipByType(AttackDriverNotifyType::Guard);
+                    clipName = guardLoop;
+                    loop = (curr == Combat::ActionState::Guard);
+                }
+            }
+            else if (animState.guardExitActive)
+            {
+                clipName = m_guardExitClip;
+                loop = false;
             }
 
             const bool wantsOverride = !clipName.empty()
                 && (curr == Combat::ActionState::Attack
                     || curr == Combat::ActionState::Dodge
-                    || curr == Combat::ActionState::Guard);
+                    || curr == Combat::ActionState::Guard
+                    || curr == Combat::ActionState::JustGuardSuccess
+                    || animState.guardExitActive);
 
             const bool isLocomotion = (curr == Combat::ActionState::Idle || curr == Combat::ActionState::Move);
             if (isLocomotion && !animState.overrideActive && !m_idleClip.empty())
@@ -855,9 +966,12 @@ namespace Alice
                 anim->base.blend01 = moveBlend;
             }
 
-            const float overrideSpeed = ResolveOverrideSpeed(entityId, curr, clipName);
+            float overrideSpeed = ResolveOverrideSpeed(entityId, curr, clipName);
+            const bool wantsReverse = animState.guardExitActive && !m_guardExitClip.empty() && m_guardExitDurationSec > 0.0f;
+            if (wantsReverse && overrideSpeed > 0.0f)
+                overrideSpeed = -overrideSpeed;
 
-            auto BeginBlendToOverride = [&](const std::string& nextClip, bool nextLoop) {
+            auto BeginBlendToOverride = [&](const std::string& nextClip, bool nextLoop, float startTime) {
                 if (!animState.overrideActive)
                 {
                     animState.savedBase = anim->base;
@@ -873,8 +987,8 @@ namespace Alice
                     anim->base.autoAdvance = true;
                     anim->base.clipA = nextClip;
                     anim->base.clipB = nextClip;
-                    anim->base.timeA = 0.0f;
-                    anim->base.timeB = 0.0f;
+                    anim->base.timeA = startTime;
+                    anim->base.timeB = startTime;
                     anim->base.speedA = overrideSpeed;
                     anim->base.speedB = overrideSpeed;
                     anim->base.loopA = nextLoop;
@@ -891,7 +1005,7 @@ namespace Alice
 
                 anim->base.autoAdvance = true;
                 anim->base.clipB = nextClip;
-                anim->base.timeB = 0.0f;
+                anim->base.timeB = startTime;
                 anim->base.speedB = overrideSpeed;
                 anim->base.loopB = nextLoop;
                 anim->base.blend01 = 0.0f;
@@ -973,7 +1087,10 @@ namespace Alice
                     || animState.overrideClip != clipName
                     || animState.overrideLoop != loop;
                 if (clipChanged)
-                    BeginBlendToOverride(clipName, loop);
+                {
+                    const float startTime = wantsReverse ? m_guardExitDurationSec : 0.0f;
+                    BeginBlendToOverride(clipName, loop, startTime);
+                }
             }
             else if (animState.overrideActive)
             {
@@ -986,6 +1103,18 @@ namespace Alice
             {
                 anim->base.speedA = overrideSpeed;
                 anim->base.speedB = overrideSpeed;
+            }
+            if (animState.guardEnterActive)
+            {
+                animState.guardEnterTimer += deltaTime;
+                if (animState.guardEnterTimer >= m_guardEnterDurationSec)
+                    animState.guardEnterActive = false;
+            }
+            if (animState.guardExitActive)
+            {
+                animState.guardExitTimer += deltaTime;
+                if (animState.guardExitTimer >= m_guardExitDurationSec)
+                    animState.guardExitActive = false;
             }
             prev = curr;
         };
@@ -1056,6 +1185,13 @@ namespace Alice
 
             UpdateHealthHitInfo(world, hit, resolved, victim);
             m_state->apply.ApplyImmediate(world, m_state->fighterMap, m_state->bus, resolved.immediate, false);
+
+            if (HasDeferredEvent(resolved, Combat::CombatEventType::OnParrySuccess)
+                || HasDeferredEvent(resolved, Combat::CombatEventType::OnGuarded))
+            {
+                if (auto* driver = world.GetComponent<AttackDriverComponent>(hit.victimOwner))
+                    driver->parryTapCredit = 1;
+            }
 
             for (const auto& ev : resolved.deferred)
                 m_state->bus.PushDeferred(ev);

@@ -40,6 +40,11 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_heavyAttackClipA, "");
         ALICE_PROPERTY(std::string, m_heavyAttackClipB, "");
         ALICE_PROPERTY(std::string, m_dodgeClip, "");
+        ALICE_PROPERTY(std::string, m_guardEnterClip, "");
+        ALICE_PROPERTY(std::string, m_guardLoopClip, "");
+        ALICE_PROPERTY(std::string, m_guardExitClip, "");
+        ALICE_PROPERTY(float, m_guardEnterDurationSec, 0.0f);
+        ALICE_PROPERTY(float, m_guardExitDurationSec, 0.0f);
         // TODO: temp feel-tuning; move to per-attack data.
         ALICE_PROPERTY(float, m_lightAttackMoveDistance, 0.7f);
         ALICE_PROPERTY(float, m_heavyAttackMoveDistance, 1.2f);

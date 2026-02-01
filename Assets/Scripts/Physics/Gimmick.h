@@ -29,6 +29,8 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_bindTargetName, "W_Target");
 
         ALICE_PROPERTY(float, m_breakMaxImpulse, 20.0f);
+        ALICE_PROPERTY(float, m_breakMaxSpeed, 6.0f);
+        ALICE_PROPERTY(float, m_captureCompleteDelaySec, 2.0f);
 
         ALICE_PROPERTY(float, m_magnetizeInterval, 1.0f);
         ALICE_PROPERTY(float, m_eyeFloatMoveSpeed, 2.0f);
@@ -52,6 +54,10 @@ namespace Alice
         ALICE_PROPERTY(float, m_capturePullTargetDuration, 0.0f);
         ALICE_PROPERTY(float, m_capturePullMinDuration, 0.08f);
         ALICE_PROPERTY(float, m_capturePullMaxDuration, 0.6f);
+        ALICE_PROPERTY(std::string, m_enemyName, "Enemy");
+        ALICE_PROPERTY(std::string, m_guardBreakOwnerName, "Enemy");
+        ALICE_PROPERTY(float, m_breakScatterDurationSec, 2.0f);
+        ALICE_PROPERTY(float, m_shardAssembleFinishDelaySec, 0.5f);
 
     private:
         enum class Phase
@@ -100,6 +106,7 @@ namespace Alice
 
         float m_phaseTime = 0.0f;
         float m_captureTimer = 0.0f;
+        float m_captureCompleteTimer = 0.0f;
         float m_assembleTimer = 0.0f;
         size_t m_nextAssembleIndex = 0;
 
@@ -110,6 +117,9 @@ namespace Alice
         bool m_magnetizeInitialized = false;
         bool m_eyeFloatAnchorValid = false;
         DirectX::XMFLOAT3 m_eyeFloatAnchor{ 0.0f, 0.0f, 0.0f };
+        bool m_enemyTraceForced = false;
+        bool m_guardBreakLatched = false;
+        float m_assembleFinishTimer = 0.0f;
 
         std::mt19937 m_rng;
 
@@ -117,6 +127,11 @@ namespace Alice
 
         void AdvancePhase();
         void EnterPhase(Phase phase);
+
+        void DebugEnableEnemyWeaponTrace();
+        bool IsGuardBroken() const;
+        bool AreShardsCaptured() const;
+        bool AreShardsAssembled() const;
 
         void UpdateMagnetize(float dt);
         void UpdateAssembleShards(float dt);
