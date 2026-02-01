@@ -451,6 +451,9 @@ namespace Alice
 
 		rttr::registration::class_<AttackDriverComponent>("AttackDriverComponent")
 			.constructor<>()
+			.property("debugOwnerName", &AttackDriverComponent::debugOwnerName)
+			.property("debugTeamId", &AttackDriverComponent::debugTeamId)
+			.property("debugLogs", &AttackDriverComponent::debugLogs)
 			.property("traceGuid", &AttackDriverComponent::traceGuid)
 			.property("clips", &AttackDriverComponent::clips)
 			.property("attackStateDurationSec", &AttackDriverComponent::attackStateDurationSec);

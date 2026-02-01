@@ -215,6 +215,14 @@ namespace Alice
             hc->dodgeAvoidedThisFrame = true;
     }
 
+    static std::string GetEntityLabel(World& world, EntityId id)
+    {
+        std::string name = world.GetEntityName(id);
+        if (!name.empty())
+            return name;
+        return "Unknown";
+    }
+
     EntityId C_CombatSessionComponent::ResolveEntity(uint64_t guid) const
     {
         if (guid == 0)
@@ -782,42 +790,106 @@ namespace Alice
             const float t = std::clamp(speed * dt, 0.0f, 1.0f);
             return current + (target - current) * t;
         };
-        auto ResolveHeavyAttackClip = [&](SessionState::AnimOverrideState& animState) -> std::string {
-            if (!m_heavyAttackClipA.empty() && !m_heavyAttackClipB.empty())
+        struct AnimConfig
+        {
+            std::string idleClip;
+            std::string moveClip;
+            std::string lightAttackClip;
+            std::string heavyAttackClipA;
+            std::string heavyAttackClipB;
+            std::string dodgeClip;
+            std::string guardEnterClip;
+            std::string guardLoopClip;
+            std::string guardExitClip;
+            float guardEnterDurationSec = 0.0f;
+            float guardExitDurationSec = 0.0f;
+        };
+        auto GetAnimConfig = [&](EntityId entityId) -> AnimConfig
+        {
+            const bool isPlayer = (entityId == playerId);
+            const bool isBoss = (entityId == bossId);
+            AnimConfig cfg{};
+            cfg.idleClip = m_idleClip;
+            cfg.moveClip = m_moveClip;
+            cfg.lightAttackClip = m_lightAttackClip;
+            cfg.heavyAttackClipA = m_heavyAttackClipA;
+            cfg.heavyAttackClipB = m_heavyAttackClipB;
+            cfg.dodgeClip = m_dodgeClip;
+            cfg.guardEnterClip = m_guardEnterClip;
+            cfg.guardLoopClip = m_guardLoopClip;
+            cfg.guardExitClip = m_guardExitClip;
+            cfg.guardEnterDurationSec = m_guardEnterDurationSec;
+            cfg.guardExitDurationSec = m_guardExitDurationSec;
+
+            if (isPlayer)
+            {
+                if (!m_playerIdleClip.empty()) cfg.idleClip = m_playerIdleClip;
+                if (!m_playerMoveClip.empty()) cfg.moveClip = m_playerMoveClip;
+                if (!m_playerLightAttackClip.empty()) cfg.lightAttackClip = m_playerLightAttackClip;
+                if (!m_playerHeavyAttackClipA.empty()) cfg.heavyAttackClipA = m_playerHeavyAttackClipA;
+                if (!m_playerHeavyAttackClipB.empty()) cfg.heavyAttackClipB = m_playerHeavyAttackClipB;
+                if (!m_playerDodgeClip.empty()) cfg.dodgeClip = m_playerDodgeClip;
+                if (!m_playerGuardEnterClip.empty()) cfg.guardEnterClip = m_playerGuardEnterClip;
+                if (!m_playerGuardLoopClip.empty()) cfg.guardLoopClip = m_playerGuardLoopClip;
+                if (!m_playerGuardExitClip.empty()) cfg.guardExitClip = m_playerGuardExitClip;
+                if (m_playerGuardEnterDurationSec > 0.0f) cfg.guardEnterDurationSec = m_playerGuardEnterDurationSec;
+                if (m_playerGuardExitDurationSec > 0.0f) cfg.guardExitDurationSec = m_playerGuardExitDurationSec;
+            }
+            else if (isBoss)
+            {
+                if (!m_bossIdleClip.empty()) cfg.idleClip = m_bossIdleClip;
+                if (!m_bossMoveClip.empty()) cfg.moveClip = m_bossMoveClip;
+                if (!m_bossLightAttackClip.empty()) cfg.lightAttackClip = m_bossLightAttackClip;
+                if (!m_bossHeavyAttackClipA.empty()) cfg.heavyAttackClipA = m_bossHeavyAttackClipA;
+                if (!m_bossHeavyAttackClipB.empty()) cfg.heavyAttackClipB = m_bossHeavyAttackClipB;
+                if (!m_bossDodgeClip.empty()) cfg.dodgeClip = m_bossDodgeClip;
+                if (!m_bossGuardEnterClip.empty()) cfg.guardEnterClip = m_bossGuardEnterClip;
+                if (!m_bossGuardLoopClip.empty()) cfg.guardLoopClip = m_bossGuardLoopClip;
+                if (!m_bossGuardExitClip.empty()) cfg.guardExitClip = m_bossGuardExitClip;
+                if (m_bossGuardEnterDurationSec > 0.0f) cfg.guardEnterDurationSec = m_bossGuardEnterDurationSec;
+                if (m_bossGuardExitDurationSec > 0.0f) cfg.guardExitDurationSec = m_bossGuardExitDurationSec;
+            }
+            return cfg;
+        };
+        auto ResolveHeavyAttackClip = [&](SessionState::AnimOverrideState& animState,
+                                          const AnimConfig& cfg) -> std::string {
+            if (!cfg.heavyAttackClipA.empty() && !cfg.heavyAttackClipB.empty())
             {
                 animState.heavyToggle = !animState.heavyToggle;
-                return animState.heavyToggle ? m_heavyAttackClipA : m_heavyAttackClipB;
+                return animState.heavyToggle ? cfg.heavyAttackClipA : cfg.heavyAttackClipB;
             }
-            if (!m_heavyAttackClipA.empty())
-                return m_heavyAttackClipA;
-            if (!m_heavyAttackClipB.empty())
-                return m_heavyAttackClipB;
+            if (!cfg.heavyAttackClipA.empty())
+                return cfg.heavyAttackClipA;
+            if (!cfg.heavyAttackClipB.empty())
+                return cfg.heavyAttackClipB;
             return {};
         };
 
         auto SelectAttackClip = [&](const Combat::Intent& intent,
-                                    SessionState::AnimOverrideState& animState) -> std::string {
+                                    SessionState::AnimOverrideState& animState,
+                                    const AnimConfig& cfg) -> std::string {
             if (intent.heavyAttackPressed)
             {
-                std::string heavy = ResolveHeavyAttackClip(animState);
+                std::string heavy = ResolveHeavyAttackClip(animState, cfg);
                 if (!heavy.empty())
                     return heavy;
             }
-            if (intent.lightAttackPressed && !m_lightAttackClip.empty())
-                return m_lightAttackClip;
-            if (!m_lightAttackClip.empty())
-                return m_lightAttackClip;
+            if (intent.lightAttackPressed && !cfg.lightAttackClip.empty())
+                return cfg.lightAttackClip;
+            if (!cfg.lightAttackClip.empty())
+                return cfg.lightAttackClip;
             return {};
         };
 
         auto UpdateAttackClip = [&](const Combat::Intent& intent,
                                     Combat::ActionState curr,
                                     Combat::ActionState prev,
-                                    SessionState::AnimOverrideState& animState) {
+                                    SessionState::AnimOverrideState& animState,
+                                    const AnimConfig& cfg) {
             if (curr == Combat::ActionState::Attack)
             {
                 if (intent.heavyAttackPressed || intent.lightAttackPressed || prev != Combat::ActionState::Attack || animState.attackClip.empty())
-                    animState.attackClip = SelectAttackClip(intent, animState);
+                    animState.attackClip = SelectAttackClip(intent, animState, cfg);
             }
             else
             {
@@ -825,9 +897,8 @@ namespace Alice
             }
         };
 
-        UpdateAttackClip(playerIntent, outPlayer.state, m_state->prevPlayerState, m_state->playerAnim);
-        if (outBoss.state != Combat::ActionState::Attack)
-            m_state->bossAnim.attackClip.clear();
+        UpdateAttackClip(playerIntent, outPlayer.state, m_state->prevPlayerState, m_state->playerAnim, GetAnimConfig(playerId));
+        UpdateAttackClip(bossIntent, outBoss.state, m_state->prevBossState, m_state->bossAnim, GetAnimConfig(bossId));
 
         auto ApplyAnimByState = [&](EntityId entityId,
                                     Combat::ActionState curr,
@@ -843,6 +914,7 @@ namespace Alice
                 prev = curr;
                 return;
             }
+            const AnimConfig cfg = GetAnimConfig(entityId);
 
             anim->enabled = true;
             anim->playing = true;
@@ -872,29 +944,30 @@ namespace Alice
                 return {};
             };
 
-            auto ResolveOverrideSpeed = [&](EntityId targetId,
-                                            Combat::ActionState state,
-                                            const std::string& name) -> float
-            {
-                if (state != Combat::ActionState::Attack)
-                    return 1.0f;
-                if (targetId != playerId)
-                    return 1.0f;
-                if (m_attackSlowClipName.empty() || name != m_attackSlowClipName)
-                    return 1.0f;
-                return std::max(0.0f, m_attackSlowSpeed);
-            };
+            // Attack clip slow-motion was removed.
+            // auto ResolveOverrideSpeed = [&](EntityId targetId,
+            //                                 Combat::ActionState state,
+            //                                 const std::string& name) -> float
+            // {
+            //     if (state != Combat::ActionState::Attack)
+            //         return 1.0f;
+            //     if (targetId != playerId)
+            //         return 1.0f;
+            //     if (m_attackSlowClipName.empty() || name != m_attackSlowClipName)
+            //         return 1.0f;
+            //     return std::max(0.0f, m_attackSlowSpeed);
+            // };
 
             const bool enteringGuard = (curr == Combat::ActionState::Guard && prev != Combat::ActionState::Guard);
             const bool exitingGuard = (prev == Combat::ActionState::Guard
                 && curr != Combat::ActionState::Guard
                 && (curr == Combat::ActionState::Idle || curr == Combat::ActionState::Move));
-            if (enteringGuard && !m_guardEnterClip.empty() && m_guardEnterDurationSec > 0.0f)
+            if (enteringGuard && !cfg.guardEnterClip.empty() && cfg.guardEnterDurationSec > 0.0f)
             {
                 animState.guardEnterActive = true;
                 animState.guardEnterTimer = 0.0f;
             }
-            if (exitingGuard && !m_guardExitClip.empty() && m_guardExitDurationSec > 0.0f)
+            if (exitingGuard && !cfg.guardExitClip.empty() && cfg.guardExitDurationSec > 0.0f)
             {
                 animState.guardExitActive = true;
                 animState.guardExitTimer = 0.0f;
@@ -917,21 +990,21 @@ namespace Alice
             }
             else if (curr == Combat::ActionState::Dodge)
             {
-                clipName = m_dodgeClip.empty()
+                clipName = cfg.dodgeClip.empty()
                     ? resolveClipByType(AttackDriverNotifyType::Dodge)
-                    : m_dodgeClip;
+                    : cfg.dodgeClip;
             }
             else if (curr == Combat::ActionState::Guard || curr == Combat::ActionState::JustGuardSuccess)
             {
                 if (animState.guardEnterActive)
                 {
-                    clipName = m_guardEnterClip;
+                    clipName = cfg.guardEnterClip;
                     loop = false;
                 }
                 else
                 {
-                    const std::string guardLoop = !m_guardLoopClip.empty()
-                        ? m_guardLoopClip
+                    const std::string guardLoop = !cfg.guardLoopClip.empty()
+                        ? cfg.guardLoopClip
                         : resolveClipByType(AttackDriverNotifyType::Guard);
                     clipName = guardLoop;
                     loop = (curr == Combat::ActionState::Guard);
@@ -939,7 +1012,7 @@ namespace Alice
             }
             else if (animState.guardExitActive)
             {
-                clipName = m_guardExitClip;
+                clipName = cfg.guardExitClip;
                 loop = false;
             }
 
@@ -951,14 +1024,14 @@ namespace Alice
                     || animState.guardExitActive);
 
             const bool isLocomotion = (curr == Combat::ActionState::Idle || curr == Combat::ActionState::Move);
-            if (isLocomotion && !animState.overrideActive && !m_idleClip.empty())
+            if (isLocomotion && !animState.overrideActive && !cfg.idleClip.empty())
             {
-                const float targetBlend = (curr == Combat::ActionState::Move && !m_moveClip.empty()) ? 1.0f : 0.0f;
+                const float targetBlend = (curr == Combat::ActionState::Move && !cfg.moveClip.empty()) ? 1.0f : 0.0f;
                 moveBlend = SmoothApproach(moveBlend, targetBlend, m_moveBlendSpeed, deltaTime);
 
                 anim->base.autoAdvance = true;
-                anim->base.clipA = m_idleClip;
-                anim->base.clipB = m_moveClip.empty() ? m_idleClip : m_moveClip;
+                anim->base.clipA = cfg.idleClip;
+                anim->base.clipB = cfg.moveClip.empty() ? cfg.idleClip : cfg.moveClip;
                 anim->base.loopA = true;
                 anim->base.loopB = true;
                 anim->base.speedA = 1.0f;
@@ -966,8 +1039,8 @@ namespace Alice
                 anim->base.blend01 = moveBlend;
             }
 
-            float overrideSpeed = ResolveOverrideSpeed(entityId, curr, clipName);
-            const bool wantsReverse = animState.guardExitActive && !m_guardExitClip.empty() && m_guardExitDurationSec > 0.0f;
+            float overrideSpeed = 1.0f;
+            const bool wantsReverse = animState.guardExitActive && !cfg.guardExitClip.empty() && cfg.guardExitDurationSec > 0.0f;
             if (wantsReverse && overrideSpeed > 0.0f)
                 overrideSpeed = -overrideSpeed;
 
@@ -1088,7 +1161,7 @@ namespace Alice
                     || animState.overrideLoop != loop;
                 if (clipChanged)
                 {
-                    const float startTime = wantsReverse ? m_guardExitDurationSec : 0.0f;
+                    const float startTime = wantsReverse ? cfg.guardExitDurationSec : 0.0f;
                     BeginBlendToOverride(clipName, loop, startTime);
                 }
             }
@@ -1107,13 +1180,13 @@ namespace Alice
             if (animState.guardEnterActive)
             {
                 animState.guardEnterTimer += deltaTime;
-                if (animState.guardEnterTimer >= m_guardEnterDurationSec)
+                if (animState.guardEnterTimer >= cfg.guardEnterDurationSec)
                     animState.guardEnterActive = false;
             }
             if (animState.guardExitActive)
             {
                 animState.guardExitTimer += deltaTime;
-                if (animState.guardExitTimer >= m_guardExitDurationSec)
+                if (animState.guardExitTimer >= cfg.guardExitDurationSec)
                     animState.guardExitActive = false;
             }
             prev = curr;
@@ -1182,6 +1255,42 @@ namespace Alice
             Combat::FighterSnapshot victim = (hit.victimOwner == playerId) ? playerSnap : bossSnap;
 
             auto resolved = m_state->resolver.ResolveOne(hit, attacker, victim);
+
+            if (m_enableCombatLogs)
+            {
+                const std::string attackerName = GetEntityLabel(world, attacker.id);
+                const std::string victimName = GetEntityLabel(world, victim.id);
+                const bool wasParrySuccess = HasDeferredEvent(resolved, Combat::CombatEventType::OnParrySuccess);
+                const bool wasGotParried = HasDeferredEvent(resolved, Combat::CombatEventType::OnGotParried);
+                const bool wasGuard = HasDeferredEvent(resolved, Combat::CombatEventType::OnGuarded);
+                const bool wasGuardBreak = HasDeferredEvent(resolved, Combat::CombatEventType::OnGuardBreak);
+                const bool wasHit = HasDeferredEvent(resolved, Combat::CombatEventType::OnHit);
+                if (wasParrySuccess)
+                {
+                    ALICE_LOG_INFO("[Combat] ParrySuccess victim=%s attacker=%s attackId=%u",
+                        victimName.c_str(), attackerName.c_str(), hit.attackInstanceId);
+                }
+                if (wasGotParried)
+                {
+                    ALICE_LOG_INFO("[Combat] GotParried attacker=%s victim=%s attackId=%u",
+                        attackerName.c_str(), victimName.c_str(), hit.attackInstanceId);
+                }
+                if (wasGuard)
+                {
+                    ALICE_LOG_INFO("[Combat] Guarded victim=%s attacker=%s cost=%.2f attackId=%u",
+                        victimName.c_str(), attackerName.c_str(), hit.guardDurabilityCost, hit.attackInstanceId);
+                }
+                if (wasGuardBreak)
+                {
+                    ALICE_LOG_INFO("[Combat] GuardBreak victim=%s attacker=%s attackId=%u",
+                        victimName.c_str(), attackerName.c_str(), hit.attackInstanceId);
+                }
+                if (wasHit)
+                {
+                    ALICE_LOG_INFO("[Combat] Hit victim=%s attacker=%s dmg=%.2f attackId=%u",
+                        victimName.c_str(), attackerName.c_str(), hit.damage, hit.attackInstanceId);
+                }
+            }
 
             UpdateHealthHitInfo(world, hit, resolved, victim);
             m_state->apply.ApplyImmediate(world, m_state->fighterMap, m_state->bus, resolved.immediate, false);

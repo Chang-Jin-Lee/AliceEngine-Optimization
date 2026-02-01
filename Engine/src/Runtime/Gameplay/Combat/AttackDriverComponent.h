@@ -46,6 +46,11 @@ namespace Alice
 
 	struct AttackDriverComponent
 	{
+		// Debug labels (optional)
+		std::string debugOwnerName;
+		std::uint32_t debugTeamId = 0;
+		bool debugLogs = false;
+
 		// 공격을 제어할 트레이스 엔티티 GUID (0이면 자기 자신)
 		std::uint64_t traceGuid = 0;
 		EntityId traceCached = InvalidEntityId; // 런타임 캐시 (직렬화 금지)

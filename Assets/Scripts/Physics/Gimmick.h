@@ -28,36 +28,36 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_eyeName, "W_EYE");
         ALICE_PROPERTY(std::string, m_bindTargetName, "W_Target");
 
-        ALICE_PROPERTY(float, m_breakMaxImpulse, 20.0f);
-        ALICE_PROPERTY(float, m_breakMaxSpeed, 6.0f);
-        ALICE_PROPERTY(float, m_captureCompleteDelaySec, 2.0f);
+        ALICE_PROPERTY(float, m_breakMaxImpulse, 20.0f); // 파편 폭발 임펄스 최대값
+        ALICE_PROPERTY(float, m_breakMaxSpeed, 6.0f); // 폭발 시 속도 상한(impulse/mass 클램프)
+        ALICE_PROPERTY(float, m_captureCompleteDelaySec, 2.0f); // 포획 완료 후 다음 단계까지 대기 시간
 
-        ALICE_PROPERTY(float, m_magnetizeInterval, 1.0f);
-        ALICE_PROPERTY(float, m_eyeFloatMoveSpeed, 2.0f);
-        ALICE_PROPERTY(float, m_orbitAngularSpeed, 2.0f);
-        ALICE_PROPERTY(float, m_orbitAngularBlendDuration, 0.35f);
-        ALICE_PROPERTY(float, m_orbitRadiusScale, 1.0f);
-        ALICE_PROPERTY(float, m_orbitMinRadius, 0.2f);
+        ALICE_PROPERTY(float, m_magnetizeInterval, 1.0f); // (미사용) 포획 간격
+        ALICE_PROPERTY(float, m_eyeFloatMoveSpeed, 2.0f); // 눈 이동 속도(부유 연출)
+        ALICE_PROPERTY(float, m_orbitAngularSpeed, 2.0f); // 포획 후 공전 각속도
+        ALICE_PROPERTY(float, m_orbitAngularBlendDuration, 0.35f); // 공전 속도 블렌딩 시간
+        ALICE_PROPERTY(float, m_orbitRadiusScale, 1.0f); // 공전 반경 스케일
+        ALICE_PROPERTY(float, m_orbitMinRadius, 0.2f); // 공전 최소 반경
 
-        ALICE_PROPERTY(float, m_assembleInterval, 1.0f);
-        ALICE_PROPERTY(float, m_assembleMoveSpeed, 4.0f);
-        ALICE_PROPERTY(float, m_assembleDistanceAccel, 3.0f);
-        ALICE_PROPERTY(float, m_eyeMoveSpeed, 8.0f);
-        ALICE_PROPERTY(float, m_eyeDistanceAccel, 4.0f);
-        ALICE_PROPERTY(float, m_tendonVisibleDelay, 1.0f);
+        ALICE_PROPERTY(float, m_assembleInterval, 1.0f); // 파편 조립 시작 간격
+        ALICE_PROPERTY(float, m_assembleMoveSpeed, 4.0f); // 조립 이동 기본 속도
+        ALICE_PROPERTY(float, m_assembleDistanceAccel, 3.0f); // 조립 이동 거리 가속
+        ALICE_PROPERTY(float, m_eyeMoveSpeed, 8.0f); // 눈 조립 이동 기본 속도
+        ALICE_PROPERTY(float, m_eyeDistanceAccel, 4.0f); // 눈 조립 이동 거리 가속
+        ALICE_PROPERTY(float, m_tendonVisibleDelay, 1.0f); // tendon 투명도 페이드 시간
 
-        ALICE_PROPERTY(float, m_arriveThreshold, 0.02f);
-        ALICE_PROPERTY(uint32_t, m_ignoreLayersMask, 0u);
+        ALICE_PROPERTY(float, m_arriveThreshold, 0.02f); // 도착 판정 임계값
+        ALICE_PROPERTY(uint32_t, m_ignoreLayersMask, 0u); // 물리 무시 레이어 마스크
 
-        ALICE_PROPERTY(float, m_capturePullBaseSpeed, 6.0f);
-        ALICE_PROPERTY(float, m_capturePullDistanceAccel, 4.0f);
-        ALICE_PROPERTY(float, m_capturePullTargetDuration, 0.0f);
-        ALICE_PROPERTY(float, m_capturePullMinDuration, 0.08f);
-        ALICE_PROPERTY(float, m_capturePullMaxDuration, 0.6f);
-        ALICE_PROPERTY(std::string, m_enemyName, "Enemy");
-        ALICE_PROPERTY(std::string, m_guardBreakOwnerName, "Enemy");
-        ALICE_PROPERTY(float, m_breakScatterDurationSec, 2.0f);
-        ALICE_PROPERTY(float, m_shardAssembleFinishDelaySec, 0.5f);
+        ALICE_PROPERTY(float, m_capturePullBaseSpeed, 6.0f); // 포획 이동 기본 속도
+        ALICE_PROPERTY(float, m_capturePullDistanceAccel, 4.0f); // 포획 이동 거리 가속
+        ALICE_PROPERTY(float, m_capturePullTargetDuration, 0.0f); // 포획 단계 총 시간(0이면 자동 계산)
+        ALICE_PROPERTY(float, m_capturePullMinDuration, 0.08f); // 포획 최소 시간
+        ALICE_PROPERTY(float, m_capturePullMaxDuration, 0.6f); // 포획 최대 시간
+        ALICE_PROPERTY(std::string, m_enemyName, "Enemy"); // 디버그: Enemy 무기 트레이스 토글 대상
+        ALICE_PROPERTY(std::string, m_guardBreakOwnerName, "Enemy"); // 가드브레이크 감지 대상
+        ALICE_PROPERTY(float, m_breakScatterDurationSec, 2.0f); // 파괴 후 흩뿌려진 상태 유지 시간
+        ALICE_PROPERTY(float, m_shardAssembleFinishDelaySec, 0.5f); // 파편 조립 완료 후 눈 조립 전 대기
 
     private:
         enum class Phase

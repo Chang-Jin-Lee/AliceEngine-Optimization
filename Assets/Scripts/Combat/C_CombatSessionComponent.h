@@ -23,19 +23,28 @@ namespace Alice
         void OnEnable() override;
         void OnDisable() override;
 
+        // Entity resolution (GUID preferred, name fallback when enabled)
         ALICE_PROPERTY(uint64_t, m_playerGuid, 0);
         ALICE_PROPERTY(uint64_t, m_bossGuid, 0);
         ALICE_PROPERTY(bool, m_autoResolveByName, true);
         ALICE_PROPERTY(std::string, m_playerName, "Player");
         ALICE_PROPERTY(std::string, m_bossName, "Enemy");
+
+        // Logging
         ALICE_PROPERTY(bool, m_enableLogs, false);
-        ALICE_PROPERTY(float, m_animBlendSec, 0.12f);
+        ALICE_PROPERTY(bool, m_enableCombatLogs, false);
+
+        // Combat rules
         ALICE_PROPERTY(bool, m_playerCanBeHitstunned, true);
         ALICE_PROPERTY(bool, m_bossCanBeHitstunned, false);
+
+        // Animation blending
+        ALICE_PROPERTY(float, m_animBlendSec, 0.12f);
+        ALICE_PROPERTY(float, m_moveBlendSpeed, 8.0f);
+
+        // Default animation clips (shared fallback)
         ALICE_PROPERTY(std::string, m_idleClip, "Idle");
         ALICE_PROPERTY(std::string, m_moveClip, "Walk");
-        ALICE_PROPERTY(float, m_moveBlendSpeed, 8.0f);
-        // TODO: temp feel-tuning; replace with data-driven settings later.
         ALICE_PROPERTY(std::string, m_lightAttackClip, "alice-Apose_arm|Swing");
         ALICE_PROPERTY(std::string, m_heavyAttackClipA, "");
         ALICE_PROPERTY(std::string, m_heavyAttackClipB, "");
@@ -45,6 +54,31 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_guardExitClip, "");
         ALICE_PROPERTY(float, m_guardEnterDurationSec, 0.0f);
         ALICE_PROPERTY(float, m_guardExitDurationSec, 0.0f);
+
+        // Per-entity animation overrides (optional)
+        ALICE_PROPERTY(std::string, m_playerIdleClip, "");
+        ALICE_PROPERTY(std::string, m_playerMoveClip, "");
+        ALICE_PROPERTY(std::string, m_playerLightAttackClip, "");
+        ALICE_PROPERTY(std::string, m_playerHeavyAttackClipA, "");
+        ALICE_PROPERTY(std::string, m_playerHeavyAttackClipB, "");
+        ALICE_PROPERTY(std::string, m_playerDodgeClip, "");
+        ALICE_PROPERTY(std::string, m_playerGuardEnterClip, "");
+        ALICE_PROPERTY(std::string, m_playerGuardLoopClip, "");
+        ALICE_PROPERTY(std::string, m_playerGuardExitClip, "");
+        ALICE_PROPERTY(float, m_playerGuardEnterDurationSec, 0.0f);
+        ALICE_PROPERTY(float, m_playerGuardExitDurationSec, 0.0f);
+        ALICE_PROPERTY(std::string, m_bossIdleClip, "");
+        ALICE_PROPERTY(std::string, m_bossMoveClip, "");
+        ALICE_PROPERTY(std::string, m_bossLightAttackClip, "");
+        ALICE_PROPERTY(std::string, m_bossHeavyAttackClipA, "");
+        ALICE_PROPERTY(std::string, m_bossHeavyAttackClipB, "");
+        ALICE_PROPERTY(std::string, m_bossDodgeClip, "");
+        ALICE_PROPERTY(std::string, m_bossGuardEnterClip, "");
+        ALICE_PROPERTY(std::string, m_bossGuardLoopClip, "");
+        ALICE_PROPERTY(std::string, m_bossGuardExitClip, "");
+        ALICE_PROPERTY(float, m_bossGuardEnterDurationSec, 0.0f);
+        ALICE_PROPERTY(float, m_bossGuardExitDurationSec, 0.0f);
+
         // TODO: temp feel-tuning; move to per-attack data.
         ALICE_PROPERTY(float, m_lightAttackMoveDistance, 0.7f);
         ALICE_PROPERTY(float, m_heavyAttackMoveDistance, 1.2f);
@@ -53,8 +87,12 @@ namespace Alice
         ALICE_PROPERTY(float, m_lightAttackMoveDurationSec, 0.05f);
         ALICE_PROPERTY(float, m_heavyAttackMoveDurationSec, 0.05f);
         ALICE_PROPERTY(bool, m_debugAttackMoveTime, false);
-        ALICE_PROPERTY(std::string, m_attackSlowClipName, "swing");
-        ALICE_PROPERTY(float, m_attackSlowSpeed, 0.7f);
+
+        // Attack clip slow-motion was removed; keep commented for reference.
+        // ALICE_PROPERTY(std::string, m_attackSlowClipName, "swing");
+        // ALICE_PROPERTY(float, m_attackSlowSpeed, 0.7f);
+
+        // Movement facing offset (degrees)
         ALICE_PROPERTY(float, m_rotationOffsetDeg, 180.0f);
 
         void ForceReset();

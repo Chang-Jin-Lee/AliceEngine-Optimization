@@ -37,6 +37,7 @@ namespace Alice
 
         if (auto* driver = GetComponent<AttackDriverComponent>())
         {
+            // Ensure at least one Attack clip for window evaluation.
             bool hasAttackClip = false;
             for (const auto& clip : driver->clips)
             {
@@ -59,6 +60,7 @@ namespace Alice
             auto* world = GetWorld();
             if (world)
             {
+                // Auto-bind trace to the owner's weapon if missing.
                 const bool traceMissing = (driver->traceGuid == 0)
                     || (world->FindEntityByGuid(driver->traceGuid) == InvalidEntityId);
                 if (traceMissing)

@@ -537,12 +537,13 @@ namespace Alice
             trace->active = false;
         }
 
-        void LogStateChange(EntityId entityId, const char* label, bool prevState, bool currState)
+        void LogStateChange(EntityId entityId, const char* ownerName, const char* label, bool prevState, bool currState)
         {
             if (prevState == currState)
                 return;
 
-            ALICE_LOG_INFO("[AttackDriver] entity=%llu %s=%s",
+            ALICE_LOG_INFO("[AttackDriver] %s entity=%llu %s=%s",
+                ownerName ? ownerName : "",
                 static_cast<unsigned long long>(entityId),
                 label,
                 currState ? "ON" : "OFF");
@@ -634,10 +635,16 @@ namespace Alice
             const bool prevGuard = driver.guardActive;
             const bool prevParry = driver.parryActive;
             auto LogChanges = [&]() {
-                LogStateChange(entityId, "Attack", prevAttack, driver.attackActive);
-                LogStateChange(entityId, "Dodge", prevDodge, driver.dodgeActive);
-                LogStateChange(entityId, "Guard", prevGuard, driver.guardActive);
-                LogStateChange(entityId, "Parry", prevParry, driver.parryActive);
+                if (!driver.debugLogs)
+                    return;
+                const std::string name = !driver.debugOwnerName.empty()
+                    ? driver.debugOwnerName
+                    : world.GetEntityName(entityId);
+                const char* ownerLabel = name.empty() ? "Unknown" : name.c_str();
+                LogStateChange(entityId, ownerLabel, "Attack", prevAttack, driver.attackActive);
+                LogStateChange(entityId, ownerLabel, "Dodge", prevDodge, driver.dodgeActive);
+                LogStateChange(entityId, ownerLabel, "Guard", prevGuard, driver.guardActive);
+                LogStateChange(entityId, ownerLabel, "Parry", prevParry, driver.parryActive);
             };
 
             EntityId traceId = ResolveTraceEntity(world, driver, entityId);

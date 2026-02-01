@@ -695,7 +695,7 @@ namespace Alice
                 shard.pullTimer = 0.0f;
                 shard.orbitBlending = false;
                 shard.orbitBlendTimer = 0.0f;
-                shard.pullSpeed = commonSpeed;
+                shard.pullSpeed = 0.0f;
 
                 if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
                 {
@@ -712,12 +712,13 @@ namespace Alice
                             axis = Normalize(Cross(baseDir, XMFLOAT3(1.0f, 0.0f, 0.0f)));
                     }
 
-                    shard.orbitRadius = radius;
+                    float scaledRadius = std::max(m_orbitMinRadius, radius * m_orbitRadiusScale);
+
+                    shard.orbitRadius = scaledRadius;
                     shard.orbitBaseDir = baseDir;
                     shard.orbitAxis = axis;
                     shard.orbitAngle = 0.0f;
 
-                    float scaledRadius = std::max(m_orbitMinRadius, radius * m_orbitRadiusScale);
                     XMFLOAT3 targetPos{ eyePos.x + baseDir.x * scaledRadius,
                                         eyePos.y + baseDir.y * scaledRadius,
                                         eyePos.z + baseDir.z * scaledRadius };
@@ -725,8 +726,11 @@ namespace Alice
                                         targetPos.y - shard.pullStartPos.y,
                                         targetPos.z - shard.pullStartPos.z };
                     float pullDistance = Length(pullDelta);
-                    shard.pullDuration = (commonSpeed > 0.0f) ? (pullDistance / commonSpeed) : 0.0f;
-                    shard.orbitAngularSpeed = (radius > 0.001f) ? (commonSpeed / radius) : m_orbitAngularSpeed;
+                    shard.pullDuration = (duration > 0.0f) ? duration : 0.0f;
+                    shard.pullSpeed = (duration > 0.0f) ? (pullDistance / duration) : 0.0f;
+                    shard.orbitAngularSpeed = (scaledRadius > 0.001f && shard.pullSpeed > 0.0f)
+                        ? (shard.pullSpeed / scaledRadius)
+                        : m_orbitAngularSpeed;
                 }
             }
         }
@@ -1195,7 +1199,7 @@ namespace Alice
             if (!shard.captured || shard.assembling || shard.assembled)
                 continue;
 
-            const float radius = std::max(m_orbitMinRadius, shard.orbitRadius * m_orbitRadiusScale);
+            const float radius = std::max(m_orbitMinRadius, shard.orbitRadius);
             XMFLOAT3 rotatedDir = RotateAroundAxis(shard.orbitBaseDir, shard.orbitAxis, shard.orbitAngle);
             XMFLOAT3 offset{ rotatedDir.x * radius, rotatedDir.y * radius, rotatedDir.z * radius };
             XMFLOAT3 targetPos{ eyePos.x + offset.x, eyePos.y + offset.y, eyePos.z + offset.z };
