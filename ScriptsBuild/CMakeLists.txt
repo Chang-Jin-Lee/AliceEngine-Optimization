@@ -8,6 +8,7 @@ project(AliceUserScripts LANGUAGES CXX)
 if(MSVC)
     add_compile_options("/utf-8")  # 소스 및 실행 문자셋을 UTF-8로 강제
     add_compile_options("/wd4819") # 인코딩 경고 무시 (이미 utf-8 설정을 했으므로 안전)
+    add_compile_options("/MP")
 endif()
 
 # =========================================================================
@@ -205,5 +206,6 @@ if(MSVC)
     # target_link_options(AliceScripts PRIVATE "/DEBUG:NONE")
 
     # 소스 파일 UTF-8 인코딩 명시 (C4819 경고 방지)
+    # /MP 중복이긴한데 일단은 두자.
     target_compile_options(AliceScripts PRIVATE "/utf-8" "/MP")
 endif()
