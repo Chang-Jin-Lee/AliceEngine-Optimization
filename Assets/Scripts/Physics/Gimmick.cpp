@@ -19,6 +19,7 @@
 #include "Runtime/Physics/Components/Phy_ColliderComponent.h"
 #include "Runtime/Physics/Components/Phy_MeshColliderComponent.h"
 #include "Runtime/Physics/IPhysicsWorld.h"
+#include "Runtime/Rendering/Components/MaterialComponent.h"
 //TODO : Include 확인 해야함
 
 namespace Alice
