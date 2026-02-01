@@ -16,11 +16,18 @@
 #include <Runtime/Resources/ResourceManager.h>
 #include <Runtime/Foundation/Logger.h>
 #include <Runtime/ECS/World.h>
+#include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
+#include "Runtime/Rendering/Components/PointLightComponent.h"
+#include "Runtime/Rendering/Components/SpotLightComponent.h"
+#include "Runtime/Rendering/Components/RectLightComponent.h"
+#include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
 #include "Runtime/Rendering/ShaderCode/CommonShaderCode.h"
 #include "Runtime/Rendering/ShaderCode/ForwardShader.h"
 #include "Runtime/UI/UIRenderer.h"
 
 #include <unordered_set>
+#include "Runtime/ECS/Components/TransformComponent.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;

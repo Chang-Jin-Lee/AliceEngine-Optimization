@@ -5,6 +5,7 @@
 #include <Runtime/Rendering/DebugDrawSystem.h>
 #include <DirectXMath.h>
 #include <cmath>
+#include "Runtime/ECS/Components/TransformComponent.h"
 
 using namespace DirectX;
 

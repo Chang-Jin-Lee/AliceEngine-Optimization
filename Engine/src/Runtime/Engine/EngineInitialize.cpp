@@ -1,4 +1,5 @@
 #include "Runtime/Engine/EngineImpl.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
 
 namespace Alice
 {
