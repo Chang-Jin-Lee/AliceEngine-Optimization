@@ -16,6 +16,26 @@
 #include "Runtime/Rendering/Camera.h"
 #include "Runtime/Rendering/ForwardRenderSystem.h"
 #include "Runtime/Rendering/SkinnedMeshRegistry.h"
+#include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
+#include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
+#include "Runtime/Rendering/Components/CameraComponent.h"
+#include "Runtime/Rendering/Components/CameraFollowComponent.h"
+#include "Runtime/Rendering/Components/CameraSpringArmComponent.h"
+#include "Runtime/Rendering/Components/CameraLookAtComponent.h"
+#include "Runtime/Rendering/Components/CameraShakeComponent.h"
+#include "Runtime/Rendering/Components/CameraBlendComponent.h"
+#include "Runtime/Rendering/Components/CameraInputComponent.h"
+#include "Runtime/Rendering/Components/PointLightComponent.h"
+#include "Runtime/Rendering/Components/SpotLightComponent.h"
+#include "Runtime/Rendering/Components/RectLightComponent.h"
+#include "Runtime/Rendering/Components/ComputeEffectComponent.h"
+#include "Runtime/Physics/Components/Phy_RigidBodyComponent.h"
+#include "Runtime/Physics/Components/Phy_ColliderComponent.h"
+#include "Runtime/Physics/Components/Phy_MeshColliderComponent.h"
+#include "Runtime/Physics/Components/Phy_CCTComponent.h"
+#include "Runtime/Physics/Components/Phy_TerrainHeightFieldComponent.h"
+#include "Runtime/Physics/Components/Phy_JointComponent.h"
 #include "Editor/Core/ViewportPicker.h"
 #include "Runtime/Input/InputSystem.h"
 #include "Editor/Core/ReflectionUI.h"
@@ -33,9 +53,9 @@ class UIRenderer;
 
 namespace Alice
 {
-    struct ID3D11RenderDevice;
-    class SkinnedMeshRegistry;
-    class DeferredRenderSystem;
+	struct ID3D11RenderDevice;
+	class SkinnedMeshRegistry;
+	class DeferredRenderSystem;
 
 	// Undo/Redo 시스템
 	struct ICommand
@@ -118,39 +138,39 @@ namespace Alice
 		EditorCore() = default;
 		~EditorCore();
 
-        /// ImGui 컨텍스트와 백엔드(Win32 + DX11)를 초기화합니다.
-        bool Initialize(HWND hwnd, ID3D11RenderDevice& renderDevice);
+		/// ImGui 컨텍스트와 백엔드(Win32 + DX11)를 초기화합니다.
+		bool Initialize(HWND hwnd, ID3D11RenderDevice& renderDevice);
 
-        /// ImGui 리소스를 정리합니다.
-        void Shutdown();
+		/// ImGui 리소스를 정리합니다.
+		void Shutdown();
 
-        /// 새 ImGui 프레임을 시작합니다.
-        void BeginFrame();
+		/// 새 ImGui 프레임을 시작합니다.
+		void BeginFrame();
 
-        /// ImGui 드로우 데이터를 렌더링합니다.
-        void RenderDrawData();
+		/// ImGui 드로우 데이터를 렌더링합니다.
+		void RenderDrawData();
 
-        /// 에디터 전체 UI(Hierarchy, Inspector, Game, Project 등)를 그립니다.
-        /// - 상태값(재생 여부, 셰이딩 모드, 선택된 엔티티 등)은 참조로 받아 직접 갱신합니다.
-        void DrawEditorUI(World& world,
-                          Camera& camera,
-                          ForwardRenderSystem& forward,
-                          DeferredRenderSystem& deferred,
-                          SceneManager* sceneManager,
-                          float deltaTime,
-                          float fps,
-                          bool& isPlaying,
-                          int& shadingMode,
-                          bool& useFillLight,
-                          EntityId& selectedEntity,
-                          ViewportPicker& picker,
-                          float& cameraMoveSpeed,
-                          bool& useForwardRendering,
-                          bool& pvdEnabled,
-                          std::string& pvdHost,
-                          int& pvdPort,
-						  bool& isDebugDraw
-						  );
+		/// 에디터 전체 UI(Hierarchy, Inspector, Game, Project 등)를 그립니다.
+		/// - 상태값(재생 여부, 셰이딩 모드, 선택된 엔티티 등)은 참조로 받아 직접 갱신합니다.
+		void DrawEditorUI(World& world,
+			Camera& camera,
+			ForwardRenderSystem& forward,
+			DeferredRenderSystem& deferred,
+			SceneManager* sceneManager,
+			float deltaTime,
+			float fps,
+			bool& isPlaying,
+			int& shadingMode,
+			bool& useFillLight,
+			EntityId& selectedEntity,
+			ViewportPicker& picker,
+			float& cameraMoveSpeed,
+			bool& useForwardRendering,
+			bool& pvdEnabled,
+			std::string& pvdHost,
+			int& pvdPort,
+			bool& isDebugDraw
+		);
 
 		template<typename T>
 		void DrawEngineComponent(const char* label, T* comp, std::function<void()> removeFn, const EntityId& _selectedEntity, const std::string& compTypeName)
@@ -245,16 +265,16 @@ namespace Alice
 		void DrawInspectorAnimationStatus(World& world, const EntityId& _selectedEntity);
 		void DrawInspectorScripts(World& world, const EntityId& _selectedEntity);
 		void DrawInspectorComputeEffect(World& world, const EntityId& _selectedEntity);
-        void DrawInspectorMaterial(World& world, const EntityId& _selectedEntity);
-        void DrawInspectorPointLight(World& world, const EntityId& _selectedEntity);
-        void DrawInspectorSpotLight(World& world, const EntityId& _selectedEntity);
-        void DrawInspectorRectLight(World& world, const EntityId& _selectedEntity);
-        void DrawInspectorPostProcessVolume(World& world, const EntityId& _selectedEntity);
-		
+		void DrawInspectorMaterial(World& world, const EntityId& _selectedEntity);
+		void DrawInspectorPointLight(World& world, const EntityId& _selectedEntity);
+		void DrawInspectorSpotLight(World& world, const EntityId& _selectedEntity);
+		void DrawInspectorRectLight(World& world, const EntityId& _selectedEntity);
+		void DrawInspectorPostProcessVolume(World& world, const EntityId& _selectedEntity);
+
 		// Default Post Process Settings UI
 		void SaveDefaultPostProcessSettings();
 		void LoadDefaultPostProcessSettings();
-		
+
 		// Camera 컴포넌트 인스펙터
 		void DrawInspectorCameraSpringArm(World& world, const EntityId& _selectedEntity);
 		void DrawInspectorCameraLookAt(World& world, const EntityId& _selectedEntity);
@@ -279,32 +299,68 @@ namespace Alice
 		void DrawInspectorSocketAttachment(World& world, const EntityId& _selectedEntity);
 		void DrawInspectorSocketComponent(World& world, const EntityId& _selectedEntity);
 
-        /// 프로젝트 뷰에서 사용할 간단한 디렉터리 트리 그리기 함수입니다.
-        void DrawDirectoryNode(World& world,
-                               EntityId& selectedEntity,
-                               const std::filesystem::path& path);
+		/// 프로젝트 뷰에서 사용할 간단한 디렉터리 트리 그리기 함수입니다.
+		void DrawDirectoryNode(World& world,
+			EntityId& selectedEntity,
+			const std::filesystem::path& path);
 
-        /// FBX 에셋을 월드에 인스턴스화합니다.
-        EntityId InstantiateFbxAssetToWorld(World& world,
-                                            const std::filesystem::path& fbxAssetPath,
-                                            std::string_view entityName);
+		/// FBX 에셋을 월드에 인스턴스화합니다.
+		EntityId InstantiateFbxAssetToWorld(World& world,
+			const std::filesystem::path& fbxAssetPath,
+			std::string_view entityName);
 
-    public:
-        void SetSkinnedMeshRegistry(SkinnedMeshRegistry* registry) { m_skinnedRegistry = registry; }
-        void SetInputSystem(InputSystem* inputSystem) { m_inputSystem = inputSystem; }
+	public:
+		void SetSkinnedMeshRegistry(SkinnedMeshRegistry* registry) { m_skinnedRegistry = registry; }
+		void SetInputSystem(InputSystem* inputSystem) { m_inputSystem = inputSystem; }
 		void SetAliceUIRenderer(UIRenderer* renderer);
 
-        /// Default PostProcess Settings를 가져옵니다 (PostProcessVolumeSystem에서 사용)
-        const PostProcessSettings& GetDefaultPostProcessSettings() const { return m_defaultPostProcessSettings; }
+		/// Default PostProcess Settings를 가져옵니다 (PostProcessVolumeSystem에서 사용)
+		const PostProcessSettings& GetDefaultPostProcessSettings() const { return m_defaultPostProcessSettings; }
 
-    private:
-        /// 씬을 로드한 뒤, World 에 존재하는 SkinnedMeshComponent 들이
-        /// SkinnedMeshRegistry 에도 등록되어 있는지 확인하고,
-        /// 누락된 경우 .fbxasset / FBX 원본을 통해 간단히 재-임포트합니다.
-        void EnsureSkinnedMeshesRegistered(World& world);
-        void SaveScene(World& );
-        void LoadScene(World& );
+	private:
+		/// 씬을 로드한 뒤, World 에 존재하는 SkinnedMeshComponent 들이
+		/// SkinnedMeshRegistry 에도 등록되어 있는지 확인하고,
+		/// 누락된 경우 .fbxasset / FBX 원본을 통해 간단히 재-임포트합니다.
+		void EnsureSkinnedMeshesRegistered(World& world);
+		void SaveScene(World&);
+		void LoadScene(World&);
 
+		// DrawEditorUI 분해용 헬퍼
+		void HandleGlobalUndoRedo(World& world, EntityId& selectedEntity, bool isPlaying);
+		void SetupDockSpaceAndDefaultLayout();
+		void DrawMainMenuBar(World& world,
+			float deltaTime,
+			float fps,
+			bool& isPlaying,
+			EntityId& selectedEntity,
+			bool& useForwardRendering,
+			bool& isDebugDraw);
+		void DrawPvdSettingsWindow(bool& pvdEnabled, std::string& pvdHost, int& pvdPort);
+		void DrawBuildGameWindow();
+		void DrawHierarchyWindow(World& world, EntityId& selectedEntity);
+		void DrawInspectorWindow(World& world, EntityId& selectedEntity);
+		void DrawProjectWindow(World& world, EntityId& selectedEntity);
+		void DrawGameViewportWindow(World& world,
+			Camera& camera,
+			ForwardRenderSystem& forward,
+			DeferredRenderSystem& deferred,
+			EntityId& selectedEntity,
+			ViewportPicker& picker,
+			float& cameraMoveSpeed,
+			bool& useForwardRendering,
+			bool& isPlaying,
+			int& shadingMode,
+			bool& useFillLight);
+		void DrawCameraWindow(World& world, Camera& camera, float& cameraMoveSpeed, EntityId& selectedEntity);
+		void DrawLightingWindow(World& world,
+			ForwardRenderSystem& forward,
+			DeferredRenderSystem& deferred,
+			int& shadingMode,
+			bool& useFillLight,
+			bool& useForwardRendering);
+		void DrawMaterialAssetEditorWindow(World& world);
+		void DrawUICurveAssetEditorWindow();
+		void HandleSceneLoadFlow(World& world, SceneManager* sceneManager, bool& isPlaying, EntityId& selectedEntity);
 
 		// UI
 		EntityId CreateAliceUIRoot(World& world, std::string_view name);
@@ -325,11 +381,11 @@ namespace Alice
 		InputSystem* m_inputSystem = nullptr;
 		UIRenderer* m_aliceUIRenderer = nullptr;
 
-        bool               m_scriptBuilded = false;
+		bool               m_scriptBuilded = false;
 
-        // Default PostProcess Settings (Inspector에서 설정하고 저장)
-        PostProcessSettings m_defaultPostProcessSettings;
-    };
+		// Default PostProcess Settings (Inspector에서 설정하고 저장)
+		PostProcessSettings m_defaultPostProcessSettings;
+	};
 }
 
 

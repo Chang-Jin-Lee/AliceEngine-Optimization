@@ -3,6 +3,7 @@
 #include "Runtime/ECS/World.h"
 #include <DirectXMath.h>
 #include <algorithm>
+#include "Runtime/ECS/Components/TransformComponent.h"
 
 using namespace DirectX;
 
