@@ -1,4 +1,4 @@
-﻿#include "C_CombatResolver.h"
+#include "C_CombatResolver.h"
 
 namespace Alice::Combat
 {
@@ -28,35 +28,51 @@ namespace Alice::Combat
             return out;
 
         const bool targetInFront = victim.targetInFront;
+        const bool weakActive = victim.weakActive;
 
-        if (victim.flags.parryWindowActive && targetInFront)
+        if (victim.flags.parryWindowActive && targetInFront && !weakActive)
         {
-            out.deferred.push_back({ CombatEventType::OnParried, victim.id, attacker.id, hit.attackInstanceId, 0.0f });
+            out.deferred.push_back({ CombatEventType::OnParrySuccess, victim.id, attacker.id, hit.attackInstanceId, 0.0f });
+            out.deferred.push_back({ CombatEventType::OnGotParried, attacker.id, victim.id, hit.attackInstanceId, 0.0f });
+            out.immediate.push_back({ CommandType::ConsumeParry, CmdConsumeParry{ victim.id } });
+            if (hit.parryLockSec > 0.0f)
+                out.immediate.push_back({ CommandType::StartGuardLock, CmdStartGuardLock{ victim.id, hit.parryLockSec } });
+            if (hit.parryGroggyGain > 0.0f)
+                out.immediate.push_back({ CommandType::AddGroggy, CmdAddGroggy{ attacker.id, hit.parryGroggyGain } });
             out.immediate.push_back({ CommandType::DisableTrace, CmdDisableTrace{ attacker.id } });
             if (attacker.flags.canBeInterrupted)
                 out.immediate.push_back({ CommandType::ForceCancelAttack, CmdForceCancelAttack{ attacker.id } });
             return out;
         }
 
-        if (victim.flags.guardActive && targetInFront)
+        if (victim.flags.guardActive && targetInFront && !weakActive)
         {
-            const float staminaCost = (hit.damage > 0.0f) ? hit.damage : 0.0f;
-            if (staminaCost > 0.0f)
-                out.immediate.push_back({ CommandType::ConsumeStamina, CmdConsumeStamina{ victim.id, staminaCost } });
+            const float guardCost = (hit.guardDurabilityCost > 0.0f)
+                ? hit.guardDurabilityCost
+                : ((hit.damage > 0.0f) ? hit.damage : 0.0f);
+            if (guardCost > 0.0f)
+                out.immediate.push_back({ CommandType::ConsumeWeaponDurability, CmdConsumeWeaponDurability{ victim.id, guardCost } });
 
-            if (victim.stamina - staminaCost <= 0.0f)
+            if (victim.weaponDurability - guardCost <= 0.0f)
             {
                 out.deferred.push_back({ CombatEventType::OnGuardBreak, victim.id, attacker.id, hit.attackInstanceId, 0.0f });
-                out.immediate.push_back({ CommandType::ApplyDamage, CmdApplyDamage{ victim.id, hit.damage } });
+                if (hit.guardBreakPushbackSpeed > 0.0f && hit.guardBreakPushbackDuration > 0.0f)
+                {
+                    out.immediate.push_back({ CommandType::ApplyPushbackToBoth,
+                        CmdApplyPushbackToBoth{ attacker.id, victim.id, hit.guardBreakPushbackSpeed, hit.guardBreakPushbackDuration } });
+                }
+                if (hit.guardBreakWeakSec > 0.0f)
+                    out.immediate.push_back({ CommandType::EnterWeakState, CmdEnterWeakState{ victim.id, hit.guardBreakWeakSec } });
                 if (victim.flags.canBeInterrupted && victim.canBeHitstunned)
                 {
                     out.immediate.push_back({ CommandType::ForceCancelAttack, CmdForceCancelAttack{ victim.id } });
                     out.immediate.push_back({ CommandType::DisableTrace, CmdDisableTrace{ victim.id } });
                 }
-                out.deferred.push_back({ CombatEventType::OnHit, victim.id, attacker.id, hit.attackInstanceId, hit.damage });
             }
             else
             {
+                if (hit.guardLockSec > 0.0f)
+                    out.immediate.push_back({ CommandType::StartGuardLock, CmdStartGuardLock{ victim.id, hit.guardLockSec } });
                 out.deferred.push_back({ CombatEventType::OnGuarded, victim.id, attacker.id, hit.attackInstanceId, 0.0f });
             }
             return out;

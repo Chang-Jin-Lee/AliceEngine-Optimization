@@ -4,7 +4,7 @@
 #include "Runtime/ECS/GameObject.h"
 #include "Runtime/Rendering/Components/CameraComponent.h"
 #include "CameraFollow.h"
-#include "AddGetRemoveComponentTest.h"
+#include "../AddGetRemoveComponentTest.h"
 
 namespace Alice
 {

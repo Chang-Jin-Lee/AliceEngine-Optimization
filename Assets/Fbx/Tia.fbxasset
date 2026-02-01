@@ -4,5 +4,5 @@
         "Assets/Materials/Tia_1.mat"
     ],
     "mesh": "Tia",
-    "source_fbx": "Resource/Test/4_Resources/sample/Tia.fbx"
+    "source_fbx": "../4Q_Project_AliceRenderer/Resource/Test/4_Resources/sample/Tia.fbx"
 }

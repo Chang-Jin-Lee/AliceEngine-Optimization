@@ -187,10 +187,11 @@ namespace Alice
         if (input->GetMouseButton(MouseCode::Left))
         {
             float sensitivity = Get_m_sensitivity();
+            const float mouseFlip = Get_m_invertMouse() ? -1.0f : 1.0f;
 
-            // 마우스 이동량만큼 회전 (방향 반전: -=, -=)
-            yaw -= input->GetMouseDeltaX() * sensitivity;
-            pitch -= input->GetMouseDeltaY() * sensitivity;
+            // 마우스 이동량만큼 회전
+            yaw += mouseFlip * input->GetMouseDeltaX() * sensitivity;
+            pitch += mouseFlip * input->GetMouseDeltaY() * sensitivity;
 
             // 상하 회전 제한 (-89 ~ 89도)
             pitch = std::clamp(pitch, -89.0f, 89.0f);

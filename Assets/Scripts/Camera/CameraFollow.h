@@ -91,6 +91,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_distance, 35.0f);      // 캐릭터와의 거리 (Arm Length)
         ALICE_PROPERTY(float, m_heightOffset, 1.5f);  // 회전 중심점 높이 (머리/가슴)
         ALICE_PROPERTY(float, m_sensitivity, 0.2f);   // 마우스 감도
+        ALICE_PROPERTY(bool, m_invertMouse, false);  // 마우스 반전 (X/Y 공통)
         ALICE_PROPERTY(float, m_currentYaw, 0.0f);    // 현재 좌우 각도
         ALICE_PROPERTY(float, m_currentPitch, 20.0f); // 현재 상하 각도
         ALICE_PROPERTY(float, m_minDistance, 10.0f);   // 최소 거리 (너무 가까워짐 방지)
