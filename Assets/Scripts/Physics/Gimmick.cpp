@@ -931,7 +931,9 @@ namespace Alice
 
         XMFLOAT3 delta{ targetPos.x - tr->position.x, targetPos.y - tr->position.y, targetPos.z - tr->position.z };
         float dist = Length(delta);
-        if (dist <= m_arriveThreshold)
+        float step = speed * dt;
+        const float snapThreshold = std::max(m_arriveThreshold, step);
+        if (dist <= snapThreshold)
         {
             tr->position = targetPos;
             tr->rotation = targetRot;
@@ -941,7 +943,6 @@ namespace Alice
             return true;
         }
 
-        float step = speed * dt;
         float t = (dist > 0.0f) ? std::min(1.0f, step / dist) : 1.0f;
         tr->position.x += delta.x * t;
         tr->position.y += delta.y * t;

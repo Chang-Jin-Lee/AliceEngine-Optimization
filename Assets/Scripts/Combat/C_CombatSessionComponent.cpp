@@ -581,20 +581,21 @@ namespace Alice
             }
         };
 
-        UpdateAttackMove(m_state->playerAttackMove,
-                         playerId,
-                         playerIntent,
-                         outPlayer.state,
-                         m_state->prevPlayerState,
-                         true,
-                         outPlayer.commands,
-                         deltaTime,
-                         m_lightAttackMoveDistance,
-                         m_heavyAttackMoveDistance,
-                         m_lightAttackMoveStartSec,
-                         m_heavyAttackMoveStartSec,
-                         m_lightAttackMoveDurationSec,
-                         m_heavyAttackMoveDurationSec);
+        // TEMP: disable attack-driven forward move while tuning.
+        // UpdateAttackMove(m_state->playerAttackMove,
+        //                  playerId,
+        //                  playerIntent,
+        //                  outPlayer.state,
+        //                  m_state->prevPlayerState,
+        //                  true,
+        //                  outPlayer.commands,
+        //                  deltaTime,
+        //                  m_lightAttackMoveDistance,
+        //                  m_heavyAttackMoveDistance,
+        //                  m_lightAttackMoveStartSec,
+        //                  m_heavyAttackMoveStartSec,
+        //                  m_lightAttackMoveDurationSec,
+        //                  m_heavyAttackMoveDurationSec);
         m_state->player.state = outPlayer.state;
         m_state->player.flags = outPlayer.flags;
         m_state->boss.state = outBoss.state;
