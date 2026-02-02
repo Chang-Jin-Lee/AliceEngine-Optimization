@@ -1,4 +1,4 @@
-#include "Runtime/UI/UIShaderCode.h"
+﻿#include "Runtime/UI/UIShaderCode.h"
 
 namespace Alice
 {
@@ -51,6 +51,8 @@ cbuffer UIPixelConstants : register(b1)
     float4 gParams4;
     float4 gParams5;
     float4 gGaugeParams;
+    float4 gEmptyColor;
+    float4 gEmptyParams;
     float4 gTime;
 };
 
@@ -182,7 +184,7 @@ float4 main(PSInput input) : SV_Target
 }
 )";
 
-		const char* UIGaugeCustomPS = R"(
+        const char* UIGaugeCustomPS = R"(
 Texture2D gTexture : register(t0);
 SamplerState gSampler : register(s0);
 
@@ -192,13 +194,15 @@ cbuffer UIPixelConstants : register(b1)
     float4 gGlowColor;
     float4 gVitalColor;
     float4 gVitalBgColor;
-    float4 gParams0;
+    float4 gParams0; // gParams0.x 를 CellScale로 사용 가능
     float4 gParams1;
     float4 gParams2;
     float4 gParams3;
     float4 gParams4;
     float4 gParams5;
     float4 gGaugeParams;
+    float4 gEmptyColor;
+    float4 gEmptyParams; // x: 사용여부, y: 스케일, z: 속도, w: 강도
     float4 gTime;
 };
 
@@ -209,74 +213,92 @@ struct PSInput
     float4 Color    : COLOR0;
 };
 
+// --- 랜덤 및 노이즈 함수 추가 ---
+float random(float2 uv) {
+    return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
+}
+
+float noise(float2 uv) {
+    float2 i = floor(uv);
+    float2 f = frac(uv);
+    float a = random(i);
+    float b = random(i + float2(1.0, 0.0));
+    float c = random(i + float2(0.0, 1.0));
+    float d = random(i + float2(1.0, 1.0));
+    float2 u = f * f * (3.0 - 2.0 * f);
+    return lerp(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+}
+
+float fbm(float2 uv) {
+    float v = 0.0;
+    float a = 0.5;
+    for (int i = 0; i < 4; i++) {
+        v += a * noise(uv);
+        uv *= 2.0;
+        a *= 0.5;
+    }
+    return v;
+}
+
 float4 main(PSInput input) : SV_Target
 {
     float2 uv = input.TexCoord;
     float4 tex = gTexture.Sample(gSampler, uv);
     float4 color = tex * input.Color;
     
-    // 알파값이 0.1 이하면 discard
-    if (color.a < 0.1)
-        discard;
-    
-    // RGB 값이 전부 0.1 이하면 return (투명하게)
-    if (color.r <= 0.1 && color.g <= 0.1 && color.b <= 0.1)
-        return float4(0, 0, 0, 0);
-    
-    // 게이지 정보는 gGaugeParams에 저장됨 (BuildPixelConstants에서 설정)
-    // gGaugeParams.x = fill ratio (0~1)
-    // gGaugeParams.y = fillLate ratio (0~1, useFillLate가 true일 때만)
-    // gGaugeParams.z = useFillLate flag (1.0 = true, 0.0 = false)
-    // gGaugeParams.w = direction flag (0.0 = LeftToRight, 1.0 = RightToLeft, 2.0 = BottomToTop, 3.0 = TopToBottom)
-    
+    // 1. 기본 투명도 체크 (완전 투명한 부분은 연산 제외)
+    if (color.a < 0.1) discard;
+
     float fillRatio = saturate(gGaugeParams.x);
     float fillLateRatio = saturate(gGaugeParams.y);
     float useFillLate = gGaugeParams.z;
     float direction = gGaugeParams.w;
-    
-    // UV 좌표를 사용해서 현재 픽셀이 어느 영역에 있는지 판단
+
     float pixelRatio = 0.0f;
+    bool isGauge = (direction >= 0.0f && direction <= 3.0f);
     
-    if (direction < 0.5f) // LeftToRight
-    {
-        pixelRatio = uv.x;
-    }
-    else if (direction < 1.5f) // RightToLeft
-    {
-        pixelRatio = 1.0f - uv.x;
-    }
-    else if (direction < 2.5f) // BottomToTop
-    {
-        pixelRatio = 1.0f - uv.y;
-    }
-    else // TopToBottom
-    {
-        pixelRatio = uv.y;
-    }
+    if (direction < 0.5f) pixelRatio = uv.x;
+    else if (direction < 1.5f) pixelRatio = 1.0f - uv.x;
+    else if (direction < 2.5f) pixelRatio = 1.0f - uv.y;
+    else pixelRatio = uv.y;
+
+    float filledRatio = (useFillLate > 0.5f) ? max(fillRatio, fillLateRatio) : fillRatio;
     
-    // 색상 우선순위: 빨강 > 노랑 > 흰색
-    float4 finalColor = float4(1, 1, 1, 1); // 기본: 흰색 (배경)
-    
-    // FillLate 영역 (노란색) - fillRatio보다 크고 fillLateRatio 이하
-    if (useFillLate > 0.5f && pixelRatio > fillRatio && pixelRatio <= fillLateRatio)
+    // 기본 색상을 텍스처 컬러로 설정
+    float4 finalColor = color;
+
+    // 2. 비어 있는 영역(Empty Area) 처리
+    if (isGauge && gEmptyParams.x > 0.5f && pixelRatio > filledRatio)
     {
-        finalColor = float4(1, 1, 0, 1); // 노란색
-    }
-    
-    // Fill 영역 (빨간색) - fillRatio 이하 (우선순위가 가장 높으므로 마지막에 체크)
-    if (pixelRatio <= fillRatio)
-    {
-        finalColor = float4(1, 0, 0, 1); // 빨간색
+        float scale = max(gEmptyParams.y, 0.1f);
+        float speed = gTime.x * gEmptyParams.z;
+        float2 noiseUV = uv * scale + float2(speed, speed * 0.2f);
+        
+        float cloud = fbm(noiseUV);
+        float intensity = gEmptyParams.w;
+        float shade = lerp(1.0f - intensity, 1.0f, cloud);
+        
+        finalColor = gEmptyColor * shade;
+        finalColor.a = color.a; // 원본 알파 유지
     }
     
-    // 원본 텍스처의 알파를 유지
-    finalColor.a = color.a;
+    // --- [수정 포인트] ---
+    // gTime.y가 낮아질수록 finalColor의 RGB를 0(검은색)으로 수렴하게 만듭니다.
+    // 알파값은 그대로 1.0(불투명)을 유지하거나 원본을 유지하여 배경이 비치지 않게 합니다.
     
-    // Global alpha 적용
-    finalColor.a *= gTime.y;
+    float darkenFactor = saturate(gTime.y); // 0이면 검정, 1이면 원래색
+    finalColor.rgb *= darkenFactor; 
+    
+    // 만약 "완전히 불투명한 검정"을 원하시면 아래처럼 설정하세요.
+    // 배경이 투명해야 한다면 그대로 finalColor.a *= gTime.y; 를 쓰셔도 됩니다.
+    finalColor.a = color.a; 
     
     return finalColor;
 }
 )";
 	}
 }
+
+
+
+

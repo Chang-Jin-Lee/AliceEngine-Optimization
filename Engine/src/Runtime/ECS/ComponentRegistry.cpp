@@ -63,6 +63,7 @@
 #include "Runtime/UI/UIShakeComponent.h"
 #include "Runtime/UI/UIHover3DComponent.h"
 #include "Runtime/UI/UIVitalComponent.h"
+#include "Runtime/UI/UIEmptyGaugeEffectComponent.h"
 
 using namespace DirectX;
 
@@ -1217,6 +1218,13 @@ namespace Alice
             .property("frequency", &UIVitalComponent::frequency)
             .property("speed", &UIVitalComponent::speed)
             .property("thickness", &UIVitalComponent::thickness);
+        rttr::registration::class_<UIEmptyGaugeEffectComponent>("UIEmptyGaugeEffectComponent")
+            .constructor<>()
+            .property("enabled", &UIEmptyGaugeEffectComponent::enabled)
+            .property("color", &UIEmptyGaugeEffectComponent::color)
+            .property("frequency", &UIEmptyGaugeEffectComponent::frequency)
+            .property("speed", &UIEmptyGaugeEffectComponent::speed)
+            .property("intensity", &UIEmptyGaugeEffectComponent::intensity);
 
     }
 
@@ -1292,6 +1300,7 @@ namespace Alice
         r.Register<UIShakeComponent>("UI Shake", "UI");
         r.Register<UIHover3DComponent>("UI Hover 3D", "UI");
         r.Register<UIVitalComponent>("UI Vital", "UI");
+        r.Register<UIEmptyGaugeEffectComponent>("UI Gauge Empty Effect", "UI");
 
         r.SortByCategoryThenName();
     }

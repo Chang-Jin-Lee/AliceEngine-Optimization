@@ -73,6 +73,7 @@
 #include "Runtime/UI/UIShakeComponent.h"
 #include "Runtime/UI/UIHover3DComponent.h"
 #include "Runtime/UI/UIVitalComponent.h"
+#include "Runtime/UI/UIEmptyGaugeEffectComponent.h"
 
 #include <wrl/client.h>
 #include <dxgi.h>
@@ -782,6 +783,11 @@ namespace Alice
                 rttr::instance inst = const_cast<UIVitalComponent&>(*uiVital);
                 outEntity["UIVital"] = JsonRttr::ToJsonObject(inst);
             }
+            if (const auto* uiEmptyGaugeEffect = world.GetComponent<UIEmptyGaugeEffectComponent>(id); uiEmptyGaugeEffect)
+            {
+                rttr::instance inst = const_cast<UIEmptyGaugeEffectComponent&>(*uiEmptyGaugeEffect);
+                outEntity["UIEmptyGaugeEffect"] = JsonRttr::ToJsonObject(inst);
+            }
 
             if (const auto* cam = world.GetComponent<CameraComponent>(id); cam)
             {
@@ -1446,6 +1452,13 @@ namespace Alice
                 UIVitalComponent& comp = world.AddComponent<UIVitalComponent>(id);
                 rttr::instance inst = comp;
                 if (!JsonRttr::FromJsonObject(inst, *itUIVital)) return false;
+            }
+            auto itUIEmptyGaugeEffect = e.find("UIEmptyGaugeEffect");
+            if (itUIEmptyGaugeEffect != e.end() && itUIEmptyGaugeEffect->is_object())
+            {
+                UIEmptyGaugeEffectComponent& comp = world.AddComponent<UIEmptyGaugeEffectComponent>(id);
+                rttr::instance inst = comp;
+                if (!JsonRttr::FromJsonObject(inst, *itUIEmptyGaugeEffect)) return false;
             }
 
             return true;

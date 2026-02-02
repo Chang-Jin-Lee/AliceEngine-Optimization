@@ -65,11 +65,12 @@ namespace Alice
         }
         TargetGauge->fillLateTexture = "Resource/Image/Circle.png";  // 
         TargetGauge->backgroundTexture = "Resource/Image/Circle.png";
-        // WeaponScript는 기본 쉐이더 사용 (BossHPScript와 동일)
-        TargetWidget->shaderName = "Default";
+        // WeaponScript는 GaugeCustom 쉐이더 사용 (빈 영역 효과를 위해)
+        TargetWidget->shaderName = "GaugeCustom";
+        TargetGauge->useCustomShader = true;
         
-        // FillLate 쉐이더도 기본 쉐이더 사용
-        TargetGauge->fillLateShaderName = "Default";
+        // FillLate 쉐이더도 GaugeCustom 사용
+        TargetGauge->fillLateShaderName = "GaugeCustom";
 
         // FillLate 
         TargetGauge->useFillLate = true;

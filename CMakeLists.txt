@@ -253,6 +253,7 @@ set(ENGINE_HEADERS
     ${ALICE_SRC_DIR}/Runtime/Engine/AdvancedAnimSystem.h
     ${ALICE_SRC_DIR}/Runtime/Resources/Serialization/JsonRttr.h
     ${ALICE_SRC_DIR}/Runtime/Input/InputTypes.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UIEmptyGaugeEffectComponent.h
 
     # Audio
     ${ALICE_SRC_DIR}/Runtime/Audio/AudioSystem.h
