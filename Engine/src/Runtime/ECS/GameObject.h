@@ -8,6 +8,8 @@
 #include "Runtime/ECS/World.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/Rendering/SkinnedMeshRegistry.h"
+#include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
+#include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
 
 // FbxModel은 전역 네임스페이스에 있습니다.
 #include "Runtime/Importing/FbxModel.h"

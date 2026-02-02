@@ -4,6 +4,8 @@
 #include <string>
 #include <cstdint>
 
+class IPhysicsJoint;
+
 // Joint 컴포넌트 (엔티티 <-> 엔티티)
 // - targetName 으로 상대 엔티티를 찾고, 두 액터를 연결
 // - PhysicsSystem에서 실제 Joint를 생성/관리

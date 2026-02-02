@@ -1,4 +1,4 @@
-﻿#include "C_Fighter.h"
+#include "C_Fighter.h"
 
 #include <DirectXMath.h>
 #include <cmath>
@@ -20,6 +20,11 @@ namespace Alice::Combat
         s.stamina = stamina;
         s.moveSpeed = moveSpeed;
         s.targetId = targetId;
+        s.canBeHitstunned = canBeHitstunned;
+        s.weaponDurability = weaponDurability;
+        s.weaponDurabilityMax = weaponDurabilityMax;
+        s.weakRemainingSec = weakRemainingSec;
+        s.weakActive = weakRemainingSec > 0.0f;
 
         if (auto* cct = world.GetComponent<Phy_CCTComponent>(id))
         {
@@ -35,13 +40,25 @@ namespace Alice::Combat
             s.dodgeWindowActive = hc->dodgeActive;
             s.invulnActive = hc->invulnRemaining > 0.0f;
             s.groggyDuration = hc->groggyDuration;
+            s.weaponDurability = hc->weaponDurability;
+            s.weaponDurabilityMax = hc->weaponDurabilityMax;
+            s.weakRemainingSec = hc->weakRemainingSec;
+            s.weakActive = hc->weakRemainingSec > 0.0f;
         }
 
         if (auto* driver = world.GetComponent<AttackDriverComponent>(id))
         {
             s.attackWindowActive = driver->attackActive;
-            s.guardWindowActive = s.guardWindowActive || driver->guardActive;
+            const bool guardLock = (driver->guardLockRemainingSec > 0.0f);
+            s.guardWindowActive = s.guardWindowActive || driver->guardActive || driver->guardInputHeld || guardLock;
             s.dodgeWindowActive = s.dodgeWindowActive || driver->dodgeActive;
+            s.parryWindowActive = driver->parryActive
+                || (driver->parryOverrideRemainingSec > 0.0f && !driver->parryUsedThisPress);
+            s.guardLockActive = guardLock;
+            s.attackCancelable = driver->attackCancelable;
+            s.attackStateDurationSec = (driver->attackStateDurationSec > 0.0f)
+                ? driver->attackStateDurationSec
+                : driver->attackStateDurationAutoSec;
         }
 
         const auto* selfTr = world.GetComponent<TransformComponent>(id);
@@ -80,6 +97,9 @@ namespace Alice::Combat
         snap.flags = flags;
         snap.hp = hp;
         snap.stamina = stamina;
+        snap.weaponDurability = weaponDurability;
+        snap.weaponDurabilityMax = weaponDurabilityMax;
+        snap.weakActive = weakRemainingSec > 0.0f;
         snap.targetInFront = lastTargetInFront;
         snap.canBeHitstunned = canBeHitstunned;
         return snap;
