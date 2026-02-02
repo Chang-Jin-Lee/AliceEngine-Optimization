@@ -234,6 +234,14 @@ namespace Alice
 				const fs::path p = it->path();
 				if (p.extension() == ".dll")
 				{
+					const std::string filename = p.filename().string();
+					// Release 패키징에 debug 전용 DLL이 섞이지 않도록 필터링
+					if (filename == "zlibd1.dll" ||
+						filename == "assimp-vc143-mtd.dll" ||
+						filename == "fmodL.dll")
+					{
+						continue;
+					}
 					dllFiles.push_back(p);
 				}
 			}
@@ -288,13 +296,8 @@ namespace Alice
 			{
 				namespace fs2 = std::filesystem;
 
-#ifdef _DEBUG
-				const std::wstring cmd = L"cmake --build build --config Debug --target AlicePlayer";
-				const fs2::path releaseBinDir = args.projectRoot / "build/bin/Debug";
-#else
 				const std::wstring cmd = L"cmake --build build --config Release --target AlicePlayer";
 				const fs2::path releaseBinDir = args.projectRoot / "build/bin/Release";
-#endif
 
 				STARTUPINFOW        si{};
 				PROCESS_INFORMATION pi{};
@@ -617,7 +620,7 @@ namespace Alice
 					GetModuleFileNameW(nullptr, exePathW, MAX_PATH);
 					fs::path exePath = exePathW;
 					fs::path exeDir = exePath.parent_path();
-					fs::path projectRoot = exeDir.parent_path().parent_path().parent_path(); // build/bin/Debug → 프로젝트 루트
+					fs::path projectRoot = exeDir.parent_path().parent_path().parent_path(); // build/bin/<Config> → 프로젝트 루트
 
 					fs::path buildDir = projectRoot / "Build";
 					std::error_code fec;

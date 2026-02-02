@@ -9,7 +9,7 @@
                         "fillLateSmoothTime": 0.25,
                         "gaugeWidgetName": "UI_Gauge1",
                         "maxValue": 100.0,
-                        "nowValue": 1.0,
+                        "nowValue": 0.8999999761581421,
                         "rootWidgetName": "UI_BossInfor",
                         "targetEntityName": "Cube_HPTest1",
                         "targetScriptName": "BoxDeligateScript"
@@ -66,7 +66,7 @@
                 "useBackground": true,
                 "useCustomShader": false,
                 "useFillLate": true,
-                "value": 1.0
+                "value": 0.8999999761581421
             },
             "UITransform": {
                 "alignH": "Center",
@@ -122,7 +122,7 @@
                         "fillLateSmoothTime": 0.25,
                         "gaugeWidgetName": "UI_Gauge2",
                         "maxValue": 100.0,
-                        "nowValue": 1.0,
+                        "nowValue": 0.8999999761581421,
                         "rootWidgetName": "UI_BossInfor",
                         "targetEntityName": "Cube_HPTest1",
                         "targetScriptName": "BoxDeligateScript"
@@ -179,7 +179,7 @@
                 "useBackground": true,
                 "useCustomShader": false,
                 "useFillLate": true,
-                "value": 1.0
+                "value": 0.8999999761581421
             },
             "UITransform": {
                 "alignH": "Center",
@@ -297,7 +297,7 @@
                         "fillLateSmoothTime": 0.25,
                         "gaugeWidgetName": "UI_PlayerGauge",
                         "maxValue": 100.0,
-                        "nowValue": 1.0,
+                        "nowValue": 0.44999998807907104,
                         "rootWidgetName": "UI_PlayerInfo",
                         "targetEntityName": "Cube_HPTest1",
                         "targetScriptName": "BoxDeligateScript"
@@ -323,26 +323,38 @@
                 },
                 "visible": true
             },
+            "UIEmptyGaugeEffect": {
+                "color": {
+                    "w": 1.0,
+                    "x": 0.5444015264511108,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "enabled": true,
+                "frequency": 6.0,
+                "intensity": 0.3499999940395355,
+                "speed": 1.0
+            },
             "UIGauge": {
                 "backgroundColor": {
-                    "w": 0.8999999761581421,
-                    "x": 0.10000000149011612,
-                    "y": 0.10000000149011612,
-                    "z": 0.10000000149011612
+                    "w": 1.0,
+                    "x": 0.16602319478988647,
+                    "y": 0.15768997371196747,
+                    "z": 0.15768997371196747
                 },
                 "backgroundTexture": "Resource/Image/GrayHuman.png",
                 "direction": "BottomToTop",
                 "fillColor": {
                     "w": 1.0,
-                    "x": 0.96138995885849,
-                    "y": 0.09841630607843399,
-                    "z": 0.07795054465532303
+                    "x": 0.7722007632255554,
+                    "y": 0.017888803035020828,
+                    "z": 0.0
                 },
                 "fillLateColor": {
                     "w": 1.0,
-                    "x": 0.9884169697761536,
-                    "y": 0.9641783833503723,
-                    "z": 0.09159073233604431
+                    "x": 0.4864864945411682,
+                    "y": 0.23479078710079193,
+                    "z": 0.23479078710079193
                 },
                 "fillLateShaderName": "",
                 "fillLateTexture": "Resource/Image/YellowHuman.png",
@@ -352,9 +364,9 @@
                 "normalized": false,
                 "smoothing": 0.0,
                 "useBackground": true,
-                "useCustomShader": false,
+                "useCustomShader": true,
                 "useFillLate": true,
-                "value": 1.0
+                "value": 0.44999998807907104
             },
             "UITransform": {
                 "alignH": "Center",
@@ -409,7 +421,7 @@
                         "fillLateSmoothTime": 0.25,
                         "gaugeWidgetName": "UI_Weapon",
                         "maxValue": 100.0,
-                        "nowValue": 1.0,
+                        "nowValue": 0.30000001192092896,
                         "rootWidgetName": "UI_PlayerInfo",
                         "targetEntityName": "Cube_HPTest1",
                         "targetScriptName": "BoxDeligateScript",
@@ -436,28 +448,40 @@
                 },
                 "visible": true
             },
+            "UIEmptyGaugeEffect": {
+                "color": {
+                    "w": 1.0,
+                    "x": 0.606177568435669,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "enabled": true,
+                "frequency": 6.0,
+                "intensity": 0.3499999940395355,
+                "speed": 1.0
+            },
             "UIGauge": {
                 "backgroundColor": {
-                    "w": 0.9019607901573181,
-                    "x": 0.10196078568696976,
-                    "y": 0.09792469441890717,
-                    "z": 0.09156478196382523
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "backgroundTexture": "Resource/Image/Circle.png",
                 "direction": "LeftToRight",
                 "fillColor": {
                     "w": 1.0,
-                    "x": 1.0,
+                    "x": 0.606177568435669,
                     "y": 0.0,
                     "z": 0.0
                 },
                 "fillLateColor": {
                     "w": 1.0,
-                    "x": 0.9884169697761536,
-                    "y": 0.9852195382118225,
-                    "z": 0.16028384864330292
+                    "x": 0.7799227833747864,
+                    "y": 0.43246233463287354,
+                    "z": 0.13249652087688446
                 },
-                "fillLateShaderName": "Default",
+                "fillLateShaderName": "GaugeCustom",
                 "fillLateTexture": "Resource/Image/Circle.png",
                 "fillTexture": "Resource/Image/Circle.png",
                 "maxValue": 1.0,
@@ -465,9 +489,9 @@
                 "normalized": false,
                 "smoothing": 0.0,
                 "useBackground": true,
-                "useCustomShader": false,
+                "useCustomShader": true,
                 "useFillLate": true,
-                "value": 1.0
+                "value": 0.30000001192092896
             },
             "UITransform": {
                 "alignH": "Center",
@@ -504,7 +528,7 @@
                 "billboard": false,
                 "interactable": true,
                 "raycastTarget": true,
-                "shaderName": "Default",
+                "shaderName": "GaugeCustom",
                 "space": "Screen",
                 "visibility": "Visible",
                 "widgetName": "UI_Weapon"
@@ -519,9 +543,9 @@
                     "enabled": true,
                     "name": "BoxDeligateScript",
                     "props": {
-                        "BossHP_Value": 100.0,
-                        "CharacterHP_Value": 100.0,
-                        "PoiseHP_Value": 100.0,
+                        "BossHP_Value": 90.0,
+                        "CharacterHP_Value": 45.0,
+                        "PoiseHP_Value": 90.0,
                         "SubHP": 5.0,
                         "TotalTime": 0.0,
                         "WeaponHP_Value": 100.0,

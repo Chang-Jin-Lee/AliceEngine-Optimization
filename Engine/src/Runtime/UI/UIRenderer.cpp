@@ -1,4 +1,4 @@
-#include "Runtime/UI/UIRenderer.h"
+﻿#include "Runtime/UI/UIRenderer.h"
 
 #include <d3d11.h>
 #include <d3dcompiler.h>
@@ -24,6 +24,7 @@
 #include "Runtime/UI/UIShakeComponent.h"
 #include "Runtime/UI/UIHover3DComponent.h"
 #include "Runtime/UI/UIVitalComponent.h"
+#include "Runtime/UI/UIEmptyGaugeEffectComponent.h"
 #include "Runtime/UI/UICurveAsset.h"
 
 #include "Runtime/ECS/World.h"
@@ -186,6 +187,8 @@ namespace Alice
 		if (!device || !context)
 			return false;
 
+		
+
 		m_device = device;
 		m_context = context;
 		m_resources = resources;
@@ -256,7 +259,7 @@ namespace Alice
 			ALICE_LOG_ERRORF("[AliceUI] Failed to register GaugeCustom shader.");
 			return false;
 		}
-
+		
 		// Constant buffer
 		D3D11_BUFFER_DESC cbDesc{};
 		cbDesc.ByteWidth = sizeof(UIConstants);
@@ -418,7 +421,7 @@ namespace Alice
 		m_screenLayouts.clear();
 		m_screenRects.clear();
 		m_curveCache.clear();
-
+		
 		m_whiteSRV.Reset();
 		m_vs.Reset();
 		m_psDefault.Reset();
@@ -439,6 +442,8 @@ namespace Alice
 	{
 		if (name.empty() || !pixelShaderSource || !m_device)
 			return false;
+
+		ALICE_LOG_ERRORF("[AliceUI] RegisterShader");
 
 		Microsoft::WRL::ComPtr<ID3DBlob> psBlob;
 		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
@@ -1734,10 +1739,12 @@ namespace Alice
 			verts[2].uv = DirectX::XMFLOAT2(0, 1);
 			verts[3].uv = DirectX::XMFLOAT2(1, 1);
 
-			DrawQuad(verts, GetTexture(gauge->backgroundTexture), GetPixelShader(baseShaderName), pixel);
+			// Background에만 GaugeCustom 쉐이더 적용 (빈 영역 효과를 위해)
+			std::string bgShaderName = (gauge->useCustomShader) ? "GaugeCustom" : baseShaderName;
+			DrawQuad(verts, GetTexture(gauge->backgroundTexture), GetPixelShader(bgShaderName), pixel);
 		}
 
-		// FillLate ?�더�?(useFillLate가 true???�만, fill보다 먼�? 그려�?
+		// FillLate 
 		if (gauge->useFillLate)
 		{
 			float fillLateRatio = gauge->fillLateDisplayedValue;
@@ -1788,21 +1795,16 @@ namespace Alice
 				verts[3].uv = DirectX::XMFLOAT2(u1, v1);
 
 				std::string fillLateShaderName = gauge->fillLateShaderName.empty()
-
 				    ? baseShaderName
-
 				    : gauge->fillLateShaderName;
 
 				if (fillLateShaderName == "GaugeCustom" && !gauge->useCustomShader)
-
 				{
 
 				    fillLateShaderName = "Default";
 
 				}
-				
-				// fillLateTexture가 비어?�으�?nullptr???�달 (?�색 ?�스�??�용, ?�상�??�시)
-				// ?�렇�??�면 fillTexture??Circle.png가 ?��??��? ?�음
+			
 				ID3D11ShaderResourceView* fillLateTex = gauge->fillLateTexture.empty() 
 					? nullptr 
 					: GetTexture(gauge->fillLateTexture);
@@ -1821,6 +1823,7 @@ namespace Alice
 		float u0 = 0.0f, u1 = 1.0f;
 		float v0 = 0.0f, v1 = 1.0f;
 
+		// Fill 영역만 클리핑하여 렌더링 (항상 기본 쉐이더 사용)
 		switch (gauge->direction)
 		{
 		case AliceUI::UIGaugeDirection::LeftToRight:
@@ -1859,11 +1862,12 @@ namespace Alice
 		verts[2].uv = DirectX::XMFLOAT2(u0, v1);
 		verts[3].uv = DirectX::XMFLOAT2(u1, v1);
 
-		// fillTexture가 비어?�으�?nullptr???�달 (?�색 ?�스�??�용, ?�상�??�시)
+		// fillTexture媛 鍮꾩뼱?占쎌쑝占?nullptr???占쎈떖 (?占쎌깋 ?占쎌뒪占??占쎌슜, ?占쎌긽占??占쎌떆)
 		ID3D11ShaderResourceView* fillTex = gauge->fillTexture.empty() 
 			? nullptr 
 			: GetTexture(gauge->fillTexture);
 		
+		// Fill 영역은 항상 기본 쉐이더 사용
 		DrawQuad(verts, fillTex, GetPixelShader(baseShaderName), pixel);
 	}
 
@@ -1972,6 +1976,7 @@ namespace Alice
 		const auto* effect = world.GetComponent<UIEffectComponent>(id);
 		const auto* vital = world.GetComponent<UIVitalComponent>(id);
 		const auto* gauge = world.GetComponent<UIGaugeComponent>(id);
+		const auto* empty = world.GetComponent<UIEmptyGaugeEffectComponent>(id);
 		
 		// 
 		if (gauge)
@@ -1992,6 +1997,16 @@ namespace Alice
 				direction  // direction
 			);
 		}
+
+		if (empty)
+		{
+			pixel.emptyColor = empty->color;
+			pixel.emptyParams = DirectX::XMFLOAT4(
+				empty->enabled ? 1.0f : 0.0f,
+				empty->frequency,
+				empty->speed,
+				empty->intensity);
+		}
 		
 		if (effect)
 		{
@@ -2000,10 +2015,7 @@ namespace Alice
 			pixel.vitalColor = effect->vitalColor;
 			pixel.vitalBgColor = effect->vitalBgColor;
 			// UI effect params0 (outline/radial)
-			// 게이지가 있을 때는 params0.z를 0으로 설정하여 radial 마스크 충돌 방지
-			// (게이지의 useFillLate 플래그가 params0.z를 사용하지 않도록)
-			float radialEnabled = (gauge) ? 0.0f : (effect->radialEnabled ? 1.0f : 0.0f);
-			pixel.params0 = DirectX::XMFLOAT4(effect->outlineThickness, effect->outlineEnabled ? 1.0f : 0.0f, radialEnabled, effect->radialFill);
+			pixel.params0 = DirectX::XMFLOAT4(effect->outlineThickness, effect->outlineEnabled ? 1.0f : 0.0f, effect->radialEnabled ? 1.0f : 0.0f, effect->radialFill);
 			pixel.params1 = DirectX::XMFLOAT4(effect->radialInner, effect->radialOuter, effect->radialSoftness, effect->radialClockwise ? 1.0f : 0.0f);
 			pixel.params2 = DirectX::XMFLOAT4(effect->radialAngleOffset, effect->radialDim, effect->glowEnabled ? 1.0f : 0.0f, effect->glowStrength);
 			pixel.params3 = DirectX::XMFLOAT4(effect->glowWidth, effect->glowSpeed, effect->glowAngle, effect->grayscale);
@@ -2098,6 +2110,7 @@ namespace Alice
 		return m_psDefault.Get();
 	}
 }
+
 
 
 

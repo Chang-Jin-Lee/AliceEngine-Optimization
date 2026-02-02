@@ -19,6 +19,7 @@
 #include "Runtime/UI/UIShakeComponent.h"
 #include "Runtime/UI/UIHover3DComponent.h"
 #include "Runtime/UI/UIVitalComponent.h"
+#include "Runtime/UI/UIEmptyGaugeEffectComponent.h"
 
 #define UI_META_BIND_WIDGET "BindWidget"
 #define UI_META_OPTIONAL    "Optional"
@@ -205,6 +206,11 @@ namespace Alice
 			if (rawType == rttr::type::get<UIVitalComponent>())
 			{
 				auto* comp = world.GetComponent<UIVitalComponent>(id);
+				return comp ? rttr::variant{ comp } : rttr::variant{};
+			}
+			if (rawType == rttr::type::get<UIEmptyGaugeEffectComponent>())
+			{
+				auto* comp = world.GetComponent<UIEmptyGaugeEffectComponent>(id);
 				return comp ? rttr::variant{ comp } : rttr::variant{};
 			}
 			return rttr::variant{};
