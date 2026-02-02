@@ -21,6 +21,7 @@ namespace Alice
         void OnDisable() override;
 
         Combat::Intent GetIntent(float deltaTime);
+        void CancelCharge();
 
         ALICE_PROPERTY(int, m_keyForward, static_cast<int>(KeyCode::W));
         ALICE_PROPERTY(int, m_keyBackward, static_cast<int>(KeyCode::S));
@@ -37,6 +38,11 @@ namespace Alice
         ALICE_PROPERTY(int, m_mouseAttackButton, static_cast<int>(MouseCode::Left));
         ALICE_PROPERTY(int, m_mouseGuardButton, static_cast<int>(MouseCode::Right));
         ALICE_PROPERTY(int, m_mouseLockOnButton, static_cast<int>(MouseCode::Middle));
+        ALICE_PROPERTY(int, m_keyChargeModifier, static_cast<int>(KeyCode::LeftShift));
+        ALICE_PROPERTY(int, m_keyChargeModifierAlt, static_cast<int>(KeyCode::RightShift));
+        ALICE_PROPERTY(float, m_chargeStage1Sec, 1.0f);
+        ALICE_PROPERTY(float, m_chargeStage2Sec, 2.0f);
+        ALICE_PROPERTY(float, m_chargeStage3Sec, 3.0f);
         ALICE_PROPERTY(float, m_attackHoldThresholdSec, 0.35f);
         ALICE_PROPERTY(float, m_parryWindowSec, 0.5f);
         ALICE_PROPERTY(bool, m_enableLogs, false);
@@ -51,5 +57,8 @@ namespace Alice
         float m_attackHeldSec = 0.0f;
         bool m_guardHeldPrev = false;
         float m_guardHeldSec = 0.0f;
+        bool m_chargeActive = false;
+        float m_chargeHeldSec = 0.0f;
+        int m_chargeLevel = 0;
     };
 }

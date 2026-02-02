@@ -73,6 +73,7 @@ namespace Alice
         if (bossHealth)
         {
             UpdateGauge(m_bossHpGauge, bossHealth->currentHealth, bossHealth->maxHealth);
+            UpdateGauge(m_bossGroggyGauge, bossHealth->groggy, bossHealth->groggyMax);
         }
 
         Combat::ActionState playerState = Combat::ActionState::Idle;
@@ -110,8 +111,26 @@ namespace Alice
         const float bossWindowInactive = (Get_bossWindowFontSize() > 0.0f) ? Get_bossWindowFontSize() : Get_windowTextFontSize();
         const float bossWindowActive = (Get_bossActiveWindowFontSize() > 0.0f) ? Get_bossActiveWindowFontSize() : Get_activeWindowTextFontSize();
 
-        UpdateStateTexts(m_playerStateTexts, playerState, playerStateInactive, playerStateActive);
-        UpdateStateTexts(m_bossStateTexts, bossState, bossStateInactive, bossStateActive);
+        const Combat::ActionState playerStates[] = {
+            Combat::ActionState::Idle,
+            Combat::ActionState::Move,
+            Combat::ActionState::Attack,
+            Combat::ActionState::Guard,
+            Combat::ActionState::Dodge
+        };
+        const Combat::ActionState bossStates[] = {
+            Combat::ActionState::Idle,
+            Combat::ActionState::Move,
+            Combat::ActionState::Attack,
+            Combat::ActionState::Guard,
+            Combat::ActionState::Dodge,
+            Combat::ActionState::Groggy
+        };
+
+        const size_t playerStateCount = sizeof(playerStates) / sizeof(playerStates[0]);
+        const size_t bossStateCount = sizeof(bossStates) / sizeof(bossStates[0]);
+        UpdateStateTexts(m_playerStateTexts.data(), playerStates, playerStateCount, playerState, playerStateInactive, playerStateActive);
+        UpdateStateTexts(m_bossStateTexts.data(), bossStates, bossStateCount, bossState, bossStateInactive, bossStateActive);
         UpdateWindowText(m_playerWindowText, playerFlags, playerWindowInactive, playerWindowActive);
         UpdateWindowText(m_bossWindowText, bossFlags, bossWindowInactive, bossWindowActive);
 
@@ -139,9 +158,11 @@ namespace Alice
 
         m_playerHpGaugeId = FindWidgetByName(*world, Get_playerHpGaugeName());
         m_bossHpGaugeId = FindWidgetByName(*world, Get_bossHpGaugeName());
+        m_bossGroggyGaugeId = FindWidgetByName(*world, Get_bossGroggyGaugeName());
         m_weaponGaugeId = FindWidgetByName(*world, Get_weaponGaugeName());
         m_playerHpGauge = (m_playerHpGaugeId != InvalidEntityId) ? world->GetComponent<UIGaugeComponent>(m_playerHpGaugeId) : nullptr;
         m_bossHpGauge = (m_bossHpGaugeId != InvalidEntityId) ? world->GetComponent<UIGaugeComponent>(m_bossHpGaugeId) : nullptr;
+        m_bossGroggyGauge = (m_bossGroggyGaugeId != InvalidEntityId) ? world->GetComponent<UIGaugeComponent>(m_bossGroggyGaugeId) : nullptr;
         m_weaponGauge = (m_weaponGaugeId != InvalidEntityId) ? world->GetComponent<UIGaugeComponent>(m_weaponGaugeId) : nullptr;
 
         m_playerStateTexts = {
@@ -157,7 +178,8 @@ namespace Alice
             FindText(*world, Get_bossStateMoveTextName()),
             FindText(*world, Get_bossStateAttackTextName()),
             FindText(*world, Get_bossStateGuardTextName()),
-            FindText(*world, Get_bossStateDodgeTextName())
+            FindText(*world, Get_bossStateDodgeTextName()),
+            FindText(*world, Get_bossStateGroggyTextName())
         };
 
         m_playerWindowTextId = FindWidgetByName(*world, Get_playerWindowTextName());
@@ -178,7 +200,8 @@ namespace Alice
             FindWidgetByName(*world, Get_bossStateMoveTextName()),
             FindWidgetByName(*world, Get_bossStateAttackTextName()),
             FindWidgetByName(*world, Get_bossStateGuardTextName()),
-            FindWidgetByName(*world, Get_bossStateDodgeTextName())
+            FindWidgetByName(*world, Get_bossStateDodgeTextName()),
+            FindWidgetByName(*world, Get_bossStateGroggyTextName())
         };
     }
 
@@ -366,12 +389,14 @@ namespace Alice
                 {
                     const EntityId bossWidgets[] = {
                         m_bossHpGaugeId,
+                        m_bossGroggyGaugeId,
                         m_bossWindowTextId,
                         m_bossStateTextIds[0],
                         m_bossStateTextIds[1],
                         m_bossStateTextIds[2],
                         m_bossStateTextIds[3],
-                        m_bossStateTextIds[4]
+                        m_bossStateTextIds[4],
+                        m_bossStateTextIds[5]
                     };
                     for (EntityId id : bossWidgets)
                         ApplyScreenCommon(id);
@@ -397,12 +422,14 @@ namespace Alice
                     float y = 0.0f;
                     const EntityId bossWidgets[] = {
                         m_bossHpGaugeId,
+                        m_bossGroggyGaugeId,
                         m_bossWindowTextId,
                         m_bossStateTextIds[0],
                         m_bossStateTextIds[1],
                         m_bossStateTextIds[2],
                         m_bossStateTextIds[3],
-                        m_bossStateTextIds[4]
+                        m_bossStateTextIds[4],
+                        m_bossStateTextIds[5]
                     };
                     for (EntityId id : bossWidgets)
                     {
@@ -434,17 +461,17 @@ namespace Alice
         gauge->value = std::clamp(value / maxV, 0.0f, 1.0f);
     }
 
-    void CombatHudScript::UpdateStateTexts(const std::array<UITextComponent*, 5>& texts, Combat::ActionState state, float inactiveSize, float activeSize)
+    void CombatHudScript::UpdateStateTexts(UITextComponent* const* texts,
+                                           const Combat::ActionState* states,
+                                           size_t count,
+                                           Combat::ActionState state,
+                                           float inactiveSize,
+                                           float activeSize)
     {
-        const Combat::ActionState states[5] = {
-            Combat::ActionState::Idle,
-            Combat::ActionState::Move,
-            Combat::ActionState::Attack,
-            Combat::ActionState::Guard,
-            Combat::ActionState::Dodge
-        };
+        if (!texts || !states || count == 0)
+            return;
 
-        for (size_t i = 0; i < texts.size(); ++i)
+        for (size_t i = 0; i < count; ++i)
         {
             auto* text = texts[i];
             if (!text)
@@ -465,7 +492,7 @@ namespace Alice
         if (!text)
             return;
         text->text = BuildWindowLabel(flags);
-        const bool active = flags.hitActive || flags.guardActive || flags.parryWindowActive || flags.invulnActive;
+        const bool active = flags.hitActive || flags.guardActive || flags.parryWindowActive || flags.invulnActive || flags.chargeActive;
         const float alpha = active ? Get_activeTextAlpha() : Get_inactiveTextAlpha();
         const DirectX::XMFLOAT4 baseColor = active ? Get_activeWindowTextColor() : Get_inactiveWindowTextColor();
         text->color = baseColor;
@@ -481,7 +508,11 @@ namespace Alice
         bool any = false;
         if (flags.hitActive)
         {
-            oss << "Attack";
+            const int combo = std::clamp(flags.attackComboIndex, 0, 3);
+            if (combo > 0)
+                oss << "Attack" << combo;
+            else
+                oss << "Attack";
             any = true;
         }
         if (flags.guardActive)
@@ -500,6 +531,16 @@ namespace Alice
         {
             if (any) oss << " | ";
             oss << "Invuln";
+            any = true;
+        }
+        if (flags.chargeActive)
+        {
+            if (any) oss << " | ";
+            const int level = std::clamp(flags.chargeLevel, 0, 3);
+            if (level > 0)
+                oss << "Charge" << level;
+            else
+                oss << "Charge";
             any = true;
         }
         if (!any)

@@ -152,10 +152,23 @@ namespace Alice::Combat
                 {
                     if (hc->groggyMax > 0.0f && p.amount > 0.0f)
                     {
-                        hc->groggy = std::min(hc->groggy + p.amount, hc->groggyMax);
                         if (hc->groggy >= hc->groggyMax)
+                            break;
+
+                        const float prev = hc->groggy;
+                        hc->groggy = std::min(hc->groggy + p.amount, hc->groggyMax);
+                        if (prev < hc->groggyMax && hc->groggy >= hc->groggyMax)
                         {
-                            hc->groggy = 0.0f;
+                            hc->groggy = hc->groggyMax;
+                            if (auto* driver = world.GetComponent<AttackDriverComponent>(p.target))
+                            {
+                                if (driver->attackCancelable)
+                                    driver->cancelAttackRequested = true;
+                            }
+                            EntityId traceId = ResolveTraceEntity(world, p.target);
+                            if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
+                                trace->active = false;
+
                             bus.PushDeferred({ CombatEventType::OnGroggy, p.target, InvalidEntityId, 0, 0.0f });
                         }
                     }

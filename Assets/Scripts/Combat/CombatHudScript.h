@@ -2,6 +2,7 @@
 
 #include <string>
 #include <array>
+#include <cstddef>
 #include <DirectXMath.h>
 
 #include "Runtime/Scripting/IScript.h"
@@ -34,6 +35,7 @@ namespace Alice
         // Gauge widgets
         ALICE_PROPERTY(std::string, playerHpGaugeName, "UI_PlayerHP_Gauge");
         ALICE_PROPERTY(std::string, bossHpGaugeName, "UI_BossHP_Gauge");
+        ALICE_PROPERTY(std::string, bossGroggyGaugeName, "UI_BossGroggy_Gauge");
         ALICE_PROPERTY(std::string, weaponGaugeName, "UI_WeaponDurability_Gauge");
 
         // Player FSM text widgets (5 slots)
@@ -49,6 +51,7 @@ namespace Alice
         ALICE_PROPERTY(std::string, bossStateAttackTextName, "UI_BossState_Attack");
         ALICE_PROPERTY(std::string, bossStateGuardTextName, "UI_BossState_Guard");
         ALICE_PROPERTY(std::string, bossStateDodgeTextName, "UI_BossState_Dodge");
+        ALICE_PROPERTY(std::string, bossStateGroggyTextName, "UI_BossState_Groggy");
 
         // Active window text widgets
         ALICE_PROPERTY(std::string, playerWindowTextName, "UI_PlayerWindow");
@@ -95,17 +98,19 @@ namespace Alice
     private:
         UIGaugeComponent* m_playerHpGauge = nullptr;
         UIGaugeComponent* m_bossHpGauge = nullptr;
+        UIGaugeComponent* m_bossGroggyGauge = nullptr;
         UIGaugeComponent* m_weaponGauge = nullptr;
         std::array<UITextComponent*, 5> m_playerStateTexts{};
-        std::array<UITextComponent*, 5> m_bossStateTexts{};
+        std::array<UITextComponent*, 6> m_bossStateTexts{};
         UITextComponent* m_playerWindowText = nullptr;
         UITextComponent* m_bossWindowText = nullptr;
 
         EntityId m_playerHpGaugeId = InvalidEntityId;
         EntityId m_bossHpGaugeId = InvalidEntityId;
+        EntityId m_bossGroggyGaugeId = InvalidEntityId;
         EntityId m_weaponGaugeId = InvalidEntityId;
         std::array<EntityId, 5> m_playerStateTextIds{};
-        std::array<EntityId, 5> m_bossStateTextIds{};
+        std::array<EntityId, 6> m_bossStateTextIds{};
         EntityId m_playerWindowTextId = InvalidEntityId;
         EntityId m_bossWindowTextId = InvalidEntityId;
 
@@ -116,7 +121,12 @@ namespace Alice
         void BindWidgets();
         void UpdateWorldAnchors();
         void UpdateGauge(UIGaugeComponent* gauge, float value, float maxValue);
-        void UpdateStateTexts(const std::array<UITextComponent*, 5>& texts, Combat::ActionState state, float inactiveSize, float activeSize);
+        void UpdateStateTexts(UITextComponent* const* texts,
+                              const Combat::ActionState* states,
+                              size_t count,
+                              Combat::ActionState state,
+                              float inactiveSize,
+                              float activeSize);
         void UpdateWindowText(UITextComponent* text, const Combat::ActionFlags& flags, float inactiveSize, float activeSize);
         std::string BuildWindowLabel(const Combat::ActionFlags& flags);
     };
