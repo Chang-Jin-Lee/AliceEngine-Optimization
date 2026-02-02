@@ -14,6 +14,8 @@
 #include "Runtime/Rendering/Components/SpotLightComponent.h"
 #include "Runtime/Rendering/Components/RectLightComponent.h"
 #include "Runtime/Rendering/Components/CameraComponent.h"
+#include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
+#include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
 #include "Runtime/Rendering/Components/CameraFollowComponent.h"
 #include "Runtime/Rendering/Components/CameraSpringArmComponent.h"
 #include "Runtime/Rendering/Components/CameraLookAtComponent.h"
@@ -49,6 +51,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <DirectXMath.h>
+#include "Runtime/ECS/Components/TransformComponent.h"
 
 namespace Alice
 {

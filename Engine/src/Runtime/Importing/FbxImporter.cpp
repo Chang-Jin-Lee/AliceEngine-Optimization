@@ -14,7 +14,8 @@
 #include <assimp/scene.h>
 #include <assimp/material.h>
 
-#include "Runtime/ECS/World.h"          // MaterialComponent 정의
+#include "Runtime/ECS/World.h"
+#include "Runtime/Rendering/Components/MaterialComponent.h"
 #include "Runtime/Rendering/Data/Material.h"       // MaterialFile::Save
 #include "Runtime/Resources/ResourceManager.h"
 #include "Runtime/Foundation/Logger.h"

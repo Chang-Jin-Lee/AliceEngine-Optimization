@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 /*
 * 전투 시스템 전체에서 쓰는 타입·상수 정의. EntityId, Team, ActionState, Intent, Sensors, CombatEvent, Command, FsmOutput, ResolveOutput 등. 스크립트가 아니라 헤더만 있음.
 */
@@ -39,6 +39,8 @@ namespace Alice::Combat
         Attack,
         Dodge,
         Guard,
+        JustGuardSuccess,
+        GuardBreakWeak,
         Hitstun,
         Groggy,
         Dead,
@@ -60,6 +62,18 @@ namespace Alice::Combat
         bool guardHeld = false;
         bool dodgePressed = false;
         bool lockOnToggle = false;
+        bool lightAttackPressed = false;
+        bool heavyAttackPressed = false;
+        bool attackHeld = false;
+        float attackHeldSec = 0.0f;
+        bool guardPressed = false;
+        bool guardReleased = false;
+        float guardHeldSec = 0.0f;
+        float parryTapWindowSec = 0.0f;
+        bool itemPressed = false;
+        bool interactPressed = false;
+        bool ragePressed = false;
+        bool runHeld = false;
     };
 
     struct Sensors
@@ -79,8 +93,17 @@ namespace Alice::Combat
         // Anim/driver windows (source of truth; resolver uses flags derived from these).
         bool attackWindowActive = false;
         bool guardWindowActive = false;
+        bool parryWindowActive = false;
         bool dodgeWindowActive = false;
         bool invulnActive = false;
+        float attackStateDurationSec = 0.0f;
+        bool attackCancelable = true;
+        bool canBeHitstunned = true;
+        bool guardLockActive = false;
+        bool weakActive = false;
+        float weakRemainingSec = 0.0f;
+        float weaponDurability = 100.0f;
+        float weaponDurabilityMax = 100.0f;
 
         float groggyDuration = 1.5f;
         float moveSpeed = 5.0f;
@@ -92,7 +115,8 @@ namespace Alice::Combat
     {
         OnHit,
         OnGuarded,
-        OnParried,
+        OnParrySuccess,
+        OnGotParried,
         OnGuardBreak,
         OnGroggy,
         OnDeath
@@ -111,16 +135,23 @@ namespace Alice::Combat
     {
         ApplyDamage,
         ConsumeStamina,
+        ConsumeWeaponDurability,
         EnterHitstun,
         ForceCancelAttack,
         DisableTrace,
         EnableTrace,
         PlayAnim,
-        RequestMove
+        RequestMove,
+        StartGuardLock,
+        ConsumeParry,
+        AddGroggy,
+        EnterWeakState,
+        ApplyPushbackToBoth
     };
 
     struct CmdApplyDamage { EntityId target = InvalidEntityId; float amount = 0.0f; };
     struct CmdConsumeStamina { EntityId target = InvalidEntityId; float amount = 0.0f; };
+    struct CmdConsumeWeaponDurability { EntityId target = InvalidEntityId; float amount = 0.0f; };
     struct CmdEnterHitstun { EntityId target = InvalidEntityId; float durationSec = 0.0f; };
     struct CmdForceCancelAttack { EntityId target = InvalidEntityId; };
     struct CmdDisableTrace { EntityId weaponOrOwner = InvalidEntityId; };
@@ -140,16 +171,33 @@ namespace Alice::Combat
         bool useCameraRelative = true;
         bool faceMove = true;
     };
+    struct CmdStartGuardLock { EntityId target = InvalidEntityId; float durationSec = 0.0f; };
+    struct CmdConsumeParry { EntityId target = InvalidEntityId; };
+    struct CmdAddGroggy { EntityId target = InvalidEntityId; float amount = 0.0f; };
+    struct CmdEnterWeakState { EntityId target = InvalidEntityId; float durationSec = 0.0f; };
+    struct CmdApplyPushbackToBoth
+    {
+        EntityId attacker = InvalidEntityId;
+        EntityId victim = InvalidEntityId;
+        float speed = 0.0f;
+        float durationSec = 0.0f;
+    };
 
     using CommandPayload = std::variant<
         CmdApplyDamage,
         CmdConsumeStamina,
+        CmdConsumeWeaponDurability,
         CmdEnterHitstun,
         CmdForceCancelAttack,
         CmdDisableTrace,
         CmdEnableTrace,
         CmdPlayAnim,
-        CmdRequestMove>;
+        CmdRequestMove,
+        CmdStartGuardLock,
+        CmdConsumeParry,
+        CmdAddGroggy,
+        CmdEnterWeakState,
+        CmdApplyPushbackToBoth>;
 
     struct Command
     {

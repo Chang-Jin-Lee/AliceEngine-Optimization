@@ -20,6 +20,9 @@ namespace Alice::Combat
         ActionFlags flags{};
         float hp = 100.0f;
         float stamina = 100.0f;
+        float weaponDurability = 100.0f;
+        float weaponDurabilityMax = 100.0f;
+        bool weakActive = false;
         bool targetInFront = true;
         bool canBeHitstunned = true;
     };
@@ -33,6 +36,9 @@ namespace Alice::Combat
         float hp = 100.0f;
         float stamina = 100.0f;
         float moveSpeed = 5.0f;
+        float weaponDurability = 100.0f;
+        float weaponDurabilityMax = 100.0f;
+        float weakRemainingSec = 0.0f;
 
         ActionState state = ActionState::Idle;
         ActionFlags flags{};
