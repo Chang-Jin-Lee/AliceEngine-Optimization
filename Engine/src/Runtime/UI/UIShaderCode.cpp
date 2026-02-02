@@ -268,7 +268,7 @@ float4 main(PSInput input) : SV_Target
     float4 finalColor = color;
 
     // 2. 비어 있는 영역(Empty Area) 처리
-    if (isGauge && gEmptyParams.x > 0.5f && pixelRatio > filledRatio)
+    if (isGauge && gEmptyParams.x > 0.5f && pixelRatio <= filledRatio)
     {
         float scale = max(gEmptyParams.y, 0.1f);
         float speed = gTime.x * gEmptyParams.z;
@@ -298,6 +298,7 @@ float4 main(PSInput input) : SV_Target
 )";
 	}
 }
+
 
 
 

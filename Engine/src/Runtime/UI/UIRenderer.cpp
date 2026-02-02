@@ -1421,13 +1421,13 @@ namespace Alice
 			ID3D11ShaderResourceView* srv = fontTexture.Get() ? fontTexture.Get() : m_whiteSRV.Get();
 
 			const float scale = text->fontSize / font->lineHeight;
-			const float lineHeight = font->lineHeight * scale + text->lineSpacing;
+			const float scaledLineHeight = font->lineHeight * scale;
+			const float totalLineHeight = scaledLineHeight + text->lineSpacing;
 			const float maxWidth = (text->maxWidth > 0.0f) ? text->maxWidth : (layout.size.x > 0.0f ? layout.size.x : 0.0f);
 			const bool wrap = text->wrap && maxWidth > 0.0f;
 
 			std::vector<float> lineWidths;
 			float lineWidth = 0.0f;
-			float maxLineWidth = 0.0f;
 			int lineCount = 1;
 
 			for (char c : text->text)
@@ -1435,7 +1435,6 @@ namespace Alice
 				if (c == '\n')
 				{
 					lineWidths.push_back(lineWidth);
-					maxLineWidth = std::max(maxLineWidth, lineWidth);
 					lineWidth = 0.0f;
 					++lineCount;
 					continue;
@@ -1449,50 +1448,57 @@ namespace Alice
 				if (wrap && lineWidth + adv > maxWidth && lineWidth > 0.0f)
 				{
 					lineWidths.push_back(lineWidth);
-					maxLineWidth = std::max(maxLineWidth, lineWidth);
 					lineWidth = 0.0f;
 					++lineCount;
 				}
 				lineWidth += adv;
 			}
 			lineWidths.push_back(lineWidth);
-			maxLineWidth = std::max(maxLineWidth, lineWidth);
 
-			const float textWidth = maxLineWidth;
-			const float textHeight = lineCount * lineHeight;
+			const float textHeight = (lineCount * scaledLineHeight) + ((lineCount - 1) * text->lineSpacing);
 
 			const float originX = layout.pivotBaked ? 0.0f : -layout.pivot.x * layout.size.x;
 			const float originY = layout.pivotBaked ? 0.0f : -layout.pivot.y * layout.size.y;
 
-			float baseX = originX;
 			float baseY = originY;
-			if (layout.size.x > 0.0f)
-			{
-				if (text->alignH == AliceUI::UIAlignH::Center)
-					baseX = (layout.size.x - textWidth) * 0.5f;
-				else if (text->alignH == AliceUI::UIAlignH::Right)
-					baseX = (layout.size.x - textWidth);
-			}
-
 			if (layout.size.y > 0.0f)
 			{
 				if (text->alignV == AliceUI::UIAlignV::Center)
-					baseY = (layout.size.y - textHeight) * 0.5f;
+					baseY = originY + (layout.size.y - textHeight) * 0.5f;
 				else if (text->alignV == AliceUI::UIAlignV::Bottom)
-					baseY = (layout.size.y - textHeight);
+					baseY = originY + (layout.size.y - textHeight);
 			}
+
+			auto calcLineX = [&](int idx)
+			{
+				if (idx < 0 || idx >= static_cast<int>(lineWidths.size()))
+					return originX;
+				const float lWidth = lineWidths[idx];
+				if (layout.size.x > 0.0f)
+				{
+					if (text->alignH == AliceUI::UIAlignH::Center)
+						return originX + (layout.size.x - lWidth) * 0.5f;
+					if (text->alignH == AliceUI::UIAlignH::Right)
+						return originX + (layout.size.x - lWidth);
+				}
+				return originX;
+			};
 
 			std::vector<UIVertex> verts;
 			verts.reserve(text->text.size() * 4);
 
-			float x = baseX;
+			int lineIdx = 0;
+			float x = calcLineX(lineIdx);
 			float y = baseY;
+			float currentLineWidth = 0.0f;
 			for (char c : text->text)
 			{
 				if (c == '\n')
 				{
-					x = baseX;
-					y += lineHeight;
+					++lineIdx;
+					x = calcLineX(lineIdx);
+					y += totalLineHeight;
+					currentLineWidth = 0.0f;
 					continue;
 				}
 
@@ -1502,10 +1508,12 @@ namespace Alice
 
 				const UIFontGlyph& g = it->second;
 				const float adv = g.xAdvance * scale;
-				if (wrap && maxWidth > 0.0f && x + adv > baseX + maxWidth && x > baseX)
+				if (wrap && currentLineWidth + adv > maxWidth && currentLineWidth > 0.0f)
 				{
-					x = baseX;
-					y += lineHeight;
+					++lineIdx;
+					x = calcLineX(lineIdx);
+					y += totalLineHeight;
+					currentLineWidth = 0.0f;
 				}
 
 				const float gx = x + g.xOffset * scale;
@@ -1539,6 +1547,7 @@ namespace Alice
 				verts.push_back(v[3]);
 
 				x += adv;
+				currentLineWidth += adv;
 			}
 
 			DrawGlyphs(verts, srv, GetPixelShader(widget->shaderName), pixel);
@@ -1559,14 +1568,14 @@ namespace Alice
 			return;
 
 		const float scale = bakedSize / baked->Size;
-		const float lineHeight = bakedSize + text->lineSpacing;
+		const float scaledLineHeight = bakedSize;
+		const float totalLineHeight = scaledLineHeight + text->lineSpacing;
 
 		const float maxWidth = (text->maxWidth > 0.0f) ? text->maxWidth : (layout.size.x > 0.0f ? layout.size.x : 0.0f);
 		const bool wrap = text->wrap && maxWidth > 0.0f;
 
 		std::vector<float> lineWidths;
 		float lineWidth = 0.0f;
-		float maxLineWidth = 0.0f;
 		int lineCount = 1;
 
 		const char* p = text->text.c_str();
@@ -1582,7 +1591,6 @@ namespace Alice
 			if (cp == '\n')
 			{
 				lineWidths.push_back(lineWidth);
-				maxLineWidth = std::max(maxLineWidth, lineWidth);
 				lineWidth = 0.0f;
 				++lineCount;
 				continue;
@@ -1596,44 +1604,49 @@ namespace Alice
 			if (wrap && lineWidth + adv > maxWidth && lineWidth > 0.0f)
 			{
 				lineWidths.push_back(lineWidth);
-				maxLineWidth = std::max(maxLineWidth, lineWidth);
 				lineWidth = 0.0f;
 				++lineCount;
 			}
 			lineWidth += adv;
 		}
 		lineWidths.push_back(lineWidth);
-		maxLineWidth = std::max(maxLineWidth, lineWidth);
 
-		const float textWidth = maxLineWidth;
-		const float textHeight = lineCount * lineHeight;
+		const float textHeight = (lineCount * scaledLineHeight) + ((lineCount - 1) * text->lineSpacing);
 
 		const float originX = layout.pivotBaked ? 0.0f : -layout.pivot.x * layout.size.x;
 		const float originY = layout.pivotBaked ? 0.0f : -layout.pivot.y * layout.size.y;
 
-		float baseX = originX;
 		float baseY = originY;
-		if (layout.size.x > 0.0f)
-		{
-			if (text->alignH == AliceUI::UIAlignH::Center)
-				baseX = (layout.size.x - textWidth) * 0.5f;
-			else if (text->alignH == AliceUI::UIAlignH::Right)
-				baseX = (layout.size.x - textWidth);
-		}
-
 		if (layout.size.y > 0.0f)
 		{
 			if (text->alignV == AliceUI::UIAlignV::Center)
-				baseY = (layout.size.y - textHeight) * 0.5f;
+				baseY = originY + (layout.size.y - textHeight) * 0.5f;
 			else if (text->alignV == AliceUI::UIAlignV::Bottom)
-				baseY = (layout.size.y - textHeight);
+				baseY = originY + (layout.size.y - textHeight);
 		}
+
+		auto calcLineX = [&](int idx)
+		{
+			if (idx < 0 || idx >= static_cast<int>(lineWidths.size()))
+				return originX;
+			const float lWidth = lineWidths[idx];
+			if (layout.size.x > 0.0f)
+			{
+				if (text->alignH == AliceUI::UIAlignH::Center)
+					return originX + (layout.size.x - lWidth) * 0.5f;
+				if (text->alignH == AliceUI::UIAlignH::Right)
+					return originX + (layout.size.x - lWidth);
+			}
+			return originX;
+		};
 
 		std::vector<UIVertex> verts;
 		verts.reserve(text->text.size() * 4);
 
-		float x = baseX;
+		int lineIdx = 0;
+		float x = calcLineX(lineIdx);
 		float y = baseY;
+		float currentLineWidth = 0.0f;
 		p = text->text.c_str();
 		while (p < end)
 		{
@@ -1645,8 +1658,10 @@ namespace Alice
 
 			if (cp == '\n')
 			{
-				x = baseX;
-				y += lineHeight;
+				++lineIdx;
+				x = calcLineX(lineIdx);
+				y += totalLineHeight;
+				currentLineWidth = 0.0f;
 				continue;
 			}
 
@@ -1656,10 +1671,12 @@ namespace Alice
 				continue;
 
 			const float adv = glyph->AdvanceX * scale;
-			if (wrap && maxWidth > 0.0f && x + adv > baseX + maxWidth && x > baseX)
+			if (wrap && currentLineWidth + adv > maxWidth && currentLineWidth > 0.0f)
 			{
-				x = baseX;
-				y += lineHeight;
+				++lineIdx;
+				x = calcLineX(lineIdx);
+				y += totalLineHeight;
+				currentLineWidth = 0.0f;
 			}
 
 			const float gx0 = x + glyph->X0 * scale;
@@ -1693,6 +1710,7 @@ namespace Alice
 			verts.push_back(v[3]);
 
 			x += adv;
+			currentLineWidth += adv;
 		}
 
 		DrawGlyphs(verts, fontSrv ? fontSrv : m_whiteSRV.Get(), GetPixelShader(widget->shaderName), pixel);
@@ -1706,11 +1724,28 @@ namespace Alice
 			return;
 
 		const UIPixelConstants pixel = BuildPixelConstants(world, id);
-        std::string baseShaderName = widget->shaderName;
-        if (baseShaderName == "GaugeCustom" && !gauge->useCustomShader)
-        {
-            baseShaderName = "Default";
-        }
+		// Previous:
+		// std::string baseShaderName = widget->shaderName;
+		// if (baseShaderName == "GaugeCustom" && !gauge->useCustomShader)
+		// {
+		//     baseShaderName = "Default";
+		// }
+		std::string baseShaderName = widget->shaderName;
+		std::string fillShaderName = baseShaderName;
+		std::string nonFillShaderName = baseShaderName;
+		if (baseShaderName == "GaugeCustom")
+		{
+			if (gauge->useCustomShader)
+			{
+				fillShaderName = "GaugeCustom";
+				nonFillShaderName = "Default";
+			}
+			else
+			{
+				fillShaderName = "Default";
+				nonFillShaderName = "Default";
+			}
+		}
 
 		DirectX::XMFLOAT4 bgColor = gauge->backgroundColor;
 		DirectX::XMFLOAT4 fillColor = gauge->fillColor;
@@ -1739,9 +1774,10 @@ namespace Alice
 			verts[2].uv = DirectX::XMFLOAT2(0, 1);
 			verts[3].uv = DirectX::XMFLOAT2(1, 1);
 
-			// Background에만 GaugeCustom 쉐이더 적용 (빈 영역 효과를 위해)
-			std::string bgShaderName = (gauge->useCustomShader) ? "GaugeCustom" : baseShaderName;
-			DrawQuad(verts, GetTexture(gauge->backgroundTexture), GetPixelShader(bgShaderName), pixel);
+			// Previous:
+			// std::string bgShaderName = (gauge->useCustomShader) ? "GaugeCustom" : baseShaderName;
+			// DrawQuad(verts, GetTexture(gauge->backgroundTexture), GetPixelShader(bgShaderName), pixel);
+			DrawQuad(verts, GetTexture(gauge->backgroundTexture), GetPixelShader(nonFillShaderName), pixel);
 		}
 
 		// FillLate 
@@ -1794,11 +1830,19 @@ namespace Alice
 				verts[2].uv = DirectX::XMFLOAT2(u0, v1);
 				verts[3].uv = DirectX::XMFLOAT2(u1, v1);
 
+				// Previous:
+				// std::string fillLateShaderName = gauge->fillLateShaderName.empty()
+				//     ? baseShaderName
+				//     : gauge->fillLateShaderName;
+				// if (fillLateShaderName == "GaugeCustom" && !gauge->useCustomShader)
+				// {
+				//     fillLateShaderName = "Default";
+				// }
 				std::string fillLateShaderName = gauge->fillLateShaderName.empty()
-				    ? baseShaderName
+				    ? nonFillShaderName
 				    : gauge->fillLateShaderName;
 
-				if (fillLateShaderName == "GaugeCustom" && !gauge->useCustomShader)
+				if (fillLateShaderName == "GaugeCustom")
 				{
 
 				    fillLateShaderName = "Default";
@@ -1823,7 +1867,7 @@ namespace Alice
 		float u0 = 0.0f, u1 = 1.0f;
 		float v0 = 0.0f, v1 = 1.0f;
 
-		// Fill 영역만 클리핑하여 렌더링 (항상 기본 쉐이더 사용)
+		// Fill 영역만 클리핑하여 렌더링 (Fill에만 커스텀 쉐이더 적용)
 		switch (gauge->direction)
 		{
 		case AliceUI::UIGaugeDirection::LeftToRight:
@@ -1867,8 +1911,10 @@ namespace Alice
 			? nullptr 
 			: GetTexture(gauge->fillTexture);
 		
-		// Fill 영역은 항상 기본 쉐이더 사용
-		DrawQuad(verts, fillTex, GetPixelShader(baseShaderName), pixel);
+		// Previous:
+		// DrawQuad(verts, fillTex, GetPixelShader(baseShaderName), pixel);
+		// Fill 영역에만 커스텀 쉐이더 적용
+		DrawQuad(verts, fillTex, GetPixelShader(fillShaderName), pixel);
 	}
 
 	void UIRenderer::DrawQuad(const UIVertex* verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel)
