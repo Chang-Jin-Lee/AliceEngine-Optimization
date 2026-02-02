@@ -1,0 +1,166 @@
+#include "CharacterHPScript.h"
+#include <algorithm>
+#include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Foundation/Logger.h"
+#include "Runtime/ECS/World.h"
+#include "Runtime/UI/UIWidgetComponent.h"
+#include "Runtime/UI/BindWidget.h"
+#include "BoxDeligateScript.h"
+#include "Runtime/ECS/GameObject.h"
+
+namespace Alice
+{
+    REGISTER_SCRIPT(CharacterHPScript);
+
+    namespace
+    {
+        EntityId SearchRootWidgetByName(World& world, const std::string& name)
+        {
+            for (auto [id, widget] : world.GetComponents<UIWidgetComponent>())
+            {
+                const std::string widgetName = widget.widgetName.empty() ? world.GetEntityName(id) : widget.widgetName;
+                if (!widgetName.empty() && widgetName == name)
+                    return id;
+            }
+            return InvalidEntityId;
+        }
+    }
+
+    void CharacterHPScript::Start()
+    {
+        World* w = GetWorld();
+        if (!w) return;
+
+        // 1) UI root 찾기
+        const EntityId root = SearchRootWidgetByName(*w, Get_rootWidgetName());
+        if (root == InvalidEntityId)
+        {
+            ALICE_LOG_WARN("[CharacterHPScript] Root widget not found: %s", Get_rootWidgetName().c_str());
+            return;
+        }
+
+        // 2) 게이지 위젯 이름으로 찾기
+        const EntityId gaugeEntity = AliceUI::FindWidgetByName(*w, root, Get_gaugeWidgetName());
+        TargetGauge = (gaugeEntity != InvalidEntityId)
+            ? w->GetComponent<UIGaugeComponent>(gaugeEntity)
+            : nullptr;
+
+        if (!TargetGauge)
+        {
+            ALICE_LOG_WARN("[CharacterHPScript] Gauge widget not found: %s", Get_gaugeWidgetName().c_str());
+            return;
+        }
+
+        // 3) 대상 엔티티/스크립트 찾기 및 OnValueChanged 바인딩
+        // Character HP gauge appearance
+        TargetGauge->backgroundTexture = "Resource/Image/GrayHuman.png";
+        TargetGauge->fillLateTexture = "Resource/Image/YellowHuman.png";
+        TargetGauge->fillTexture = "Resource/Image/RedHuman.png";
+        TargetGauge->useFillLate = true;
+        TargetGauge->useBackground = true;
+        TargetGauge->direction = AliceUI::UIGaugeDirection::BottomToTop;
+        TargetGauge->fillLateSmoothing = 0.0f;
+        TargetGauge->fillLateValue = TargetGauge->value;
+        TargetGauge->fillLateDisplayedValue = TargetGauge->value;
+        fillLateVelocity = 0.0f;
+
+        GameObject go = w->FindGameObject(Get_targetEntityName());
+        if (!go.IsValid())
+        {
+            ALICE_LOG_WARN("[CharacterHPScript] Target entity not found: %s", Get_targetEntityName().c_str());
+            return;
+        }
+
+        auto* scripts = w->GetScripts(go.id());
+        if (!scripts) return;
+
+        for (auto& sc : *scripts)
+        {
+            if (sc.scriptName == Get_targetScriptName() && sc.instance)
+            {
+                ALICE_LOG_INFO("[CharacterHPScript] script on %s: %s (instance=%d)",
+                    Get_targetEntityName().c_str(),
+                    sc.scriptName.c_str(),
+                    sc.instance ? 1 : 0);
+
+                auto* box = static_cast<BoxDeligateScript*>(sc.instance.get());
+                box->OnCharacterHPChanged.BindObject(this, &CharacterHPScript::changeValue);
+                // 초기값 반영 (바인딩 직후 델리게이트 실행)
+                box->OnCharacterHPChanged.Execute(box->Get_CharacterHP_Value());
+                break;
+            }
+        }
+    }
+
+    void CharacterHPScript::changeValue(float newValue)
+    {
+        if (TargetGauge)
+        {
+            const float max = std::max(1e-6f, Get_maxValue());
+            TargetGauge->value = std::clamp(newValue / max, 0.0f, 1.0f);
+            nowValue = TargetGauge->value;
+        }
+    }
+
+    void CharacterHPScript::Update(float deltaTime)
+    {
+
+        // changeValue 콜백으로 이미 갱신되므로 Update에서는 추가 처리 불필요
+        // (콜백 기반이 아닌 폴링이 필요하면 여기서 처리)
+        if (!TargetGauge)
+            return;
+
+        if (deltaTime <= 0.0f)
+            return;
+
+        const float smoothTime = Get_fillLateSmoothTime();
+        if (smoothTime <= 0.0f)
+        {
+            TargetGauge->fillLateValue = TargetGauge->value;
+            TargetGauge->fillLateDisplayedValue = TargetGauge->value;
+            fillLateVelocity = 0.0f;
+            return;
+        }
+
+        const float current = TargetGauge->fillLateValue;
+        const float target = TargetGauge->value;
+        const float output = SmoothDamp(current, target, fillLateVelocity, smoothTime, deltaTime);
+        TargetGauge->fillLateValue = output;
+        TargetGauge->fillLateDisplayedValue = output;
+    }
+
+    float CharacterHPScript::SmoothDamp(float current, float target, float& currentVelocity, float smoothTime, float dt)
+    {
+        float maxSpeed = 2.0f;
+
+        smoothTime = std::max(0.0001f, smoothTime);
+        float omega = 2.0f / smoothTime;
+        float x = omega * dt;
+        float exp = 1.0f / (1.0f + x + 0.48f * x * x + 0.235f * x * x * x);
+
+        float change = current - target;
+        float originalTarget = target;
+        float maxChange = maxSpeed * smoothTime;
+        change = std::clamp(change, -maxChange, maxChange);
+
+        target = current - change;
+        float temp = (currentVelocity + omega * change) * dt;
+        currentVelocity = (currentVelocity - omega * temp) * exp;
+        float output = target + (change + temp) * exp;
+        if ((originalTarget - current > 0.0f) == (output > originalTarget))
+        {
+            output = originalTarget;
+            currentVelocity = (dt > 0.0f) ? (output - originalTarget) / dt : 0.0f;
+        }
+
+        return output;
+    }
+
+    void CharacterHPScript::ExampleFunction()
+    {
+        if (auto* transform = GetComponent<TransformComponent>())
+        {
+            transform->position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+        }
+    }
+}
