@@ -31,7 +31,7 @@ namespace Alice
         World* w = GetWorld();
         if (!w) return;
 
-        // 1) UI root 찾기
+        // 1) UI root
         const EntityId root = SearchRootWidgetByName(*w, Get_rootWidgetName());
         if (root == InvalidEntityId)
         {
@@ -39,7 +39,7 @@ namespace Alice
             return;
         }
 
-        // 2) 게이지 위젯 이름으로 찾기
+        // 
         const EntityId gaugeEntity = AliceUI::FindWidgetByName(*w, root, Get_gaugeWidgetName());
         TargetGauge = (gaugeEntity != InvalidEntityId)
             ? w->GetComponent<UIGaugeComponent>(gaugeEntity)
@@ -50,8 +50,15 @@ namespace Alice
             ALICE_LOG_WARN("[CharacterHPScript] Gauge widget not found: %s", Get_gaugeWidgetName().c_str());
             return;
         }
+        // Ensure custom shader can apply to the fill texture.
+        if (auto* gaugeWidget = w->GetComponent<UIWidgetComponent>(gaugeEntity))
+        {
+            gaugeWidget->shaderName = "GaugeCustom";
+        }
+        TargetGauge->useCustomShader = true;
 
-        // 3) 대상 엔티티/스크립트 찾기 및 OnValueChanged 바인딩
+
+        // 
         // Character HP gauge appearance
         TargetGauge->backgroundTexture = "Resource/Image/GrayHuman.png";
         TargetGauge->fillLateTexture = "Resource/Image/YellowHuman.png";
@@ -62,6 +69,7 @@ namespace Alice
         TargetGauge->fillLateSmoothing = 0.0f;
         TargetGauge->fillLateValue = TargetGauge->value;
         TargetGauge->fillLateDisplayedValue = TargetGauge->value;
+		TargetGauge->fillLateShaderName = "shaderName";
         fillLateVelocity = 0.0f;
 
         GameObject go = w->FindGameObject(Get_targetEntityName());
@@ -85,7 +93,7 @@ namespace Alice
 
                 auto* box = static_cast<BoxDeligateScript*>(sc.instance.get());
                 box->OnCharacterHPChanged.BindObject(this, &CharacterHPScript::changeValue);
-                // 초기값 반영 (바인딩 직후 델리게이트 실행)
+               
                 box->OnCharacterHPChanged.Execute(box->Get_CharacterHP_Value());
                 break;
             }
@@ -105,8 +113,8 @@ namespace Alice
     void CharacterHPScript::Update(float deltaTime)
     {
 
-        // changeValue 콜백으로 이미 갱신되므로 Update에서는 추가 처리 불필요
-        // (콜백 기반이 아닌 폴링이 필요하면 여기서 처리)
+        // changeValue
+       
         if (!TargetGauge)
             return;
 
