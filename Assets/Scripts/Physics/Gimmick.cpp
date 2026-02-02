@@ -125,6 +125,11 @@ namespace Alice
 
     REGISTER_SCRIPT(Gimmick);
 
+    bool Gimmick::IsLoopActive() const
+    {
+        return m_phase != Phase::Normal;
+    }
+
     void Gimmick::Start()
     {
         m_rng = std::mt19937(std::random_device{}());
@@ -444,6 +449,22 @@ namespace Alice
         if (!world)
             return;
 
+        auto SetOwnerWeaponDurability = [&](bool full)
+        {
+            if (m_guardBreakOwnerName.empty())
+                return;
+            auto ownerGo = world->FindGameObject(m_guardBreakOwnerName);
+            EntityId ownerId = ownerGo.IsValid() ? ownerGo.id() : InvalidEntityId;
+            if (ownerId == InvalidEntityId)
+                return;
+            if (auto* hc = world->GetComponent<HealthComponent>(ownerId))
+            {
+                if (hc->weaponDurabilityMax <= 0.0f)
+                    return;
+                hc->weaponDurability = full ? hc->weaponDurabilityMax : 0.0f;
+            }
+        };
+
         auto prewarmHiddenPart = [&](EntityId id)
         {
             if (id == InvalidEntityId)
@@ -463,6 +484,7 @@ namespace Alice
 
         if (phase == Phase::Restore)
         {
+            SetOwnerWeaponDurability(true);
             SetEnabled(m_weaponCombined, true);
             SetVisible(m_core, false);
             SetVisible(m_tendon, true);
@@ -485,6 +507,7 @@ namespace Alice
 
         if (phase == Phase::Normal)
         {
+            SetOwnerWeaponDurability(true);
             SetEnabled(m_weaponCombined, true);
             SetVisible(m_core, false);
             SetVisible(m_tendon, true);
@@ -506,6 +529,7 @@ namespace Alice
 
         if (phase == Phase::Break)
         {
+            SetOwnerWeaponDurability(false);
             SetEnabled(m_tendon, true);
             SetVisible(m_tendon, false);            
             SetVisible(m_core, true);

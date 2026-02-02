@@ -1,0 +1,15 @@
+{
+    "materials": [
+        "Assets/Materials/miribogi_0.mat",
+        "Assets/Materials/miribogi_1.mat",
+        "Assets/Materials/miribogi_2.mat",
+        "Assets/Materials/miribogi_3.mat",
+        "Assets/Materials/miribogi_4.mat",
+        "Assets/Materials/miribogi_5.mat",
+        "Assets/Materials/miribogi_6.mat",
+        "Assets/Materials/miribogi_7.mat",
+        "Assets/Materials/miribogi_8.mat"
+    ],
+    "mesh": "miribogi",
+    "source_fbx": "Resource/Test/4_Resources/sample/miribogi.fbx"
+}
