@@ -251,6 +251,12 @@ namespace Alice
 			return false;
 		}
 
+		if (!RegisterShader("GaugeCustom", AliceUIShader::UIGaugeCustomPS))
+		{
+			ALICE_LOG_ERRORF("[AliceUI] Failed to register GaugeCustom shader.");
+			return false;
+		}
+
 		// Constant buffer
 		D3D11_BUFFER_DESC cbDesc{};
 		cbDesc.ByteWidth = sizeof(UIConstants);
@@ -819,6 +825,21 @@ namespace Alice
 			else
 			{
 				gauge.displayedValue = target;
+			}
+
+			if (gauge.useFillLate)
+			{
+				float fillLateTarget = gauge.normalized ? gauge.fillLateValue : (gauge.fillLateValue - gauge.minValue) / std::max(0.0001f, gauge.maxValue - gauge.minValue);
+				fillLateTarget = AliceUI::Clamp01(fillLateTarget);
+
+				if (gauge.fillLateSmoothing > 0.0f)
+				{
+					gauge.fillLateDisplayedValue = gauge.fillLateDisplayedValue + (fillLateTarget - gauge.fillLateDisplayedValue) * gauge.fillLateSmoothing;
+				}
+				else
+				{
+					gauge.fillLateDisplayedValue = fillLateTarget;
+				}
 			}
 		}
 	}
@@ -1680,6 +1701,11 @@ namespace Alice
 			return;
 
 		const UIPixelConstants pixel = BuildPixelConstants(world, id);
+        std::string baseShaderName = widget->shaderName;
+        if (baseShaderName == "GaugeCustom" && !gauge->useCustomShader)
+        {
+            baseShaderName = "Default";
+        }
 
 		DirectX::XMFLOAT4 bgColor = gauge->backgroundColor;
 		DirectX::XMFLOAT4 fillColor = gauge->fillColor;
@@ -1688,6 +1714,7 @@ namespace Alice
 		const float originY = layout.pivotBaked ? 0.0f : -layout.pivot.y * layout.size.y;
 
 		// Background
+		if (gauge->useBackground)
 		{
 			UIVertex verts[4]{};
 			DirectX::XMFLOAT3 corners[4] = {
@@ -1707,7 +1734,81 @@ namespace Alice
 			verts[2].uv = DirectX::XMFLOAT2(0, 1);
 			verts[3].uv = DirectX::XMFLOAT2(1, 1);
 
-			DrawQuad(verts, GetTexture(gauge->backgroundTexture), GetPixelShader(widget->shaderName), pixel);
+			DrawQuad(verts, GetTexture(gauge->backgroundTexture), GetPixelShader(baseShaderName), pixel);
+		}
+
+		// FillLate ?�더�?(useFillLate가 true???�만, fill보다 먼�? 그려�?
+		if (gauge->useFillLate)
+		{
+			float fillLateRatio = gauge->fillLateDisplayedValue;
+			fillLateRatio = AliceUI::Clamp01(fillLateRatio);
+			if (fillLateRatio > 0.0f)
+			{
+				float x0 = originX, x1 = originX + layout.size.x;
+				float y0 = originY, y1 = originY + layout.size.y;
+				float u0 = 0.0f, u1 = 1.0f;
+				float v0 = 0.0f, v1 = 1.0f;
+
+				switch (gauge->direction)
+				{
+				case AliceUI::UIGaugeDirection::LeftToRight:
+					x1 = originX + layout.size.x * fillLateRatio;
+					u1 = fillLateRatio;
+					break;
+				case AliceUI::UIGaugeDirection::RightToLeft:
+					x0 = originX + layout.size.x * (1.0f - fillLateRatio);
+					u0 = 1.0f - fillLateRatio;
+					break;
+				case AliceUI::UIGaugeDirection::BottomToTop:
+					y0 = originY + layout.size.y * (1.0f - fillLateRatio);
+					v0 = 1.0f - fillLateRatio;
+					break;
+				case AliceUI::UIGaugeDirection::TopToBottom:
+					y1 = originY + layout.size.y * fillLateRatio;
+					v1 = fillLateRatio;
+					break;
+				}
+
+				UIVertex verts[4]{};
+				DirectX::XMFLOAT3 corners[4] = {
+					DirectX::XMFLOAT3(x0, y0, 0),
+					DirectX::XMFLOAT3(x1, y0, 0),
+					DirectX::XMFLOAT3(x0, y1, 0),
+					DirectX::XMFLOAT3(x1, y1, 0)
+				};
+				for (int i = 0; i < 4; ++i)
+				{
+					DirectX::XMVECTOR p = DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&corners[i]), layout.world);
+					DirectX::XMStoreFloat3(&verts[i].position, p);
+					verts[i].color = gauge->fillLateColor;
+				}
+				verts[0].uv = DirectX::XMFLOAT2(u0, v0);
+				verts[1].uv = DirectX::XMFLOAT2(u1, v0);
+				verts[2].uv = DirectX::XMFLOAT2(u0, v1);
+				verts[3].uv = DirectX::XMFLOAT2(u1, v1);
+
+				std::string fillLateShaderName = gauge->fillLateShaderName.empty()
+
+				    ? baseShaderName
+
+				    : gauge->fillLateShaderName;
+
+				if (fillLateShaderName == "GaugeCustom" && !gauge->useCustomShader)
+
+				{
+
+				    fillLateShaderName = "Default";
+
+				}
+				
+				// fillLateTexture가 비어?�으�?nullptr???�달 (?�색 ?�스�??�용, ?�상�??�시)
+				// ?�렇�??�면 fillTexture??Circle.png가 ?��??��? ?�음
+				ID3D11ShaderResourceView* fillLateTex = gauge->fillLateTexture.empty() 
+					? nullptr 
+					: GetTexture(gauge->fillLateTexture);
+				
+				DrawQuad(verts, fillLateTex, GetPixelShader(fillLateShaderName), pixel);
+			}
 		}
 
 		float ratio = gauge->displayedValue;
@@ -1758,7 +1859,12 @@ namespace Alice
 		verts[2].uv = DirectX::XMFLOAT2(u0, v1);
 		verts[3].uv = DirectX::XMFLOAT2(u1, v1);
 
-		DrawQuad(verts, GetTexture(gauge->fillTexture), GetPixelShader(widget->shaderName), pixel);
+		// fillTexture가 비어?�으�?nullptr???�달 (?�색 ?�스�??�용, ?�상�??�시)
+		ID3D11ShaderResourceView* fillTex = gauge->fillTexture.empty() 
+			? nullptr 
+			: GetTexture(gauge->fillTexture);
+		
+		DrawQuad(verts, fillTex, GetPixelShader(baseShaderName), pixel);
 	}
 
 	void UIRenderer::DrawQuad(const UIVertex* verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel)
@@ -1865,13 +1971,39 @@ namespace Alice
 		UIPixelConstants pixel{};
 		const auto* effect = world.GetComponent<UIEffectComponent>(id);
 		const auto* vital = world.GetComponent<UIVitalComponent>(id);
+		const auto* gauge = world.GetComponent<UIGaugeComponent>(id);
+		
+		// 
+		if (gauge)
+		{
+			float direction = 0.0f;
+			switch (gauge->direction)
+			{
+			case AliceUI::UIGaugeDirection::LeftToRight: direction = 0.0f; break;
+			case AliceUI::UIGaugeDirection::RightToLeft: direction = 1.0f; break;
+			case AliceUI::UIGaugeDirection::BottomToTop: direction = 2.0f; break;
+			case AliceUI::UIGaugeDirection::TopToBottom: direction = 3.0f; break;
+			}
+			
+			pixel.gaugeParams = DirectX::XMFLOAT4(
+				gauge->displayedValue,  // fill ratio
+				gauge->useFillLate ? gauge->fillLateDisplayedValue : 0.0f,  // fillLate ratio
+				gauge->useFillLate ? 1.0f : 0.0f,  // useFillLate flag
+				direction  // direction
+			);
+		}
+		
 		if (effect)
 		{
 			pixel.outlineColor = effect->outlineColor;
 			pixel.glowColor = effect->glowColor;
 			pixel.vitalColor = effect->vitalColor;
 			pixel.vitalBgColor = effect->vitalBgColor;
-			pixel.params0 = DirectX::XMFLOAT4(effect->outlineThickness, effect->outlineEnabled ? 1.0f : 0.0f, effect->radialEnabled ? 1.0f : 0.0f, effect->radialFill);
+			// UI effect params0 (outline/radial)
+			// 게이지가 있을 때는 params0.z를 0으로 설정하여 radial 마스크 충돌 방지
+			// (게이지의 useFillLate 플래그가 params0.z를 사용하지 않도록)
+			float radialEnabled = (gauge) ? 0.0f : (effect->radialEnabled ? 1.0f : 0.0f);
+			pixel.params0 = DirectX::XMFLOAT4(effect->outlineThickness, effect->outlineEnabled ? 1.0f : 0.0f, radialEnabled, effect->radialFill);
 			pixel.params1 = DirectX::XMFLOAT4(effect->radialInner, effect->radialOuter, effect->radialSoftness, effect->radialClockwise ? 1.0f : 0.0f);
 			pixel.params2 = DirectX::XMFLOAT4(effect->radialAngleOffset, effect->radialDim, effect->glowEnabled ? 1.0f : 0.0f, effect->glowStrength);
 			pixel.params3 = DirectX::XMFLOAT4(effect->glowWidth, effect->glowSpeed, effect->glowAngle, effect->grayscale);
@@ -1966,3 +2098,9 @@ namespace Alice
 		return m_psDefault.Get();
 	}
 }
+
+
+
+
+
+

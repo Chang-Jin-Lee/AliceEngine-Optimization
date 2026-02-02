@@ -99,6 +99,7 @@ namespace Alice
 			DirectX::XMFLOAT4 params3{ 0.25f, 1.0f, 0.0f, 0.0f };
 			DirectX::XMFLOAT4 params4{ 0.0f, 0.25f, 2.0f, 1.5f };
 			DirectX::XMFLOAT4 params5{ 0.02f, 0.0f, 0.0f, 0.0f };
+			DirectX::XMFLOAT4 gaugeParams{ 0.0f, 0.0f, 0.0f, 0.0f };
 			DirectX::XMFLOAT4 time{ 0.0f, 1.0f, 0.0f, 0.0f };
 		};
 
