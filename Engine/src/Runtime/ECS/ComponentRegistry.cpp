@@ -676,19 +676,25 @@ namespace Alice
             .constructor<>()
             .property("enabled", &ComputeEffectComponent::enabled)
             .property("shaderName", &ComputeEffectComponent::shaderName)
-            .property("effectParams", &ComputeEffectComponent::effectParams)
-            .property("intensity", &ComputeEffectComponent::intensity)
-            .property("useTransform", &ComputeEffectComponent::useTransform)
+            .property("simulationSpace", &ComputeEffectComponent::simulationSpace)
             .property("localOffset", &ComputeEffectComponent::localOffset)
-            .property("radius", &ComputeEffectComponent::radius)
-            .property("color", &ComputeEffectComponent::color)
-            .property("sizePx", &ComputeEffectComponent::sizePx)
-            .property("gravity", &ComputeEffectComponent::gravity)
-            .property("drag", &ComputeEffectComponent::drag)
             .property("lifeMin", &ComputeEffectComponent::lifeMin)
             .property("lifeMax", &ComputeEffectComponent::lifeMax)
+            .property("startSpeed", &ComputeEffectComponent::startSpeed)
+            .property("sizePx", &ComputeEffectComponent::sizePx)
+            .property("color", &ComputeEffectComponent::color)
+            .property("intensity", &ComputeEffectComponent::intensity)
+            .property("radius", &ComputeEffectComponent::radius)
+            .property("gravity", &ComputeEffectComponent::gravity)
+            .property("drag", &ComputeEffectComponent::drag)
             .property("depthTest", &ComputeEffectComponent::depthTest)
             .property("depthBiasMeters", &ComputeEffectComponent::depthBiasMeters);
+
+        rttr::registration::enumeration<ParticleSimulationSpace>("ParticleSimulationSpace")
+            (
+                rttr::value("World", ParticleSimulationSpace::World),
+                rttr::value("Local", ParticleSimulationSpace::Local)
+            );
 
         // === ColliderType enum 등록 ===
         rttr::registration::enumeration<ColliderType>("ColliderType")
@@ -1236,7 +1242,7 @@ namespace Alice
 
         r.Register<PostProcessVolumeComponent>("Post Process Volume", "Rendering");
 
-        r.Register<ComputeEffectComponent>("Compute Effect", "VFX");
+        r.Register<ComputeEffectComponent>("Particle System (Compute)", "VFX");
         r.Register<EffectComponent>("Effect", "VFX");
         r.Register<TrailEffectComponent>("Trail Effect", "VFX");
 
