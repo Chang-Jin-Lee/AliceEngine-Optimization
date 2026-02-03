@@ -26,7 +26,9 @@ namespace Alice
         ALICE_PROPERTY(std::string, value1Text, "");       // newValue ~= 1
         ALICE_PROPERTY(std::string, value2Text, "");       // newValue ~= 2
         ALICE_PROPERTY(std::string, value3Text, "");       // newValue ~= 3
-        ALICE_PROPERTY(std::string, defaultText, "");      // 매칭 실패 시 사용 (비어있으면 숫자 출력)
+        ALICE_PROPERTY(std::string, defaultText, "");      // 
+        ALICE_PROPERTY(float, fadeDuration, 1.0f);         // seconds to fade out (<=0 disables)
+        ALICE_PROPERTY(float, holdDuration, 0.0f);         // seconds to hold before fading
 
         UITextComponent* TargetText = nullptr;
 
@@ -34,5 +36,10 @@ namespace Alice
 
         void ExampleFunction();
         ALICE_FUNC(ExampleFunction);
+
+    private:
+        float fadeElapsed = 0.0f;
+        float holdElapsed = 0.0f;
+        float baseAlpha = 1.0f;
     };
 }

@@ -31,6 +31,10 @@ namespace Alice
         {
             OnWeaponHPChanged.Execute(WeaponHP_Value);
         }
+        if (OnTextValueChanged.IsBound())
+        {
+            OnTextValueChanged.Execute(TextValue);
+        }
     }
 
     void BoxDeligateScript::Update(float deltaTime)
@@ -84,6 +88,17 @@ namespace Alice
                 OnWeaponHPChanged.Execute(WeaponHP_Value);
             }
             ALICE_LOG_INFO("[BoxDeligateScript] WeaponHP: %f", WeaponHP_Value);
+        }
+
+        // Alpha5: TextValue 감소
+        if (input->GetKeyDown(toKey(Get_keyTextValue())))
+        {
+            TextValue = std::max(0.0f, TextValue - Get_SubHP());
+            if (OnTextValueChanged.IsBound())
+            {
+                OnTextValueChanged.Execute(TextValue);
+            }
+            ALICE_LOG_INFO("[BoxDeligateScript] TextValue: %f", TextValue);
         }
     }
 

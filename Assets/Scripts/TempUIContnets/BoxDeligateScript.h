@@ -12,6 +12,7 @@ namespace Alice
     ALICE_DECLARE_DELEGATE_OneParam(FOnPoiseHPChanged, float);
     ALICE_DECLARE_DELEGATE_OneParam(FOnCharacterHPChanged, float);
     ALICE_DECLARE_DELEGATE_OneParam(FOnWeaponHPChanged, float);
+    ALICE_DECLARE_DELEGATE_OneParam(FOnTextValueChanged, float);
 
     // 간단한 예제 스크립트입니다. 필요에 맞게 수정해서 사용하세요.
     class BoxDeligateScript : public IScript
@@ -27,12 +28,14 @@ namespace Alice
         FOnPoiseHPChanged OnPoiseHPChanged;
         FOnCharacterHPChanged OnCharacterHPChanged;
         FOnWeaponHPChanged OnWeaponHPChanged;
+        FOnTextValueChanged OnTextValueChanged;
 
         // 4개의 HP 변수
         ALICE_PROPERTY(float, BossHP_Value, 100.0f);
         ALICE_PROPERTY(float, PoiseHP_Value, 100.0f);
         ALICE_PROPERTY(float, CharacterHP_Value, 100.0f);
         ALICE_PROPERTY(float, WeaponHP_Value, 100.0f);
+        ALICE_PROPERTY(float, TextValue, 0.0f);
 
         // HP 감소량
         ALICE_PROPERTY(float, SubHP, 5.0f);
@@ -42,6 +45,7 @@ namespace Alice
         ALICE_PROPERTY(int, keyPoiseHP, static_cast<int>(KeyCode::Alpha2));
         ALICE_PROPERTY(int, keyCharacterHP, static_cast<int>(KeyCode::Alpha3));
         ALICE_PROPERTY(int, keyWeaponHP, static_cast<int>(KeyCode::Alpha4));
+        ALICE_PROPERTY(int, keyTextValue, static_cast<int>(KeyCode::Alpha5));
 
         // --- 함수 리플렉션 예시 ---
         void ExampleFunction();

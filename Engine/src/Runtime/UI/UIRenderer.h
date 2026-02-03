@@ -100,8 +100,10 @@ namespace Alice
 			DirectX::XMFLOAT4 params4{ 0.0f, 0.25f, 2.0f, 1.5f };
 			DirectX::XMFLOAT4 params5{ 0.02f, 0.0f, 0.0f, 0.0f };
 			DirectX::XMFLOAT4 gaugeParams{ 0.0f, 0.0f, 0.0f, 0.0f };
+			DirectX::XMFLOAT4 gaugeParams2{ 1.0f, 0.0f, 0.0f, 0.0f };
 			DirectX::XMFLOAT4 emptyColor{ 0.0f, 0.0f, 0.0f, 0.0f };
 			DirectX::XMFLOAT4 emptyParams{ 0.0f, 0.0f, 0.0f, 0.0f };
+			DirectX::XMFLOAT4 pencilParams{ 5.0f, 0.002f, 1.2f, 0.0f }; // x: 타일 스케일, y: Jitter 강도, z: 대비, w: (예비)
 			DirectX::XMFLOAT4 time{ 0.0f, 1.0f, 0.0f, 0.0f };
 		};
 
@@ -119,8 +121,8 @@ namespace Alice
 		void RenderText(const World& world, EntityId id, const ScreenLayout& layout);
 		void RenderGauge(const World& world, EntityId id, const ScreenLayout& layout);
 
-		void DrawQuad(const UIVertex* verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel);
-		void DrawGlyphs(const std::vector<UIVertex>& verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel);
+		void DrawQuad(const UIVertex* verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel, ID3D11ShaderResourceView* texture2 = nullptr);
+		void DrawGlyphs(const std::vector<UIVertex>& verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel, ID3D11ShaderResourceView* texture2 = nullptr);
 
 		DirectX::XMMATRIX BuildScreenLocalMatrix(const UITransformComponent& t, const DirectX::XMFLOAT2& refSize, DirectX::XMFLOAT2& outSize, DirectX::XMFLOAT2& outPivot) const;
 		DirectX::XMFLOAT2 ResolvePivot(const UITransformComponent& t) const;

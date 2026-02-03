@@ -1225,6 +1225,13 @@ namespace Alice
             .property("frequency", &UIEmptyGaugeEffectComponent::frequency)
             .property("speed", &UIEmptyGaugeEffectComponent::speed)
             .property("intensity", &UIEmptyGaugeEffectComponent::intensity);
+        
+        rttr::registration::class_<UIPencilComponent>("UIPencilComponent")
+            .constructor<>()
+            .property("pencilTexturePath", &UIPencilComponent::pencilTexturePath)
+            .property("pencilTileScale", &UIPencilComponent::pencilTileScale)
+            .property("pencilJitterStrength", &UIPencilComponent::pencilJitterStrength)
+            .property("pencilContrast", &UIPencilComponent::pencilContrast);
 
     }
 
