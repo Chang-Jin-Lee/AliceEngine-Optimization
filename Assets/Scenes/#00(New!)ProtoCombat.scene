@@ -27,8 +27,8 @@
             },
             "Hurtbox": {
                 "damageScale": 1.0,
-                "ownerGuid": "15545467552767802238",
-                "ownerNameDebug": "Tia",
+                "ownerGuid": "13576622615802014507",
+                "ownerNameDebug": "Player(Tia)",
                 "part": 10,
                 "teamId": 0
             },
@@ -69,26 +69,26 @@
                     "z": 1.0
                 },
                 "followScale": true,
-                "ownerGuid": "15545467552767802238",
-                "ownerNameDebug": "Tia",
+                "ownerGuid": "13576622615802014507",
+                "ownerNameDebug": "Player(Tia)",
                 "socketName": "HEAD"
             },
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 1.3003207445144653,
-                    "y": 1.2198173999786377,
-                    "z": -0.8356673121452332
+                    "x": -3.6960320472717285,
+                    "y": 1.1780868768692017,
+                    "z": -4.8819050788879395
                 },
                 "rotation": {
-                    "x": -0.061966683715581894,
-                    "y": 0.862352192401886,
-                    "z": -0.012165739201009274
+                    "x": -0.02168181911110878,
+                    "y": -1.7931588888168335,
+                    "z": -0.026622939854860306
                 },
                 "scale": {
-                    "x": 0.9999996423721313,
-                    "y": 0.9999995827674866,
-                    "z": 0.9999996423721313
+                    "x": 0.9999999403953552,
+                    "y": 0.9999995231628418,
+                    "z": 0.9999995231628418
                 },
                 "visible": false
             },
@@ -122,8 +122,8 @@
             },
             "Hurtbox": {
                 "damageScale": 1.0,
-                "ownerGuid": "15545467552767802238",
-                "ownerNameDebug": "Tia",
+                "ownerGuid": "13576622615802014507",
+                "ownerNameDebug": "Player(Tia)",
                 "part": 11,
                 "teamId": 0
             },
@@ -164,26 +164,26 @@
                     "z": 1.0
                 },
                 "followScale": true,
-                "ownerGuid": "15545467552767802238",
-                "ownerNameDebug": "Tia",
+                "ownerGuid": "13576622615802014507",
+                "ownerNameDebug": "Player(Tia)",
                 "socketName": "BODY"
             },
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 1.311001181602478,
-                    "y": 0.9776979088783264,
-                    "z": -0.829155683517456
+                    "x": -3.69559383392334,
+                    "y": 0.9356853365898132,
+                    "z": -4.883023738861084
                 },
                 "rotation": {
-                    "x": -0.03126039355993271,
-                    "y": 0.9959136247634888,
-                    "z": 0.001355529297143221
+                    "x": 0.022823063656687737,
+                    "y": -1.7534914016723633,
+                    "z": 0.010186213068664074
                 },
                 "scale": {
-                    "x": 0.9999995827674866,
-                    "y": 0.9999992251396179,
-                    "z": 0.9999993443489075
+                    "x": 0.9999997615814209,
+                    "y": 0.9999991059303284,
+                    "z": 0.9999992847442627
                 },
                 "visible": false
             },
@@ -217,8 +217,8 @@
             },
             "Hurtbox": {
                 "damageScale": 1.0,
-                "ownerGuid": "15545467552767802238",
-                "ownerNameDebug": "Tia",
+                "ownerGuid": "13576622615802014507",
+                "ownerNameDebug": "Player(Tia)",
                 "part": 30,
                 "teamId": 0
             },
@@ -259,26 +259,26 @@
                     "z": 1.0
                 },
                 "followScale": true,
-                "ownerGuid": "15545467552767802238",
-                "ownerNameDebug": "Tia",
+                "ownerGuid": "13576622615802014507",
+                "ownerNameDebug": "Player(Tia)",
                 "socketName": "LEG RIGHT"
             },
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 1.1673107147216797,
-                    "y": 0.2985856533050537,
-                    "z": -0.761669933795929
+                    "x": -3.5559604167938232,
+                    "y": 0.29354265332221985,
+                    "z": -4.979575157165527
                 },
                 "rotation": {
-                    "x": 0.09312622994184494,
-                    "y": 2.245494842529297,
-                    "z": 2.8690171241760254
+                    "x": 0.06953223049640656,
+                    "y": -0.5836257934570313,
+                    "z": 2.716623306274414
                 },
                 "scale": {
-                    "x": 0.9999995827674866,
-                    "y": 1.0,
-                    "z": 1.0
+                    "x": 0.9999993443489075,
+                    "y": 1.0000001192092896,
+                    "z": 1.0000001192092896
                 },
                 "visible": false
             },
@@ -312,8 +312,8 @@
             },
             "Hurtbox": {
                 "damageScale": 1.0,
-                "ownerGuid": "15545467552767802238",
-                "ownerNameDebug": "Tia",
+                "ownerGuid": "13576622615802014507",
+                "ownerNameDebug": "Player(Tia)",
                 "part": 31,
                 "teamId": 0
             },
@@ -354,26 +354,26 @@
                     "z": 1.0
                 },
                 "followScale": true,
-                "ownerGuid": "15545467552767802238",
-                "ownerNameDebug": "Tia",
+                "ownerGuid": "13576622615802014507",
+                "ownerNameDebug": "Player(Tia)",
                 "socketName": "LEG LEFT"
             },
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 1.4123494625091553,
-                    "y": 0.29964062571525574,
-                    "z": -0.904565691947937
+                    "x": -3.738262891769409,
+                    "y": 0.2820001244544983,
+                    "z": -4.775742053985596
                 },
                 "rotation": {
-                    "x": 0.030325455591082573,
-                    "y": -0.4919171929359436,
-                    "z": -2.7329180240631104
+                    "x": 0.03312830999493599,
+                    "y": 2.9377262592315674,
+                    "z": -2.568387269973755
                 },
                 "scale": {
-                    "x": 0.9999995827674866,
-                    "y": 0.9999995231628418,
-                    "z": 0.9999996423721313
+                    "x": 0.9999992847442627,
+                    "y": 0.9999992847442627,
+                    "z": 0.9999998211860657
                 },
                 "visible": false
             },
@@ -400,16 +400,16 @@
                 "base": {
                     "autoAdvance": true,
                     "blend01": 0.0,
-                    "clipA": "alice-Apose_arm|Swing",
-                    "clipB": "alice-Apose_arm|Swing",
+                    "clipA": "alice-Apose_arm|Idle",
+                    "clipB": "rig|Tia_Run",
                     "enabled": true,
                     "layerAlpha": 1.0,
-                    "loopA": false,
-                    "loopB": false,
+                    "loopA": true,
+                    "loopB": true,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.30000001192092896,
-                    "timeB": 0.30000001192092896
+                    "timeA": 0.22458243370056152,
+                    "timeB": 0.0
                 },
                 "enabled": true,
                 "ik": {
@@ -485,7 +485,7 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.3499999940395355,
                 "teleport": false,
-                "verticalVelocity": -0.06215518340468407
+                "verticalVelocity": 0.0
             },
             "Health": {
                 "alive": true,
@@ -719,7 +719,7 @@
                 "enabled": true,
                 "position": {
                     "x": -0.715033233165741,
-                    "y": 0.04565948247909546,
+                    "y": 0.049999773502349854,
                     "z": -0.20856717228889465
                 },
                 "rotation": {
@@ -803,25 +803,25 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.9636273384094238,
-                    "y": 1.497122049331665,
-                    "z": -0.3071049749851227
+                    "x": -0.10360634326934814,
+                    "y": 0.9121842980384827,
+                    "z": -0.07976327836513519
                 },
                 "rotation": {
-                    "x": 0.14428964257240295,
-                    "y": -0.22041547298431396,
-                    "z": -0.6942989826202393
+                    "x": 0.7326375842094421,
+                    "y": -0.7248846888542175,
+                    "z": -3.012733221054077
                 },
                 "scale": {
-                    "x": 1.000001072883606,
-                    "y": 1.000000238418579,
-                    "z": 1.0000008344650269
+                    "x": 1.0000011920928955,
+                    "y": 1.0000008344650269,
+                    "z": 1.0000005960464478
                 },
                 "visible": true
             },
             "WeaponTrace": {
-                "active": true,
-                "attackInstanceId": 997,
+                "active": false,
+                "attackInstanceId": 1532,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "guardBreakPushbackDuration": 0.25,
@@ -986,19 +986,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.7308504581451416,
-                    "y": 1.1711528301239014,
-                    "z": -0.0054295361042022705
+                    "x": -0.7060596942901611,
+                    "y": 1.3743078708648682,
+                    "z": -0.19883574545383453
                 },
                 "rotation": {
-                    "x": -0.1575859785079956,
-                    "y": 2.6752195358276367,
-                    "z": 0.14817148447036743
+                    "x": -0.04785145819187164,
+                    "y": -2.355924606323242,
+                    "z": 0.002994012553244829
                 },
                 "scale": {
-                    "x": 1.000000238418579,
-                    "y": 1.0000003576278687,
-                    "z": 1.0000001192092896
+                    "x": 1.0,
+                    "y": 0.9999996423721313,
+                    "z": 0.9999996423721313
                 },
                 "visible": false
             },
@@ -1081,19 +1081,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.8068615198135376,
-                    "y": 0.8708781003952026,
-                    "z": -0.07196396589279175
+                    "x": -0.6991845369338989,
+                    "y": 1.061521291732788,
+                    "z": -0.19271844625473022
                 },
                 "rotation": {
-                    "x": -0.04648721218109131,
-                    "y": 0.6591290235519409,
-                    "z": 3.1053102016448975
+                    "x": 0.008988345973193645,
+                    "y": 0.7854538559913635,
+                    "z": -3.135104179382324
                 },
                 "scale": {
-                    "x": 1.0000003576278687,
-                    "y": 1.0000003576278687,
-                    "z": 1.000000238418579
+                    "x": 1.0,
+                    "y": 0.9999995827674866,
+                    "z": 0.9999997019767761
                 },
                 "visible": false
             },
@@ -1176,19 +1176,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.7080391645431519,
-                    "y": 0.9564911127090454,
-                    "z": -0.31869006156921387
+                    "x": -0.5977684259414673,
+                    "y": 1.073190689086914,
+                    "z": -0.3866053819656372
                 },
                 "rotation": {
-                    "x": 0.21697074174880981,
-                    "y": -0.004725251812487841,
-                    "z": -0.5831455588340759
+                    "x": 0.5846602916717529,
+                    "y": -0.850415050983429,
+                    "z": -2.9652481079101563
                 },
                 "scale": {
-                    "x": 1.0000007152557373,
-                    "y": 1.0000003576278687,
-                    "z": 1.000000238418579
+                    "x": 1.0000008344650269,
+                    "y": 1.0000005960464478,
+                    "z": 1.0000001192092896
                 },
                 "visible": false
             },
@@ -1271,19 +1271,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.6382895708084106,
-                    "y": 0.9527007937431335,
-                    "z": -0.004571795463562012
+                    "x": -0.895013689994812,
+                    "y": 1.074453353881836,
+                    "z": -0.08911427855491638
                 },
                 "rotation": {
-                    "x": -0.4533717632293701,
-                    "y": 0.5887870788574219,
-                    "z": -0.7417281866073608
+                    "x": -0.5904760360717773,
+                    "y": -0.720126748085022,
+                    "z": -2.9653592109680176
                 },
                 "scale": {
-                    "x": 1.0000007152557373,
-                    "y": 1.0000011920928955,
-                    "z": 1.000000238418579
+                    "x": 1.0000003576278687,
+                    "y": 1.0000001192092896,
+                    "z": 1.0
                 },
                 "visible": false
             },
@@ -1366,19 +1366,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.5916177034378052,
-                    "y": 0.4263787865638733,
-                    "z": -0.013476341962814331
+                    "x": -0.6391070485115051,
+                    "y": 0.5562403202056885,
+                    "z": -0.24705292284488678
                 },
                 "rotation": {
-                    "x": 0.7755183577537537,
-                    "y": 0.9314125776290894,
-                    "z": -2.7373766899108887
+                    "x": 0.2726474702358246,
+                    "y": 0.7922050356864929,
+                    "z": -3.0822391510009766
                 },
                 "scale": {
-                    "x": 1.0000044107437134,
-                    "y": 1.0000011920928955,
-                    "z": 1.000002145767212
+                    "x": 1.0000040531158447,
+                    "y": 1.0000008344650269,
+                    "z": 1.000001072883606
                 },
                 "visible": false
             },
@@ -1461,19 +1461,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.9190226793289185,
-                    "y": 0.4880683124065399,
-                    "z": 0.2305876910686493
+                    "x": -0.7557452917098999,
+                    "y": 0.5591517090797424,
+                    "z": -0.09867176413536072
                 },
                 "rotation": {
-                    "x": 0.18806834518909454,
-                    "y": 0.26149681210517883,
-                    "z": 2.544370412826538
+                    "x": 0.07668431848287582,
+                    "y": 0.7662725448608398,
+                    "z": 3.007286310195923
                 },
                 "scale": {
-                    "x": 1.0000046491622925,
-                    "y": 1.0000009536743164,
-                    "z": 1.000001072883606
+                    "x": 1.0000044107437134,
+                    "y": 1.000001072883606,
+                    "z": 1.0000008344650269
                 },
                 "visible": false
             },
@@ -3729,6 +3729,7 @@
                         "m_bossGroggyGainHeavy": 16.0,
                         "m_bossGroggyGainLight": 8.0,
                         "m_bossGroggyLoopClip": "",
+                        "m_bossGuardBreakClip": "",
                         "m_bossGuardEnterClip": "",
                         "m_bossGuardEnterDurationSec": 0.0,
                         "m_bossGuardExitClip": "",
@@ -3737,6 +3738,7 @@
                         "m_bossGuid": 3451982848192160256,
                         "m_bossHeavyAttackClipA": "",
                         "m_bossHeavyAttackClipB": "",
+                        "m_bossHitClip": "",
                         "m_bossIdleClip": "alice-Apose_arm|Idle",
                         "m_bossLightAttackClip": "alice-Apose_arm|Swing",
                         "m_bossLightAttackClip1": "",
@@ -3744,7 +3746,7 @@
                         "m_bossLightAttackClip3": "",
                         "m_bossMoveClip": "",
                         "m_bossName": "Enemy",
-                        "m_chargeLoopClip": "",
+                        "m_chargeLoopClip": "rig|Tia_Charging",
                         "m_chargeScale0": 1.0,
                         "m_chargeScale1": 1.2000000476837158,
                         "m_chargeScale2": 1.399999976158142,
@@ -3754,30 +3756,33 @@
                         "m_enableCombatLogs": true,
                         "m_enableLogs": false,
                         "m_fatalApproachSec": 0.25,
+                        "m_fatalAttackClip": "",
                         "m_fatalDamageScale": 1.5,
                         "m_fatalDistance": 1.100000023841858,
                         "m_fatalFrontAngleDeg": 90.0,
-                        "m_fatalHoldSec": 5.0,
+                        "m_fatalHoldSec": 0.0,
                         "m_gimmickEntityName": "W_Target",
+                        "m_guardBreakClip": "",
                         "m_guardBreakPushbackScale": 0.30000001192092896,
                         "m_guardEnterClip": "rig|Tia_Rolling_Turn_Left",
                         "m_guardEnterDurationSec": 0.30000001192092896,
                         "m_guardExitClip": "rig|Tia_Rolling_Turn_Left",
                         "m_guardExitDurationSec": 0.30000001192092896,
-                        "m_guardLoopClip": "rig|Tia_Rolling_Turn_Right",
+                        "m_guardLoopClip": "rig|Tia_Guard",
                         "m_guardSuccessPushbackScale": 0.019999999552965164,
-                        "m_heavyAttackClipA": "rig|Tia_Normal_Attack_2,3",
+                        "m_heavyAttackClipA": "rig|Tia_Normal_Attack_3",
                         "m_heavyAttackClipB": "",
                         "m_heavyAttackMoveDistance": 2.200000047683716,
                         "m_heavyAttackMoveDurationSec": 0.20000000298023224,
                         "m_heavyAttackMoveStartSec": 2.200000047683716,
+                        "m_hitClip": "",
                         "m_hitInvulnSec": 0.20000000298023224,
                         "m_hitPushbackScale": 0.05000000074505806,
-                        "m_idleClip": "alice-Apose_arm|Idle",
-                        "m_lightAttackClip": "alice-Apose_arm|Swing",
-                        "m_lightAttackClip1": "",
-                        "m_lightAttackClip2": "",
-                        "m_lightAttackClip3": "",
+                        "m_idleClip": "rig|Tia_IDLE",
+                        "m_lightAttackClip": "rig|Tia_Normal_Attack_1",
+                        "m_lightAttackClip1": "rig|Tia_Normal_Attack_1",
+                        "m_lightAttackClip2": "rig|Tia_Normal_Attack_2",
+                        "m_lightAttackClip3": "rig|Tia_Normal_Attack_3",
                         "m_lightAttackMoveDistance": 1.7999999523162842,
                         "m_lightAttackMoveDurationSec": 0.009999999776482582,
                         "m_lightAttackMoveStartSec": 1.7699999809265137,
@@ -3786,23 +3791,26 @@
                         "m_moveClip": "rig|Tia_Run",
                         "m_parryNoDurabilitySec": 0.20000000298023224,
                         "m_playerCanBeHitstunned": true,
-                        "m_playerChargeLoopClip": "",
+                        "m_playerChargeLoopClip": "rig|Tia_Charging",
                         "m_playerDodgeClip": "rig|Tia_Rolling",
+                        "m_playerFatalAttackClip": "",
+                        "m_playerGuardBreakClip": "",
                         "m_playerGuardEnterClip": "rig|Tia_Rolling_Turn_Left",
                         "m_playerGuardEnterDurationSec": 0.30000001192092896,
                         "m_playerGuardExitClip": "rig|Tia_Rolling_Turn_Left",
                         "m_playerGuardExitDurationSec": 0.30000001192092896,
-                        "m_playerGuardLoopClip": "rig|Tia_Rolling_Turn_Right",
+                        "m_playerGuardLoopClip": "rig|Tia_Guard",
                         "m_playerGuid": 0,
-                        "m_playerHeavyAttackClipA": "rig|Tia_Normal_Attack_2,3",
+                        "m_playerHeavyAttackClipA": "rig|Tia_Normal_Attack_3",
                         "m_playerHeavyAttackClipB": "",
+                        "m_playerHitClip": "",
                         "m_playerIdleClip": "rig|Tia_IDLE",
                         "m_playerLightAttackClip": "rig|Tia_Normal_Attack_1",
-                        "m_playerLightAttackClip1": "",
-                        "m_playerLightAttackClip2": "",
-                        "m_playerLightAttackClip3": "",
+                        "m_playerLightAttackClip1": "rig|Tia_Normal_Attack_1",
+                        "m_playerLightAttackClip2": "rig|Tia_Normal_Attack_2",
+                        "m_playerLightAttackClip3": "rig|Tia_Normal_Attack_3",
                         "m_playerMoveClip": "rig|Tia_Run",
-                        "m_playerName": "Player",
+                        "m_playerName": "Player(Tia)",
                         "m_rotationOffsetDeg": 180.0
                     }
                 },
@@ -3857,7 +3865,7 @@
                         },
                         "playerActiveStateFontSize": 38.0,
                         "playerActiveWindowFontSize": 36.0,
-                        "playerEntityName": "Player",
+                        "playerEntityName": "Player(Tia)",
                         "playerHeightOffset": 1.600000023841858,
                         "playerHpGaugeName": "UI_PlayerHP_Gauge",
                         "playerRightOffset": 0.800000011920929,
@@ -3911,7 +3919,7 @@
         },
         {
             "Camera": {
-                "FOV": 59.999977111816406,
+                "FOV": 59.99999237060547,
                 "Far Plane": 1000.0,
                 "Near Plane": 0.10000000149011612,
                 "aspectOverride": 0.0,
@@ -3958,7 +3966,7 @@
                 "maxDistance": 8.079999923706055,
                 "minDistance": 0.0,
                 "mode": 0,
-                "pitchDeg": 25.619670867919922,
+                "pitchDeg": 50.04545974731445,
                 "pitchMaxDeg": 80.0,
                 "pitchMinDeg": -45.0,
                 "positionDamping": 8.0,
@@ -3966,8 +3974,8 @@
                 "sensitivity": 0.8399999737739563,
                 "shoulderOffset": 0.0,
                 "shoulderSide": 1.0,
-                "targetName": "Player",
-                "yawDeg": -131.1978302001953
+                "targetName": "Player(Tia)",
+                "yawDeg": 65.21186065673828
             },
             "CameraInput": {
                 "blendTimeKey3": 0.6000000238418579,
@@ -3997,7 +4005,7 @@
                 "frequency": 20.0
             },
             "CameraSpringArm": {
-                "distance": 1.0,
+                "distance": 5.799994468688965,
                 "distanceDamping": 6.0,
                 "enableCollision": false,
                 "enableZoom": true,
@@ -4019,7 +4027,7 @@
                         "m_blendTimeKey4": 0.6000000238418579,
                         "m_blendTimeKey5": 0.800000011920929,
                         "m_cameraListCsv": "Camera1,Camera2,Camera3,Camera4,Camera5",
-                        "m_followTargetName": "Player",
+                        "m_followTargetName": "Player(Tia)",
                         "m_lookAtTargetName": "Enemy",
                         "m_shakeAmplitudeKey4": 0.30000001192092896,
                         "m_shakeDecayKey4": 2.0,
@@ -4049,14 +4057,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 2.340885639190674,
-                    "y": 1.6725050210952759,
-                    "z": 0.08716408163309097
+                    "x": -7.009059906005859,
+                    "y": 5.686028957366943,
+                    "z": -6.426975727081299
                 },
                 "rotation": {
-                    "x": 0.4471476376056671,
-                    "y": -2.2898342609405518,
-                    "z": 1.639127589214695e-07
+                    "x": 0.8734580874443054,
+                    "y": 1.1381617784500122,
+                    "z": -1.490116545710407e-07
                 },
                 "scale": {
                     "x": 1.0,
@@ -4067,375 +4075,6 @@
             },
             "guid": "10427231408183436599",
             "name": "MainCamera"
-        },
-        {
-            "AdvancedAnimation": {
-                "additive": {
-                    "alpha": 1.0,
-                    "autoAdvance": true,
-                    "clip": "",
-                    "enabled": false,
-                    "loop": false,
-                    "refClip": "",
-                    "speed": 1.0,
-                    "time": 0.0
-                },
-                "aim": {
-                    "enabled": false,
-                    "weight": 1.0,
-                    "yawRad": 0.0
-                },
-                "base": {
-                    "autoAdvance": true,
-                    "blend01": 0.5079416632652283,
-                    "clipA": "rig|Tia_IDLE",
-                    "clipB": "rig|Tia_Normal_Attack_1",
-                    "enabled": true,
-                    "layerAlpha": 1.0,
-                    "loopA": true,
-                    "loopB": false,
-                    "speedA": 1.0,
-                    "speedB": 1.0,
-                    "timeA": 0.11067591607570648,
-                    "timeB": 1.7916666269302368
-                },
-                "enabled": true,
-                "ik": {
-                    "chainLength": 3,
-                    "enabled": false,
-                    "targetMS": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "tipBone": "Hand_L",
-                    "weight": 1.0
-                },
-                "ikChains": [],
-                "playing": true,
-                "procedural": {
-                    "seed": 0,
-                    "strength": 0.0,
-                    "timeSec": 0.0
-                },
-                "rootBoneName": "root",
-                "rootMotionUnlock": false,
-                "sockets": [],
-                "upper": {
-                    "autoAdvance": true,
-                    "blend01": 0.0,
-                    "clipA": "",
-                    "clipB": "",
-                    "enabled": false,
-                    "layerAlpha": 1.0,
-                    "loopA": true,
-                    "loopB": true,
-                    "speedA": 1.0,
-                    "speedB": 1.0,
-                    "timeA": 0.0,
-                    "timeB": 0.0
-                }
-            },
-            "AttackDriver": {
-                "clips": [
-                    {
-                        "canBeInterrupted": true,
-                        "clipName": "rig|Tia_Normal_Attack_1",
-                        "enabled": true,
-                        "endTimeSec": 1.0,
-                        "source": "Explicit",
-                        "startTimeSec": 0.10000000149011612,
-                        "type": "Attack"
-                    },
-                    {
-                        "canBeInterrupted": true,
-                        "clipName": "rig|Tia_Normal_Attack_2,3",
-                        "enabled": true,
-                        "endTimeSec": 2.0,
-                        "source": "Explicit",
-                        "startTimeSec": 0.699999988079071,
-                        "type": "Attack"
-                    },
-                    {
-                        "canBeInterrupted": true,
-                        "clipName": "rig|Tia_Rolling",
-                        "enabled": true,
-                        "endTimeSec": 999.0,
-                        "source": "Explicit",
-                        "startTimeSec": 0.0,
-                        "type": "Dodge"
-                    },
-                    {
-                        "canBeInterrupted": true,
-                        "clipName": "rig|Tia_Rolling_Turn_Right",
-                        "enabled": true,
-                        "endTimeSec": 999.0,
-                        "source": "Explicit",
-                        "startTimeSec": 0.0,
-                        "type": "Guard"
-                    }
-                ],
-                "traceGuid": "5606817089339699128"
-            },
-            "CharacterController": {
-                "applyGravity": true,
-                "climbingMode": "Constrained",
-                "contactOffset": 0.05000000074505806,
-                "density": 10.0,
-                "desiredVelocity": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "enableQueries": true,
-                "gravity": -9.8100004196167,
-                "halfHeight": 0.4699999988079071,
-                "hitTriggers": false,
-                "ignoreLayers": 0,
-                "jumpRequested": false,
-                "jumpSpeed": 20.0,
-                "layerBits": 2,
-                "nonWalkableMode": "PreventClimbingAndForceSliding",
-                "radius": 0.23000000417232513,
-                "slopeLimitRadians": 0.7853981852531433,
-                "stepOffset": 0.3499999940395355,
-                "teleport": false,
-                "verticalVelocity": -0.06215518340468407
-            },
-            "Health": {
-                "alive": true,
-                "currentHealth": 100.0,
-                "dodgeActive": false,
-                "dodgeAvoidedThisFrame": false,
-                "groggy": 0.0,
-                "groggyDuration": 1.5,
-                "groggyGainScale": 1.0,
-                "groggyMax": 100.0,
-                "guardActive": false,
-                "guardDamageScale": 0.5,
-                "guardHitThisFrame": false,
-                "hitThisFrame": false,
-                "invulnDuration": 0.0,
-                "invulnRemaining": 0.0,
-                "lastHitAttacker": 54,
-                "lastHitDamage": 0.0,
-                "lastHitNormalWS": {
-                    "x": 0.0,
-                    "y": 1.0,
-                    "z": 0.0
-                },
-                "lastHitPart": 30,
-                "lastHitPosWS": {
-                    "x": -0.2331831157207489,
-                    "y": 0.4533941447734833,
-                    "z": 1.2846431732177734
-                },
-                "maxHealth": 100.0,
-                "pushbackDir": {
-                    "x": 0.3301597237586975,
-                    "y": 0.0,
-                    "z": 0.943925142288208
-                },
-                "pushbackRemainingSec": 0.0,
-                "pushbackSpeed": 0.30000001192092896,
-                "teamId": 0,
-                "weakRemainingSec": 0.0,
-                "weaponDurability": 100.0,
-                "weaponDurabilityMax": 100.0
-            },
-            "Material": {
-                "albedoTexturePath": "",
-                "alpha": 1.0,
-                "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.5,
-                "shadingMode": 7,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrStrength": 1.0,
-                "transparent": false
-            },
-            "Scripts": [
-                {
-                    "enabled": true,
-                    "name": "C_PlayerInputSourceComponent",
-                    "props": {
-                        "m_attackHoldThresholdSec": 0.5,
-                        "m_chargeStage1Sec": 1.0,
-                        "m_chargeStage2Sec": 2.0,
-                        "m_chargeStage3Sec": 3.0,
-                        "m_enableLogs": false,
-                        "m_keyAttack": 19,
-                        "m_keyBackward": 28,
-                        "m_keyChargeModifier": 45,
-                        "m_keyChargeModifierAlt": 46,
-                        "m_keyDodge": 40,
-                        "m_keyForward": 32,
-                        "m_keyGuard": 20,
-                        "m_keyInteract": 15,
-                        "m_keyItem": 35,
-                        "m_keyLeft": 10,
-                        "m_keyRage": 14,
-                        "m_keyRight": 13,
-                        "m_mouseAttackButton": 0,
-                        "m_mouseGuardButton": 1,
-                        "m_mouseLockOnButton": 2,
-                        "m_moveSpeed": 5.0,
-                        "m_parryWindowSec": 0.5,
-                        "m_useMouseAttack": true,
-                        "m_useMouseLockOn": true
-                    }
-                }
-            ],
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 830.7171206216825
-            },
-            "SkinnedMesh": {
-                "boneCount": 345,
-                "instanceAssetPath": "Assets/Fbx/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack.fbxasset",
-                "meshAssetPath": "Tia_Animaition_Run,Rolling,IDLE,Turn,Attack"
-            },
-            "Socket": {
-                "sockets": [
-                    {
-                        "name": "RightHand(WeaponOnly)",
-                        "parentBone": "hand.r",
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        }
-                    },
-                    {
-                        "name": "HEAD",
-                        "parentBone": "head.x",
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        }
-                    },
-                    {
-                        "name": "BODY",
-                        "parentBone": "spine_02.x",
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        }
-                    },
-                    {
-                        "name": "LEG RIGHT",
-                        "parentBone": "leg_twist.r",
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        }
-                    },
-                    {
-                        "name": "LEG LEFT",
-                        "parentBone": "leg_twist.l",
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        }
-                    }
-                ]
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 1.6623495817184448,
-                    "y": 0.04999947547912598,
-                    "z": -0.5063813924789429
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.8517587184906006,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "guid": "15545467552767802238",
-            "name": "Player"
         },
         {
             "Material": {
@@ -5203,25 +4842,25 @@
                     "z": 1.0
                 },
                 "followScale": true,
-                "ownerGuid": "15545467552767802238",
-                "ownerNameDebug": "Player",
+                "ownerGuid": "13576622615802014507",
+                "ownerNameDebug": "Player(Tia)",
                 "socketName": "RightHand(WeaponOnly)"
             },
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 1.629678726196289,
-                    "y": 0.9129210114479065,
-                    "z": -0.7611141204833984
+                    "x": -3.7790627479553223,
+                    "y": 0.9695898294448853,
+                    "z": -4.703370094299316
                 },
                 "rotation": {
-                    "x": -0.05124415457248688,
-                    "y": 0.25754261016845703,
-                    "z": 2.0349695682525635
+                    "x": 0.42724156379699707,
+                    "y": -1.537986397743225,
+                    "z": 2.109992027282715
                 },
                 "scale": {
-                    "x": 0.9999996423721313,
-                    "y": 0.9999998807907104,
+                    "x": 0.999999463558197,
+                    "y": 1.0,
                     "z": 0.9999998211860657
                 },
                 "visible": false
@@ -5353,32 +4992,32 @@
                     "z": 1.0
                 },
                 "followScale": true,
-                "ownerGuid": "15545467552767802238",
-                "ownerNameDebug": "Player",
+                "ownerGuid": "13576622615802014507",
+                "ownerNameDebug": "Player(Tia)",
                 "socketName": "RightHand(WeaponOnly)"
             },
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 1.629678726196289,
-                    "y": 0.9129210114479065,
-                    "z": -0.7611141204833984
+                    "x": -3.7790627479553223,
+                    "y": 0.9695898294448853,
+                    "z": -4.703370094299316
                 },
                 "rotation": {
-                    "x": -0.05124415457248688,
-                    "y": 0.25754261016845703,
-                    "z": 2.0349695682525635
+                    "x": 0.42724156379699707,
+                    "y": -1.537986397743225,
+                    "z": 2.109992027282715
                 },
                 "scale": {
-                    "x": 0.9999996423721313,
-                    "y": 0.9999998807907104,
+                    "x": 0.999999463558197,
+                    "y": 1.0,
                     "z": 0.9999998211860657
                 },
                 "visible": true
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 337,
+                "attackInstanceId": 427,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "guardBreakPushbackDuration": 0.25,
@@ -5386,8 +5025,8 @@
                 "guardBreakWeakSec": 1.5,
                 "guardDurabilityCost": 0.0,
                 "guardLockSec": 0.25,
-                "ownerGuid": "15545467552767802238",
-                "ownerNameDebug": "Player",
+                "ownerGuid": "13576622615802014507",
+                "ownerNameDebug": "Player(Tia)",
                 "parryGroggyGain": 10.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
@@ -5537,7 +5176,7 @@
                         "m_eyeFloatMoveSpeed": 2.0,
                         "m_eyeMoveSpeed": 16.0,
                         "m_eyeName": "W_EYE",
-                        "m_guardBreakOwnerName": "Player",
+                        "m_guardBreakOwnerName": "Player(Tia)",
                         "m_ignoreLayersMask": 0,
                         "m_magnetizeInterval": 0.5,
                         "m_orbitAngularBlendDuration": 0.3499999940395355,
@@ -5707,7 +5346,7 @@
                 "minValue": 0.0,
                 "normalized": true,
                 "smoothing": 0.0,
-                "value": 0.4000000059604645
+                "value": 1.0
             },
             "UITransform": {
                 "alignH": "Center",
@@ -5877,7 +5516,7 @@
                 "minValue": 0.0,
                 "normalized": true,
                 "smoothing": 0.0,
-                "value": 0.20000000298023224
+                "value": 1.0
             },
             "UITransform": {
                 "alignH": "Center",
@@ -5963,7 +5602,7 @@
                 "minValue": 0.0,
                 "normalized": true,
                 "smoothing": 0.0,
-                "value": 0.30000001192092896
+                "value": 0.0
             },
             "UITransform": {
                 "alignH": "Center",
@@ -6112,16 +5751,16 @@
                 "alignH": "Left",
                 "alignV": "Top",
                 "color": {
-                    "w": 1.0,
-                    "x": 0.20000000298023224,
-                    "y": 1.0,
-                    "z": 0.4000000059604645
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
                 },
                 "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
-                "fontSize": 32.0,
+                "fontSize": 26.0,
                 "lineSpacing": 0.0,
                 "maxWidth": 0.0,
-                "text": "Attack",
+                "text": "None",
                 "wrap": false
             },
             "UITransform": {
@@ -6587,13 +6226,13 @@
                 "alignH": "Left",
                 "alignV": "Top",
                 "color": {
-                    "w": 0.3499999940395355,
-                    "x": 0.8999999761581421,
+                    "w": 1.0,
+                    "x": 1.0,
                     "y": 0.8999999761581421,
-                    "z": 0.8999999761581421
+                    "z": 0.20000000298023224
                 },
                 "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
-                "fontSize": 26.0,
+                "fontSize": 34.0,
                 "lineSpacing": 0.0,
                 "maxWidth": 0.0,
                 "text": "Idle",
@@ -6747,13 +6386,13 @@
                 "alignH": "Left",
                 "alignV": "Top",
                 "color": {
-                    "w": 1.0,
-                    "x": 1.0,
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
                     "y": 0.8999999761581421,
-                    "z": 0.20000000298023224
+                    "z": 0.8999999761581421
                 },
                 "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
-                "fontSize": 34.0,
+                "fontSize": 26.0,
                 "lineSpacing": 0.0,
                 "maxWidth": 0.0,
                 "text": "Attack",
@@ -7102,31 +6741,472 @@
                     "z": 1.0
                 },
                 "followScale": true,
-                "ownerGuid": "15545467552767802238",
-                "ownerNameDebug": "Player",
+                "ownerGuid": "13576622615802014507",
+                "ownerNameDebug": "Player(Tia)",
                 "socketName": "BODY"
             },
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 1.3537524938583374,
-                    "y": 0.9492753744125366,
-                    "z": -0.8015064597129822
+                    "x": -3.744131088256836,
+                    "y": 0.9045536518096924,
+                    "z": -4.891680717468262
                 },
                 "rotation": {
-                    "x": -0.03126039355993271,
-                    "y": 0.9959136247634888,
-                    "z": 0.001355529297143221
+                    "x": 0.022823063656687737,
+                    "y": -1.7534914016723633,
+                    "z": 0.010186213068664074
                 },
                 "scale": {
-                    "x": 0.9999995827674866,
-                    "y": 0.9999992251396179,
-                    "z": 0.9999993443489075
+                    "x": 0.9999997615814209,
+                    "y": 0.9999991059303284,
+                    "z": 0.9999992847442627
                 },
                 "visible": true
             },
             "guid": "8855580326135297683",
             "name": "TiaRibbon"
+        },
+        {
+            "AdvancedAnimation": {
+                "additive": {
+                    "alpha": 1.0,
+                    "autoAdvance": true,
+                    "clip": "",
+                    "enabled": false,
+                    "loop": false,
+                    "refClip": "",
+                    "speed": 1.0,
+                    "time": 0.0
+                },
+                "aim": {
+                    "enabled": false,
+                    "weight": 1.0,
+                    "yawRad": 0.0
+                },
+                "base": {
+                    "autoAdvance": true,
+                    "blend01": 0.6564316749572754,
+                    "clipA": "rig|Tia_IDLE",
+                    "clipB": "rig|Tia_Normal_Attack_1",
+                    "enabled": true,
+                    "layerAlpha": 1.0,
+                    "loopA": true,
+                    "loopB": false,
+                    "speedA": 1.0,
+                    "speedB": 1.0,
+                    "timeA": 0.7098801136016846,
+                    "timeB": 0.07877179980278015
+                },
+                "enabled": true,
+                "ik": {
+                    "chainLength": 3,
+                    "enabled": false,
+                    "targetMS": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "tipBone": "Hand_L",
+                    "weight": 1.0
+                },
+                "ikChains": [],
+                "playing": true,
+                "procedural": {
+                    "seed": 0,
+                    "strength": 0.0,
+                    "timeSec": 0.0
+                },
+                "rootBoneName": "c_pos",
+                "rootMotionUnlock": true,
+                "sockets": [],
+                "upper": {
+                    "autoAdvance": true,
+                    "blend01": 0.0,
+                    "clipA": "",
+                    "clipB": "",
+                    "enabled": false,
+                    "layerAlpha": 1.0,
+                    "loopA": true,
+                    "loopB": true,
+                    "speedA": 1.0,
+                    "speedB": 1.0,
+                    "timeA": 0.0,
+                    "timeB": 0.0
+                }
+            },
+            "AttackDriver": {
+                "clips": [
+                    {
+                        "canBeInterrupted": true,
+                        "clipName": "rig|Tia_Normal_Attack_1",
+                        "enabled": true,
+                        "endTimeSec": 1.0,
+                        "source": "Explicit",
+                        "startTimeSec": 0.10000000149011612,
+                        "type": "Attack"
+                    },
+                    {
+                        "canBeInterrupted": true,
+                        "clipName": "rig|Tia_Normal_Attack_2",
+                        "enabled": true,
+                        "endTimeSec": 2.0,
+                        "source": "Explicit",
+                        "startTimeSec": 0.699999988079071,
+                        "type": "Attack"
+                    },
+                    {
+                        "canBeInterrupted": true,
+                        "clipName": "rig|Tia_Normal_Attack_3",
+                        "enabled": true,
+                        "endTimeSec": 2.0,
+                        "source": "Explicit",
+                        "startTimeSec": 0.699999988079071,
+                        "type": "Attack"
+                    },
+                    {
+                        "canBeInterrupted": true,
+                        "clipName": "rig|Tia_Rolling",
+                        "enabled": true,
+                        "endTimeSec": 999.0,
+                        "source": "Explicit",
+                        "startTimeSec": 0.0,
+                        "type": "Dodge"
+                    },
+                    {
+                        "canBeInterrupted": true,
+                        "clipName": "rig|Tia_Guard",
+                        "enabled": true,
+                        "endTimeSec": 999.0,
+                        "source": "Explicit",
+                        "startTimeSec": 0.0,
+                        "type": "Guard"
+                    }
+                ],
+                "traceGuid": "5606817089339699128"
+            },
+            "CharacterController": {
+                "applyGravity": true,
+                "climbingMode": "Constrained",
+                "contactOffset": 0.05000000074505806,
+                "density": 10.0,
+                "desiredVelocity": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "enableQueries": true,
+                "gravity": -9.8100004196167,
+                "halfHeight": 0.4699999988079071,
+                "hitTriggers": false,
+                "ignoreLayers": 0,
+                "jumpRequested": false,
+                "jumpSpeed": 20.0,
+                "layerBits": 2,
+                "nonWalkableMode": "PreventClimbingAndForceSliding",
+                "radius": 0.23000000417232513,
+                "slopeLimitRadians": 0.7853981852531433,
+                "stepOffset": 0.3499999940395355,
+                "teleport": false,
+                "verticalVelocity": -0.0657358318567276
+            },
+            "Health": {
+                "alive": true,
+                "currentHealth": 100.0,
+                "dodgeActive": false,
+                "dodgeAvoidedThisFrame": false,
+                "groggy": 0.0,
+                "groggyDuration": 1.5,
+                "groggyGainScale": 1.0,
+                "groggyMax": 100.0,
+                "guardActive": false,
+                "guardDamageScale": 0.5,
+                "guardHitThisFrame": false,
+                "hitThisFrame": false,
+                "invulnDuration": 0.0,
+                "invulnRemaining": 0.0,
+                "lastHitAttacker": 54,
+                "lastHitDamage": 0.0,
+                "lastHitNormalWS": {
+                    "x": 0.0,
+                    "y": 1.0,
+                    "z": 0.0
+                },
+                "lastHitPart": 30,
+                "lastHitPosWS": {
+                    "x": -0.2331831157207489,
+                    "y": 0.4533941447734833,
+                    "z": 1.2846431732177734
+                },
+                "maxHealth": 100.0,
+                "pushbackDir": {
+                    "x": 0.3301597237586975,
+                    "y": 0.0,
+                    "z": 0.943925142288208
+                },
+                "pushbackRemainingSec": 0.0,
+                "pushbackSpeed": 0.30000001192092896,
+                "teamId": 0,
+                "weakRemainingSec": 0.0,
+                "weaponDurability": 100.0,
+                "weaponDurabilityMax": 100.0
+            },
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Tia_Animaition_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrStrength": 1.0,
+                "transparent": false
+            },
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "C_PlayerInputSourceComponent",
+                    "props": {
+                        "m_attackHoldThresholdSec": 0.5,
+                        "m_chargeStage1Sec": 1.0,
+                        "m_chargeStage2Sec": 2.0,
+                        "m_chargeStage3Sec": 3.0,
+                        "m_enableLogs": false,
+                        "m_keyAttack": 19,
+                        "m_keyBackward": 28,
+                        "m_keyChargeModifier": 45,
+                        "m_keyChargeModifierAlt": 46,
+                        "m_keyDodge": 40,
+                        "m_keyForward": 32,
+                        "m_keyGuard": 20,
+                        "m_keyInteract": 15,
+                        "m_keyItem": 35,
+                        "m_keyLeft": 10,
+                        "m_keyRage": 14,
+                        "m_keyRight": 13,
+                        "m_mouseAttackButton": 0,
+                        "m_mouseGuardButton": 1,
+                        "m_mouseLockOnButton": 2,
+                        "m_moveSpeed": 5.0,
+                        "m_parryWindowSec": 0.5,
+                        "m_useMouseAttack": true,
+                        "m_useMouseLockOn": true
+                    }
+                }
+            ],
+            "SkinnedAnimation": {
+                "clipIndex": 4,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 137,
+                "instanceAssetPath": "Assets/Fbx/Tia_Animaition.fbxasset",
+                "meshAssetPath": "Tia_Animaition"
+            },
+            "Socket": {
+                "sockets": [
+                    {
+                        "name": "RightHand(WeaponOnly)",
+                        "parentBone": "hand.r",
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        }
+                    },
+                    {
+                        "name": "HEAD",
+                        "parentBone": "head.x",
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        }
+                    },
+                    {
+                        "name": "BODY",
+                        "parentBone": "spine_02.x",
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        }
+                    },
+                    {
+                        "name": "LEG RIGHT",
+                        "parentBone": "leg_twist.r",
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        }
+                    },
+                    {
+                        "name": "LEG LEFT",
+                        "parentBone": "leg_twist.l",
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        }
+                    }
+                ]
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -3.627619981765747,
+                    "y": 0.05000019073486328,
+                    "z": -4.8655476570129395
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": -2.0034308433532715,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "13576622615802014507",
+            "name": "Player(Tia)"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Tia_Animaition_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 130.32104654051363
+            },
+            "SkinnedMesh": {
+                "boneCount": 137,
+                "instanceAssetPath": "Assets/Fbx/Tia_Animaition.fbxasset",
+                "meshAssetPath": "Tia_Animaition"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "9496648503910386174"
         }
     ],
     "sceneName": "#00(New!)ProtoCombat",

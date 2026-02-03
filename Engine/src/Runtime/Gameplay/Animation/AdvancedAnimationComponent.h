@@ -107,6 +107,11 @@ namespace Alice
 		// Character-level root motion defaults (optional)
 		std::string rootBoneName = "root";
 		bool rootMotionUnlock = false;
+		// Runtime-only: when true, root motion translation is driven via CCT.
+		bool rootMotionDriveCct = false;
+		// Runtime-only: last root motion delta in world space (row convention).
+		DirectX::XMFLOAT3 rootMotionDeltaWS = { 0.0f, 0.0f, 0.0f };
+		bool rootMotionDeltaValid = false;
 
 		AdvancedAnimLayer base;
 		AdvancedAnimLayer upper;
