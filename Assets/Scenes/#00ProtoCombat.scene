@@ -3740,7 +3740,7 @@
                         "m_bossLightAttackClip1": "",
                         "m_bossLightAttackClip2": "",
                         "m_bossLightAttackClip3": "",
-                        "m_bossMoveClip": "",
+                        "m_bossMoveClip": "alice-Apose_arm|Walk",
                         "m_bossName": "Enemy",
                         "m_chargeLoopClip": "",
                         "m_chargeScale0": 1.0,
