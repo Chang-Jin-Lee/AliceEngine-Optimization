@@ -18,6 +18,7 @@
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/ECS/World.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Importing/FbxImporter.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
 #include "Runtime/Rendering/Components/CameraComponent.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
@@ -38,6 +39,11 @@ using Microsoft::WRL::ComPtr;
 
 namespace Alice
 {
+    namespace
+    {
+        constexpr const char* kCameraIconFbxPath = "Resource/BasicMesh/Camera.fbx";
+    }
+
     namespace
     {
         static std::string ResolvePPVReferenceName(const World& world)
@@ -442,6 +448,91 @@ namespace Alice
                 return false;
             if (FAILED(m_device->CreateShaderResourceView(m_gBufferTextures[i].Get(), nullptr, m_gBufferSRVs[i].ReleaseAndGetAddressOf())))
                 return false;
+        }
+
+        return true;
+    }
+
+    bool DeferredRenderSystem::CreateCameraPreviewTargets(std::uint32_t width, std::uint32_t height)
+    {
+        m_cameraPreviewWidth = width;
+        m_cameraPreviewHeight = height;
+
+        for (int i = 0; i < GBufferCount; ++i)
+        {
+            m_cameraPreviewGBufferSRVs[i].Reset();
+            m_cameraPreviewGBufferRTVs[i].Reset();
+            m_cameraPreviewGBufferTextures[i].Reset();
+        }
+
+        DXGI_FORMAT formats[GBufferCount] = {
+            DXGI_FORMAT_R16G16B16A16_FLOAT,  // 0: NormalWS + Roughness
+            DXGI_FORMAT_R8G8B8A8_UNORM,      // 1: Metalness + ToonCuts
+            DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, // 2: BaseColor + ShadingMode
+            DXGI_FORMAT_R8G8B8A8_UNORM,      // 3: ToonParams
+        };
+
+        for (int i = 0; i < GBufferCount; ++i)
+        {
+            D3D11_TEXTURE2D_DESC td = {};
+            td.Width = width;
+            td.Height = height;
+            td.MipLevels = 1;
+            td.ArraySize = 1;
+            td.Format = formats[i];
+            td.SampleDesc.Count = 1;
+            td.SampleDesc.Quality = 0;
+            td.Usage = D3D11_USAGE_DEFAULT;
+            td.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+            td.CPUAccessFlags = 0;
+            td.MiscFlags = 0;
+
+            if (FAILED(m_device->CreateTexture2D(&td, nullptr, m_cameraPreviewGBufferTextures[i].ReleaseAndGetAddressOf())))
+                return false;
+            if (FAILED(m_device->CreateRenderTargetView(m_cameraPreviewGBufferTextures[i].Get(), nullptr, m_cameraPreviewGBufferRTVs[i].ReleaseAndGetAddressOf())))
+                return false;
+            if (FAILED(m_device->CreateShaderResourceView(m_cameraPreviewGBufferTextures[i].Get(), nullptr, m_cameraPreviewGBufferSRVs[i].ReleaseAndGetAddressOf())))
+                return false;
+        }
+
+        m_cameraPreviewSceneColorTex.Reset();
+        m_cameraPreviewSceneRTV.Reset();
+        m_cameraPreviewSceneColorSRV.Reset();
+        m_cameraPreviewViewportTex.Reset();
+        m_cameraPreviewViewportRTV.Reset();
+        m_cameraPreviewViewportSRV.Reset();
+        m_cameraPreviewSceneDepthTex.Reset();
+        m_cameraPreviewSceneDSV.Reset();
+        m_cameraPreviewSceneDepthSRV.Reset();
+
+        D3D11_TEXTURE2D_DESC cDesc = { width, height, 1, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, {1, 0}, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0, 0 };
+        if (FAILED(m_device->CreateTexture2D(&cDesc, nullptr, m_cameraPreviewSceneColorTex.ReleaseAndGetAddressOf()))) return false;
+        if (FAILED(m_device->CreateRenderTargetView(m_cameraPreviewSceneColorTex.Get(), nullptr, m_cameraPreviewSceneRTV.ReleaseAndGetAddressOf()))) return false;
+        if (FAILED(m_device->CreateShaderResourceView(m_cameraPreviewSceneColorTex.Get(), nullptr, m_cameraPreviewSceneColorSRV.ReleaseAndGetAddressOf()))) return false;
+
+        D3D11_TEXTURE2D_DESC vDesc = { width, height, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, {1, 0}, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0, 0 };
+        if (FAILED(m_device->CreateTexture2D(&vDesc, nullptr, m_cameraPreviewViewportTex.ReleaseAndGetAddressOf()))) return false;
+        if (FAILED(m_device->CreateRenderTargetView(m_cameraPreviewViewportTex.Get(), nullptr, m_cameraPreviewViewportRTV.ReleaseAndGetAddressOf()))) return false;
+        if (FAILED(m_device->CreateShaderResourceView(m_cameraPreviewViewportTex.Get(), nullptr, m_cameraPreviewViewportSRV.ReleaseAndGetAddressOf()))) return false;
+
+        D3D11_TEXTURE2D_DESC dDesc = { width, height, 1, 1, DXGI_FORMAT_R24G8_TYPELESS, {1, 0}, D3D11_USAGE_DEFAULT, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE, 0, 0 };
+        if (FAILED(m_device->CreateTexture2D(&dDesc, nullptr, m_cameraPreviewSceneDepthTex.ReleaseAndGetAddressOf()))) return false;
+        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+        dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        dsvDesc.Texture2D.MipSlice = 0;
+        if (FAILED(m_device->CreateDepthStencilView(m_cameraPreviewSceneDepthTex.Get(), &dsvDesc, m_cameraPreviewSceneDSV.ReleaseAndGetAddressOf()))) return false;
+
+        D3D11_SHADER_RESOURCE_VIEW_DESC depthSrvDesc = {};
+        depthSrvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+        depthSrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        depthSrvDesc.Texture2D.MostDetailedMip = 0;
+        depthSrvDesc.Texture2D.MipLevels = 1;
+        HRESULT hrDepthSRV = m_device->CreateShaderResourceView(m_cameraPreviewSceneDepthTex.Get(), &depthSrvDesc, m_cameraPreviewSceneDepthSRV.ReleaseAndGetAddressOf());
+        if (FAILED(hrDepthSRV))
+        {
+            ALICE_LOG_WARN("DeferredRenderSystem::CreateCameraPreviewTargets: CreateShaderResourceView(depthSRV) failed (0x%08X)", (unsigned)hrDepthSRV);
+            m_cameraPreviewSceneDepthSRV.Reset();
         }
 
         return true;
@@ -2183,7 +2274,7 @@ namespace Alice
         m_context->RSSetViewports(1, &vp);
 
         // G-Buffer 패스
-        PassGBuffer(world, camera, skinnedCommands, cameraEntities, shadingMode, editorMode, isPlaying);
+        PassGBuffer(world, camera, skinnedCommands, cameraEntities, shadingMode, editorMode, isPlaying, InvalidEntityId);
 
         // Deferred Light 패스 (IBL 포함)
         PassDeferredLight(world, camera, shadingMode, enableFillLight, lightViewProj);
@@ -2330,13 +2421,210 @@ namespace Alice
         RestoreBackBuffer();
     }
 
+    void DeferredRenderSystem::RenderCameraPreview(const World& world,
+                                                   const Camera& camera,
+                                                   const std::unordered_set<EntityId>& cameraEntities,
+                                                   int shadingMode,
+                                                   bool enableFillLight,
+                                                   const std::vector<SkinnedDrawCommand>& skinnedCommands,
+                                                   bool editorMode,
+                                                   bool isPlaying,
+                                                   EntityId hiddenCameraEntity)
+    {
+        if (!m_device || !m_context) return;
+
+        const float desiredAspect = (camera.GetAspectRatio() > 0.0f) ? camera.GetAspectRatio() : (16.0f / 9.0f);
+        const std::uint32_t desiredHeight = (m_cameraPreviewHeight > 0) ? m_cameraPreviewHeight : 180;
+        const std::uint32_t desiredWidth = (std::uint32_t)(std::max)(1.0f, std::round(desiredHeight * desiredAspect));
+
+        if (!m_cameraPreviewViewportRTV || desiredWidth != m_cameraPreviewWidth || desiredHeight != m_cameraPreviewHeight)
+        {
+            if (!CreateCameraPreviewTargets(desiredWidth, desiredHeight))
+                return;
+        }
+
+        // Save current state/resources
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> savedGBufferTextures[GBufferCount];
+        Microsoft::WRL::ComPtr<ID3D11RenderTargetView> savedGBufferRTVs[GBufferCount];
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> savedGBufferSRVs[GBufferCount];
+        for (int i = 0; i < GBufferCount; ++i)
+        {
+            savedGBufferTextures[i] = m_gBufferTextures[i];
+            savedGBufferRTVs[i] = m_gBufferRTVs[i];
+            savedGBufferSRVs[i] = m_gBufferSRVs[i];
+        }
+
+        auto savedSceneColorTex = m_sceneColorTex;
+        auto savedSceneRTV = m_sceneRTV;
+        auto savedSceneSRV = m_sceneColorSRV;
+        auto savedSceneDepthTex = m_sceneDepthTex;
+        auto savedSceneDSV = m_sceneDSV;
+        auto savedSceneDepthSRV = m_sceneDepthSRV;
+        auto savedViewportTex = m_viewportTex;
+        auto savedViewportRTV = m_viewportRTV;
+        auto savedViewportSRV = m_viewportSRV;
+        auto savedSceneWidth = m_sceneWidth;
+        auto savedSceneHeight = m_sceneHeight;
+        auto savedPostProcessParams = m_postProcessParams;
+        auto savedLastViewProj = m_lastViewProj;
+        auto savedLastCameraPos = m_lastCameraPos;
+
+        // Swap to preview resources
+        for (int i = 0; i < GBufferCount; ++i)
+        {
+            m_gBufferTextures[i] = m_cameraPreviewGBufferTextures[i];
+            m_gBufferRTVs[i] = m_cameraPreviewGBufferRTVs[i];
+            m_gBufferSRVs[i] = m_cameraPreviewGBufferSRVs[i];
+        }
+
+        m_sceneColorTex = m_cameraPreviewSceneColorTex;
+        m_sceneRTV = m_cameraPreviewSceneRTV;
+        m_sceneColorSRV = m_cameraPreviewSceneColorSRV;
+        m_sceneDepthTex = m_cameraPreviewSceneDepthTex;
+        m_sceneDSV = m_cameraPreviewSceneDSV;
+        m_sceneDepthSRV = m_cameraPreviewSceneDepthSRV;
+        m_viewportTex = m_cameraPreviewViewportTex;
+        m_viewportRTV = m_cameraPreviewViewportRTV;
+        m_viewportSRV = m_cameraPreviewViewportSRV;
+        m_sceneWidth = m_cameraPreviewWidth;
+        m_sceneHeight = m_cameraPreviewHeight;
+
+        m_lastViewProj = camera.GetViewProjectionMatrix();
+        m_lastCameraPos = camera.GetPosition();
+
+        D3D11_VIEWPORT vp{};
+        vp.Width = (float)m_sceneWidth; vp.Height = (float)m_sceneHeight; vp.MaxDepth = 1.0f;
+        m_context->RSSetViewports(1, &vp);
+
+        // Use cached shadow map from the main render
+        DirectX::XMMATRIX lightViewProj = m_lastShadowViewProj;
+
+        // G-Buffer + Deferred light
+        PassGBuffer(world, camera, skinnedCommands, cameraEntities, shadingMode, editorMode, isPlaying, hiddenCameraEntity);
+        PassDeferredLight(world, camera, shadingMode, enableFillLight, lightViewProj);
+
+        if (m_skyboxEnabled)
+        {
+            m_context->RSSetViewports(1, &vp);
+            RenderSkybox(camera);
+        }
+
+        // Transparent forward pass
+        PassTransparentForward(camera, skinnedCommands, shadingMode);
+
+        // Post Process Volume 적용 (Exposure/Color Grading만)
+        {
+            PostProcessSettings defaultSettings = m_defaultPostProcessSettings;
+
+            if (!m_hasDefaultPostProcessSettings)
+            {
+                defaultSettings.exposure = m_postProcessParams.exposure;
+                defaultSettings.maxHDRNits = m_postProcessParams.maxHDRNits;
+                defaultSettings.saturation = DirectX::XMFLOAT3(
+                    m_postProcessParams.colorGradingSaturation.x,
+                    m_postProcessParams.colorGradingSaturation.y,
+                    m_postProcessParams.colorGradingSaturation.z
+                );
+                defaultSettings.contrast = DirectX::XMFLOAT3(
+                    m_postProcessParams.colorGradingContrast.x,
+                    m_postProcessParams.colorGradingContrast.y,
+                    m_postProcessParams.colorGradingContrast.z
+                );
+                defaultSettings.gamma = DirectX::XMFLOAT3(
+                    m_postProcessParams.colorGradingGamma.x,
+                    m_postProcessParams.colorGradingGamma.y,
+                    m_postProcessParams.colorGradingGamma.z
+                );
+                defaultSettings.gain = DirectX::XMFLOAT3(
+                    m_postProcessParams.colorGradingGain.x,
+                    m_postProcessParams.colorGradingGain.y,
+                    m_postProcessParams.colorGradingGain.z
+                );
+            }
+
+            const std::string referenceName = ResolvePPVReferenceName(world);
+            if (referenceName != m_postProcessVolumeSystem.GetReferenceObjectName())
+            {
+                m_postProcessVolumeSystem.SetReferenceObjectName(referenceName);
+            }
+
+            PostProcessSettings finalSettings = m_postProcessVolumeSystem.CalculateFinalSettings(
+                const_cast<World&>(world),
+                camera.GetPosition(),
+                defaultSettings
+            );
+
+            m_postProcessParams.exposure = finalSettings.exposure;
+            m_postProcessParams.maxHDRNits = finalSettings.maxHDRNits;
+            m_postProcessParams.colorGradingSaturation = DirectX::XMFLOAT4(
+                finalSettings.saturation.x,
+                finalSettings.saturation.y,
+                finalSettings.saturation.z,
+                1.0f
+            );
+            m_postProcessParams.colorGradingContrast = DirectX::XMFLOAT4(
+                finalSettings.contrast.x,
+                finalSettings.contrast.y,
+                finalSettings.contrast.z,
+                1.0f
+            );
+            m_postProcessParams.colorGradingGamma = DirectX::XMFLOAT4(
+                finalSettings.gamma.x,
+                finalSettings.gamma.y,
+                finalSettings.gamma.z,
+                1.0f
+            );
+            m_postProcessParams.colorGradingGain = DirectX::XMFLOAT4(
+                finalSettings.gain.x,
+                finalSettings.gain.y,
+                finalSettings.gain.z,
+                1.0f
+            );
+        }
+
+        if (m_viewportRTV)
+        {
+            D3D11_VIEWPORT viewport = {};
+            viewport.Width = static_cast<float>(m_sceneWidth);
+            viewport.Height = static_cast<float>(m_sceneHeight);
+            viewport.MaxDepth = 1.0f;
+            RenderToneMapping(m_sceneColorSRV.Get(), m_viewportRTV.Get(), viewport);
+        }
+
+        RestoreBackBuffer();
+
+        // Restore previous state/resources
+        for (int i = 0; i < GBufferCount; ++i)
+        {
+            m_gBufferTextures[i] = savedGBufferTextures[i];
+            m_gBufferRTVs[i] = savedGBufferRTVs[i];
+            m_gBufferSRVs[i] = savedGBufferSRVs[i];
+        }
+
+        m_sceneColorTex = savedSceneColorTex;
+        m_sceneRTV = savedSceneRTV;
+        m_sceneColorSRV = savedSceneSRV;
+        m_sceneDepthTex = savedSceneDepthTex;
+        m_sceneDSV = savedSceneDSV;
+        m_sceneDepthSRV = savedSceneDepthSRV;
+        m_viewportTex = savedViewportTex;
+        m_viewportRTV = savedViewportRTV;
+        m_viewportSRV = savedViewportSRV;
+        m_sceneWidth = savedSceneWidth;
+        m_sceneHeight = savedSceneHeight;
+        m_postProcessParams = savedPostProcessParams;
+        m_lastViewProj = savedLastViewProj;
+        m_lastCameraPos = savedLastCameraPos;
+    }
+
     void DeferredRenderSystem::PassGBuffer(const World& world,
                                            const Camera& camera,
                                            const std::vector<SkinnedDrawCommand>& skinnedCommands,
                                            const std::unordered_set<EntityId>& cameraEntities,
                                            int shadingMode,
                                            bool editorMode,
-                                           bool isPlaying)
+                                           bool isPlaying,
+                                           EntityId hiddenCameraEntity)
     {
         // ShadowPass 등에서 viewport가 변경될 수 있으므로,
         // GBuffer 패스 시작 시 항상 씬 해상도 뷰포트를 재설정합니다.
@@ -2888,77 +3176,124 @@ namespace Alice
             }
         }
 
-        // ============================== 카메라(큐브) 렌더링 ==================================
-        // 3. 카메라를 큐브로 렌더링 (에디터 모드이고 Play 중이 아닐 때만)
+        // ============================== 카메라(FBX) 렌더링 ==================================
+        // 3. 카메라를 FBX 모델로 렌더링 (에디터 모드이고 Play 중이 아닐 때만)
         if (editorMode && !isPlaying)
         {
-            // 정적 메시용 셰이더로 복귀
-            m_context->VSSetShader(m_gBufferVS.Get(), nullptr, 0);
-            m_context->PSSetShader(m_gBufferPS.Get(), nullptr, 0);
-            m_context->IASetInputLayout(m_gBufferInputLayout.Get());
-            m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-            UINT stride = sizeof(SimpleVertex);
-            UINT offset = 0;
-            ID3D11Buffer* vb = m_cubeVB.Get();
-            m_context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-            m_context->IASetIndexBuffer(m_cubeIB.Get(), DXGI_FORMAT_R16_UINT, 0);
-
-            const auto& cameraComponents = world.GetComponents<CameraComponent>();
-            for (const auto& [camId, _] : cameraComponents)
+            if (!m_cameraIconLoadTried)
             {
-                const auto* camTr = world.GetComponent<TransformComponent>(camId);
-                if (!camTr) continue;
+                m_cameraIconLoadTried = true;
 
-                using namespace DirectX;
+                if (!m_resources || !m_skinnedRegistry || !m_device)
+                {
+                    ALICE_LOG_WARN("DeferredRenderSystem: Camera icon FBX load skipped (missing resources/registry/device).");
+                }
+                else
+                {
+                    if (!m_skinnedRegistry->Has(m_cameraIconMeshKey))
+                    {
+                        FbxImporter importer(*m_resources, m_skinnedRegistry);
+                        const FbxImportResult result = importer.Import(m_device.Get(), kCameraIconFbxPath, FbxImportOptions{});
+                        if (!result.meshAssetPath.empty())
+                        {
+                            m_cameraIconMeshKey = result.meshAssetPath;
+                        }
+                    }
 
-                // 카메라 위치에 스케일 0.5, 0.5, 0.5인 큐브 렌더링
-                TransformComponent cameraCubeTr = *camTr;
-                cameraCubeTr.scale = { 0.5f, 0.5f, 0.5f };
-                XMMATRIX cameraCubeWorld = BuildWorldMatrix(cameraCubeTr);
+                    if (!m_skinnedRegistry->Has(m_cameraIconMeshKey))
+                    {
+                        ALICE_LOG_WARN("DeferredRenderSystem: Failed to import camera icon FBX: %s", kCameraIconFbxPath);
+                    }
+                }
+            }
 
-                // 카메라 큐브 재질 (흰색)
-                XMFLOAT4 cameraCubeColor(1.0f, 1.0f, 1.0f, 1.0f);
-                UpdatePerObjectCB(cameraCubeWorld, view, proj, cameraCubeColor, 0.5f, 0.0f, m_lightingParameters.ambientOcclusion, false, false, shadingMode,
-                                  1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(),
-                                  DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
+            std::shared_ptr<SkinnedMeshGPU> cameraMesh =
+                (m_skinnedRegistry && !m_cameraIconMeshKey.empty()) ? m_skinnedRegistry->Find(m_cameraIconMeshKey) : nullptr;
 
-                ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr };
-                m_context->PSSetShaderResources(0, 2, srvs);
+            if (cameraMesh && cameraMesh->vertexBuffer && cameraMesh->indexBuffer &&
+                m_gBufferSkinnedVS && m_gBufferSkinnedInputLayout)
+            {
+                // Skinned FBX용 셰이더/레이아웃 (리짓 FBX도 동일 파이프라인 사용)
+                m_context->VSSetShader(m_gBufferSkinnedVS.Get(), nullptr, 0);
+                m_context->PSSetShader(m_gBufferPS.Get(), nullptr, 0);
+                m_context->IASetInputLayout(m_gBufferSkinnedInputLayout.Get());
+                m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-                m_context->DrawIndexed(m_cubeIndexCount, 0, 0);
+                UINT stride = cameraMesh->stride;
+                UINT offset = 0;
+                ID3D11Buffer* vb = cameraMesh->vertexBuffer.Get();
+                m_context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+                m_context->IASetIndexBuffer(cameraMesh->indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-                // 카메라의 forward 방향을 보여주는 하늘색 큐브
-                // forward 벡터 계산 (rotation에서)
-                XMVECTOR rotVec = XMLoadFloat3(&camTr->rotation);
-                // 행렬 대신 쿼터니언 생성
-                XMVECTOR rotQuat = XMQuaternionRotationRollPitchYawFromVector(rotVec);
+                // 리짓 FBX용 Identity 본 (1개)
+                static DirectX::XMFLOAT4X4 identityBone;
+                static bool identityInit = false;
+                if (!identityInit)
+                {
+                    DirectX::XMStoreFloat4x4(&identityBone, DirectX::XMMatrixIdentity());
+                    identityInit = true;
+                }
+                UpdateBonesCB(&identityBone, 1);
 
-                // 쿼터니언으로 회전
-                XMVECTOR forwardVec = XMVector3Rotate(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), rotQuat);
-                XMFLOAT3 forward;
-                XMStoreFloat3(&forward, forwardVec);
+                const auto& cameraComponents = world.GetComponents<CameraComponent>();
+                for (const auto& [camId, _] : cameraComponents)
+                {
+                    if (camId == hiddenCameraEntity)
+                        continue;
 
-                // forward 방향으로 약간 앞에 큐브 배치 (하늘색)
-                const float forwardDistance = 0.75f;
-                TransformComponent directionCubeTr;
-                directionCubeTr.position = {
-                    camTr->position.x + forward.x * forwardDistance,
-                    camTr->position.y + forward.y * forwardDistance,
-                    camTr->position.z + forward.z * forwardDistance
-                };
-                directionCubeTr.rotation = camTr->rotation;
-                directionCubeTr.scale = { 0.3f, 0.3f, 0.2f };
+                    const auto* camTr = world.GetComponent<TransformComponent>(camId);
+                    if (!camTr) continue;
 
-                XMMATRIX directionCubeWorld = BuildWorldMatrix(directionCubeTr);
+                    // 카메라 위치에 스케일 적용
+                    TransformComponent cameraIconTr = *camTr;
+                    cameraIconTr.scale = { m_cameraIconScale, m_cameraIconScale, m_cameraIconScale };
+                    DirectX::XMMATRIX cameraIconWorld = BuildWorldMatrix(cameraIconTr);
 
-                // 하늘색 (0.5, 0.8, 1.0)
-                XMFLOAT4 skyBlueColor(0.5f, 0.8f, 1.0f, 1.0f);
-                UpdatePerObjectCB(directionCubeWorld, view, proj, skyBlueColor, 0.5f, 0.0f, m_lightingParameters.ambientOcclusion, false, false, shadingMode,
-                                  1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(),
-                                  DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
+                    DirectX::XMFLOAT4 cameraColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-                m_context->DrawIndexed(m_cubeIndexCount, 0, 0);
+                    const auto& subsets = cameraMesh->subsets;
+                    if (!subsets.empty())
+                    {
+                        for (const auto& sub : subsets)
+                        {
+                            if (sub.indexCount == 0) continue;
+
+                            ID3D11ShaderResourceView* diff =
+                                (sub.materialIndex < cameraMesh->materialSRVs.size())
+                                    ? cameraMesh->materialSRVs[sub.materialIndex].Get()
+                                    : nullptr;
+                            ID3D11ShaderResourceView* norm =
+                                (sub.materialIndex < cameraMesh->normalSRVs.size())
+                                    ? cameraMesh->normalSRVs[sub.materialIndex].Get()
+                                    : nullptr;
+
+                            ID3D11ShaderResourceView* srvs[] = { diff, norm };
+                            m_context->PSSetShaderResources(0, 2, srvs);
+
+                            UpdatePerObjectCB(cameraIconWorld, view, proj, cameraColor,
+                                              0.5f, 0.0f, m_lightingParameters.ambientOcclusion,
+                                              (diff != nullptr), (norm != nullptr),
+                                              shadingMode,
+                                              1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(),
+                                              DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
+
+                            m_context->DrawIndexed(sub.indexCount, sub.startIndex, cameraMesh->baseVertex);
+                        }
+                    }
+                    else
+                    {
+                        ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr };
+                        m_context->PSSetShaderResources(0, 2, srvs);
+
+                        UpdatePerObjectCB(cameraIconWorld, view, proj, cameraColor,
+                                          0.5f, 0.0f, m_lightingParameters.ambientOcclusion,
+                                          false, false, shadingMode,
+                                          1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(),
+                                          DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
+
+                        m_context->DrawIndexed(cameraMesh->indexCount, cameraMesh->startIndex, cameraMesh->baseVertex);
+                    }
+                }
             }
         }
 

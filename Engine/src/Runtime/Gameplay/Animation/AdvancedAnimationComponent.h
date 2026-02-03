@@ -104,6 +104,10 @@ namespace Alice
 		bool enabled = true;
 		bool playing = true;
 
+		// Character-level root motion defaults (optional)
+		std::string rootBoneName = "root";
+		bool rootMotionUnlock = false;
+
 		AdvancedAnimLayer base;
 		AdvancedAnimLayer upper;
 		AdvancedAnimAdditive additive;

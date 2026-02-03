@@ -255,6 +255,8 @@ namespace Alice
             .constructor<>()
             .property("enabled", &AdvancedAnimationComponent::enabled)
             .property("playing", &AdvancedAnimationComponent::playing)
+            .property("rootBoneName", &AdvancedAnimationComponent::rootBoneName)
+            .property("rootMotionUnlock", &AdvancedAnimationComponent::rootMotionUnlock)
             .property("base", &AdvancedAnimationComponent::base)    
             .property("upper", &AdvancedAnimationComponent::upper)
             .property("additive", &AdvancedAnimationComponent::additive)
@@ -379,13 +381,6 @@ namespace Alice
 			.property("active", &WeaponTraceComponent::active)
 			.property("debugDraw", &WeaponTraceComponent::debugDraw)
 			.property("baseDamage", &WeaponTraceComponent::baseDamage)
-			.property("guardDurabilityCost", &WeaponTraceComponent::guardDurabilityCost)
-			.property("guardLockSec", &WeaponTraceComponent::guardLockSec)
-			.property("parryLockSec", &WeaponTraceComponent::parryLockSec)
-			.property("parryGroggyGain", &WeaponTraceComponent::parryGroggyGain)
-			.property("guardBreakWeakSec", &WeaponTraceComponent::guardBreakWeakSec)
-			.property("guardBreakPushbackSpeed", &WeaponTraceComponent::guardBreakPushbackSpeed)
-			.property("guardBreakPushbackDuration", &WeaponTraceComponent::guardBreakPushbackDuration)
 			.property("teamId", &WeaponTraceComponent::teamId)
 			.property("attackInstanceId", &WeaponTraceComponent::attackInstanceId)
 			.property("targetLayerBits", &WeaponTraceComponent::targetLayerBits)
@@ -402,16 +397,10 @@ namespace Alice
 			.property("dodgeActive", &HealthComponent::dodgeActive)
 			.property("guardActive", &HealthComponent::guardActive)
 			.property("guardDamageScale", &HealthComponent::guardDamageScale)
-			.property("weaponDurabilityMax", &HealthComponent::weaponDurabilityMax)
-			.property("weaponDurability", &HealthComponent::weaponDurability)
 			.property("groggy", &HealthComponent::groggy)
 			.property("groggyMax", &HealthComponent::groggyMax)
 			.property("groggyGainScale", &HealthComponent::groggyGainScale)
 			.property("groggyDuration", &HealthComponent::groggyDuration)
-			.property("weakRemainingSec", &HealthComponent::weakRemainingSec)
-			.property("pushbackRemainingSec", &HealthComponent::pushbackRemainingSec)
-			.property("pushbackDir", &HealthComponent::pushbackDir)
-			.property("pushbackSpeed", &HealthComponent::pushbackSpeed)
 			.property("hitThisFrame", &HealthComponent::hitThisFrame)
 			.property("guardHitThisFrame", &HealthComponent::guardHitThisFrame)
 			.property("dodgeAvoidedThisFrame", &HealthComponent::dodgeAvoidedThisFrame)
@@ -428,9 +417,8 @@ namespace Alice
 			(
 				rttr::value("Attack", AttackDriverNotifyType::Attack),
 				rttr::value("Dodge", AttackDriverNotifyType::Dodge),
-				rttr::value("Guard", AttackDriverNotifyType::Guard),
-				rttr::value("Parry", AttackDriverNotifyType::Parry)
-			);
+				rttr::value("Guard", AttackDriverNotifyType::Guard)
+				);
 
 		rttr::registration::enumeration<AttackDriverClipSource>("AttackDriverClipSource")
 			(
@@ -454,12 +442,8 @@ namespace Alice
 
 		rttr::registration::class_<AttackDriverComponent>("AttackDriverComponent")
 			.constructor<>()
-			.property("debugOwnerName", &AttackDriverComponent::debugOwnerName)
-			.property("debugTeamId", &AttackDriverComponent::debugTeamId)
-			.property("debugLogs", &AttackDriverComponent::debugLogs)
 			.property("traceGuid", &AttackDriverComponent::traceGuid)
-			.property("clips", &AttackDriverComponent::clips)
-			.property("attackStateDurationSec", &AttackDriverComponent::attackStateDurationSec);
+			.property("clips", &AttackDriverComponent::clips);
 
 		// SocketDef / SocketComponent ?源낆쨯 (??????嚥≪뮆諭?獄??紐꾨뮞??됯숲)
 		rttr::registration::class_<SocketDef>("SocketDef")
@@ -520,7 +504,6 @@ namespace Alice
             .property("shoulderSide", &CameraFollowComponent::shoulderSide)
             .property("enableInput", &CameraFollowComponent::enableInput)
             .property("sensitivity", &CameraFollowComponent::sensitivity)
-            .property("invertMouse", &CameraFollowComponent::invertMouse)
             .property("yawDeg", &CameraFollowComponent::yawDeg)
             .property("pitchDeg", &CameraFollowComponent::pitchDeg)
             .property("pitchMinDeg", &CameraFollowComponent::pitchMinDeg)

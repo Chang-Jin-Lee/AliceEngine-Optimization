@@ -3,6 +3,7 @@
 #include "Editor/Core/EditorUIState.h"
 
 #include "Runtime/Foundation/ImGuiEx.h"
+#include "Runtime/Rendering/DeferredRenderSystem.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Rendering/Components/CameraComponent.h"
 #include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
@@ -18,8 +19,16 @@ using namespace DirectX;
 
 namespace Alice
 {
-	void EditorCore::DrawCameraWindow(World& world, Camera& camera, float& cameraMoveSpeed, EntityId& selectedEntity)
+	void EditorCore::DrawCameraWindow(World& world,
+		Camera& camera,
+		ForwardRenderSystem& forward,
+		DeferredRenderSystem& deferred,
+		float& cameraMoveSpeed,
+		EntityId& selectedEntity,
+		bool& useForwardRendering)
 	{
+		(void)useForwardRendering;
+
 		// === Camera / Animation (같은 영역, 탭) ===
 		if (ImGui::Begin("Camera"))
 		{
@@ -84,6 +93,42 @@ namespace Alice
 
 							selectedEntity = e;
 							g_SceneDirty = true;
+						}
+
+						ImGui::Separator();
+						Alice::ImGuiText(L"미리보기");
+
+						const bool hasSelectedCamera =
+							(selectedEntity != InvalidEntityId) &&
+							(world.GetComponent<CameraComponent>(selectedEntity) != nullptr);
+
+						ID3D11ShaderResourceView* previewSRV = deferred.GetCameraPreviewSRV();
+						float previewAspect = deferred.GetCameraPreviewAspect();
+						if (!previewSRV)
+						{
+							previewSRV = forward.GetCameraPreviewSRV();
+							previewAspect = forward.GetCameraPreviewAspect();
+						}
+
+						ImVec2 avail = ImGui::GetContentRegionAvail();
+						const float previewMaxHeight = 140.0f;
+						float previewWidth = previewMaxHeight * (previewAspect > 0.0f ? previewAspect : 1.0f);
+						float previewHeight = previewMaxHeight;
+						if (previewWidth > avail.x && previewWidth > 1.0f)
+						{
+							const float scale = avail.x / previewWidth;
+							previewWidth *= scale;
+							previewHeight *= scale;
+						}
+						ImVec2 previewSize((std::max)(1.0f, previewWidth), (std::max)(1.0f, previewHeight));
+
+						if (hasSelectedCamera && previewSRV)
+						{
+							ImGui::Image(previewSRV, previewSize);
+						}
+						else
+						{
+							ImGui::TextUnformatted(hasSelectedCamera ? "Preview unavailable." : "Select a camera to preview.");
 						}
 
 						ImGui::EndTable();
