@@ -153,6 +153,31 @@ namespace Alice
         EntityId ResolveEntity(uint64_t guid) const;
         EntityId ResolveEntityByName(const std::string& name) const;
 
+        struct AnimConfig
+        {
+            std::string idleClip;
+            std::string moveClip;
+            std::string lightAttackClip;
+            std::string lightAttackClip1;
+            std::string lightAttackClip2;
+            std::string lightAttackClip3;
+            std::string heavyAttackClipA;
+            std::string heavyAttackClipB;
+            std::string dodgeClip;
+            std::string chargeLoopClip;
+            std::string hitClip;
+            std::string guardBreakClip;
+            std::string fatalAttackClip;
+            std::string groggyLoopClip;
+            std::string guardEnterClip;
+            std::string guardLoopClip;
+            std::string guardExitClip;
+            float guardEnterDurationSec = 0.0f;
+            float guardExitDurationSec = 0.0f;
+        };
+
+        AnimConfig BuildAnimConfig(EntityId entityId, EntityId playerId, EntityId bossId) const;
+
         struct SessionState;
         struct SessionStateDeleter
         {
