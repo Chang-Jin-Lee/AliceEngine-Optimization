@@ -9,7 +9,7 @@ namespace Alice::Combat
         ResolveOutput out{};
         for (const auto& h : hits)
         {
-            auto one = ResolveOne(h, attackerSnap, victimSnap);
+            auto one = ResolveOneDetailed(h, attackerSnap, victimSnap).output;
             out.immediate.insert(out.immediate.end(), one.immediate.begin(), one.immediate.end());
             out.deferred.insert(out.deferred.end(), one.deferred.begin(), one.deferred.end());
         }
@@ -20,18 +20,27 @@ namespace Alice::Combat
                                              const FighterSnapshot& attacker,
                                              const FighterSnapshot& victim) const
     {
-        ResolveOutput out{};
+        return ResolveOneDetailed(hit, attacker, victim).output;
+    }
+
+    ResolveDetail CombatResolver::ResolveOneDetailed(const HitEvent& hit,
+                                                     const FighterSnapshot& attacker,
+                                                     const FighterSnapshot& victim) const
+    {
+        ResolveDetail detail{};
+        ResolveOutput& out = detail.output;
         if (hit.victimOwner != victim.id)
-            return out;
+            return detail;
 
         if (victim.flags.invulnActive)
-            return out;
+            return detail;
 
         const bool targetInFront = victim.targetInFront;
         const bool weakActive = victim.weakActive;
 
         if (victim.flags.parryWindowActive && targetInFront && !weakActive)
         {
+            detail.result = ResolveResult::Parry;
             out.deferred.push_back({ CombatEventType::OnParrySuccess, victim.id, attacker.id, hit.attackInstanceId, 0.0f });
             out.deferred.push_back({ CombatEventType::OnGotParried, attacker.id, victim.id, hit.attackInstanceId, 0.0f });
             out.immediate.push_back({ CommandType::ConsumeParry, CmdConsumeParry{ victim.id } });
@@ -42,7 +51,7 @@ namespace Alice::Combat
             out.immediate.push_back({ CommandType::DisableTrace, CmdDisableTrace{ attacker.id } });
             if (attacker.flags.canBeInterrupted)
                 out.immediate.push_back({ CommandType::ForceCancelAttack, CmdForceCancelAttack{ attacker.id } });
-            return out;
+            return detail;
         }
 
         if (victim.flags.guardActive && targetInFront && !weakActive)
@@ -55,6 +64,7 @@ namespace Alice::Combat
 
             if (victim.weaponDurability - guardCost <= 0.0f)
             {
+                detail.result = ResolveResult::GuardBreak;
                 out.deferred.push_back({ CombatEventType::OnGuardBreak, victim.id, attacker.id, hit.attackInstanceId, 0.0f });
                 if (hit.guardBreakPushbackSpeed > 0.0f && hit.guardBreakPushbackDuration > 0.0f)
                 {
@@ -73,11 +83,13 @@ namespace Alice::Combat
             {
                 if (hit.guardLockSec > 0.0f)
                     out.immediate.push_back({ CommandType::StartGuardLock, CmdStartGuardLock{ victim.id, hit.guardLockSec } });
+                detail.result = ResolveResult::Guard;
                 out.deferred.push_back({ CombatEventType::OnGuarded, victim.id, attacker.id, hit.attackInstanceId, 0.0f });
             }
-            return out;
+            return detail;
         }
 
+        detail.result = ResolveResult::Hit;
         out.immediate.push_back({ CommandType::ApplyDamage, CmdApplyDamage{ victim.id, hit.damage } });
         if (victim.flags.canBeInterrupted && victim.canBeHitstunned)
         {
@@ -85,6 +97,6 @@ namespace Alice::Combat
             out.immediate.push_back({ CommandType::DisableTrace, CmdDisableTrace{ victim.id } });
         }
         out.deferred.push_back({ CombatEventType::OnHit, victim.id, attacker.id, hit.attackInstanceId, hit.damage });
-        return out;
+        return detail;
     }
 }
