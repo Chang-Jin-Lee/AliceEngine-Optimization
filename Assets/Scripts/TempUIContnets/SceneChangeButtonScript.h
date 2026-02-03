@@ -22,7 +22,9 @@ namespace Alice
         
         //
         ALICE_PROPERTY(std::string, targetScenePath, "Assets/Scenes/UI/DemoiScene.scene");
-        ALICE_PROPERTY(std::string, buttonWidgetName, "UI_StartButton");     //
+        ALICE_PROPERTY(std::string, buttonWidgetName, "UI_StartButton");    
+        ALICE_PROPERTY(std::string, TextWidgetName, "UI_StartText");
+        ALICE_PROPERTY(std::string, UnderLineWidgetName, "UI_StartUnderLine");
 
     private:
         UIButtonComponent* changeSceneButton = nullptr;
