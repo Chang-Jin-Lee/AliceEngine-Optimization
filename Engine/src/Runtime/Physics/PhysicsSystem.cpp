@@ -2087,6 +2087,14 @@ void PhysicsSystem::CreatePhysicsActor(EntityId entityId)
                 rb->physicsActorHandle = body;
                 meshCollider->physicsActorHandle = body;
                 m_entityToActor[entityId] = std::move(handle);
+
+                // Convex mesh can yield extremely small mass; clamp to 1.0f unless user overrides.
+                if (body && body->IsValid() && rb->massOverride <= 0.0f)
+                {
+                    const float curMass = body->GetMass();
+                    if (curMass > 0.0f && curMass < 1.0f)
+                        body->SetMass(1.0f, true);
+                }
             }
             return;
         }
@@ -2950,6 +2958,13 @@ void PhysicsSystem::RebuildShapes(EntityId entityId)
     if (body && body->IsValid())
     {
         body->RecomputeMass();
+        auto* rb = m_world.GetComponent<Phy_RigidBodyComponent>(entityId);
+        if (rb && rb->massOverride <= 0.0f)
+        {
+            const float curMass = body->GetMass();
+            if (curMass > 0.0f && curMass < 1.0f)
+                body->SetMass(1.0f, true);
+        }
     }
 }
 

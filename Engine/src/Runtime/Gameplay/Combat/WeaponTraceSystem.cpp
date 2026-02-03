@@ -312,6 +312,13 @@ namespace Alice
                             ev.attackInstanceId = trace.attackInstanceId;
                             ev.subShapeIndex = shapeIndex;
                             ev.damage = trace.baseDamage * hurt->damageScale;
+                            ev.guardDurabilityCost = trace.guardDurabilityCost;
+                            ev.guardLockSec = trace.guardLockSec;
+                            ev.parryLockSec = trace.parryLockSec;
+                            ev.parryGroggyGain = trace.parryGroggyGain;
+                            ev.guardBreakWeakSec = trace.guardBreakWeakSec;
+                            ev.guardBreakPushbackSpeed = trace.guardBreakPushbackSpeed;
+                            ev.guardBreakPushbackDuration = trace.guardBreakPushbackDuration;
                             ev.debugLog = trace.debugDraw;
                             ev.sweepFraction = sweepFraction;
                             ev.hasSweepFraction = hasSweepFraction;

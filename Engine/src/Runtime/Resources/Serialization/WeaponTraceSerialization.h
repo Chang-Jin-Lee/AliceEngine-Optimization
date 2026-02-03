@@ -137,6 +137,13 @@ namespace Alice
             j["active"] = wt.active;
             j["debugDraw"] = wt.debugDraw;
             j["baseDamage"] = wt.baseDamage;
+            j["guardDurabilityCost"] = wt.guardDurabilityCost;
+            j["guardLockSec"] = wt.guardLockSec;
+            j["parryLockSec"] = wt.parryLockSec;
+            j["parryGroggyGain"] = wt.parryGroggyGain;
+            j["guardBreakWeakSec"] = wt.guardBreakWeakSec;
+            j["guardBreakPushbackSpeed"] = wt.guardBreakPushbackSpeed;
+            j["guardBreakPushbackDuration"] = wt.guardBreakPushbackDuration;
             j["teamId"] = wt.teamId;
             j["attackInstanceId"] = wt.attackInstanceId;
             j["targetLayerBits"] = wt.targetLayerBits;
@@ -179,6 +186,20 @@ namespace Alice
             }
             if (auto it = j.find("baseDamage"); it != j.end() && it->is_number())
                 wt.baseDamage = static_cast<float>(it->get<double>());
+            if (auto it = j.find("guardDurabilityCost"); it != j.end() && it->is_number())
+                wt.guardDurabilityCost = static_cast<float>(it->get<double>());
+            if (auto it = j.find("guardLockSec"); it != j.end() && it->is_number())
+                wt.guardLockSec = static_cast<float>(it->get<double>());
+            if (auto it = j.find("parryLockSec"); it != j.end() && it->is_number())
+                wt.parryLockSec = static_cast<float>(it->get<double>());
+            if (auto it = j.find("parryGroggyGain"); it != j.end() && it->is_number())
+                wt.parryGroggyGain = static_cast<float>(it->get<double>());
+            if (auto it = j.find("guardBreakWeakSec"); it != j.end() && it->is_number())
+                wt.guardBreakWeakSec = static_cast<float>(it->get<double>());
+            if (auto it = j.find("guardBreakPushbackSpeed"); it != j.end() && it->is_number())
+                wt.guardBreakPushbackSpeed = static_cast<float>(it->get<double>());
+            if (auto it = j.find("guardBreakPushbackDuration"); it != j.end() && it->is_number())
+                wt.guardBreakPushbackDuration = static_cast<float>(it->get<double>());
             if (auto it = j.find("teamId"); it != j.end() && it->is_number())
                 wt.teamId = static_cast<std::uint32_t>(it->get<double>());
             if (auto it = j.find("attackInstanceId"); it != j.end() && it->is_number())
