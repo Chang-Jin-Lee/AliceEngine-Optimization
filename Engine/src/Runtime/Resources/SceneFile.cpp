@@ -788,6 +788,11 @@ namespace Alice
                 rttr::instance inst = const_cast<UIEmptyGaugeEffectComponent&>(*uiEmptyGaugeEffect);
                 outEntity["UIEmptyGaugeEffect"] = JsonRttr::ToJsonObject(inst);
             }
+            if (const auto* uiPencil = world.GetComponent<UIPencilComponent>(id); uiPencil)
+            {
+                rttr::instance inst = const_cast<UIPencilComponent&>(*uiPencil);
+                outEntity["UIPencil"] = JsonRttr::ToJsonObject(inst);
+            }
 
             if (const auto* cam = world.GetComponent<CameraComponent>(id); cam)
             {
@@ -1459,6 +1464,13 @@ namespace Alice
                 UIEmptyGaugeEffectComponent& comp = world.AddComponent<UIEmptyGaugeEffectComponent>(id);
                 rttr::instance inst = comp;
                 if (!JsonRttr::FromJsonObject(inst, *itUIEmptyGaugeEffect)) return false;
+            }
+            auto itUIPencil = e.find("UIPencil");
+            if (itUIPencil != e.end() && itUIPencil->is_object())
+            {
+                UIPencilComponent& comp = world.AddComponent<UIPencilComponent>(id);
+                rttr::instance inst = comp;
+                if (!JsonRttr::FromJsonObject(inst, *itUIPencil)) return false;
             }
 
             return true;

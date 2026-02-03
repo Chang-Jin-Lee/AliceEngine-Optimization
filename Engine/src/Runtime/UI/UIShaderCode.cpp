@@ -51,8 +51,10 @@ cbuffer UIPixelConstants : register(b1)
     float4 gParams4;
     float4 gParams5;
     float4 gGaugeParams;
+    float4 gGaugeParams2;
     float4 gEmptyColor;
     float4 gEmptyParams;
+    float4 gPencilParams;
     float4 gTime;
 };
 
@@ -201,8 +203,10 @@ cbuffer UIPixelConstants : register(b1)
     float4 gParams4;
     float4 gParams5;
     float4 gGaugeParams;
+    float4 gGaugeParams2;
     float4 gEmptyColor;
     float4 gEmptyParams; // x: 사용여부, y: 스케일, z: 속도, w: 강도
+    float4 gPencilParams;
     float4 gTime;
 };
 
@@ -272,7 +276,11 @@ float4 main(PSInput input) : SV_Target
     {
         float scale = max(gEmptyParams.y, 0.1f);
         float speed = gTime.x * gEmptyParams.z;
-        float2 noiseUV = uv * scale + float2(speed, speed * 0.2f);
+        float aspect = max(gGaugeParams2.x, 0.0001f);
+        float2 aspectScale = (aspect >= 1.0f)
+            ? float2(aspect, 1.0f)
+            : float2(1.0f, 1.0f / aspect);
+        float2 noiseUV = (uv * aspectScale) * scale + float2(speed, speed * 0.2f);
         
         float cloud = fbm(noiseUV);
         float intensity = gEmptyParams.w;
@@ -293,6 +301,75 @@ float4 main(PSInput input) : SV_Target
     // 배경이 투명해야 한다면 그대로 finalColor.a *= gTime.y; 를 쓰셔도 됩니다.
     finalColor.a = color.a; 
     
+    return finalColor;
+}
+)";
+
+		const char* UIPencilPS = R"(
+Texture2D gTexture : register(t0);
+Texture2D g_PencilTexture : register(t1);
+SamplerState gSampler : register(s0);
+
+cbuffer UIPixelConstants : register(b1)
+{
+    float4 gOutlineColor;
+    float4 gGlowColor;
+    float4 gVitalColor;
+    float4 gVitalBgColor;
+    float4 gParams0;
+    float4 gParams1;
+    float4 gParams2;
+    float4 gParams3;
+    float4 gParams4;
+    float4 gParams5;
+    float4 gGaugeParams;
+    float4 gGaugeParams2;
+    float4 gEmptyColor;
+    float4 gEmptyParams; // x: 사용여부, y: 스케일, z: 속도, w: 강도
+    float4 gPencilParams; // x: 타일 스케일, y: Jitter 강도, z: 대비, w: (예비)
+    float4 gTime;
+};
+
+struct PSInput
+{
+    float4 Position : SV_POSITION;
+    float2 TexCoord : TEXCOORD0;
+    float4 Color    : COLOR0;
+};
+
+float4 main(PSInput input) : SV_Target
+{
+    // 1. 기본 색상 및 밝기 계산
+    float4 color = gTexture.Sample(gSampler, input.TexCoord);
+    color = color * input.Color;
+    
+    // 알파값이 0.1 이하면 discard
+    if (color.a < 0.1)
+        discard;
+    
+    float brightness = dot(color.rgb, float3(0.299, 0.587, 0.114));
+
+    // 2. 우둘투둘한 느낌을 위한 UV 왜곡 (Jitter)
+    // 시간에 따라 미세하게 변하는 노이즈를 섞으면 애니메이션 느낌이 납니다.
+    float jitterStrength = gPencilParams.y;
+    float2 jitterUV = input.TexCoord + (sin(input.TexCoord.y * 100.0) * jitterStrength);
+    
+    // 3. 연필 질감 샘플링
+    // 밝기에 따라 연필 질감의 강도를 조절합니다.
+    float tileScale = gPencilParams.x;
+    float4 pencilNoise = g_PencilTexture.Sample(gSampler, jitterUV * tileScale); // 타일링 크게
+    
+    // 4. 합성 로직
+    // 밝은 부분은 종이색이 남고, 어두운 부분일수록 연필 자국(pencilNoise)이 진해지도록 합니다.
+    float4 finalColor = float4(lerp(pencilNoise.rgb, color.rgb, brightness), color.a);
+    
+    // 우둘투둘한 느낌을 강조하기 위해 대비(Contrast)를 살짝 높입니다.
+    float contrast = gPencilParams.z;
+    finalColor.rgb = pow(abs(finalColor.rgb), contrast);
+
+    // Global alpha
+    finalColor.a = color.a * gTime.y;
+
     return finalColor;
 }
 )";

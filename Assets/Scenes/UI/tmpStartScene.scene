@@ -6,6 +6,7 @@
                     "enabled": true,
                     "name": "SceneChangeButtonScript",
                     "props": {
+                        "buttonWidgetName": "UI_StartButton",
                         "rootWidgetName": "UI_StartButton",
                         "targetScenePath": "Assets/Scenes/UI/DemoiScene.scene"
                     }
@@ -21,7 +22,7 @@
                 "rotation": {
                     "x": 0.0,
                     "y": 0.0,
-                    "z": 0.0
+                    "z": -0.0
                 },
                 "scale": {
                     "x": 1.0,
@@ -65,9 +66,9 @@
             "UIImage": {
                 "color": {
                     "w": 1.0,
-                    "x": 0.33976835012435913,
-                    "y": 0.33976835012435913,
-                    "z": 0.33976835012435913
+                    "x": 0.34117648005485535,
+                    "y": 0.34117648005485535,
+                    "z": 0.34117648005485535
                 },
                 "preserveAspect": false,
                 "texturePath": "",
@@ -82,7 +83,7 @@
                 "alignH": "Left",
                 "alignV": "Top",
                 "color": {
-                    "w": 1.0,
+                    "w": 0.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
@@ -91,7 +92,7 @@
                 "fontSize": 50.0,
                 "lineSpacing": 0.0,
                 "maxWidth": 0.0,
-                "text": "         Start",
+                "text": "",
                 "wrap": false
             },
             "UITransform": {
@@ -110,8 +111,8 @@
                     "y": 0.5
                 },
                 "position": {
-                    "x": 600.0,
-                    "y": 0.0
+                    "x": -120.0,
+                    "y": 40.0
                 },
                 "rotationRad": 0.0,
                 "scale": {
@@ -119,8 +120,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 220.0,
-                    "y": 60.0
+                    "x": 300.0,
+                    "y": 100.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -136,6 +137,165 @@
             },
             "guid": "13672869145420085345",
             "name": "UI_StartButton"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "Resource/Image/UI_Tilte.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.800000011920929,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 750.0,
+                    "y": 528.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 1200.0,
+                    "y": 800.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Image"
+            },
+            "guid": "10878570460809830864",
+            "name": "UI_Title"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -200.0,
+                    "y": -35.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 200.0,
+                    "y": 6.099999904632568
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Image"
+            },
+            "_parentGuid": "13672869145420085345",
+            "guid": "6998523634859774300",
+            "name": "UI_Image"
         }
     ],
     "sceneName": "tmpStartScene",

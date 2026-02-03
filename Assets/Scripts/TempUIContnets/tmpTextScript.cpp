@@ -11,7 +11,7 @@
 #include "Runtime/UI/UIWidgetComponent.h"
 #include "Runtime/UI/BindWidget.h"
 #include "Runtime/ECS/GameObject.h"
-#include "PoiseGauge.h"
+#include "BoxDeligateScript.h"
 
 namespace Alice
 {
@@ -44,7 +44,7 @@ namespace Alice
             return;
         }
 
-        // rootWidgetName과 textWidgetName이 같으면 루트 위젯 자체를 텍스트 위젯으로 사용
+        // rootWidgetName
         EntityId textEntity = InvalidEntityId;
         if (Get_rootWidgetName() == Get_textWidgetName())
         {
@@ -65,6 +65,10 @@ namespace Alice
             return;
         }
 
+        baseAlpha = TargetText->color.w;
+        fadeElapsed = 0.0f;
+        holdElapsed = 0.0f;
+
         GameObject go = w->FindGameObject(Get_targetEntityName());
         if (!go.IsValid())
         {
@@ -80,9 +84,9 @@ namespace Alice
         {
             if (sc.scriptName == Get_targetScriptName() && sc.instance)
             {
-                auto* poise = static_cast<PoiseGauge*>(sc.instance.get());
-                poise->OnPoiseValueChanged.BindObject(this, &TmpTextScript::changeValue);
-                changeValue(poise->Get_HP_Value());
+                auto* box = static_cast<BoxDeligateScript*>(sc.instance.get());
+                box->OnTextValueChanged.BindObject(this, &TmpTextScript::changeValue);
+                changeValue(box->Get_TextValue());
                 return;
             }
         }
@@ -93,7 +97,29 @@ namespace Alice
 
     void TmpTextScript::Update(float deltaTime)
     {
-        (void)deltaTime;
+        if (!TargetText)
+            return;
+
+        const float hold = std::max(0.0f, Get_holdDuration());
+        const float fade = std::max(0.0f, Get_fadeDuration());
+
+        if (holdElapsed < hold)
+        {
+            holdElapsed = std::min(holdElapsed + deltaTime, hold);
+            fadeElapsed = 0.0f;
+            TargetText->color.w = baseAlpha;
+            return;
+        }
+
+        if (fade <= 0.0f)
+        {
+            TargetText->color.w = 0.0f;
+            return;
+        }
+
+        fadeElapsed = std::min(fadeElapsed + deltaTime, fade);
+        const float t = std::clamp(fadeElapsed / fade, 0.0f, 1.0f);
+        TargetText->color.w = baseAlpha * (1.0f - t);
     }
 
     void TmpTextScript::changeValue(float newValue)
@@ -105,21 +131,8 @@ namespace Alice
         std::string text;
         bool matched = false;
 
-        if (std::abs(newValue - 1.0f) <= eps)
-        {
-            text = Get_value1Text();
-            matched = !text.empty();
-        }
-        else if (std::abs(newValue - 2.0f) <= eps)
-        {
-            text = Get_value2Text();
-            matched = !text.empty();
-        }
-        else if (std::abs(newValue - 3.0f) <= eps)
-        {
-            text = Get_value3Text();
-            matched = !text.empty();
-        }
+        text = Get_value3Text();
+        matched = !text.empty();
 
         if (!matched)
         {
@@ -141,8 +154,11 @@ namespace Alice
             text = oss.str();
         }
 
-        // 텍스트를 실제로 UI 컴포넌트에 설정
+        // 
         TargetText->text = text;
+        holdElapsed = 0.0f;
+        fadeElapsed = 0.0f;
+        TargetText->color.w = baseAlpha;
     }
 
     void TmpTextScript::ExampleFunction()

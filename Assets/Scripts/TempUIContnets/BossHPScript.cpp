@@ -40,25 +40,35 @@ namespace Alice
         }
 
         // 게이지 위젯 이름으로 찾기
+
+
+
         const EntityId gaugeEntity = AliceUI::FindWidgetByName(*w, root, Get_gaugeWidgetName());
-        if (gaugeEntity == InvalidEntityId)
+        TargetGauge = (gaugeEntity != InvalidEntityId)
+            ? w->GetComponent<UIGaugeComponent>(gaugeEntity)
+            : nullptr;
+
+        if (!TargetGauge)
         {
-            ALICE_LOG_WARN("[BossHPScript] Gauge widget not found: %s", Get_gaugeWidgetName().c_str());
+            ALICE_LOG_WARN("[CharacterHPScript] Gauge widget not found: %s", Get_gaugeWidgetName().c_str());
             return;
         }
 
-        TargetGauge = w->GetComponent<UIGaugeComponent>(gaugeEntity);
-        TargetWidget = w->GetComponent<UIWidgetComponent>(gaugeEntity);
+        // Ensure custom shader can apply to the fill texture.
+        if (auto* gaugeWidget = w->GetComponent<UIWidgetComponent>(gaugeEntity))
+        {
+            gaugeWidget->shaderName = "GaugeCustom";
+        }
+        TargetGauge->useCustomShader = true;
 
-        if (!TargetGauge || !TargetWidget)
+        
+        if (!TargetGauge )
         {
             ALICE_LOG_WARN("[BossHPScript] Gauge or Widget component not found: %s", Get_gaugeWidgetName().c_str());
             return;
         }
 
-        // BossHPScript는 기본 쉐이더 사용 (GaugeCustom 쉐이더 사용 안 함)
-        // 기본 쉐이더는 텍스처가 없으면 색상만 사용하므로 노란색 바가 나옴
-        
+
         // WeaponScript가 이미 Circle.png를 설정했는지 확인
         // Circle.png가 설정되어 있으면 이 게이지는 WeaponScript가 사용 중
         if (!TargetGauge->fillTexture.empty() && TargetGauge->fillTexture == "Resource/Image/Circle.png")
@@ -66,8 +76,6 @@ namespace Alice
             ALICE_LOG_WARN("[BossHPScript] Target gauge already uses Circle.png. This gauge is for WeaponScript.");
             return;
         }
-        
-        TargetWidget->shaderName = "Default";
         
         // FillLate 쉐이더도 기본 쉐이더 사용
         TargetGauge->fillLateShaderName = "Default";

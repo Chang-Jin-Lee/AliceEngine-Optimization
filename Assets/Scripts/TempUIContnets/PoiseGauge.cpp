@@ -57,7 +57,7 @@ namespace Alice
         }
 
         // PoiseGauge는 기본 쉐이더 사용
-        TargetWidget->shaderName = "Default";
+        TargetWidget->shaderName = "GaugeCustom";
         
         // FillLate 쉐이더도 기본 쉐이더 사용
         TargetGauge->fillLateShaderName = "Default";

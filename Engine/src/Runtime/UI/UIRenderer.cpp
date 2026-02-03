@@ -260,6 +260,12 @@ namespace Alice
 			return false;
 		}
 		
+		if (!RegisterShader("Pencil", AliceUIShader::UIPencilPS))
+		{
+			ALICE_LOG_ERRORF("[AliceUI] Failed to register Pencil shader.");
+			return false;
+		}
+		
 		// Constant buffer
 		D3D11_BUFFER_DESC cbDesc{};
 		cbDesc.ByteWidth = sizeof(UIConstants);
@@ -1385,7 +1391,15 @@ namespace Alice
 		verts[2].uv = DirectX::XMFLOAT2(uvRect.x, uvRect.w);
 		verts[3].uv = DirectX::XMFLOAT2(uvRect.z, uvRect.w);
 
-		DrawQuad(verts, GetTexture(texPath), GetPixelShader(widget->shaderName), pixel);
+		// 연필 텍스처 바인딩 (Pencil 셰이더 사용 시)
+		ID3D11ShaderResourceView* pencilTex = nullptr;
+		const auto* pencil = world.GetComponent<UIPencilComponent>(id);
+		if (pencil && !pencil->pencilTexturePath.empty() && widget->shaderName == "Pencil")
+		{
+			pencilTex = GetTexture(pencil->pencilTexturePath);
+		}
+
+		DrawQuad(verts, GetTexture(texPath), GetPixelShader(widget->shaderName), pixel, pencilTex);
 	}
 
 	void UIRenderer::RenderText(const World& world, EntityId id, const ScreenLayout& layout)
@@ -1550,7 +1564,15 @@ namespace Alice
 				currentLineWidth += adv;
 			}
 
-			DrawGlyphs(verts, srv, GetPixelShader(widget->shaderName), pixel);
+			// 연필 텍스처 바인딩 (Pencil 셰이더 사용 시)
+			ID3D11ShaderResourceView* pencilTex = nullptr;
+			const auto* pencil = world.GetComponent<UIPencilComponent>(id);
+			if (pencil && !pencil->pencilTexturePath.empty() && widget->shaderName == "Pencil")
+			{
+				pencilTex = GetTexture(pencil->pencilTexturePath);
+			}
+
+			DrawGlyphs(verts, srv, GetPixelShader(widget->shaderName), pixel, pencilTex);
 			return;
 		}
 
@@ -1713,7 +1735,15 @@ namespace Alice
 			currentLineWidth += adv;
 		}
 
-		DrawGlyphs(verts, fontSrv ? fontSrv : m_whiteSRV.Get(), GetPixelShader(widget->shaderName), pixel);
+		// 연필 텍스처 바인딩 (Pencil 셰이더 사용 시)
+		ID3D11ShaderResourceView* pencilTex = nullptr;
+		const auto* pencil = world.GetComponent<UIPencilComponent>(id);
+		if (pencil && !pencil->pencilTexturePath.empty() && widget->shaderName == "Pencil")
+		{
+			pencilTex = GetTexture(pencil->pencilTexturePath);
+		}
+
+		DrawGlyphs(verts, fontSrv ? fontSrv : m_whiteSRV.Get(), GetPixelShader(widget->shaderName), pixel, pencilTex);
 	}
 
 	void UIRenderer::RenderGauge(const World& world, EntityId id, const ScreenLayout& layout)
@@ -1723,7 +1753,7 @@ namespace Alice
 		if (!widget || !gauge)
 			return;
 
-		const UIPixelConstants pixel = BuildPixelConstants(world, id);
+		UIPixelConstants pixel = BuildPixelConstants(world, id);
 		// Previous:
 		// std::string baseShaderName = widget->shaderName;
 		// if (baseShaderName == "GaugeCustom" && !gauge->useCustomShader)
@@ -1752,6 +1782,8 @@ namespace Alice
 
 		const float originX = layout.pivotBaked ? 0.0f : -layout.pivot.x * layout.size.x;
 		const float originY = layout.pivotBaked ? 0.0f : -layout.pivot.y * layout.size.y;
+		const float aspect = (layout.size.y > 0.0001f) ? (layout.size.x / layout.size.y) : 1.0f;
+		pixel.gaugeParams2 = DirectX::XMFLOAT4(aspect, 0.0f, 0.0f, 0.0f);
 
 		// Background
 		if (gauge->useBackground)
@@ -1917,17 +1949,17 @@ namespace Alice
 		DrawQuad(verts, fillTex, GetPixelShader(fillShaderName), pixel);
 	}
 
-	void UIRenderer::DrawQuad(const UIVertex* verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel)
+	void UIRenderer::DrawQuad(const UIVertex* verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel, ID3D11ShaderResourceView* texture2)
 	{
 		if (!verts)
 			return;
 
 		UIVertex temp[4] = { verts[0], verts[1], verts[2], verts[3] };
 		std::vector<UIVertex> list(temp, temp + 4);
-		DrawGlyphs(list, texture, ps, pixel);
+		DrawGlyphs(list, texture, ps, pixel, texture2);
 	}
 
-	void UIRenderer::DrawGlyphs(const std::vector<UIVertex>& verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel)
+	void UIRenderer::DrawGlyphs(const std::vector<UIVertex>& verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel, ID3D11ShaderResourceView* texture2)
 	{
 		if (verts.empty())
 			return;
@@ -1940,7 +1972,20 @@ namespace Alice
 		m_context->PSSetShader(psToUse, nullptr, 0);
 		ID3D11SamplerState* sampler = m_sampler.Get();
 		m_context->PSSetSamplers(0, 1, &sampler);
+		
+		// 첫 번째 텍스처 (t0)
 		m_context->PSSetShaderResources(0, 1, &srv);
+		
+		// 두 번째 텍스처 (t1) - 연필 텍스처
+		if (texture2)
+		{
+			m_context->PSSetShaderResources(1, 1, &texture2);
+		}
+		else
+		{
+			ID3D11ShaderResourceView* nullSRV = nullptr;
+			m_context->PSSetShaderResources(1, 1, &nullSRV);
+		}
 
 		// Update pixel constants
 		if (m_cbUIPixel)
@@ -2042,6 +2087,7 @@ namespace Alice
 				gauge->useFillLate ? 1.0f : 0.0f,  // useFillLate flag
 				direction  // direction
 			);
+			pixel.gaugeParams2 = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f);
 		}
 
 		if (empty)
@@ -2052,6 +2098,16 @@ namespace Alice
 				empty->frequency,
 				empty->speed,
 				empty->intensity);
+		}
+		
+		const auto* pencil = world.GetComponent<UIPencilComponent>(id);
+		if (pencil)
+		{
+			pixel.pencilParams = DirectX::XMFLOAT4(
+				pencil->pencilTileScale,
+				pencil->pencilJitterStrength,
+				pencil->pencilContrast,
+				0.0f);
 		}
 		
 		if (effect)
