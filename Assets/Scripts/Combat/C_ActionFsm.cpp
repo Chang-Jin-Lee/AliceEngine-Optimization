@@ -286,7 +286,10 @@ namespace Alice::Combat
         if (m_state == ActionState::Hitstun)
         {
             flags.canBeInterrupted = false;
-            if (m_stateTime > 0.4f)
+            const float hitstunDuration = (sensors.hitstunDurationSec > 0.0f)
+                ? sensors.hitstunDurationSec
+                : 0.4f;
+            if (m_stateTime > hitstunDuration)
                 Enter(ActionState::Idle);
         }
 

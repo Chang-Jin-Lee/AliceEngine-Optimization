@@ -50,6 +50,8 @@ namespace Alice
         ALICE_PROPERTY(float, m_guardSuccessPushbackScale, 0.1f);
         ALICE_PROPERTY(float, m_hitPushbackScale, 0.2f);
         ALICE_PROPERTY(float, m_hitInvulnSec, 0.2f);
+        ALICE_PROPERTY(float, m_guardBreakPushbackDurationSec, 1.0f);
+        ALICE_PROPERTY(float, m_hitPushbackDurationSec, 0.3f);
 
         // Boss groggy tuning
         ALICE_PROPERTY(float, m_bossGroggyGainLight, 8.0f);

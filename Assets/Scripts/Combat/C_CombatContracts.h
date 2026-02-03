@@ -110,6 +110,7 @@ namespace Alice::Combat
         float weakRemainingSec = 0.0f;
         float weaponDurability = 100.0f;
         float weaponDurabilityMax = 100.0f;
+        float hitstunDurationSec = 0.0f;
 
         float groggyDuration = 1.5f;
         float moveSpeed = 5.0f;

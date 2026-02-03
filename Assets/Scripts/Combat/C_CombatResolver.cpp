@@ -38,7 +38,8 @@ namespace Alice::Combat
         const bool targetInFront = victim.targetInFront;
         const bool weakActive = victim.weakActive;
 
-        if (victim.flags.parryWindowActive && targetInFront && !weakActive)
+        const bool parryWindowActive = victim.flags.parryWindowActive && !weakActive;
+        if (parryWindowActive && targetInFront)
         {
             detail.result = ResolveResult::Parry;
             out.deferred.push_back({ CombatEventType::OnParrySuccess, victim.id, attacker.id, hit.attackInstanceId, 0.0f });
@@ -54,7 +55,7 @@ namespace Alice::Combat
             return detail;
         }
 
-        if (victim.flags.guardActive && targetInFront && !weakActive)
+        if (!parryWindowActive && victim.flags.guardActive && targetInFront && !weakActive)
         {
             const float guardCost = (hit.guardDurabilityCost > 0.0f)
                 ? hit.guardDurabilityCost
