@@ -1,0 +1,153 @@
+{
+    "entities": [
+        {
+            "AdvancedAnimation": {
+                "additive": {
+                    "alpha": 1.0,
+                    "autoAdvance": true,
+                    "clip": "",
+                    "enabled": false,
+                    "loop": false,
+                    "refClip": "",
+                    "speed": 1.0,
+                    "time": 0.0
+                },
+                "aim": {
+                    "enabled": false,
+                    "weight": 1.0,
+                    "yawRad": 0.0
+                },
+                "base": {
+                    "autoAdvance": true,
+                    "blend01": 0.0,
+                    "clipA": "rig|Tia_Normal_Attack_1",
+                    "clipB": "rig|Tia_Normal_Attack_1",
+                    "enabled": true,
+                    "layerAlpha": 1.0,
+                    "loopA": true,
+                    "loopB": true,
+                    "speedA": 1.0,
+                    "speedB": 1.0,
+                    "timeA": 1.7879600524902344,
+                    "timeB": 1.7879600524902344
+                },
+                "enabled": true,
+                "ik": {
+                    "chainLength": 3,
+                    "enabled": false,
+                    "targetMS": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "tipBone": "Hand_L",
+                    "weight": 1.0
+                },
+                "ikChains": [],
+                "playing": true,
+                "procedural": {
+                    "seed": 0,
+                    "strength": 0.0,
+                    "timeSec": 0.0
+                },
+                "rootBoneName": "c_pos",
+                "rootMotionUnlock": false,
+                "sockets": [],
+                "upper": {
+                    "autoAdvance": true,
+                    "blend01": 0.0,
+                    "clipA": "",
+                    "clipB": "",
+                    "enabled": false,
+                    "layerAlpha": 1.0,
+                    "loopA": true,
+                    "loopB": true,
+                    "speedA": 1.0,
+                    "speedB": 1.0,
+                    "timeA": 0.0,
+                    "timeB": 0.0
+                }
+            },
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrStrength": 1.0,
+                "transparent": false
+            },
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "RootMotionKeyTester",
+                    "props": {
+                        "m_clipKey1": "rig|Tia_Normal_Attack_1",
+                        "m_clipKey2": "rig|Tia_Normal_Attack_1",
+                        "m_clipKey3": "rig|Tia_Normal_Attack_1",
+                        "m_clipKey4": "rig|Tia_Normal_Attack_1",
+                        "m_clipKey5": "rig|Tia_Normal_Attack_1",
+                        "m_forceDisableUpperAdditive": true,
+                        "m_forceRestartOnKey": true,
+                        "m_loop": true,
+                        "m_playSpeed": 1.0
+                    }
+                }
+            ],
+            "SkinnedAnimation": {
+                "clipIndex": 2,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 345,
+                "instanceAssetPath": "Assets/Fbx/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack.fbxasset",
+                "meshAssetPath": "Tia_Animaition_Run,Rolling,IDLE,Turn,Attack"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "1851954192415736747"
+        }
+    ],
+    "sceneName": "RootMotion",
+    "version": 1
+}
