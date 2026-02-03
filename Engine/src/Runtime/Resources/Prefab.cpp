@@ -46,6 +46,7 @@
 #include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/UITextComponent.h"
 #include "Runtime/UI/UIButtonComponent.h"
+#include "Runtime/UI/UICheckboxComponent.h"
 #include "Runtime/UI/UIGaugeComponent.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -588,6 +589,14 @@ namespace Alice
                 if (!JsonRttr::FromJsonObject(inst, *itUIButton))
                     return InvalidEntityId;
             }
+            auto itUICheckBox = root.find("UICheckBox");
+            if (itUICheckBox != root.end() && itUICheckBox->is_object())
+            {
+                UICheckBoxComponent& comp = world.AddComponent<UICheckBoxComponent>(entity);
+                rttr::instance inst = comp;
+                if (!JsonRttr::FromJsonObject(inst, *itUICheckBox))
+                    return InvalidEntityId;
+            }
             auto itUIGauge = root.find("UIGauge");
             if (itUIGauge != root.end() && itUIGauge->is_object())
             {
@@ -903,6 +912,16 @@ namespace Alice
                 copy.disabledTexture = NormalizePathToRelative(copy.disabledTexture);
                 rttr::instance inst = copy;
                 root["UIButton"] = JsonRttr::ToJsonObject(inst);
+            }
+            if (const auto* uiCheckBox = world.GetComponent<UICheckBoxComponent>(entity); uiCheckBox)
+            {
+                UICheckBoxComponent copy = *uiCheckBox;
+                copy.normalTexture = NormalizePathToRelative(copy.normalTexture);
+                copy.hoveredTexture = NormalizePathToRelative(copy.hoveredTexture);
+                copy.pressedTexture = NormalizePathToRelative(copy.pressedTexture);
+                copy.disabledTexture = NormalizePathToRelative(copy.disabledTexture);
+                rttr::instance inst = copy;
+                root["UICheckBox"] = JsonRttr::ToJsonObject(inst);
             }
             if (const auto* uiGauge = world.GetComponent<UIGaugeComponent>(entity); uiGauge)
             {

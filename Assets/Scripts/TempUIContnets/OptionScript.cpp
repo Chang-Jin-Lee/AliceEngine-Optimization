@@ -65,6 +65,12 @@ namespace Alice
         {
             ALICE_LOG_WARN("[OptionScript] Root entity not found (rootWidgetName=%s)", Get_rootWidgetName().c_str());
         }
+
+        childrenVisible = false;
+        if (rootEntity != InvalidEntityId)
+        {
+            SetChildrenVisibility(*w, rootEntity, AliceUI::UIVisibility::Collapsed);
+        }
     }
 
     void OptionScript::Update(float /*deltaTime*/)
@@ -94,14 +100,6 @@ namespace Alice
             // 자식 개수 확인
             auto children = w->GetChildren(rootEntity);
             ALICE_LOG_INFO("[OptionScript] Found %zu children", children.size());
-        }
-    }
-
-    void OptionScript::ExampleFunction()
-    {
-        if (auto* transform = GetComponent<TransformComponent>())
-        {
-            transform->position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
         }
     }
 }

@@ -5,6 +5,8 @@
 #include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/UITextComponent.h"
 #include "Runtime/UI/UIButtonComponent.h"
+#include "Runtime/UI/UICheckboxComponent.h"
+#include "Runtime/UI/UISliderComponent.h"
 #include "Runtime/UI/UIGaugeComponent.h"
 #include <DirectXMath.h>
 
@@ -76,6 +78,34 @@ namespace Alice
 		EntityId e = CreateAliceUIRoot(world, "UI_Gauge");
 		if (e != InvalidEntityId)
 		{
+			world.AddComponent<UIGaugeComponent>(e);
+			UITransformComponent* t = world.GetComponent<UITransformComponent>(e);
+			if (t)
+				t->size = DirectX::XMFLOAT2(260.0f, 24.0f);
+		}
+		return e;
+	}
+
+	EntityId EditorCore::CreateAliceUICheckBox(World& world)
+	{
+		EntityId e = CreateAliceUIRoot(world, "UI_CheckBox");
+		if (e != InvalidEntityId)
+		{
+			world.AddComponent<UICheckBoxComponent>(e);
+			world.AddComponent<UIImageComponent>(e);
+			UITransformComponent* t = world.GetComponent<UITransformComponent>(e);
+			if (t)
+				t->size = DirectX::XMFLOAT2(32.0f, 32.0f);
+		}
+		return e;
+	}
+
+	EntityId EditorCore::CreateAliceUISlider(World& world)
+	{
+		EntityId e = CreateAliceUIRoot(world, "UI_Slider");
+		if (e != InvalidEntityId)
+		{
+			world.AddComponent<UISliderComponent>(e);
 			world.AddComponent<UIGaugeComponent>(e);
 			UITransformComponent* t = world.GetComponent<UITransformComponent>(e);
 			if (t)

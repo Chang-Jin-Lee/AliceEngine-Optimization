@@ -284,6 +284,28 @@ namespace Alice
 					}
 					ImGui::CloseCurrentPopup();
 				}
+				if (ImGui::MenuItem("Screen CheckBox"))
+				{
+					EntityId e = CreateAliceUICheckBox(world);
+					if (e != InvalidEntityId)
+					{
+						PushCommand(std::make_unique<CreateEntityCommand>(e, "UI CheckBox"));
+						selectedEntity = e;
+						g_SceneDirty = true;
+					}
+					ImGui::CloseCurrentPopup();
+				}
+				if (ImGui::MenuItem("Screen Slider"))
+				{
+					EntityId e = CreateAliceUISlider(world);
+					if (e != InvalidEntityId)
+					{
+						PushCommand(std::make_unique<CreateEntityCommand>(e, "UI Slider"));
+						selectedEntity = e;
+						g_SceneDirty = true;
+					}
+					ImGui::CloseCurrentPopup();
+				}
 				if (ImGui::MenuItem("World Image"))
 				{
 					EntityId e = CreateAliceUIWorldImage(world);

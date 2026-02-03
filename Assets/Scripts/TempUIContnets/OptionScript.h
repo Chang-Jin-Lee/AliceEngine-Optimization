@@ -17,11 +17,8 @@ namespace Alice
         void Update(float deltaTime) override;
 
         // Editor-exposed example property.
-        ALICE_PROPERTY(float, m_exampleValue, 1.0f);
         ALICE_PROPERTY(std::string, rootWidgetName, "");
 
-        void ExampleFunction();
-        ALICE_FUNC(ExampleFunction);
 
     private:
         EntityId rootEntity = InvalidEntityId;

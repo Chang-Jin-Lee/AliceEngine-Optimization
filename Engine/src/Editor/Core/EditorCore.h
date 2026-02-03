@@ -368,6 +368,8 @@ namespace Alice
 		EntityId CreateAliceUIText(World& world);
 		EntityId CreateAliceUIButton(World& world);
 		EntityId CreateAliceUIGauge(World& world);
+		EntityId CreateAliceUICheckBox(World& world);
+		EntityId CreateAliceUISlider(World& world);
 		EntityId CreateAliceUIWorldImage(World& world);
 
 		// Undo 시스템
