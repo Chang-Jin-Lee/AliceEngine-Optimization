@@ -152,6 +152,7 @@ namespace Alice::Combat
         ConsumeParry,
         AddGroggy,
         EnterWeakState,
+        ApplyPushback,
         ApplyPushbackToBoth
     };
 
@@ -181,6 +182,13 @@ namespace Alice::Combat
     struct CmdConsumeParry { EntityId target = InvalidEntityId; };
     struct CmdAddGroggy { EntityId target = InvalidEntityId; float amount = 0.0f; };
     struct CmdEnterWeakState { EntityId target = InvalidEntityId; float durationSec = 0.0f; };
+    struct CmdApplyPushback
+    {
+        EntityId attacker = InvalidEntityId;
+        EntityId victim = InvalidEntityId;
+        float speed = 0.0f;
+        float durationSec = 0.0f;
+    };
     struct CmdApplyPushbackToBoth
     {
         EntityId attacker = InvalidEntityId;
@@ -203,6 +211,7 @@ namespace Alice::Combat
         CmdConsumeParry,
         CmdAddGroggy,
         CmdEnterWeakState,
+        CmdApplyPushback,
         CmdApplyPushbackToBoth>;
 
     struct Command

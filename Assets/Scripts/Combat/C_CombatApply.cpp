@@ -191,6 +191,40 @@ namespace Alice::Combat
                 }
                 break;
             }
+            case CommandType::ApplyPushback:
+            {
+                auto p = std::get<CmdApplyPushback>(cmd.payload);
+                if (p.durationSec <= 0.0f || p.speed <= 0.0f)
+                    break;
+
+                auto apply = [&](EntityId target, const DirectX::XMFLOAT3& dir) {
+                    if (auto* hc = world.GetComponent<HealthComponent>(target))
+                    {
+                        hc->pushbackRemainingSec = std::max(hc->pushbackRemainingSec, p.durationSec);
+                        hc->pushbackDir = dir;
+                        hc->pushbackSpeed = p.speed;
+                    }
+                };
+
+                DirectX::XMFLOAT3 dir{ 0.0f, 0.0f, 0.0f };
+                if (auto* victimTr = world.GetComponent<TransformComponent>(p.victim))
+                {
+                    if (auto* attackerTr = world.GetComponent<TransformComponent>(p.attacker))
+                    {
+                        const float dx = victimTr->position.x - attackerTr->position.x;
+                        const float dz = victimTr->position.z - attackerTr->position.z;
+                        const float len = std::sqrt(dx * dx + dz * dz);
+                        if (len > 0.0001f)
+                        {
+                            dir.x = dx / len;
+                            dir.z = dz / len;
+                        }
+                    }
+                }
+
+                apply(p.victim, dir);
+                break;
+            }
             case CommandType::ApplyPushbackToBoth:
             {
                 auto p = std::get<CmdApplyPushbackToBoth>(cmd.payload);

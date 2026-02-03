@@ -47,6 +47,9 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_gimmickEntityName, "W_Target");
         ALICE_PROPERTY(bool, m_blockPlayerActionsDuringGimmick, true);
         ALICE_PROPERTY(float, m_guardBreakPushbackScale, 0.5f);
+        ALICE_PROPERTY(float, m_guardSuccessPushbackScale, 0.1f);
+        ALICE_PROPERTY(float, m_hitPushbackScale, 0.2f);
+        ALICE_PROPERTY(float, m_hitInvulnSec, 0.2f);
 
         // Boss groggy tuning
         ALICE_PROPERTY(float, m_bossGroggyGainLight, 8.0f);

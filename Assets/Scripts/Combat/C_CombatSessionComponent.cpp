@@ -104,6 +104,13 @@ namespace Alice
 		float playerGuardExitLockSec = 0.0f;
 		float bossGuardExitLockSec = 0.0f;
 
+		struct ParryLockKey
+		{
+			EntityId attacker = InvalidEntityId;
+			uint32_t attackInstanceId = 0;
+		};
+		std::unordered_map<EntityId, ParryLockKey> parryResolvedByVictim;
+
 		struct FatalState
 		{
 			bool active = false;
@@ -152,6 +159,7 @@ namespace Alice
 			bossParryNoDurabilitySec = 0.0f;
 			playerGuardExitLockSec = 0.0f;
 			bossGuardExitLockSec = 0.0f;
+			parryResolvedByVictim.clear();
 			fatal = {};
 		}
 	};
@@ -509,10 +517,15 @@ namespace Alice
 			}
 		}
 
-		auto ApplyGuardExitLockIntent = [&](Combat::Intent& intent, float lockSec, EntityId entityId)
+		auto ApplyGuardExitLockIntent = [&](Combat::Intent& intent, float& lockSec, EntityId entityId)
 			{
 				if (lockSec <= 0.0f)
 					return;
+				if (intent.guardPressed)
+				{
+					lockSec = 0.0f;
+					return;
+				}
 				intent = {};
 				if (auto* driver = world.GetComponent<AttackDriverComponent>(entityId))
 				{
@@ -2124,6 +2137,14 @@ namespace Alice
 
 		for (auto hit : m_state->bus.Hits())
 		{
+			auto itParry = m_state->parryResolvedByVictim.find(hit.victimOwner);
+			if (itParry != m_state->parryResolvedByVictim.end())
+			{
+				const auto& key = itParry->second;
+				if (key.attacker == hit.attackerOwner && key.attackInstanceId == hit.attackInstanceId)
+					continue;
+			}
+
 			const Combat::FighterSnapshot& playerSnap = m_state->playerSnapshot;
 			const Combat::FighterSnapshot& bossSnap = m_state->bossSnapshot;
 			Combat::FighterSnapshot attacker = (hit.attackerOwner == playerId) ? playerSnap : bossSnap;
@@ -2137,7 +2158,9 @@ namespace Alice
 					hit.damage *= chargeScale;
 			}
 
-			auto resolved = m_state->resolver.ResolveOne(hit, attacker, victim);
+			auto resolvedDetail = m_state->resolver.ResolveOneDetailed(hit, attacker, victim);
+			auto resolved = resolvedDetail.output;
+			const Combat::ResolveResult resolveResult = resolvedDetail.result;
 
 			if (m_enableCombatLogs)
 			{
@@ -2177,7 +2200,10 @@ namespace Alice
 
 			UpdateHealthHitInfo(world, hit, resolved, victim);
 			std::vector<Combat::Command> immediate = resolved.immediate;
-			const bool parrySuccess = HasDeferredEvent(resolved, Combat::CombatEventType::OnParrySuccess);
+			const bool parrySuccess = (resolveResult == Combat::ResolveResult::Parry);
+			const bool wasGuarded = (resolveResult == Combat::ResolveResult::Guard);
+			const bool wasGuardBreak = (resolveResult == Combat::ResolveResult::GuardBreak);
+			const bool wasHit = (resolveResult == Combat::ResolveResult::Hit);
 			float* parryNoDurability = nullptr;
 			if (hit.victimOwner == playerId)
 				parryNoDurability = &m_state->playerParryNoDurabilitySec;
@@ -2186,6 +2212,7 @@ namespace Alice
 
 			if (parrySuccess)
 			{
+				m_state->parryResolvedByVictim[hit.victimOwner] = { hit.attackerOwner, hit.attackInstanceId };
 				const float lockSec = (hit.parryLockSec > 0.0f) ? hit.parryLockSec : m_parryNoDurabilitySec;
 				if (parryNoDurability && lockSec > 0.0f)
 					*parryNoDurability = std::max(*parryNoDurability, lockSec);
@@ -2201,6 +2228,45 @@ namespace Alice
 					}),
 					immediate.end());
 			}
+			const bool suppressHitstun = (hit.victimOwner == playerId && !victim.canBeHitstunned);
+			const float basePushSpeed = hit.guardBreakPushbackSpeed;
+			const float basePushDuration = hit.guardBreakPushbackDuration;
+			if (wasGuarded && basePushSpeed > 0.0f && basePushDuration > 0.0f)
+			{
+				const float scale = std::max(0.0f, m_guardSuccessPushbackScale);
+				const float speed = basePushSpeed * scale;
+				if (speed > 0.0f)
+				{
+					immediate.push_back({ Combat::CommandType::ApplyPushback,
+						Combat::CmdApplyPushback{ hit.attackerOwner, hit.victimOwner, speed, basePushDuration } });
+				}
+			}
+			if (wasHit && !suppressHitstun && basePushSpeed > 0.0f && basePushDuration > 0.0f)
+			{
+				const float scale = std::max(0.0f, m_hitPushbackScale);
+				const float speed = basePushSpeed * scale;
+				if (speed > 0.0f)
+				{
+					immediate.push_back({ Combat::CommandType::ApplyPushback,
+						Combat::CmdApplyPushback{ hit.attackerOwner, hit.victimOwner, speed, basePushDuration } });
+				}
+			}
+			if (parrySuccess)
+			{
+				if (auto* hc = world.GetComponent<HealthComponent>(hit.victimOwner))
+				{
+					hc->pushbackRemainingSec = 0.0f;
+					hc->pushbackSpeed = 0.0f;
+					hc->pushbackDir = { 0.0f, 0.0f, 0.0f };
+				}
+				immediate.erase(std::remove_if(immediate.begin(), immediate.end(),
+					[](const Combat::Command& cmd)
+					{
+						return cmd.type == Combat::CommandType::ApplyPushback
+							|| cmd.type == Combat::CommandType::ApplyPushbackToBoth;
+					}),
+					immediate.end());
+			}
 			for (auto& cmd : immediate)
 			{
 				if (cmd.type != Combat::CommandType::ApplyPushbackToBoth)
@@ -2211,7 +2277,7 @@ namespace Alice
 			}
 			m_state->apply.ApplyImmediate(world, m_state->fighterMap, m_state->bus, immediate, false);
 
-			if (parrySuccess || HasDeferredEvent(resolved, Combat::CombatEventType::OnGuarded))
+			if (parrySuccess || wasGuarded || wasGuardBreak)
 			{
 				if (auto* driver = world.GetComponent<AttackDriverComponent>(hit.victimOwner))
 					driver->parryTapCredit = 1;
@@ -2228,11 +2294,19 @@ namespace Alice
 				m_state->playerChargeActive = false;
 			}
 
-			const bool suppressHitstun = (hit.victimOwner == playerId && !victim.canBeHitstunned);
 			for (const auto& ev : resolved.deferred)
 			{
 				if (suppressHitstun && ev.type == Combat::CombatEventType::OnHit)
 					continue;
+				if (ev.type == Combat::CombatEventType::OnHit)
+				{
+					const float invulnSec = std::max(0.0f, m_hitInvulnSec);
+					if (invulnSec > 0.0f)
+					{
+						if (auto* hc = world.GetComponent<HealthComponent>(hit.victimOwner))
+							hc->invulnRemaining = std::max(hc->invulnRemaining, invulnSec);
+					}
+				}
 				m_state->bus.PushDeferred(ev);
 			}
 
