@@ -117,6 +117,16 @@ namespace Alice
         m_attackHeldSec = 0.0f;
         m_guardHeldPrev = false;
         m_guardHeldSec = 0.0f;
+        m_chargeActive = false;
+        m_chargeHeldSec = 0.0f;
+        m_chargeLevel = 0;
+    }
+
+    void C_PlayerInputSourceComponent::CancelCharge()
+    {
+        m_chargeActive = false;
+        m_chargeHeldSec = 0.0f;
+        m_chargeLevel = 0;
     }
 
     Combat::Intent C_PlayerInputSourceComponent::GetIntent(float deltaTime)
@@ -147,27 +157,66 @@ namespace Alice
         const bool attackHeld = attackKeyHeld || attackMouseHeld;
         const bool attackReleased = (!attackHeld && m_attackHeldPrev);
 
-        if (attackPressed)
-            m_attackHeldSec = 0.0f;
+        const bool chargeModifierHeld =
+            input->GetKey(toKey(m_keyChargeModifier)) || input->GetKey(toKey(m_keyChargeModifierAlt));
+
+        if (attackPressed && chargeModifierHeld)
+        {
+            m_chargeActive = true;
+            m_chargeHeldSec = 0.0f;
+            m_chargeLevel = 0;
+        }
+
+        if (m_chargeActive)
+        {
+            if (attackHeld)
+                m_chargeHeldSec += deltaTime;
+
+            int level = 0;
+            if (m_chargeStage1Sec > 0.0f && m_chargeHeldSec >= m_chargeStage1Sec)
+                level = 1;
+            if (m_chargeStage2Sec > 0.0f && m_chargeHeldSec >= m_chargeStage2Sec)
+                level = 2;
+            if (m_chargeStage3Sec > 0.0f && m_chargeHeldSec >= m_chargeStage3Sec)
+                level = 3;
+            m_chargeLevel = level;
+
+            if (level >= 3)
+            {
+                intent.heavyAttackPressed = true;
+                intent.chargeLevel = 3;
+                m_chargeActive = false;
+                m_chargeHeldSec = 0.0f;
+                m_chargeLevel = 0;
+            }
+            else if (attackReleased)
+            {
+                intent.heavyAttackPressed = true;
+                intent.chargeLevel = level;
+                m_chargeActive = false;
+                m_chargeHeldSec = 0.0f;
+                m_chargeLevel = 0;
+            }
+            else
+            {
+                intent.chargeActive = true;
+                intent.chargeHeldSec = m_chargeHeldSec;
+                intent.chargeLevel = m_chargeLevel;
+            }
+        }
+        else
+        {
+            if (attackPressed && !chargeModifierHeld)
+                intent.lightAttackPressed = true;
+        }
+
+        intent.attackPressed = intent.lightAttackPressed || intent.heavyAttackPressed;
+        intent.attackHeld = (!m_chargeActive && attackHeld && !chargeModifierHeld);
         if (attackHeld)
             m_attackHeldSec += deltaTime;
-
-        if (attackReleased)
-        {
-            if (m_attackHeldSec >= m_attackHoldThresholdSec)
-                intent.heavyAttackPressed = true;
-            else
-                intent.lightAttackPressed = true;
+        else
             m_attackHeldSec = 0.0f;
-        }
-        else if (attackPressed && !attackHeld)
-        {
-            intent.lightAttackPressed = true;
-        }
-
-        intent.attackPressed = attackPressed;
-        intent.attackHeld = attackHeld;
-        intent.attackHeldSec = attackHeld ? m_attackHeldSec : 0.0f;
+        intent.attackHeldSec = intent.attackHeld ? m_attackHeldSec : 0.0f;
 
         const bool guardKeyDown = input->GetKeyDown(toKey(m_keyGuard));
         const bool guardMouseDown = m_useMouseAttack && input->GetMouseButtonDown(toMouse(m_mouseGuardButton));
