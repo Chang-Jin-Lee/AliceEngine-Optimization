@@ -63,6 +63,15 @@ namespace Alice
                     int shadingMode,
                     bool enableFillLight,
                     const std::vector<SkinnedDrawCommand>& skinnedCommands);
+
+        /// 선택된 카메라 미리보기용 렌더링을 수행합니다 (에디터 전용).
+        void RenderCameraPreview(const World& world,
+                                 const Camera& camera,
+                                 const std::unordered_set<EntityId>& cameraEntities,
+                                 int shadingMode,
+                                 bool enableFillLight,
+                                 const std::vector<SkinnedDrawCommand>& skinnedCommands,
+                                 EntityId hiddenCameraEntity = InvalidEntityId);
     private:
 
 
@@ -216,11 +225,28 @@ namespace Alice
         std::uint32_t                                   m_sceneWidth  = 0;
         std::uint32_t                                   m_sceneHeight = 0;
 
+        // ==== 선택 카메라 미리보기 렌더 타깃 ====
+        Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_cameraPreviewSceneTex;
+        Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  m_cameraPreviewSceneRTV;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cameraPreviewSceneSRV;
+
+        Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_cameraPreviewViewportTex;
+        Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  m_cameraPreviewViewportRTV;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cameraPreviewViewportSRV;
+
+        Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_cameraPreviewDepthTex;
+        Microsoft::WRL::ComPtr<ID3D11DepthStencilView>  m_cameraPreviewDSV;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cameraPreviewDepthSRV;
+
+        std::uint32_t                                   m_cameraPreviewWidth  = 320;
+        std::uint32_t                                   m_cameraPreviewHeight = 180;
+
         // 이번 프레임에 실제로 사용한 카메라 정보 (ComputeEffect용)
         DirectX::XMMATRIX                               m_lastViewProj = DirectX::XMMatrixIdentity();
         DirectX::XMFLOAT3                                m_lastCameraPos{0, 0, 0};
 
         bool CreateSceneRenderTarget(std::uint32_t width, std::uint32_t height);
+        bool CreateCameraPreviewRenderTarget(std::uint32_t width, std::uint32_t height);
 
         // ==== 섀도우 맵 리소스 (단일 Directional Light) ====
         Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_shadowTex;
@@ -285,6 +311,10 @@ namespace Alice
         
         /// Scene Depth SRV (depth test용)
         ID3D11ShaderResourceView* GetSceneDepthSRV() const { return m_sceneDepthSRV.Get(); }
+
+        /// 선택 카메라 미리보기용 SRV
+        ID3D11ShaderResourceView* GetCameraPreviewSRV() const { return m_cameraPreviewViewportSRV.Get(); }
+        float GetCameraPreviewAspect() const { return (m_cameraPreviewHeight > 0) ? (float)m_cameraPreviewWidth / (float)m_cameraPreviewHeight : 1.0f; }
 
         /// 이번 프레임에 실제로 사용한 카메라 View-Projection 행렬을 반환합니다 (ComputeEffect용)
         const DirectX::XMMATRIX& GetLastViewProj() const { return m_lastViewProj; }
