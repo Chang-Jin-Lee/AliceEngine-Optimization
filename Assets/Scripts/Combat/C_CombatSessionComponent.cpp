@@ -111,6 +111,8 @@ namespace Alice
 		float bossParryNoDurabilitySec = 0.0f;
 		float playerGuardExitLockSec = 0.0f;
 		float bossGuardExitLockSec = 0.0f;
+		float playerHitstunDurationSec = 0.0f;
+		float bossHitstunDurationSec = 0.0f;
 
 		struct ParryLockKey
 		{
@@ -170,6 +172,8 @@ namespace Alice
 			bossParryNoDurabilitySec = 0.0f;
 			playerGuardExitLockSec = 0.0f;
 			bossGuardExitLockSec = 0.0f;
+			playerHitstunDurationSec = 0.0f;
+			bossHitstunDurationSec = 0.0f;
 			parryResolvedByVictim.clear();
 			fatal = {};
 		}
@@ -941,6 +945,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		Combat::Sensors sPlayer = m_state->player.BuildSensors(world, bossId, deltaTime);
 		Combat::Sensors sBoss = m_state->boss.BuildSensors(world, playerId, deltaTime);
+		sPlayer.hitstunDurationSec = m_state->playerHitstunDurationSec;
+		sBoss.hitstunDurationSec = m_state->bossHitstunDurationSec;
 		if (m_state->player.state != Combat::ActionState::Attack)
 			sPlayer.attackWindowActive = false;
 		if (m_state->boss.state != Combat::ActionState::Attack)
@@ -1502,6 +1508,16 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		m_state->player.flags = outPlayer.flags;
 		m_state->boss.state = outBoss.state;
 		m_state->boss.flags = outBoss.flags;
+		if (m_state->prevPlayerState == Combat::ActionState::Hitstun
+			&& outPlayer.state != Combat::ActionState::Hitstun)
+		{
+			m_state->playerHitstunDurationSec = 0.0f;
+		}
+		if (m_state->prevBossState == Combat::ActionState::Hitstun
+			&& outBoss.state != Combat::ActionState::Hitstun)
+		{
+			m_state->bossHitstunDurationSec = 0.0f;
+		}
 		const bool playerSuperArmor = (outPlayer.state == Combat::ActionState::Attack && m_state->playerLastAttackHeavy);
 		m_state->player.canBeHitstunned = m_playerCanBeHitstunned && !playerSuperArmor;
 		m_state->playerSnapshot = m_state->player.Snapshot();
@@ -2403,19 +2419,20 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					immediate.end());
 			}
 			const bool suppressHitstun = (hit.victimOwner == playerId && !victim.canBeHitstunned);
-			float guardBreakAnimDuration = 0.0f;
-			if (wasGuardBreak)
-			{
-				const AnimConfig guardBreakCfg = BuildAnimConfig(hit.victimOwner, playerId, bossId);
-				if (!guardBreakCfg.guardBreakClip.empty())
-					guardBreakAnimDuration = GetClipDurationSecByName(registry, world, hit.victimOwner, guardBreakCfg.guardBreakClip);
-			}
 			float hitAnimDuration = 0.0f;
 			if (wasHit && !suppressHitstun)
 			{
 				const AnimConfig hitCfg = BuildAnimConfig(hit.victimOwner, playerId, bossId);
 				if (!hitCfg.hitClip.empty())
 					hitAnimDuration = GetClipDurationSecByName(registry, world, hit.victimOwner, hitCfg.hitClip);
+			}
+			if (wasHit && !suppressHitstun)
+			{
+				const float hitDuration = (hitAnimDuration > 0.0f) ? hitAnimDuration : 0.4f;
+				if (hit.victimOwner == playerId)
+					m_state->playerHitstunDurationSec = std::max(m_state->playerHitstunDurationSec, hitDuration);
+				else if (hit.victimOwner == bossId)
+					m_state->bossHitstunDurationSec = std::max(m_state->bossHitstunDurationSec, hitDuration);
 			}
 			const float basePushSpeed = hit.guardBreakPushbackSpeed;
 			const float basePushDuration = hit.guardBreakPushbackDuration;
@@ -2433,11 +2450,20 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			{
 				const float scale = std::max(0.0f, m_hitPushbackScale);
 				const float speed = basePushSpeed * scale;
-				const float pushDuration = (hitAnimDuration > 0.0f) ? hitAnimDuration : basePushDuration;
+				const float pushDuration = std::max(0.0f, m_hitPushbackDurationSec);
 				if (speed > 0.0f && pushDuration > 0.0f)
 				{
 					immediate.push_back({ Combat::CommandType::ApplyPushback,
 						Combat::CmdApplyPushback{ hit.attackerOwner, hit.victimOwner, speed, pushDuration } });
+				}
+			}
+			if (wasHit)
+			{
+				const float invulnSec = std::max(0.0f, m_hitPushbackDurationSec);
+				if (invulnSec > 0.0f)
+				{
+					if (auto* hc = world.GetComponent<HealthComponent>(hit.victimOwner))
+						hc->invulnRemaining = std::max(hc->invulnRemaining, invulnSec);
 				}
 			}
 			if (parrySuccess)
@@ -2463,8 +2489,16 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				auto& payload = std::get<Combat::CmdApplyPushbackToBoth>(cmd.payload);
 				const float scale = std::max(0.0f, m_guardBreakPushbackScale);
 				payload.speed *= scale;
-				if (guardBreakAnimDuration > 0.0f)
-					payload.durationSec = guardBreakAnimDuration;
+				payload.durationSec = std::max(0.0f, m_guardBreakPushbackDurationSec);
+			}
+			if (wasGuardBreak)
+			{
+				const float invulnSec = std::max(0.0f, m_guardBreakPushbackDurationSec);
+				if (invulnSec > 0.0f)
+				{
+					if (auto* hc = world.GetComponent<HealthComponent>(hit.victimOwner))
+						hc->invulnRemaining = std::max(hc->invulnRemaining, invulnSec);
+				}
 			}
 			m_state->apply.ApplyImmediate(world, m_state->fighterMap, m_state->bus, immediate, false);
 
