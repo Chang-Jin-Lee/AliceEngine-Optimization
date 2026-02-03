@@ -31,9 +31,9 @@ namespace Alice::Combat
         m_dodgeMoveStopped = false;
     }
 
-    void ActionFsm::Enter(ActionState next)
+    void ActionFsm::Enter(ActionState next, bool force)
     {
-        if (m_state != next)
+        if (m_state != next || force)
         {
             m_state = next;
             m_stateTime = 0.0f;
@@ -145,6 +145,10 @@ namespace Alice::Combat
                 m_dodgeMoveTimer = 0.0f;
                 m_dodgeMoveStopped = false;
                 m_dodgeDirValid = Normalize(intent.move, m_dodgeDir);
+                if (!m_dodgeDirValid && sensors.dodgeFallbackValid)
+                {
+                    m_dodgeDirValid = Normalize(sensors.dodgeFallbackDir, m_dodgeDir);
+                }
                 if (!m_dodgeDirValid && m_lastMoveValid)
                 {
                     m_dodgeDir = m_lastMoveDir;
@@ -198,8 +202,20 @@ namespace Alice::Combat
                     && sensors.attackCancelable
                     && intent.dodgePressed
                     && sensors.stamina >= 10.0f;
+                const float restartLateRatio = 0.7f;
+                const float restartStartSec = std::max(0.0f, attackDuration * restartLateRatio);
+                const bool lateWindow = m_attackWindowSeen && (m_stateTime >= restartStartSec);
+                const bool canRestartAttack = (postWindow || lateWindow)
+                    && sensors.attackCancelable
+                    && intent.lightAttackPressed
+                    && sensors.stamina >= 15.0f;
 
-                if (canDodgeCancel)
+                if (canRestartAttack)
+                {
+                    Enter(ActionState::Attack, true);
+                    out.attackRestarted = true;
+                }
+                else if (canDodgeCancel)
                 {
                     BeginDodge();
                 }

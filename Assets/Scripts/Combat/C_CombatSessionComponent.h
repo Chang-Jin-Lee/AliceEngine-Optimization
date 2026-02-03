@@ -9,6 +9,7 @@
 #include "Runtime/ECS/Entity.h"
 #include <memory>
 #include <string>
+#include "C_CombatContracts.h"
 
 namespace Alice
 {
@@ -22,6 +23,12 @@ namespace Alice
         void PostCombatUpdate(float deltaTime) override;
         void OnEnable() override;
         void OnDisable() override;
+        ~C_CombatSessionComponent() override;
+
+        Combat::ActionState GetPlayerState() const;
+        Combat::ActionState GetBossState() const;
+        Combat::ActionFlags GetPlayerFlags() const;
+        Combat::ActionFlags GetBossFlags() const;
 
         // Entity resolution (GUID preferred, name fallback when enabled)
         ALICE_PROPERTY(uint64_t, m_playerGuid, 0);
@@ -37,6 +44,23 @@ namespace Alice
         // Combat rules
         ALICE_PROPERTY(bool, m_playerCanBeHitstunned, true);
         ALICE_PROPERTY(bool, m_bossCanBeHitstunned, false);
+        ALICE_PROPERTY(std::string, m_gimmickEntityName, "W_Target");
+        ALICE_PROPERTY(bool, m_blockPlayerActionsDuringGimmick, true);
+        ALICE_PROPERTY(float, m_guardBreakPushbackScale, 0.5f);
+        ALICE_PROPERTY(float, m_guardSuccessPushbackScale, 0.1f);
+        ALICE_PROPERTY(float, m_hitPushbackScale, 0.2f);
+        ALICE_PROPERTY(float, m_hitInvulnSec, 0.2f);
+
+        // Boss groggy tuning
+        ALICE_PROPERTY(float, m_bossGroggyGainLight, 8.0f);
+        ALICE_PROPERTY(float, m_bossGroggyGainHeavy, 16.0f);
+        ALICE_PROPERTY(std::string, m_bossGroggyLoopClip, "");
+        ALICE_PROPERTY(float, m_parryNoDurabilitySec, 0.2f);
+        ALICE_PROPERTY(float, m_chargeScale0, 1.0f);
+        ALICE_PROPERTY(float, m_chargeScale1, 1.2f);
+        ALICE_PROPERTY(float, m_chargeScale2, 1.4f);
+        ALICE_PROPERTY(float, m_chargeScale3, 1.8f);
+        ALICE_PROPERTY(float, m_lightComboWindowSec, 0.5f);
 
         // Animation blending
         ALICE_PROPERTY(float, m_animBlendSec, 0.12f);
@@ -46,9 +70,13 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_idleClip, "Idle");
         ALICE_PROPERTY(std::string, m_moveClip, "Walk");
         ALICE_PROPERTY(std::string, m_lightAttackClip, "alice-Apose_arm|Swing");
+        ALICE_PROPERTY(std::string, m_lightAttackClip1, "");
+        ALICE_PROPERTY(std::string, m_lightAttackClip2, "");
+        ALICE_PROPERTY(std::string, m_lightAttackClip3, "");
         ALICE_PROPERTY(std::string, m_heavyAttackClipA, "");
         ALICE_PROPERTY(std::string, m_heavyAttackClipB, "");
         ALICE_PROPERTY(std::string, m_dodgeClip, "");
+        ALICE_PROPERTY(std::string, m_chargeLoopClip, "");
         ALICE_PROPERTY(std::string, m_guardEnterClip, "");
         ALICE_PROPERTY(std::string, m_guardLoopClip, "");
         ALICE_PROPERTY(std::string, m_guardExitClip, "");
@@ -59,9 +87,13 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_playerIdleClip, "");
         ALICE_PROPERTY(std::string, m_playerMoveClip, "");
         ALICE_PROPERTY(std::string, m_playerLightAttackClip, "");
+        ALICE_PROPERTY(std::string, m_playerLightAttackClip1, "");
+        ALICE_PROPERTY(std::string, m_playerLightAttackClip2, "");
+        ALICE_PROPERTY(std::string, m_playerLightAttackClip3, "");
         ALICE_PROPERTY(std::string, m_playerHeavyAttackClipA, "");
         ALICE_PROPERTY(std::string, m_playerHeavyAttackClipB, "");
         ALICE_PROPERTY(std::string, m_playerDodgeClip, "");
+        ALICE_PROPERTY(std::string, m_playerChargeLoopClip, "");
         ALICE_PROPERTY(std::string, m_playerGuardEnterClip, "");
         ALICE_PROPERTY(std::string, m_playerGuardLoopClip, "");
         ALICE_PROPERTY(std::string, m_playerGuardExitClip, "");
@@ -70,9 +102,13 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_bossIdleClip, "");
         ALICE_PROPERTY(std::string, m_bossMoveClip, "");
         ALICE_PROPERTY(std::string, m_bossLightAttackClip, "");
+        ALICE_PROPERTY(std::string, m_bossLightAttackClip1, "");
+        ALICE_PROPERTY(std::string, m_bossLightAttackClip2, "");
+        ALICE_PROPERTY(std::string, m_bossLightAttackClip3, "");
         ALICE_PROPERTY(std::string, m_bossHeavyAttackClipA, "");
         ALICE_PROPERTY(std::string, m_bossHeavyAttackClipB, "");
         ALICE_PROPERTY(std::string, m_bossDodgeClip, "");
+        ALICE_PROPERTY(std::string, m_bossChargeLoopClip, "");
         ALICE_PROPERTY(std::string, m_bossGuardEnterClip, "");
         ALICE_PROPERTY(std::string, m_bossGuardLoopClip, "");
         ALICE_PROPERTY(std::string, m_bossGuardExitClip, "");
@@ -95,6 +131,13 @@ namespace Alice
         // Movement facing offset (degrees)
         ALICE_PROPERTY(float, m_rotationOffsetDeg, 180.0f);
 
+        // Fatal attack (front stab) tuning
+        ALICE_PROPERTY(float, m_fatalFrontAngleDeg, 90.0f);
+        ALICE_PROPERTY(float, m_fatalDistance, 1.1f);
+        ALICE_PROPERTY(float, m_fatalApproachSec, 0.25f);
+        ALICE_PROPERTY(float, m_fatalHoldSec, 2.0f);
+        ALICE_PROPERTY(float, m_fatalDamageScale, 1.5f);
+
         void ForceReset();
         ALICE_FUNC(ForceReset);
 
@@ -103,6 +146,10 @@ namespace Alice
         EntityId ResolveEntityByName(const std::string& name) const;
 
         struct SessionState;
-        std::unique_ptr<SessionState> m_state;
+        struct SessionStateDeleter
+        {
+            void operator()(SessionState* ptr) const;
+        };
+        std::unique_ptr<SessionState, SessionStateDeleter> m_state;
     };
 }

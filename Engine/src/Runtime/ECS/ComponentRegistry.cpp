@@ -6,7 +6,7 @@
 #include <rttr/registration>
 #include <DirectXMath.h>
 
-// ?뚮똾猷??곕뱜 ??삳쐭??
+//
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
@@ -39,7 +39,7 @@
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
 #include "Runtime/Rendering/PostProcessSettings.h"
 
-// ?얠눖???뚮똾猷??곕뱜 ??삳쐭
+// Alice Physics
 #include "Runtime/Physics/Components/Phy_RigidBodyComponent.h"
 #include "Runtime/Physics/Components/Phy_ColliderComponent.h"
 #include "Runtime/Physics/Components/Phy_MeshColliderComponent.h"
@@ -50,7 +50,7 @@
 #include "Runtime/Physics/IPhysicsWorld.h"
 #include "Runtime/Rendering/Data/Material.h"
 
-// AliceUI ?뚮똾猷??곕뱜 ??삳쐭 (?醫됲뇣)
+// AliceUI 
 #include "Runtime/UI/UICommon.h"
 #include "Runtime/UI/UIWidgetComponent.h"
 #include "Runtime/UI/UITransformComponent.h"
@@ -145,7 +145,7 @@ namespace Alice
             rttr::value("SFX", SoundBoxType::SFX)
         );
 
-        // === TransformComponent ?源낆쨯 ===
+        // === TransformComponent  ===
         rttr::registration::class_<TransformComponent>("TransformComponent")
             .constructor<>()
             .property("position", &TransformComponent::position)
@@ -154,7 +154,7 @@ namespace Alice
             .property("enabled", &TransformComponent::enabled)
             .property("visible", &TransformComponent::visible);
 
-        // === MaterialComponent ?源낆쨯 ===
+        // === MaterialComponent ===
         rttr::registration::class_<MaterialComponent>("MaterialComponent")
             .constructor<>()
             .property("color", &MaterialComponent::color)
@@ -178,15 +178,15 @@ namespace Alice
             .property("toonPbrStrength", &MaterialComponent::toonPbrStrength)
             .property("toonPbrBlur", &MaterialComponent::toonPbrBlur);
 
-        // === SkinnedMeshComponent ?源낆쨯 ===
-        // boneMatrices??????곗졊??????????袁⑥쨮??노뼒
+        // === SkinnedMeshComponent ===
+        // boneMatrices
         rttr::registration::class_<SkinnedMeshComponent>("SkinnedMeshComponent")
             .constructor<>()
             .property("meshAssetPath", &SkinnedMeshComponent::meshAssetPath)
             .property("instanceAssetPath", &SkinnedMeshComponent::instanceAssetPath)
             .property("boneCount", &SkinnedMeshComponent::boneCount);
 
-        // === SkinnedAnimationComponent ?源낆쨯 ===
+        // === SkinnedAnimationComponent  ===
         rttr::registration::class_<SkinnedAnimationComponent>("SkinnedAnimationComponent")
             .constructor<>()
             .property("clipIndex", &SkinnedAnimationComponent::clipIndex)
@@ -194,9 +194,9 @@ namespace Alice
             .property("speed", &SkinnedAnimationComponent::speed)
             .property("timeSec", &SkinnedAnimationComponent::timeSec);
         
-        // palette???遺얠쟿?紐? ????????袁⑥쨮??노뼒
+        // palette
 
-        // === AdvancedAnimationComponent ?源낆쨯 ===
+        // === AdvancedAnimationComponent ===
         rttr::registration::class_<AdvancedAnimLayer>("AdvancedAnimLayer")
             .constructor<>()
             .property("enabled", &AdvancedAnimLayer::enabled)
@@ -266,7 +266,7 @@ namespace Alice
             .property("aim", &AdvancedAnimationComponent::aim)
             .property("sockets", &AdvancedAnimationComponent::sockets);
 
-        // AnimParamType enum ?源낆쨯
+        // AnimParamType enum 
         rttr::registration::enumeration<AnimParamType>("AnimParamType")
             (
                 rttr::value("Bool", AnimParamType::Bool),
@@ -275,7 +275,7 @@ namespace Alice
                 rttr::value("Trigger", AnimParamType::Trigger)
             );
 
-        // AnimParamValue ?源낆쨯
+        // AnimParamValue 
         rttr::registration::class_<AnimParamValue>("AnimParamValue")
             .constructor<>()
             .property("type", &AnimParamValue::type)
@@ -284,7 +284,7 @@ namespace Alice
             .property("f", &AnimParamValue::f)
             .property("trigger", &AnimParamValue::trigger);
 
-        // AnimBlueprintComponent ?源낆쨯
+        // AnimBlueprintComponent 
         rttr::registration::class_<AnimBlueprintComponent>("AnimBlueprintComponent")
             .constructor<>()
             .property("blueprintPath", &AnimBlueprintComponent::blueprintPath)
@@ -292,7 +292,7 @@ namespace Alice
             .property("speed", &AnimBlueprintComponent::speed)
             .property("params", &AnimBlueprintComponent::params);
 
-		//  Enum ?源낆쨯
+		//  Enum 
 		rttr::registration::enumeration<SoundBoxType>("alice_SoundBoxType")
 			(
 				rttr::value("BGM", SoundBoxType::BGM),
@@ -305,7 +305,7 @@ namespace Alice
 				rttr::value("SFX", AudioType::SFX)
 				);
 
-		//  SoundBoxComponent ?源낆쨯
+		//  SoundBoxComponent 
 		rttr::registration::class_<SoundBoxComponent>("SoundBoxComponent")
 			.constructor<>()
 			.property("soundKey", &SoundBoxComponent::soundKey)
@@ -324,7 +324,7 @@ namespace Alice
 			.property("debugDraw", &SoundBoxComponent::debugDraw)
 			.property("targetEntity", &SoundBoxComponent::targetEntity);
 
-        // DebugDrawBoxComponent ?源낆쨯
+        // DebugDrawBoxComponent
         rttr::registration::class_<DebugDrawBoxComponent>("DebugDrawBoxComponent")
             .constructor<>()
             .property("boundsMin", &DebugDrawBoxComponent::boundsMin)
@@ -333,7 +333,7 @@ namespace Alice
             .property("enabled", &DebugDrawBoxComponent::enabled)
             .property("depthTest", &DebugDrawBoxComponent::depthTest);
 
-		// SocketAttachmentComponent ?源낆쨯
+		// SocketAttachmentComponent
 		rttr::registration::class_<SocketAttachmentComponent>("SocketAttachmentComponent")
 			.constructor<>()
 			.property("ownerGuid", &SocketAttachmentComponent::ownerGuid)
@@ -344,7 +344,7 @@ namespace Alice
 			.property("extraRotRad", &SocketAttachmentComponent::extraRotRad)
 			.property("extraScale", &SocketAttachmentComponent::extraScale);
 
-		// HurtboxComponent ?源낆쨯
+		// HurtboxComponent 
 		rttr::registration::class_<HurtboxComponent>("HurtboxComponent")
 			.constructor<>()
 			.property("ownerGuid", &HurtboxComponent::ownerGuid)
@@ -371,7 +371,7 @@ namespace Alice
 			.property("capsuleHalfHeight", &WeaponTraceShape::capsuleHalfHeight)
 			.property("boxHalfExtents", &WeaponTraceShape::boxHalfExtents);
 
-		// WeaponTraceComponent ?源낆쨯
+		// WeaponTraceComponent 
 		rttr::registration::class_<WeaponTraceComponent>("WeaponTraceComponent")
 			.constructor<>()
 			.property("ownerGuid", &WeaponTraceComponent::ownerGuid)
@@ -381,13 +381,20 @@ namespace Alice
 			.property("active", &WeaponTraceComponent::active)
 			.property("debugDraw", &WeaponTraceComponent::debugDraw)
 			.property("baseDamage", &WeaponTraceComponent::baseDamage)
+			.property("guardDurabilityCost", &WeaponTraceComponent::guardDurabilityCost)
+			.property("guardLockSec", &WeaponTraceComponent::guardLockSec)
+			.property("parryLockSec", &WeaponTraceComponent::parryLockSec)
+			.property("parryGroggyGain", &WeaponTraceComponent::parryGroggyGain)
+			.property("guardBreakWeakSec", &WeaponTraceComponent::guardBreakWeakSec)
+			.property("guardBreakPushbackSpeed", &WeaponTraceComponent::guardBreakPushbackSpeed)
+			.property("guardBreakPushbackDuration", &WeaponTraceComponent::guardBreakPushbackDuration)
 			.property("teamId", &WeaponTraceComponent::teamId)
 			.property("attackInstanceId", &WeaponTraceComponent::attackInstanceId)
 			.property("targetLayerBits", &WeaponTraceComponent::targetLayerBits)
 			.property("queryLayerBits", &WeaponTraceComponent::queryLayerBits)
 			.property("subSteps", &WeaponTraceComponent::subSteps);
 
-		// HealthComponent ?源낆쨯
+		// HealthComponent 
 		rttr::registration::class_<HealthComponent>("HealthComponent")
 			.constructor<>()
 			.property("maxHealth", &HealthComponent::maxHealth)
@@ -397,10 +404,16 @@ namespace Alice
 			.property("dodgeActive", &HealthComponent::dodgeActive)
 			.property("guardActive", &HealthComponent::guardActive)
 			.property("guardDamageScale", &HealthComponent::guardDamageScale)
+			.property("weaponDurabilityMax", &HealthComponent::weaponDurabilityMax)
+			.property("weaponDurability", &HealthComponent::weaponDurability)
 			.property("groggy", &HealthComponent::groggy)
 			.property("groggyMax", &HealthComponent::groggyMax)
 			.property("groggyGainScale", &HealthComponent::groggyGainScale)
 			.property("groggyDuration", &HealthComponent::groggyDuration)
+			.property("weakRemainingSec", &HealthComponent::weakRemainingSec)
+			.property("pushbackRemainingSec", &HealthComponent::pushbackRemainingSec)
+			.property("pushbackDir", &HealthComponent::pushbackDir)
+			.property("pushbackSpeed", &HealthComponent::pushbackSpeed)
 			.property("hitThisFrame", &HealthComponent::hitThisFrame)
 			.property("guardHitThisFrame", &HealthComponent::guardHitThisFrame)
 			.property("dodgeAvoidedThisFrame", &HealthComponent::dodgeAvoidedThisFrame)
@@ -412,13 +425,14 @@ namespace Alice
 			.property("alive", &HealthComponent::alive)
 			.property("teamId", &HealthComponent::teamId);
 
-		// AttackDriverComponent ?源낆쨯
+		// AttackDriverComponent 
 		rttr::registration::enumeration<AttackDriverNotifyType>("AttackDriverNotifyType")
 			(
 				rttr::value("Attack", AttackDriverNotifyType::Attack),
 				rttr::value("Dodge", AttackDriverNotifyType::Dodge),
-				rttr::value("Guard", AttackDriverNotifyType::Guard)
-				);
+				rttr::value("Guard", AttackDriverNotifyType::Guard),
+				rttr::value("Parry", AttackDriverNotifyType::Parry)
+			);
 
 		rttr::registration::enumeration<AttackDriverClipSource>("AttackDriverClipSource")
 			(
@@ -442,8 +456,12 @@ namespace Alice
 
 		rttr::registration::class_<AttackDriverComponent>("AttackDriverComponent")
 			.constructor<>()
+			.property("debugOwnerName", &AttackDriverComponent::debugOwnerName)
+			.property("debugTeamId", &AttackDriverComponent::debugTeamId)
+			.property("debugLogs", &AttackDriverComponent::debugLogs)
 			.property("traceGuid", &AttackDriverComponent::traceGuid)
-			.property("clips", &AttackDriverComponent::clips);
+			.property("clips", &AttackDriverComponent::clips)
+			.property("attackStateDurationSec", &AttackDriverComponent::attackStateDurationSec);
 
 		// SocketDef / SocketComponent ?源낆쨯 (??????嚥≪뮆諭?獄??紐꾨뮞??됯숲)
 		rttr::registration::class_<SocketDef>("SocketDef")
@@ -504,6 +522,7 @@ namespace Alice
             .property("shoulderSide", &CameraFollowComponent::shoulderSide)
             .property("enableInput", &CameraFollowComponent::enableInput)
             .property("sensitivity", &CameraFollowComponent::sensitivity)
+            .property("invertMouse", &CameraFollowComponent::invertMouse)
             .property("yawDeg", &CameraFollowComponent::yawDeg)
             .property("pitchDeg", &CameraFollowComponent::pitchDeg)
             .property("pitchMinDeg", &CameraFollowComponent::pitchMinDeg)
@@ -679,21 +698,29 @@ namespace Alice
             .constructor<>()
             .property("enabled", &ComputeEffectComponent::enabled)
             .property("shaderName", &ComputeEffectComponent::shaderName)
-            .property("effectParams", &ComputeEffectComponent::effectParams)
-            .property("intensity", &ComputeEffectComponent::intensity)
-            .property("useTransform", &ComputeEffectComponent::useTransform)
+            .property("simulationSpace", &ComputeEffectComponent::simulationSpace)
             .property("localOffset", &ComputeEffectComponent::localOffset)
-            .property("radius", &ComputeEffectComponent::radius)
-            .property("color", &ComputeEffectComponent::color)
-            .property("sizePx", &ComputeEffectComponent::sizePx)
-            .property("gravity", &ComputeEffectComponent::gravity)
-            .property("drag", &ComputeEffectComponent::drag)
             .property("lifeMin", &ComputeEffectComponent::lifeMin)
             .property("lifeMax", &ComputeEffectComponent::lifeMax)
+            .property("startSpeed", &ComputeEffectComponent::startSpeed)
+            .property("sizePx", &ComputeEffectComponent::sizePx)
+            .property("color", &ComputeEffectComponent::color)
+            .property("intensity", &ComputeEffectComponent::intensity)
+            .property("radius", &ComputeEffectComponent::radius)
+            .property("gravity", &ComputeEffectComponent::gravity)
+            .property("drag", &ComputeEffectComponent::drag)
             .property("depthTest", &ComputeEffectComponent::depthTest)
             .property("depthBiasMeters", &ComputeEffectComponent::depthBiasMeters);
 
-        // === ColliderType enum ?源낆쨯 ===
+
+        rttr::registration::enumeration<ParticleSimulationSpace>("ParticleSimulationSpace")
+            (
+                rttr::value("World", ParticleSimulationSpace::World),
+                rttr::value("Local", ParticleSimulationSpace::Local)
+            );
+
+        // === ColliderType enum 등록 ===
+
         rttr::registration::enumeration<ColliderType>("ColliderType")
             (
                 rttr::value("Box", ColliderType::Box),
@@ -1292,7 +1319,7 @@ namespace Alice
 
         r.Register<PostProcessVolumeComponent>("Post Process Volume", "Rendering");
 
-        r.Register<ComputeEffectComponent>("Compute Effect", "VFX");
+        r.Register<ComputeEffectComponent>("Particle System (Compute)", "VFX");
         r.Register<EffectComponent>("Effect", "VFX");
         r.Register<TrailEffectComponent>("Trail Effect", "VFX");
 

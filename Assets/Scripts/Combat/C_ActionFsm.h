@@ -41,6 +41,6 @@ namespace Alice::Combat
         float m_dodgeMoveTimer = 0.0f;
         bool m_dodgeMoveStopped = false;
 
-        void Enter(ActionState next);
+        void Enter(ActionState next, bool force = false);
     };
 }
