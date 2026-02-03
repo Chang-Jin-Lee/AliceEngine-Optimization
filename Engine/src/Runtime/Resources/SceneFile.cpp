@@ -67,6 +67,8 @@
 #include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/UITextComponent.h"
 #include "Runtime/UI/UIButtonComponent.h"
+#include "Runtime/UI/UICheckboxComponent.h"
+#include "Runtime/UI/UISliderComponent.h"
 #include "Runtime/UI/UIGaugeComponent.h"
 #include "Runtime/UI/UIEffectComponent.h"
 #include "Runtime/UI/UIAnimationComponent.h"
@@ -750,6 +752,27 @@ namespace Alice
                 rttr::instance inst = copy;
                 outEntity["UIButton"] = JsonRttr::ToJsonObject(inst);
             }
+            if (const auto* uiCheckBox = world.GetComponent<UICheckBoxComponent>(id); uiCheckBox)
+            {
+                UICheckBoxComponent copy = *uiCheckBox;
+                copy.normalTexture = NormalizePathToRelative(copy.normalTexture);
+                copy.hoveredTexture = NormalizePathToRelative(copy.hoveredTexture);
+                copy.pressedTexture = NormalizePathToRelative(copy.pressedTexture);
+                copy.disabledTexture = NormalizePathToRelative(copy.disabledTexture);
+                rttr::instance inst = copy;
+                outEntity["UICheckBox"] = JsonRttr::ToJsonObject(inst);
+            }
+            if (const auto* uiSlider = world.GetComponent<UISliderComponent>(id); uiSlider)
+            {
+                UISliderComponent copy = *uiSlider;
+                copy.normalTexture = NormalizePathToRelative(copy.normalTexture);
+                copy.hoveredTexture = NormalizePathToRelative(copy.hoveredTexture);
+                copy.pressedTexture = NormalizePathToRelative(copy.pressedTexture);
+                copy.disabledTexture = NormalizePathToRelative(copy.disabledTexture);
+                copy.backgroundTexture = NormalizePathToRelative(copy.backgroundTexture);
+                rttr::instance inst = copy;
+                outEntity["UISlider"] = JsonRttr::ToJsonObject(inst);
+            }
             if (const auto* uiGauge = world.GetComponent<UIGaugeComponent>(id); uiGauge)
             {
                 UIGaugeComponent copy = *uiGauge;
@@ -1415,6 +1438,20 @@ namespace Alice
                 UIButtonComponent& comp = world.AddComponent<UIButtonComponent>(id);
                 rttr::instance inst = comp;
                 if (!JsonRttr::FromJsonObject(inst, *itUIButton)) return false;
+            }
+            auto itUICheckBox = e.find("UICheckBox");
+            if (itUICheckBox != e.end() && itUICheckBox->is_object())
+            {
+                UICheckBoxComponent& comp = world.AddComponent<UICheckBoxComponent>(id);
+                rttr::instance inst = comp;
+                if (!JsonRttr::FromJsonObject(inst, *itUICheckBox)) return false;
+            }
+            auto itUISlider = e.find("UISlider");
+            if (itUISlider != e.end() && itUISlider->is_object())
+            {
+                UISliderComponent& comp = world.AddComponent<UISliderComponent>(id);
+                rttr::instance inst = comp;
+                if (!JsonRttr::FromJsonObject(inst, *itUISlider)) return false;
             }
             auto itUIGauge = e.find("UIGauge");
             if (itUIGauge != e.end() && itUIGauge->is_object())

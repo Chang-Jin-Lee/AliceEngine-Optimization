@@ -119,6 +119,7 @@ namespace Alice
 
 		void RenderImage(const World& world, EntityId id, const ScreenLayout& layout, const DirectX::XMFLOAT4& tintOverride, const std::string& overrideTexture);
 		void RenderText(const World& world, EntityId id, const ScreenLayout& layout);
+		void RenderSlider(const World& world, EntityId id, const ScreenLayout& layout);
 		void RenderGauge(const World& world, EntityId id, const ScreenLayout& layout);
 
 		void DrawQuad(const UIVertex* verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel, ID3D11ShaderResourceView* texture2 = nullptr);

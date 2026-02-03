@@ -9,7 +9,7 @@
                         "fillLateSmoothTime": 0.25,
                         "gaugeWidgetName": "UI_Gauge1",
                         "maxValue": 100.0,
-                        "nowValue": 1.0,
+                        "nowValue": 0.949999988079071,
                         "rootWidgetName": "UI_BossInfor",
                         "targetEntityName": "Cube_HPTest1",
                         "targetScriptName": "BoxDeligateScript"
@@ -78,7 +78,7 @@
                 "useBackground": true,
                 "useCustomShader": true,
                 "useFillLate": true,
-                "value": 1.0
+                "value": 0.949999988079071
             },
             "UITransform": {
                 "alignH": "Center",
@@ -134,7 +134,7 @@
                         "fillLateSmoothTime": 0.25,
                         "gaugeWidgetName": "UI_Gauge2",
                         "maxValue": 100.0,
-                        "nowValue": 0.800000011920929,
+                        "nowValue": 0.6000000238418579,
                         "rootWidgetName": "UI_BossInfor",
                         "targetEntityName": "Cube_HPTest1",
                         "targetScriptName": "BoxDeligateScript"
@@ -203,7 +203,7 @@
                 "useBackground": true,
                 "useCustomShader": true,
                 "useFillLate": true,
-                "value": 0.800000011920929
+                "value": 0.6000000238418579
             },
             "UITransform": {
                 "alignH": "Center",
@@ -321,7 +321,7 @@
                         "fillLateSmoothTime": 0.25,
                         "gaugeWidgetName": "UI_PlayerGauge",
                         "maxValue": 100.0,
-                        "nowValue": 1.0,
+                        "nowValue": 0.8500000238418579,
                         "rootWidgetName": "UI_PlayerInfo",
                         "targetEntityName": "Cube_HPTest1",
                         "targetScriptName": "BoxDeligateScript"
@@ -356,7 +356,7 @@
                 },
                 "enabled": true,
                 "frequency": 6.0,
-                "intensity": 0.3499999940395355,
+                "intensity": 0.6299999952316284,
                 "speed": 1.0
             },
             "UIGauge": {
@@ -390,7 +390,7 @@
                 "useBackground": true,
                 "useCustomShader": true,
                 "useFillLate": true,
-                "value": 1.0
+                "value": 0.8500000238418579
             },
             "UITransform": {
                 "alignH": "Center",
@@ -567,9 +567,9 @@
                     "enabled": true,
                     "name": "BoxDeligateScript",
                     "props": {
-                        "BossHP_Value": 100.0,
-                        "CharacterHP_Value": 100.0,
-                        "PoiseHP_Value": 80.0,
+                        "BossHP_Value": 95.0,
+                        "CharacterHP_Value": 85.0,
+                        "PoiseHP_Value": 60.0,
                         "SubHP": 5.0,
                         "TextValue": 0.0,
                         "TotalTime": 0.0,
@@ -972,10 +972,10 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 0.7843137383460999,
-                    "x": 0.35686275362968445,
-                    "y": 0.35686275362968445,
-                    "z": 0.35686275362968445
+                    "w": 0.8627451062202454,
+                    "x": 0.12941177189350128,
+                    "y": 0.12941177189350128,
+                    "z": 0.12941177189350128
                 },
                 "preserveAspect": false,
                 "texturePath": "",
@@ -1053,9 +1053,9 @@
             "UIImage": {
                 "color": {
                     "w": 1.0,
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
+                    "x": 0.6640926599502563,
+                    "y": 0.6640926599502563,
+                    "z": 0.6640926599502563
                 },
                 "preserveAspect": false,
                 "texturePath": "",
@@ -1116,7 +1116,6 @@
                     "enabled": true,
                     "name": "OptionScript",
                     "props": {
-                        "m_exampleValue": 1.0,
                         "rootWidgetName": ""
                     }
                 }
@@ -1278,6 +1277,226 @@
             "_parentGuid": "1992265194099958174",
             "guid": "1870507825743985836",
             "name": "UI_Text"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIGauge": {
+                "backgroundColor": {
+                    "w": 0.8999999761581421,
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "backgroundTexture": "",
+                "direction": "LeftToRight",
+                "fillColor": {
+                    "w": 1.0,
+                    "x": 0.20000000298023224,
+                    "y": 0.8999999761581421,
+                    "z": 0.20000000298023224
+                },
+                "fillLateColor": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "fillLateShaderName": "",
+                "fillLateTexture": "",
+                "fillTexture": "",
+                "maxValue": 1.0,
+                "minValue": 0.0,
+                "normalized": false,
+                "smoothing": 0.0,
+                "useBackground": true,
+                "useCustomShader": false,
+                "useFillLate": false,
+                "value": 0.566114068031311
+            },
+            "UISlider": {
+                "backgroundSize": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "direction": "LeftToRight",
+                "disabledTexture": "",
+                "disabledTint": {
+                    "w": 1.0,
+                    "x": 0.4000000059604645,
+                    "y": 0.4000000059604645,
+                    "z": 0.4000000059604645
+                },
+                "enabled": true,
+                "handleSize": 16.0,
+                "hoveredTexture": "",
+                "hoveredTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "normalTexture": "",
+                "normalTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "pressedTexture": "",
+                "pressedTint": {
+                    "w": 1.0,
+                    "x": 0.8500000238418579,
+                    "y": 0.8500000238418579,
+                    "z": 0.8500000238418579
+                },
+                "state": "Normal",
+                "syncGauge": true,
+                "value": 0.566114068031311
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 200.0,
+                    "y": -100.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 300.0,
+                    "y": 24.0
+                },
+                "sortOrder": 2,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Slider"
+            },
+            "_parentGuid": "1992265194099958174",
+            "guid": "1920612493011010184",
+            "name": "UI_Slider"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UICheckBox": {
+                "isCheck": false
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -150.0,
+                    "y": -92.5
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 32.0,
+                    "y": 32.0
+                },
+                "sortOrder": 3,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_CheckBox"
+            },
+            "_parentGuid": "1992265194099958174",
+            "guid": "1760658068435720333",
+            "name": "UI_CheckBox"
         }
     ],
     "sceneName": "DemoiScene",

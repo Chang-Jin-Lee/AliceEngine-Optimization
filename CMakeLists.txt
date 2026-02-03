@@ -370,6 +370,8 @@ set(ENGINE_HEADERS
     ${ALICE_SRC_DIR}/Runtime/UI/UIRenderer.h
     ${ALICE_SRC_DIR}/Runtime/UI/UIShaderCode.h
     ${ALICE_SRC_DIR}/Runtime/UI/BindWidget.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UISliderComponent.h
+    ${ALICE_SRC_DIR}/Runtime/UI/UICheckboxComponent.h
 
     # json
     ${ALICE_SRC_DIR}/ThirdParty/json/json.hpp
