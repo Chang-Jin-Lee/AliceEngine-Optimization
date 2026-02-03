@@ -89,7 +89,7 @@ namespace Alice
 
         if (g_LogFile.is_open())
         {
-            g_LogFile << "==== AliceRenderer Log Started ====\n";
+            g_LogFile << "==== AliceEngine Log Started ====\n";
             g_LogFile.flush();
         }
 
@@ -104,7 +104,7 @@ namespace Alice
 
         if (g_LogFile.is_open())
         {
-            g_LogFile << "==== AliceRenderer Log End ====\n";
+            g_LogFile << "==== AliceEngine Log End ====\n";
             g_LogFile.flush();
             g_LogFile.close();
         }

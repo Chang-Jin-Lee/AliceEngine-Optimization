@@ -34,6 +34,9 @@ namespace Alice
             std::unordered_map<std::string, int> clipIndexByName;
             class AdvancedAnimator* animator = nullptr;
             bool initialized = false;
+            bool rmPrevEnabled = false;
+            bool rmHasPrevClip = false;
+            std::string rmPrevClip;
 
             Runtime();
             Runtime(const Runtime&) = delete;

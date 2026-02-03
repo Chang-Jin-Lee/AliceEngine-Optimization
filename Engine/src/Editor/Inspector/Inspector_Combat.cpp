@@ -133,17 +133,6 @@ namespace Alice
 						}
 						};
 
-					auto ResolveClipTimeForUI = [&](const std::string& clipName) -> float {
-						if (!animComp || clipName.empty())
-							return -1.0f;
-						if (animComp->base.clipA == clipName) return animComp->base.timeA;
-						if (animComp->base.clipB == clipName) return animComp->base.timeB;
-						if (animComp->upper.clipA == clipName) return animComp->upper.timeA;
-						if (animComp->upper.clipB == clipName) return animComp->upper.timeB;
-						if (animComp->additive.clip == clipName) return animComp->additive.time;
-						return -1.0f;
-					};
-
 					for (size_t i = 0; i < driver->clips.size(); ++i)
 					{
 						AttackDriverClip& clip = driver->clips[i];
@@ -253,12 +242,6 @@ namespace Alice
 							{
 								ImGui::Text("Clip: %s", resolvedName.empty() ? "(none)" : resolvedName.c_str());
 							}
-
-							const float clipTime = ResolveClipTimeForUI(resolvedName);
-							if (clipTime >= 0.0f)
-								ImGui::Text("Current Time: %.3f sec", clipTime);
-							else
-								ImGui::TextDisabled("Current Time: (n/a)");
 
 							changed |= ImGui::DragFloat("Start Time (sec)", &clip.startTimeSec, 0.01f, 0.0f, 60.0f);
 							changed |= ImGui::DragFloat("End Time (sec)", &clip.endTimeSec, 0.01f, 0.0f, 60.0f);
