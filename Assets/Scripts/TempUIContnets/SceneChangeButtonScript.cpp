@@ -56,6 +56,27 @@ namespace Alice
             return;
         }
 
+
+        const std::string TextName = Get_TextWidgetName();
+        if (TextName.empty())
+        {
+            ALICE_LOG_WARN("[SceneChangeButtonScript] Text widget name is empty");
+            return;
+        }
+
+        const EntityId TextEntity = AliceUI::FindWidgetByName(*w, root, TextName);
+        changeSceneButton = (buttonEntity != InvalidEntityId)
+            ? w->GetComponent<UIButtonComponent>(buttonEntity)
+            : nullptr;
+
+        const std::string LineName = Get_UnderLineWidgetName();
+        if (LineName.empty())
+        {
+            ALICE_LOG_WARN("[SceneChangeButtonScript] Line widget name is empty");
+            return;
+        }
+
+
         // 버튼 클릭 이벤트 등록 (델리게이트 방식)
         const EntityId ownerId = GetOwnerId();
         const std::uint32_t ownerGen = w->GetEntityGeneration(ownerId);
