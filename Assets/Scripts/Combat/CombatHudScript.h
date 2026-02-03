@@ -56,6 +56,7 @@ namespace Alice
         // Active window text widgets
         ALICE_PROPERTY(std::string, playerWindowTextName, "UI_PlayerWindow");
         ALICE_PROPERTY(std::string, bossWindowTextName, "UI_BossWindow");
+        ALICE_PROPERTY(std::string, bossBrainTextName, "UI_BossBrain");
 
         // Color/alpha for active/inactive state text
         ALICE_PROPERTY(float, activeTextAlpha, 1.0f);
@@ -104,6 +105,7 @@ namespace Alice
         std::array<UITextComponent*, 6> m_bossStateTexts{};
         UITextComponent* m_playerWindowText = nullptr;
         UITextComponent* m_bossWindowText = nullptr;
+        UITextComponent* m_bossBrainText = nullptr;
 
         EntityId m_playerHpGaugeId = InvalidEntityId;
         EntityId m_bossHpGaugeId = InvalidEntityId;
@@ -113,6 +115,7 @@ namespace Alice
         std::array<EntityId, 6> m_bossStateTextIds{};
         EntityId m_playerWindowTextId = InvalidEntityId;
         EntityId m_bossWindowTextId = InvalidEntityId;
+        EntityId m_bossBrainTextId = InvalidEntityId;
 
         EntityId m_playerId = InvalidEntityId;
         EntityId m_bossId = InvalidEntityId;
