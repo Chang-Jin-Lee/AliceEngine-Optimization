@@ -11,6 +11,8 @@
 #include <DirectXMath.h>
 #include <assimp/scene.h>
 
+#include "Runtime/Gameplay/Animation/RootMotionTypes.h"
+
 namespace Alice
 {
     // High-level animator: blending, layers, additive, IK, sockets
@@ -60,6 +62,24 @@ namespace Alice
             float weight = 1.0f;
         };
 
+        struct RootMotionDesc
+        {
+            bool enabled = false;
+            const char* rootBone = nullptr;
+            RootLockMode rootLock = RootLockMode::AnimFirstFrame;
+            bool extractTranslationXZ = true;
+            bool extractTranslationY = false;
+            bool extractYaw = true;
+            bool extractPitchRoll = false;
+            bool reset = false;
+        };
+
+        struct RootMotionDelta
+        {
+            bool valid = false;
+            DirectX::XMMATRIX deltaRow = DirectX::XMMatrixIdentity();
+        };
+
         struct UpdateDesc
         {
             float dt = 0.0f;
@@ -75,6 +95,8 @@ namespace Alice
             IKDesc ik;
             
             AimDesc aim;
+
+            RootMotionDesc rootMotion;
         };
 
         void Initialize(const aiScene* scene,
@@ -118,7 +140,162 @@ namespace Alice
             using namespace DirectX;
 
             if (m_NodePtrs.empty())
+            {
+                m_LastRootDelta.valid = false;
+                m_LastRootDelta.deltaRow = XMMatrixIdentity();
                 return;
+            }
+
+            // Column-vector matrix decomposition
+            auto DecomposeSRT_Col = [&](const XMMATRIX& mCol,
+                                        XMVECTOR& outS,
+                                        XMVECTOR& outR,
+                                        XMVECTOR& outT) -> bool
+            {
+                const XMMATRIX mRow = XMMatrixTranspose(mCol);
+                return XMMatrixDecompose(&outS, &outR, &outT, mRow) != 0;
+            };
+
+            auto ComposeSRT_Col = [&](XMVECTOR S, XMVECTOR R, XMVECTOR T) -> XMMATRIX
+            {
+                const XMMATRIX mRow =
+                    XMMatrixScalingFromVector(S) *
+                    XMMatrixRotationQuaternion(R) *
+                    XMMatrixTranslationFromVector(T);
+                return XMMatrixTranspose(mRow);
+            };
+
+            auto GetTranslation_Col = [&](const XMMATRIX& mCol) -> XMVECTOR
+            {
+                return XMMatrixTranspose(mCol).r[3];
+            };
+
+            auto QuaternionToEulerRad = [&](const XMVECTOR& qVec, float& outPitch, float& outYaw, float& outRoll)
+            {
+                XMFLOAT4 q;
+                XMStoreFloat4(&q, qVec);
+
+                float sinr_cosp = 2.0f * (q.w * q.x + q.y * q.z);
+                float cosr_cosp = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
+                outPitch = std::atan2(sinr_cosp, cosr_cosp);
+
+                float sinp = 2.0f * (q.w * q.y - q.z * q.x);
+                if (std::abs(sinp) >= 1.0f)
+                    outYaw = std::copysign(XM_PIDIV2, sinp);
+                else
+                    outYaw = std::asin(sinp);
+
+                float siny_cosp = 2.0f * (q.w * q.z + q.x * q.y);
+                float cosy_cosp = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
+                outRoll = std::atan2(siny_cosp, cosy_cosp);
+            };
+
+            auto ApplyRootMotion = [&](const RootMotionDesc& rm)
+            {
+                m_LastRootDelta.valid = false;
+                m_LastRootDelta.deltaRow = XMMatrixIdentity();
+
+                if (!rm.enabled || !m_NodeIndexMap || !rm.rootBone || rm.rootBone[0] == '\0')
+                {
+                    m_HasPrevRoot = false;
+                    m_HasRootLockBase = false;
+                    return;
+                }
+
+                auto it = m_NodeIndexMap->find(rm.rootBone);
+                if (it == m_NodeIndexMap->end())
+                {
+                    m_HasPrevRoot = false;
+                    m_HasRootLockBase = false;
+                    return;
+                }
+
+                const int rootIdx = it->second;
+                if (rootIdx < 0 || rootIdx >= (int)m_GlobalMatrices.size())
+                {
+                    m_HasPrevRoot = false;
+                    m_HasRootLockBase = false;
+                    return;
+                }
+
+                if (rm.reset)
+                {
+                    m_HasPrevRoot = false;
+                    if (rm.rootLock == RootLockMode::AnimFirstFrame)
+                        m_HasRootLockBase = false;
+                }
+
+                XMMATRIX rootCol = m_GlobalMatrices[(size_t)rootIdx];
+                XMVECTOR S, R, T;
+                if (!DecomposeSRT_Col(rootCol, S, R, T))
+                {
+                    m_HasPrevRoot = false;
+                    return;
+                }
+
+                XMVECTOR filteredT = T;
+                if (!rm.extractTranslationXZ)
+                {
+                    filteredT = XMVectorSetX(filteredT, 0.0f);
+                    filteredT = XMVectorSetZ(filteredT, 0.0f);
+                }
+                if (!rm.extractTranslationY)
+                {
+                    filteredT = XMVectorSetY(filteredT, 0.0f);
+                }
+
+                XMVECTOR filteredR = R;
+                if (!rm.extractYaw && !rm.extractPitchRoll)
+                {
+                    filteredR = XMQuaternionIdentity();
+                }
+                else if (!(rm.extractYaw && rm.extractPitchRoll))
+                {
+                    float pitch = 0.0f;
+                    float yaw = 0.0f;
+                    float roll = 0.0f;
+                    QuaternionToEulerRad(R, pitch, yaw, roll);
+                    if (!rm.extractYaw)
+                        yaw = 0.0f;
+                    if (!rm.extractPitchRoll)
+                    {
+                        pitch = 0.0f;
+                        roll = 0.0f;
+                    }
+                    filteredR = XMQuaternionRotationRollPitchYaw(pitch, yaw, roll);
+                    filteredR = XMQuaternionNormalize(filteredR);
+                }
+
+                XMMATRIX filteredRootCol = ComposeSRT_Col(S, filteredR, filteredT);
+                XMMATRIX lockedRootCol = filteredRootCol;
+                if (rm.rootLock == RootLockMode::AnimFirstFrame)
+                {
+                    if (!m_HasRootLockBase)
+                    {
+                        m_RootLockBaseCol = filteredRootCol;
+                        m_HasRootLockBase = true;
+                    }
+                    XMMATRIX invBase = XMMatrixInverse(nullptr, m_RootLockBaseCol);
+                    lockedRootCol = invBase * filteredRootCol;
+                }
+
+                XMMATRIX deltaCol = XMMatrixIdentity();
+                if (!rm.reset && m_HasPrevRoot)
+                {
+                    XMMATRIX invPrev = XMMatrixInverse(nullptr, m_PrevLockedRootCol);
+                    deltaCol = invPrev * lockedRootCol;
+                }
+
+                m_LastRootDelta.valid = true;
+                m_LastRootDelta.deltaRow = XMMatrixTranspose(deltaCol);
+
+                XMMATRIX invLocked = XMMatrixInverse(nullptr, lockedRootCol);
+                for (size_t i = 0; i < m_GlobalMatrices.size(); ++i)
+                    m_GlobalMatrices[i] = invLocked * m_GlobalMatrices[i];
+
+                m_PrevLockedRootCol = lockedRootCol;
+                m_HasPrevRoot = true;
+            };
 
             // -----------------------------------------------------------------
             // Fast path: single animation with no blending/layers/additive/IK
@@ -135,6 +312,8 @@ namespace Alice
             if (isSimpleSingleAnim)
             {
                 EvaluateLikeFbxAnimation(d.base.animA, d.base.timeA);
+
+                ApplyRootMotion(d.rootMotion);
 
                 // Final palette: GlobalInv * Global * Offset
                 XMMATRIX mGlobalInv = XMLoadFloat4x4(&m_GlobalInverse);
@@ -244,30 +423,6 @@ namespace Alice
                         outHasChannel[i] = 0;
                     }
                 }
-            };
-
-            // Column-vector matrix decomposition
-            auto DecomposeSRT_Col = [&](const XMMATRIX& mCol,
-                                        XMVECTOR& outS,
-                                        XMVECTOR& outR,
-                                        XMVECTOR& outT) -> bool
-            {
-                const XMMATRIX mRow = XMMatrixTranspose(mCol);
-                return XMMatrixDecompose(&outS, &outR, &outT, mRow) != 0;
-            };
-
-            auto ComposeSRT_Col = [&](XMVECTOR S, XMVECTOR R, XMVECTOR T) -> XMMATRIX
-            {
-                const XMMATRIX mRow =
-                    XMMatrixScalingFromVector(S) *
-                    XMMatrixRotationQuaternion(R) *
-                    XMMatrixTranslationFromVector(T);
-                return XMMatrixTranspose(mRow);
-            };
-
-            auto GetTranslation_Col = [&](const XMMATRIX& mCol) -> XMVECTOR
-            {
-                return XMMatrixTranspose(mCol).r[3];
             };
 
             auto BlendMatricesSRT = [&](const XMMATRIX& aCol,
@@ -653,6 +808,8 @@ namespace Alice
             // ---------------------------------------------------------
             ComputeGlobalsFromLocals(localsFinal, m_GlobalMatrices);
 
+            ApplyRootMotion(d.rootMotion);
+
             XMMATRIX mGlobalInv = XMLoadFloat4x4(&m_GlobalInverse);
             for (size_t bi = 0; bi < m_BoneNames.size(); ++bi)
             {
@@ -724,6 +881,14 @@ namespace Alice
         }
 
         const std::vector<DirectX::XMMATRIX>& GetFinalTransforms() const { return finalTransforms; }
+
+        RootMotionDelta ConsumeRootMotionDelta()
+        {
+            RootMotionDelta out = m_LastRootDelta;
+            m_LastRootDelta.valid = false;
+            m_LastRootDelta.deltaRow = DirectX::XMMatrixIdentity();
+            return out;
+        }
 
     private:
         struct Socket
@@ -967,6 +1132,12 @@ namespace Alice
         std::vector<DirectX::XMMATRIX> m_GlobalMatrices;
 
         std::vector<Socket> m_Sockets;
+
+        RootMotionDelta m_LastRootDelta{};
+        bool m_HasPrevRoot = false;
+        DirectX::XMMATRIX m_PrevLockedRootCol = DirectX::XMMatrixIdentity();
+        bool m_HasRootLockBase = false;
+        DirectX::XMMATRIX m_RootLockBaseCol = DirectX::XMMatrixIdentity();
 
     public:
         std::vector<DirectX::XMMATRIX> finalTransforms;

@@ -333,7 +333,7 @@ namespace Alice
 		DrawInspectorWindow(world, selectedEntity);
 		DrawProjectWindow(world, selectedEntity);
 		DrawGameViewportWindow(world, camera, forward, deferred, selectedEntity, picker, cameraMoveSpeed, useForwardRendering, isPlaying, shadingMode, useFillLight);
-		DrawCameraWindow(world, camera, cameraMoveSpeed, selectedEntity);
+		DrawCameraWindow(world, camera, forward, deferred, cameraMoveSpeed, selectedEntity, useForwardRendering);
 		DrawLightingWindow(world, forward, deferred, shadingMode, useFillLight, useForwardRendering);
 
 		DrawMaterialAssetEditorWindow(world);

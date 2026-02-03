@@ -359,6 +359,60 @@ namespace Alice
         return true;
     }
 
+    bool ForwardRenderSystem::CreateCameraPreviewRenderTarget(std::uint32_t width, std::uint32_t height)
+    {
+        if (!m_device) return false;
+        if (width == 0 || height == 0) return false;
+
+        m_cameraPreviewWidth = width;
+        m_cameraPreviewHeight = height;
+
+        m_cameraPreviewSceneTex.Reset();
+        m_cameraPreviewSceneRTV.Reset();
+        m_cameraPreviewSceneSRV.Reset();
+        m_cameraPreviewViewportTex.Reset();
+        m_cameraPreviewViewportRTV.Reset();
+        m_cameraPreviewViewportSRV.Reset();
+        m_cameraPreviewDepthTex.Reset();
+        m_cameraPreviewDSV.Reset();
+        m_cameraPreviewDepthSRV.Reset();
+
+        // HDR Scene Color
+        D3D11_TEXTURE2D_DESC cDesc = { width, height, 1, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, {1, 0}, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0, 0 };
+        if (FAILED(m_device->CreateTexture2D(&cDesc, nullptr, m_cameraPreviewSceneTex.ReleaseAndGetAddressOf()))) return false;
+        if (FAILED(m_device->CreateRenderTargetView(m_cameraPreviewSceneTex.Get(), nullptr, m_cameraPreviewSceneRTV.ReleaseAndGetAddressOf()))) return false;
+        if (FAILED(m_device->CreateShaderResourceView(m_cameraPreviewSceneTex.Get(), nullptr, m_cameraPreviewSceneSRV.ReleaseAndGetAddressOf()))) return false;
+
+        // LDR Viewport (ToneMapped)
+        D3D11_TEXTURE2D_DESC vDesc = { width, height, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, {1, 0}, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0, 0 };
+        if (FAILED(m_device->CreateTexture2D(&vDesc, nullptr, m_cameraPreviewViewportTex.ReleaseAndGetAddressOf()))) return false;
+        if (FAILED(m_device->CreateRenderTargetView(m_cameraPreviewViewportTex.Get(), nullptr, m_cameraPreviewViewportRTV.ReleaseAndGetAddressOf()))) return false;
+        if (FAILED(m_device->CreateShaderResourceView(m_cameraPreviewViewportTex.Get(), nullptr, m_cameraPreviewViewportSRV.ReleaseAndGetAddressOf()))) return false;
+
+        // Depth
+        D3D11_TEXTURE2D_DESC dDesc = { width, height, 1, 1, DXGI_FORMAT_R24G8_TYPELESS, {1, 0}, D3D11_USAGE_DEFAULT, D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE, 0, 0 };
+        if (FAILED(m_device->CreateTexture2D(&dDesc, nullptr, m_cameraPreviewDepthTex.ReleaseAndGetAddressOf()))) return false;
+
+        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+        dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        dsvDesc.Texture2D.MipSlice = 0;
+        if (FAILED(m_device->CreateDepthStencilView(m_cameraPreviewDepthTex.Get(), &dsvDesc, m_cameraPreviewDSV.ReleaseAndGetAddressOf()))) return false;
+
+        D3D11_SHADER_RESOURCE_VIEW_DESC depthSrvDesc = {};
+        depthSrvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+        depthSrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        depthSrvDesc.Texture2D.MostDetailedMip = 0;
+        depthSrvDesc.Texture2D.MipLevels = 1;
+        HRESULT hrDepthSRV = m_device->CreateShaderResourceView(m_cameraPreviewDepthTex.Get(), &depthSrvDesc, m_cameraPreviewDepthSRV.ReleaseAndGetAddressOf());
+        if (FAILED(hrDepthSRV))
+        {
+            m_cameraPreviewDepthSRV.Reset();
+        }
+
+        return true;
+    }
+
     bool ForwardRenderSystem::CreateShadowMapResources()
     {
         UINT size = (UINT)m_shadowSettings.mapSizePx;
@@ -2094,6 +2148,155 @@ namespace Alice
 
         // 7. 최종 백버퍼 복귀 (ImGui 등 UI 렌더링을 위해)
         RestoreBackBuffer();
+    }
+
+    void ForwardRenderSystem::RenderCameraPreview(const World& world,
+                                                  const Camera& camera,
+                                                  const std::unordered_set<EntityId>& cameraEntities,
+                                                  int shadingMode,
+                                                  bool enableFillLight,
+                                                  const std::vector<SkinnedDrawCommand>& skinnedCommands,
+                                                  EntityId hiddenCameraEntity)
+    {
+        (void)hiddenCameraEntity;
+        if (!IsValidPipeline()) return;
+
+        const float desiredAspect = (camera.GetAspectRatio() > 0.0f) ? camera.GetAspectRatio() : (16.0f / 9.0f);
+        const std::uint32_t desiredHeight = (m_cameraPreviewHeight > 0) ? m_cameraPreviewHeight : 180;
+        const std::uint32_t desiredWidth = (std::uint32_t)(std::max)(1.0f, std::round(desiredHeight * desiredAspect));
+
+        if (!m_cameraPreviewViewportRTV || desiredWidth != m_cameraPreviewWidth || desiredHeight != m_cameraPreviewHeight)
+        {
+            if (!CreateCameraPreviewRenderTarget(desiredWidth, desiredHeight))
+                return;
+        }
+
+        // 백업: 현재 렌더 타깃/깊이/포스트프로세스 상태
+        auto savedSceneColorTex = m_sceneColorTex;
+        auto savedSceneRTV = m_sceneRTV;
+        auto savedSceneSRV = m_sceneSRV;
+        auto savedViewportTex = m_viewportTex;
+        auto savedViewportRTV = m_viewportRTV;
+        auto savedViewportSRV = m_viewportSRV;
+        auto savedDepthTex = m_sceneDepthTex;
+        auto savedDSV = m_sceneDSV;
+        auto savedDepthSRV = m_sceneDepthSRV;
+        auto savedSceneWidth = m_sceneWidth;
+        auto savedSceneHeight = m_sceneHeight;
+        auto savedPostProcessParams = m_postProcessParams;
+        auto savedLastViewProj = m_lastViewProj;
+        auto savedLastCameraPos = m_lastCameraPos;
+
+        // 미리보기용 렌더 타깃으로 스왑
+        m_sceneColorTex = m_cameraPreviewSceneTex;
+        m_sceneRTV = m_cameraPreviewSceneRTV;
+        m_sceneSRV = m_cameraPreviewSceneSRV;
+        m_viewportTex = m_cameraPreviewViewportTex;
+        m_viewportRTV = m_cameraPreviewViewportRTV;
+        m_viewportSRV = m_cameraPreviewViewportSRV;
+        m_sceneDepthTex = m_cameraPreviewDepthTex;
+        m_sceneDSV = m_cameraPreviewDSV;
+        m_sceneDepthSRV = m_cameraPreviewDepthSRV;
+        m_sceneWidth = m_cameraPreviewWidth;
+        m_sceneHeight = m_cameraPreviewHeight;
+
+        // Shadow + Main + Skinned + Skybox
+        XMMATRIX lightViewProj = RenderShadowPass(world, skinnedCommands, cameraEntities);
+        RenderMainPass(world, camera, shadingMode, enableFillLight, lightViewProj);
+        if (!skinnedCommands.empty()) RenderSkinnedMeshes(camera, skinnedCommands, shadingMode, enableFillLight, lightViewProj);
+        RenderSkybox(camera);
+
+        // Post Process Volume 적용 (미리보기용)
+        {
+            PostProcessSettings defaultSettings = PostProcessSettings::FromDefaults();
+            defaultSettings.exposure = m_postProcessParams.exposure;
+            defaultSettings.maxHDRNits = m_postProcessParams.maxHDRNits;
+            defaultSettings.saturation = DirectX::XMFLOAT3(
+                m_postProcessParams.colorGradingSaturation.x,
+                m_postProcessParams.colorGradingSaturation.y,
+                m_postProcessParams.colorGradingSaturation.z
+            );
+            defaultSettings.contrast = DirectX::XMFLOAT3(
+                m_postProcessParams.colorGradingContrast.x,
+                m_postProcessParams.colorGradingContrast.y,
+                m_postProcessParams.colorGradingContrast.z
+            );
+            defaultSettings.gamma = DirectX::XMFLOAT3(
+                m_postProcessParams.colorGradingGamma.x,
+                m_postProcessParams.colorGradingGamma.y,
+                m_postProcessParams.colorGradingGamma.z
+            );
+            defaultSettings.gain = DirectX::XMFLOAT3(
+                m_postProcessParams.colorGradingGain.x,
+                m_postProcessParams.colorGradingGain.y,
+                m_postProcessParams.colorGradingGain.z
+            );
+
+            const std::string referenceName = ResolvePPVReferenceName(world);
+            if (referenceName != m_postProcessVolumeSystem.GetReferenceObjectName())
+            {
+                m_postProcessVolumeSystem.SetReferenceObjectName(referenceName);
+            }
+
+            PostProcessSettings finalSettings = m_postProcessVolumeSystem.CalculateFinalSettings(
+                const_cast<World&>(world),
+                camera.GetPosition(),
+                defaultSettings
+            );
+
+            m_postProcessParams.exposure = finalSettings.exposure;
+            m_postProcessParams.colorGradingSaturation = DirectX::XMFLOAT4(
+                finalSettings.saturation.x,
+                finalSettings.saturation.y,
+                finalSettings.saturation.z,
+                1.0f
+            );
+            m_postProcessParams.colorGradingContrast = DirectX::XMFLOAT4(
+                finalSettings.contrast.x,
+                finalSettings.contrast.y,
+                finalSettings.contrast.z,
+                1.0f
+            );
+            m_postProcessParams.colorGradingGamma = DirectX::XMFLOAT4(
+                finalSettings.gamma.x,
+                finalSettings.gamma.y,
+                finalSettings.gamma.z,
+                1.0f
+            );
+            m_postProcessParams.colorGradingGain = DirectX::XMFLOAT4(
+                finalSettings.gain.x,
+                finalSettings.gain.y,
+                finalSettings.gain.z,
+                1.0f
+            );
+        }
+
+        if (m_viewportRTV)
+        {
+            D3D11_VIEWPORT viewport = {};
+            viewport.Width = static_cast<float>(m_sceneWidth);
+            viewport.Height = static_cast<float>(m_sceneHeight);
+            viewport.MaxDepth = 1.0f;
+            RenderToneMapping(m_viewportRTV.Get(), viewport);
+        }
+
+        RestoreBackBuffer();
+
+        // 상태 복구
+        m_sceneColorTex = savedSceneColorTex;
+        m_sceneRTV = savedSceneRTV;
+        m_sceneSRV = savedSceneSRV;
+        m_viewportTex = savedViewportTex;
+        m_viewportRTV = savedViewportRTV;
+        m_viewportSRV = savedViewportSRV;
+        m_sceneDepthTex = savedDepthTex;
+        m_sceneDSV = savedDSV;
+        m_sceneDepthSRV = savedDepthSRV;
+        m_sceneWidth = savedSceneWidth;
+        m_sceneHeight = savedSceneHeight;
+        m_postProcessParams = savedPostProcessParams;
+        m_lastViewProj = savedLastViewProj;
+        m_lastCameraPos = savedLastCameraPos;
     }
 
     bool ForwardRenderSystem::CreateToneMappingResources()
