@@ -113,6 +113,9 @@ namespace Alice::Combat
 
         float groggyDuration = 1.5f;
         float moveSpeed = 5.0f;
+
+        Vec2 dodgeFallbackDir{};
+        bool dodgeFallbackValid = false;
     };
 
     using HitEvent = Alice::CombatHitEvent;
