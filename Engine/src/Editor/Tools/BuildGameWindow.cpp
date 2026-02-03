@@ -46,6 +46,43 @@ namespace Alice
 			~ScopedHandle() { if (h) CloseHandle(h); }
 		};
 
+		bool RunProcessHidden(const std::wstring& cmd,
+			const std::filesystem::path& workDir,
+			DWORD& outExitCode)
+		{
+			STARTUPINFOW        si{};
+			PROCESS_INFORMATION pi{};
+			si.cb = sizeof(si);
+			si.dwFlags = STARTF_USESHOWWINDOW;
+			si.wShowWindow = SW_HIDE;
+
+			std::vector<wchar_t> cmdBuffer(cmd.begin(), cmd.end());
+			cmdBuffer.push_back(L'\0');
+
+			BOOL ok = CreateProcessW(
+				nullptr,
+				cmdBuffer.data(),
+				nullptr,
+				nullptr,
+				FALSE,
+				CREATE_NO_WINDOW,
+				nullptr,
+				workDir.wstring().c_str(),
+				&si,
+				&pi);
+
+			if (!ok)
+				return false;
+
+			ScopedHandle hProcess(pi.hProcess);
+			ScopedHandle hThread(pi.hThread);
+
+			WaitForSingleObject(hProcess.h, INFINITE);
+			outExitCode = 0;
+			GetExitCodeProcess(hProcess.h, &outExitCode);
+			return true;
+		}
+
 		// 빌드/배포용 간단 파일 유틸 (에러는 로그로 남기고, 실패는 false 반환)
 		bool CopyDirTree(const std::filesystem::path& src, const std::filesystem::path& dst)
 		{
@@ -358,6 +395,60 @@ namespace Alice
 					g_BuildExitCode.store(static_cast<long>(exitCode));
 					g_BuildInProgress.store(false);
 					return;
+				}
+
+				// (0) ScriptsBuild: Release AliceScripts.dll 빌드/복사
+				const fs2::path scriptsRoot = args.projectRoot / "ScriptsBuild";
+				const fs2::path scriptsCMake = scriptsRoot / "CMakeLists.txt";
+				const fs2::path scriptsBuildDir = scriptsRoot / "build";
+				if (fs2::exists(scriptsCMake))
+				{
+					DWORD scExit = 0;
+					const std::wstring cmdConfig =
+						L"cmake -S \"" + scriptsRoot.wstring() + L"\" -B \"" + scriptsBuildDir.wstring() + L"\"";
+					if (!RunProcessHidden(cmdConfig, args.projectRoot, scExit) || scExit != 0)
+					{
+						ALICE_LOG_ERRORF("Build Game: ScriptsBuild configure failed (exitCode=%lu).",
+							static_cast<unsigned long>(scExit));
+						g_BuildExitCode.store(12);
+						g_BuildInProgress.store(false);
+						return;
+					}
+
+					const std::wstring cmdBuild =
+						L"cmake --build \"" + scriptsBuildDir.wstring() + L"\" --config Release --target AliceScripts";
+					if (!RunProcessHidden(cmdBuild, args.projectRoot, scExit) || scExit != 0)
+					{
+						ALICE_LOG_ERRORF("Build Game: ScriptsBuild build failed (exitCode=%lu).",
+							static_cast<unsigned long>(scExit));
+						g_BuildExitCode.store(13);
+						g_BuildInProgress.store(false);
+						return;
+					}
+
+					const fs2::path builtDll = scriptsBuildDir / "Release" / "AliceScripts.dll";
+					if (!fs2::exists(builtDll))
+					{
+						ALICE_LOG_ERRORF("Build Game: AliceScripts.dll not found: \"%s\"",
+							builtDll.string().c_str());
+						g_BuildExitCode.store(14);
+						g_BuildInProgress.store(false);
+						return;
+					}
+
+					if (!CopyFileOver(builtDll, releaseBinDir / "AliceScripts.dll"))
+					{
+						g_BuildExitCode.store(15);
+						g_BuildInProgress.store(false);
+						return;
+					}
+
+					// RTTR 공유 DLL도 가능하면 스크립트 빌드 결과로 덮어씁니다.
+					const fs2::path builtRttr = scriptsBuildDir / "Release" / "rttr_core.dll";
+					if (fs2::exists(builtRttr))
+					{
+						CopyFileOver(builtRttr, releaseBinDir / "rttr_core.dll");
+					}
 				}
 
 				// (1) Metas: Assets를 청크로 패킹 (폴더구조 숨김, 256KB)
