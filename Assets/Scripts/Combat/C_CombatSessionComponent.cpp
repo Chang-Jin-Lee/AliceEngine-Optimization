@@ -629,6 +629,15 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					duration = m_bossGuardExitDurationSec;
 				return std::max(0.0f, duration);
 			};
+		auto ResolveGuardEnterDuration = [&](EntityId entityId) -> float
+			{
+				float duration = m_guardEnterDurationSec;
+				if (entityId == playerId && m_playerGuardEnterDurationSec > 0.0f)
+					duration = m_playerGuardEnterDurationSec;
+				else if (entityId == bossId && m_bossGuardEnterDurationSec > 0.0f)
+					duration = m_bossGuardEnterDurationSec;
+				return std::max(0.0f, duration);
+			};
 
 		auto BeginGuardExitLock = [&](EntityId entityId, float& lockSec)
 			{
@@ -639,7 +648,6 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				if (auto* driver = world.GetComponent<AttackDriverComponent>(entityId))
 				{
 					driver->guardLockRemainingSec = 0.0f;
-					driver->parryOverrideRemainingSec = 0.0f;
 					driver->parryUsedThisPress = false;
 				}
 			};
@@ -679,18 +687,12 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			{
 				if (lockSec <= 0.0f)
 					return;
-				if (intent.guardPressed)
-				{
-					lockSec = 0.0f;
-					return;
-				}
 				intent = {};
 				if (auto* driver = world.GetComponent<AttackDriverComponent>(entityId))
 				{
 					if (driver->attackCancelable)
 						driver->cancelAttackRequested = true;
 					driver->guardLockRemainingSec = 0.0f;
-					driver->parryOverrideRemainingSec = 0.0f;
 					driver->parryUsedThisPress = false;
 				}
 			};
@@ -878,8 +880,9 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					{
 						driver->parryTapCredit = 0;
 						driver->parryUsedThisPress = false;
-						if (intent.parryTapWindowSec > 0.0f)
-							driver->parryOverrideRemainingSec = std::max(driver->parryOverrideRemainingSec, intent.parryTapWindowSec);
+						const float parryWindowSec = ResolveGuardEnterDuration(entityId);
+						if (parryWindowSec > 0.0f)
+							driver->parryOverrideRemainingSec = std::max(driver->parryOverrideRemainingSec, parryWindowSec);
 					}
 				}
 			};
@@ -964,6 +967,10 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		{
 			sPlayer.attackStateDurationSec = m_state->fatal.totalSec;
 			sPlayer.attackCancelable = false;
+		}
+		if (fatalActive)
+		{
+			sPlayer.stamina = std::max(sPlayer.stamina, 15.0f);
 		}
 
 		auto RecomputeTargetInFront = [&](EntityId selfId,
@@ -1094,6 +1101,20 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		const auto& eBoss = m_state->bus.PeekDeferred(bossId);
 		const bool playerParrySuccess = HasEvent(ePlayer, Combat::CombatEventType::OnParrySuccess);
 		const bool bossParrySuccess = HasEvent(eBoss, Combat::CombatEventType::OnParrySuccess);
+		if (playerParrySuccess)
+		{
+			playerIntent.guardHeld = false;
+			playerIntent.guardPressed = false;
+			playerIntent.guardReleased = false;
+			m_state->playerGuardExitLockSec = 0.0f;
+		}
+		if (bossParrySuccess)
+		{
+			bossIntent.guardHeld = false;
+			bossIntent.guardPressed = false;
+			bossIntent.guardReleased = false;
+			m_state->bossGuardExitLockSec = 0.0f;
+		}
 
 		auto outPlayer = m_state->playerFsm.Update(playerId, playerIntent, sPlayer, ePlayer, deltaTime);
 		auto outBoss = m_state->bossFsm.Update(bossId, bossIntent, sBoss, eBoss, deltaTime);
@@ -1924,7 +1945,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			bool guardEnterPulse,
 			bool guardExitPulse,
 			bool chargeActive,
-			bool attackRestartPulse) {
+			bool attackRestartPulse,
+			bool suppressGuardExit) {
 				auto* anim = world.GetComponent<AdvancedAnimationComponent>(entityId);
 				if (!anim)
 					anim = &world.AddComponent<AdvancedAnimationComponent>(entityId);
@@ -1986,7 +2008,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				// };
 
 				const bool enteringGuard = (curr == Combat::ActionState::Guard && prev != Combat::ActionState::Guard);
-				const bool exitingGuard = (prev == Combat::ActionState::Guard
+				const bool exitingGuard = !suppressGuardExit && (prev == Combat::ActionState::Guard
 					&& curr != Combat::ActionState::Guard
 					&& (curr == Combat::ActionState::Idle || curr == Combat::ActionState::Move));
 				if ((enteringGuard || guardEnterPulse) && !cfg.guardEnterClip.empty() && cfg.guardEnterDurationSec > 0.0f)
@@ -2056,7 +2078,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 				else if (clipName.empty() && (curr == Combat::ActionState::Guard || curr == Combat::ActionState::JustGuardSuccess))
 				{
-					if (animState.guardEnterActive)
+					const bool parryWindowActive = driver && driver->parryActive;
+					if (parryWindowActive && !cfg.guardEnterClip.empty())
+					{
+						clipName = cfg.guardEnterClip;
+						loop = false;
+					}
+					else if (animState.guardEnterActive)
 					{
 						clipName = cfg.guardEnterClip;
 						loop = false;
@@ -2274,12 +2302,12 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				prev = curr;
 			};
 
-        const bool playerGuardEnterPulse = (playerGuardPressed || playerParrySuccess);
-        const bool bossGuardEnterPulse = (bossGuardPressed || bossParrySuccess);
+        const bool playerGuardEnterPulse = playerGuardPressed;
+        const bool bossGuardEnterPulse = bossGuardPressed;
         ApplyAnimByState(playerId, outPlayer.state, m_state->prevPlayerState, m_state->playerAnim, m_state->playerMoveBlend,
-            playerGuardEnterPulse, false, m_state->playerChargeActive, outPlayer.attackRestarted);
+            playerGuardEnterPulse, false, m_state->playerChargeActive, outPlayer.attackRestarted, playerParrySuccess);
         ApplyAnimByState(bossId, outBoss.state, m_state->prevBossState, m_state->bossAnim, m_state->bossMoveBlend,
-            bossGuardEnterPulse, false, m_state->bossChargeActive, outBoss.attackRestarted);
+            bossGuardEnterPulse, false, m_state->bossChargeActive, outBoss.attackRestarted, bossParrySuccess);
 
 		auto ApplyHitstopToAnim = [&](EntityId entityId, float timerSec)
 			{
