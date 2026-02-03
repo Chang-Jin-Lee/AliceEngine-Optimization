@@ -424,30 +424,7 @@ namespace Alice
                     }
                 }
             };
-
-            // Column-vector matrix decomposition
-            auto DecomposeSRT_Col = [&](const XMMATRIX& mCol,
-                                        XMVECTOR& outS,
-                                        XMVECTOR& outR,
-                                        XMVECTOR& outT) -> bool
-            {
-                const XMMATRIX mRow = XMMatrixTranspose(mCol);
-                return XMMatrixDecompose(&outS, &outR, &outT, mRow) != 0;
-            };
-
-            auto ComposeSRT_Col = [&](XMVECTOR S, XMVECTOR R, XMVECTOR T) -> XMMATRIX
-            {
-                const XMMATRIX mRow =
-                    XMMatrixScalingFromVector(S) *
-                    XMMatrixRotationQuaternion(R) *
-                    XMMatrixTranslationFromVector(T);
-                return XMMatrixTranspose(mRow);
-            };
-
-            auto GetTranslation_Col = [&](const XMMATRIX& mCol) -> XMVECTOR
-            {
-                return XMMatrixTranspose(mCol).r[3];
-            };
+                     
 
             auto BlendMatricesSRT = [&](const XMMATRIX& aCol,
                                         const XMMATRIX& bCol,
