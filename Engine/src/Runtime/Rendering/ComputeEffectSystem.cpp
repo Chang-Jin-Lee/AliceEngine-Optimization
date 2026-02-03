@@ -29,23 +29,26 @@ namespace Alice
             XMFLOAT4 cameraPos;   // (cameraX, cameraY, cameraZ, 0)
         };
 
-        // EmitterGPU: HLSL과 동일한 레이아웃 (float4 5개 = 80바이트)
+        // EmitterGPU: HLSL과 동일한 레이아웃 (float4 8개 = 128바이트)
         struct EmitterGPU
         {
             XMFLOAT4 p0; // xyz = pos, w = radius
-            XMFLOAT4 p1; // xyz = color, w = sizePx
-            XMFLOAT4 p2; // xyz = gravity, w = drag
-            XMFLOAT4 p3; // x = lifeMin, y = lifeMax, z = intensity, w = depthBiasMeters
-            XMFLOAT4 p4; // x = depthTest (1.0 or 0.0), yzw unused
+            XMFLOAT4 p1; // xyz = right, w = sizePx
+            XMFLOAT4 p2; // xyz = up, w = startSpeed
+            XMFLOAT4 p3; // xyz = forward, w = simulationSpace (0=World, 1=Local)
+            XMFLOAT4 p4; // xyz = color, w = intensity
+            XMFLOAT4 p5; // xyz = gravity, w = drag
+            XMFLOAT4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
+            XMFLOAT4 p7; // reserved
         };
-        static_assert(sizeof(EmitterGPU) == 80, "EmitterGPU must be 80 bytes");
+        static_assert(sizeof(EmitterGPU) == 128, "EmitterGPU must be 128 bytes");
 
         // ParticleInit: emitterIndex 추가
         struct ParticleInit
         {
-            XMFLOAT3 pos;   // 월드 좌표
+            XMFLOAT3 pos;   // 시뮬레이션 공간(Local/World)
             float life;
-            XMFLOAT3 vel;   // 월드 좌표 기준 속도
+            XMFLOAT3 vel;   // 시뮬레이션 공간 기준 속도
             float seed;
             std::uint32_t emitterIndex; // 이미터 인덱스
             XMFLOAT3 pad;   // 16바이트 정렬용
@@ -55,6 +58,20 @@ namespace Alice
         static float ClampFloat(float v, float lo, float hi)
         {
             return std::max(lo, std::min(hi, v));
+        }
+
+        static XMFLOAT3 SafeNormalize(const XMFLOAT3& v, const XMFLOAT3& fallback)
+        {
+            using namespace DirectX;
+            XMVECTOR vec = XMLoadFloat3(&v);
+            XMVECTOR lenSq = XMVector3LengthSq(vec);
+            if (XMVectorGetX(lenSq) < 1e-6f)
+                return fallback;
+
+            vec = XMVector3Normalize(vec);
+            XMFLOAT3 out{};
+            XMStoreFloat3(&out, vec);
+            return out;
         }
     }
 
@@ -348,51 +365,76 @@ namespace Alice
             
             for (const auto& [entityId, effect] : emitters)
             {
-                // 월드 위치 결정 (Transform 연동)
-                XMFLOAT3 emitterPos{};
-                if (effect->useTransform)
+                // Transform 기반으로 이미터 좌표계 생성 (Unity-style)
+                XMFLOAT3 emitterPos{ 0.0f, 0.0f, 0.0f };
+                XMFLOAT3 right{ 1.0f, 0.0f, 0.0f };
+                XMFLOAT3 up{ 0.0f, 1.0f, 0.0f };
+                XMFLOAT3 forward{ 0.0f, 0.0f, 1.0f };
+
+                if (world.GetComponent<TransformComponent>(entityId))
                 {
-                    if (auto* t = world.GetComponent<TransformComponent>(entityId))
-                    {
-                        emitterPos = t->position;
-                        emitterPos.x += effect->localOffset.x;
-                        emitterPos.y += effect->localOffset.y;
-                        emitterPos.z += effect->localOffset.z;
-                    }
-                    else
-                    {
-                        emitterPos = effect->effectParams; // fallback
-                    }
+                    XMMATRIX worldM = world.ComputeWorldMatrix(entityId);
+                    XMFLOAT4X4 wm{};
+                    XMStoreFloat4x4(&wm, worldM);
+
+                    right = SafeNormalize(XMFLOAT3(wm._11, wm._12, wm._13), right);
+                    up = SafeNormalize(XMFLOAT3(wm._21, wm._22, wm._23), up);
+                    forward = SafeNormalize(XMFLOAT3(wm._31, wm._32, wm._33), forward);
+
+                    emitterPos = XMFLOAT3(wm._41, wm._42, wm._43);
+                    emitterPos.x += right.x * effect->localOffset.x + up.x * effect->localOffset.y + forward.x * effect->localOffset.z;
+                    emitterPos.y += right.y * effect->localOffset.x + up.y * effect->localOffset.y + forward.y * effect->localOffset.z;
+                    emitterPos.z += right.z * effect->localOffset.x + up.z * effect->localOffset.y + forward.z * effect->localOffset.z;
                 }
                 else
                 {
-                    emitterPos = effect->effectParams; // 기존 방식 호환
+                    // Transform이 없으면 로컬 오프셋을 월드 좌표로 간주
+                    emitterPos = effect->localOffset;
                 }
 
-                EmitterGPU emitter;
+                const float lifeMin = ClampFloat(effect->lifeMin, 0.01f, 100.0f);
+                const float lifeMax = ClampFloat(effect->lifeMax, lifeMin, 100.0f);
+
+                EmitterGPU emitter{};
                 emitter.p0 = XMFLOAT4(emitterPos.x, emitterPos.y, emitterPos.z, ClampFloat(effect->radius, 0.01f, 5.0f));
-                // 파라미터 Clamp: 안전한 범위로 제한
                 emitter.p1 = XMFLOAT4(
-                    ClampFloat(effect->color.x, 0.0f, 10.0f),
-                    ClampFloat(effect->color.y, 0.0f, 10.0f),
-                    ClampFloat(effect->color.z, 0.0f, 10.0f),
+                    right.x,
+                    right.y,
+                    right.z,
                     ClampFloat(effect->sizePx, 0.1f, 100.0f)
                 );
                 emitter.p2 = XMFLOAT4(
+                    up.x,
+                    up.y,
+                    up.z,
+                    ClampFloat(effect->startSpeed, 0.0f, 10.0f)
+                );
+                emitter.p3 = XMFLOAT4(
+                    forward.x,
+                    forward.y,
+                    forward.z,
+                    (effect->simulationSpace == ParticleSimulationSpace::Local) ? 1.0f : 0.0f
+                );
+                emitter.p4 = XMFLOAT4(
+                    ClampFloat(effect->color.x, 0.0f, 10.0f),
+                    ClampFloat(effect->color.y, 0.0f, 10.0f),
+                    ClampFloat(effect->color.z, 0.0f, 10.0f),
+                    ClampFloat(effect->intensity, 0.0f, 10.0f)
+                );
+                emitter.p5 = XMFLOAT4(
                     ClampFloat(effect->gravity.x, -50.0f, 50.0f),
                     ClampFloat(effect->gravity.y, -50.0f, 50.0f),
                     ClampFloat(effect->gravity.z, -50.0f, 50.0f),
-                    ClampFloat(effect->drag, 0.0f, 1.0f)  // drag는 0~1 범위
+                    ClampFloat(effect->drag, 0.0f, 1.0f)
                 );
-                float intensityValue = ClampFloat(effect->intensity, 0.0f, 10.0f);
-                emitter.p3 = XMFLOAT4(
-                    ClampFloat(effect->lifeMin, 0.01f, 100.0f),
-                    ClampFloat(effect->lifeMax, 0.01f, 100.0f),
-                    intensityValue,
-                    ClampFloat(effect->depthBiasMeters, 0.0f, 1.0f)
+                emitter.p6 = XMFLOAT4(
+                    lifeMin,
+                    lifeMax,
+                    ClampFloat(effect->depthBiasMeters, 0.0f, 1.0f),
+                    effect->depthTest ? 1.0f : 0.0f
                 );
-                emitter.p4 = XMFLOAT4(effect->depthTest ? 1.0f : 0.0f, 0.0f, 0.0f, 0.0f);
-                
+                emitter.p7 = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+
                 emitterData.push_back(emitter);
             }
 
@@ -736,7 +778,7 @@ namespace Alice
         CBParams cb{};
         cb.time       = XMFLOAT4(m_timeSec, m_dtSec, (float)m_particleCount, 0.25f);  // spawnJitter를 time.w로 이동
         cb.resolution = XMFLOAT4(w, h, 1.0f / w, 1.0f / h);
-        // emitterInfo: x=emitterCount, y=nearZ, z=farZ, w=0 (bias는 emitter별로 EmitterGPU.p3.w에 저장됨)
+        // emitterInfo: x=emitterCount, y=nearZ, z=farZ, w=0 (bias는 emitter별로 EmitterGPU.p6.z에 저장됨)
         cb.emitterInfo = XMFLOAT4((float)emitterCount, m_nearPlane, m_farPlane, 0.0f);
         XMStoreFloat4x4(&cb.viewProj, XMMatrixTranspose(m_viewProj));
         cb.cameraPos  = XMFLOAT4(m_cameraPos.x, m_cameraPos.y, m_cameraPos.z, 0.0f);
