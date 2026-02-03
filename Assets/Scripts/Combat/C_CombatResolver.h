@@ -8,6 +8,21 @@
 
 namespace Alice::Combat
 {
+    enum class ResolveResult : uint8_t
+    {
+        None,
+        Parry,
+        Guard,
+        GuardBreak,
+        Hit
+    };
+
+    struct ResolveDetail
+    {
+        ResolveOutput output{};
+        ResolveResult result = ResolveResult::None;
+    };
+
     class CombatResolver
     {
     public:
@@ -18,5 +33,9 @@ namespace Alice::Combat
         ResolveOutput ResolveOne(const HitEvent& hit,
                                  const FighterSnapshot& attacker,
                                  const FighterSnapshot& victim) const;
+
+        ResolveDetail ResolveOneDetailed(const HitEvent& hit,
+                                         const FighterSnapshot& attacker,
+                                         const FighterSnapshot& victim) const;
     };
 }

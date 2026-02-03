@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/Tia_Ribbon_0.mat"
+    ],
+    "mesh": "Tia_Ribbon",
+    "source_fbx": "Resource/Test/4_Resources/sample/Tia_Ribbon.fbx"
+}

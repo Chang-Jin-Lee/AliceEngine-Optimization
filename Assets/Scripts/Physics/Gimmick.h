@@ -21,6 +21,7 @@ namespace Alice
     public:
         void Start() override;
         void Update(float deltaTime) override;
+        bool IsLoopActive() const;
 
         ALICE_PROPERTY(std::string, m_weaponCombinedName, "Weapon(combined)");
         ALICE_PROPERTY(std::string, m_coreName, "W_Core");

@@ -53,6 +53,9 @@ namespace Alice::Combat
         bool parryWindowActive = false;
         bool invulnActive = false;
         bool canBeInterrupted = true;
+        bool chargeActive = false;
+        int chargeLevel = 0;
+        int attackComboIndex = 0;
     };
 
     struct Intent
@@ -74,6 +77,9 @@ namespace Alice::Combat
         bool interactPressed = false;
         bool ragePressed = false;
         bool runHeld = false;
+        bool chargeActive = false;
+        float chargeHeldSec = 0.0f;
+        int chargeLevel = 0;
     };
 
     struct Sensors
@@ -107,6 +113,9 @@ namespace Alice::Combat
 
         float groggyDuration = 1.5f;
         float moveSpeed = 5.0f;
+
+        Vec2 dodgeFallbackDir{};
+        bool dodgeFallbackValid = false;
     };
 
     using HitEvent = Alice::CombatHitEvent;
@@ -146,6 +155,7 @@ namespace Alice::Combat
         ConsumeParry,
         AddGroggy,
         EnterWeakState,
+        ApplyPushback,
         ApplyPushbackToBoth
     };
 
@@ -175,6 +185,13 @@ namespace Alice::Combat
     struct CmdConsumeParry { EntityId target = InvalidEntityId; };
     struct CmdAddGroggy { EntityId target = InvalidEntityId; float amount = 0.0f; };
     struct CmdEnterWeakState { EntityId target = InvalidEntityId; float durationSec = 0.0f; };
+    struct CmdApplyPushback
+    {
+        EntityId attacker = InvalidEntityId;
+        EntityId victim = InvalidEntityId;
+        float speed = 0.0f;
+        float durationSec = 0.0f;
+    };
     struct CmdApplyPushbackToBoth
     {
         EntityId attacker = InvalidEntityId;
@@ -197,6 +214,7 @@ namespace Alice::Combat
         CmdConsumeParry,
         CmdAddGroggy,
         CmdEnterWeakState,
+        CmdApplyPushback,
         CmdApplyPushbackToBoth>;
 
     struct Command
@@ -210,6 +228,7 @@ namespace Alice::Combat
         ActionState state = ActionState::Idle;
         ActionFlags flags{};
         std::vector<Command> commands;
+        bool attackRestarted = false;
     };
 
     struct ResolveOutput

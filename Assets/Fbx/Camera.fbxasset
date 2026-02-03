@@ -1,0 +1,8 @@
+{
+    "materials": [
+        "Assets/Materials/Camera_0.mat",
+        "Assets/Materials/Camera_1.mat"
+    ],
+    "mesh": "Camera",
+    "source_fbx": "Resource/BasicMesh/Camera.fbx"
+}
