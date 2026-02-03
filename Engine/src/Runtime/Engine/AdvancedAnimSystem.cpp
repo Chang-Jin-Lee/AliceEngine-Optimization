@@ -104,10 +104,15 @@ namespace Alice
         meshKey = std::move(other.meshKey);
         mesh = std::move(other.mesh);
         clipIndexByName = std::move(other.clipIndexByName);
+        rmPrevEnabled = other.rmPrevEnabled;
+        rmHasPrevClip = other.rmHasPrevClip;
+        rmPrevClip = std::move(other.rmPrevClip);
         animator = other.animator;
         initialized = other.initialized;
         other.animator = nullptr;
         other.initialized = false;
+        other.rmPrevEnabled = false;
+        other.rmHasPrevClip = false;
     }
 
     AdvancedAnimSystem::Runtime& AdvancedAnimSystem::Runtime::operator=(Runtime&& other) noexcept
@@ -117,10 +122,15 @@ namespace Alice
         meshKey = std::move(other.meshKey);
         mesh = std::move(other.mesh);
         clipIndexByName = std::move(other.clipIndexByName);
+        rmPrevEnabled = other.rmPrevEnabled;
+        rmHasPrevClip = other.rmHasPrevClip;
+        rmPrevClip = std::move(other.rmPrevClip);
         animator = other.animator;
         initialized = other.initialized;
         other.animator = nullptr;
         other.initialized = false;
+        other.rmPrevEnabled = false;
+        other.rmHasPrevClip = false;
         return *this;
     }
 
@@ -383,6 +393,7 @@ namespace Alice
         // ------------------------------
         // Time advance & Notify Check
         // ------------------------------
+        bool baseLoopWrapped = false;
         if (animComp.playing)
         {
             // [Base Layer Notify 체크]
@@ -394,6 +405,16 @@ namespace Alice
                 // 시간 진행
                 AdvanceTime(animComp.base.timeA, (float)dtSec, animComp.base.speedA, dur, animComp.base.loopA);
                 
+                const float deltaTime = static_cast<float>(dtSec) * animComp.base.speedA;
+                if (animComp.base.loopA && deltaTime != 0.0f)
+                {
+                    if ((deltaTime > 0.0f && animComp.base.timeA < prevTime) ||
+                        (deltaTime < 0.0f && animComp.base.timeA > prevTime))
+                    {
+                        baseLoopWrapped = true;
+                    }
+                }
+
                 // 노티파이 실행 (현재 시간이 바뀌었으므로 체크)
                 FireAnimNotifiesForAdvance(
                     animComp,
@@ -402,7 +423,7 @@ namespace Alice
                     animComp.base.timeA,
                     dur,
                     animComp.base.loopA,
-                    static_cast<float>(dtSec) * animComp.base.speedA);
+                    deltaTime);
             }
 
             if (animComp.base.autoAdvance && baseB)
@@ -482,6 +503,30 @@ namespace Alice
             animComp.upper.timeB = animComp.upper.timeA;
 
         // ------------------------------
+        // Root motion reset detection
+        // ------------------------------
+        bool rmReset = false;
+        const bool rmEnabled = animComp.rootMotionUnlock;
+        if (rmEnabled)
+        {
+            if (!rt.rmPrevEnabled)
+                rmReset = true;
+            if (!rt.rmHasPrevClip || rt.rmPrevClip != animComp.base.clipA)
+            {
+                rmReset = true;
+                rt.rmPrevClip = animComp.base.clipA;
+                rt.rmHasPrevClip = true;
+            }
+            if (baseLoopWrapped)
+                rmReset = true;
+        }
+        else
+        {
+            rt.rmHasPrevClip = false;
+            rt.rmPrevClip.clear();
+        }
+
+        // ------------------------------
         // Build update desc
         // ------------------------------
         AdvancedAnimator::UpdateDesc d{};
@@ -549,6 +594,16 @@ namespace Alice
         d.aim.yawRad = animComp.aim.yawRad;
         d.aim.weight = animComp.aim.weight;
 
+        d.rootMotion.enabled = rmEnabled;
+        const std::string& rootBoneName = animComp.rootBoneName;
+        d.rootMotion.rootBone = rootBoneName.empty() ? nullptr : rootBoneName.c_str();
+        d.rootMotion.rootLock = RootLockMode::AnimFirstFrame;
+        d.rootMotion.extractTranslationXZ = true;
+        d.rootMotion.extractTranslationY = false;
+        d.rootMotion.extractYaw = true;
+        d.rootMotion.extractPitchRoll = false;
+        d.rootMotion.reset = rmReset;
+
         // ------------------------------
         // Socket definitions (push to runtime)
         // ------------------------------
@@ -561,6 +616,33 @@ namespace Alice
         // Evaluate
         // ------------------------------
         rt.animator->Update(d);
+
+        // ------------------------------
+        // Apply root motion to transform (optional)
+        // ------------------------------
+        const auto rmDelta = rt.animator->ConsumeRootMotionDelta();
+        if (rmDelta.valid && rmEnabled)
+        {
+            if (auto* tc = world.GetComponent<TransformComponent>(id))
+            {
+                using namespace DirectX;
+                XMMATRIX worldRow = BuildWorldMatrix(*tc);
+                XMMATRIX newWorldRow = worldRow * rmDelta.deltaRow;
+
+                XMVECTOR s, r, t;
+                if (XMMatrixDecompose(&s, &r, &t, newWorldRow))
+                {
+                    XMFLOAT3 pos;
+                    XMStoreFloat3(&pos, t);
+                    tc->position = pos;
+
+                    XMFLOAT4 q;
+                    XMStoreFloat4(&q, r);
+                    tc->SetRotation(q);
+                }
+            }
+        }
+        rt.rmPrevEnabled = rmEnabled;
 
         // ------------------------------
         // Bone global cache (row-major)

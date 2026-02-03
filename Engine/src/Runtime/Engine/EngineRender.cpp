@@ -1,5 +1,6 @@
 #include "Runtime/Engine/EngineImpl.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Rendering/Components/CameraComponent.h"
 
 namespace Alice
 {
@@ -64,6 +65,7 @@ namespace Alice
 		RenderAudioUpdate();
 
 		RenderMainPass();
+		RenderCameraPreview();
 		RenderUnbindDepthOnly();
 
 		RenderComputeEffects();
@@ -434,6 +436,86 @@ namespace Alice
 				m_editorMode, m_isPlaying
 			);
 		}
+	}
+
+	void Engine::Impl::RenderCameraPreview()
+	{
+		if (!m_editorMode) return;
+		if (m_selectedEntity == InvalidEntityId) return;
+
+		auto* camComp = m_world.GetComponent<CameraComponent>(m_selectedEntity);
+		if (!camComp) return;
+
+		Camera previewCam = camComp->GetCamera();
+		if (auto* camTr = m_world.GetComponent<TransformComponent>(m_selectedEntity))
+		{
+			previewCam.SetPosition(camTr->position);
+
+			DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(
+				camTr->rotation.x, camTr->rotation.y, camTr->rotation.z);
+			DirectX::XMFLOAT4 quat{};
+			DirectX::XMStoreFloat4(&quat, q);
+			previewCam.SetRotation(quat);
+
+			previewCam.SetScale(camTr->scale);
+		}
+
+		std::unordered_set<EntityId> cameraIDs;
+		for (const auto& [id, _] : m_world.GetComponents<CameraComponent>())
+			cameraIDs.insert(id);
+
+		const int finalShadingMode = m_editorMode
+			? static_cast<int>(m_shadingMode)
+			: static_cast<int>(Impl::ShadingMode::PBR);
+
+		if (m_deferredRenderSystem)
+		{
+			const float previewAspect = (camComp->useAspectOverride && camComp->aspectOverride > 0.0f)
+				? camComp->aspectOverride
+				: m_deferredRenderSystem->GetCameraPreviewAspect();
+
+			previewCam.SetPerspective(
+				previewCam.GetFovYRadians(),
+				previewAspect,
+				previewCam.GetNearPlane(),
+				previewCam.GetFarPlane()
+			);
+
+            m_deferredRenderSystem->RenderCameraPreview(
+                m_world,
+                previewCam,
+                cameraIDs,
+                finalShadingMode,
+                m_useFillLight,
+                m_skinnedDrawCommands,
+                m_editorMode,
+                m_isPlaying,
+                m_selectedEntity
+            );
+        }
+        else if (m_forwardRenderSystem)
+        {
+			const float previewAspect = (camComp->useAspectOverride && camComp->aspectOverride > 0.0f)
+				? camComp->aspectOverride
+				: m_forwardRenderSystem->GetCameraPreviewAspect();
+
+			previewCam.SetPerspective(
+				previewCam.GetFovYRadians(),
+				previewAspect,
+				previewCam.GetNearPlane(),
+				previewCam.GetFarPlane()
+			);
+
+            m_forwardRenderSystem->RenderCameraPreview(
+                m_world,
+                previewCam,
+                cameraIDs,
+                finalShadingMode,
+                m_useFillLight,
+                m_skinnedDrawCommands,
+                m_selectedEntity
+            );
+        }
 	}
 
 	void Engine::Impl::RenderUnbindDepthOnly()

@@ -7,6 +7,7 @@
 #include "Runtime/Rendering/SkinnedMeshRegistry.h"
 #include "Runtime/Importing/FbxModel.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
+#include "Runtime/Rendering/Components/CameraComponent.h"
 #include "Runtime/Rendering/Components/PointLightComponent.h"
 #include "Runtime/Rendering/Components/SpotLightComponent.h"
 #include "Runtime/Rendering/Components/RectLightComponent.h"
@@ -102,6 +103,7 @@ namespace Alice
 		const XMFLOAT3 defaultBoxMax(1.0f, 1.0f, 1.0f);
 		const XMFLOAT3 lightBoxMin(-0.1f, -0.1f, -0.1f);     // 라이트용 작은 큐브
 		const XMFLOAT3 lightBoxMax(0.1f, 0.1f, 0.1f);
+		const float cameraIconScale = 0.5f;
 
 		for (const auto& [entityId, transform] : transforms)
 		{
@@ -144,6 +146,34 @@ namespace Alice
 				hasPickableComponent = true;
 				boxMin = lightBoxMin;
 				boxMax = lightBoxMax;
+			}
+
+			// 3) 카메라 컴포넌트: Camera FBX bounds 사용 (없으면 기본 박스)
+			if (world.GetComponent<CameraComponent>(entityId))
+			{
+				hasPickableComponent = true;
+
+				if (skinnedRegistry)
+				{
+					auto mesh = skinnedRegistry->Find("Camera");
+					if (mesh && mesh->sourceModel)
+					{
+						XMFLOAT3 mn{}, mx{};
+						if (mesh->sourceModel->GetLocalBounds(mn, mx))
+						{
+							boxMin = mn;
+							boxMax = mx;
+						}
+					}
+				}
+
+				// 렌더링 스케일(0.5) 적용
+				boxMin.x *= cameraIconScale;
+				boxMin.y *= cameraIconScale;
+				boxMin.z *= cameraIconScale;
+				boxMax.x *= cameraIconScale;
+				boxMax.y *= cameraIconScale;
+				boxMax.z *= cameraIconScale;
 			}
 
 			// 피킹 가능한 컴포넌트가 없으면 스킵

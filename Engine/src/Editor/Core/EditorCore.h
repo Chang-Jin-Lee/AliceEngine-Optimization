@@ -351,7 +351,13 @@ namespace Alice
 			bool& isPlaying,
 			int& shadingMode,
 			bool& useFillLight);
-		void DrawCameraWindow(World& world, Camera& camera, float& cameraMoveSpeed, EntityId& selectedEntity);
+		void DrawCameraWindow(World& world,
+			Camera& camera,
+			ForwardRenderSystem& forward,
+			DeferredRenderSystem& deferred,
+			float& cameraMoveSpeed,
+			EntityId& selectedEntity,
+			bool& useForwardRendering);
 		void DrawLightingWindow(World& world,
 			ForwardRenderSystem& forward,
 			DeferredRenderSystem& deferred,
