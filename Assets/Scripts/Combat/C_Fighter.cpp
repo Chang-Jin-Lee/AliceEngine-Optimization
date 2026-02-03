@@ -50,10 +50,14 @@ namespace Alice::Combat
         {
             s.attackWindowActive = driver->attackActive;
             const bool guardLock = (driver->guardLockRemainingSec > 0.0f);
-            s.guardWindowActive = s.guardWindowActive || driver->guardActive || driver->guardInputHeld || guardLock;
-            s.dodgeWindowActive = s.dodgeWindowActive || driver->dodgeActive;
-            s.parryWindowActive = driver->parryActive
+            const bool parryWindow = driver->parryActive
                 || (driver->parryOverrideRemainingSec > 0.0f && !driver->parryUsedThisPress);
+            bool guardWindow = s.guardWindowActive || driver->guardActive || driver->guardInputHeld || guardLock;
+            if (parryWindow)
+                guardWindow = false;
+            s.guardWindowActive = guardWindow;
+            s.dodgeWindowActive = s.dodgeWindowActive || driver->dodgeActive;
+            s.parryWindowActive = parryWindow;
             s.guardLockActive = guardLock;
             s.attackCancelable = driver->attackCancelable;
             s.attackStateDurationSec = (driver->attackStateDurationSec > 0.0f)

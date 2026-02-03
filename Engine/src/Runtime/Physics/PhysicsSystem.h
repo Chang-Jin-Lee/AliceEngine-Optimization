@@ -47,6 +47,9 @@ public:
     // Physics → Game 동기화 (외부에서 호출 가능)
     void SyncPhysicsToGame(const ActiveTransform& transform);
 
+    // After animation update: apply root motion deltas via CCT to avoid 1-frame lag.
+    void ApplyRootMotionDeltas(float deltaTime);
+
     // MeshCollider용 스키닝 메시 레지스트리
     void SetSkinnedMeshRegistry(class Alice::SkinnedMeshRegistry* registry) { m_skinnedRegistry = registry; }
 
