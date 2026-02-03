@@ -77,6 +77,9 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_heavyAttackClipB, "");
         ALICE_PROPERTY(std::string, m_dodgeClip, "");
         ALICE_PROPERTY(std::string, m_chargeLoopClip, "");
+        ALICE_PROPERTY(std::string, m_hitClip, "");
+        ALICE_PROPERTY(std::string, m_guardBreakClip, "");
+        ALICE_PROPERTY(std::string, m_fatalAttackClip, "");
         ALICE_PROPERTY(std::string, m_guardEnterClip, "");
         ALICE_PROPERTY(std::string, m_guardLoopClip, "");
         ALICE_PROPERTY(std::string, m_guardExitClip, "");
@@ -94,6 +97,9 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_playerHeavyAttackClipB, "");
         ALICE_PROPERTY(std::string, m_playerDodgeClip, "");
         ALICE_PROPERTY(std::string, m_playerChargeLoopClip, "");
+        ALICE_PROPERTY(std::string, m_playerHitClip, "");
+        ALICE_PROPERTY(std::string, m_playerGuardBreakClip, "");
+        ALICE_PROPERTY(std::string, m_playerFatalAttackClip, "");
         ALICE_PROPERTY(std::string, m_playerGuardEnterClip, "");
         ALICE_PROPERTY(std::string, m_playerGuardLoopClip, "");
         ALICE_PROPERTY(std::string, m_playerGuardExitClip, "");
@@ -109,6 +115,8 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_bossHeavyAttackClipB, "");
         ALICE_PROPERTY(std::string, m_bossDodgeClip, "");
         ALICE_PROPERTY(std::string, m_bossChargeLoopClip, "");
+        ALICE_PROPERTY(std::string, m_bossHitClip, "");
+        ALICE_PROPERTY(std::string, m_bossGuardBreakClip, "");
         ALICE_PROPERTY(std::string, m_bossGuardEnterClip, "");
         ALICE_PROPERTY(std::string, m_bossGuardLoopClip, "");
         ALICE_PROPERTY(std::string, m_bossGuardExitClip, "");
