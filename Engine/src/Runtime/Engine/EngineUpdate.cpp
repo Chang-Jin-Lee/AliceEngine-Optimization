@@ -10,12 +10,7 @@ namespace Alice
 		const bool updateFromScene = UpdateShouldUpdateFromScene();
 		bool sceneChangedThisFrame = false;
 
-		const bool playJustStarted = (m_editorMode && m_isPlaying && !m_prevIsPlaying);
-		if (playJustStarted)
-		{
-			m_skipPhysicsNextFrame = true;
-			m_physAccum = 0.0f;
-		}
+		UpdateHandlePlayStartReset();
 
 		if (updateFromScene)
 		{
@@ -28,13 +23,7 @@ namespace Alice
 
 				UpdateEnsurePhysicsWorldIfNeeded();
 
-				float physicsDt = dt;
-				if (m_skipPhysicsNextFrame)
-				{
-					physicsDt = 0.0f;
-					m_physAccum = 0.0f;
-					m_skipPhysicsNextFrame = false;
-				}
+				const float physicsDt = UpdateResolvePhysicsDelta(dt);
 
 				UpdatePhysicsBridge(physicsDt);
 				UpdatePhysicsSim(physicsDt);
@@ -109,6 +98,28 @@ namespace Alice
 	{
 		//m_attackDriverSystem.Update(m_world);
 		m_attackDriverSystem.PreUpdate(m_world);
+	}
+
+	void Engine::Impl::UpdateHandlePlayStartReset()
+	{
+		const bool playJustStarted = (m_editorMode && m_isPlaying && !m_prevIsPlaying);
+		if (playJustStarted)
+		{
+			m_skipPhysicsNextFrame = true;
+			m_physAccum = 0.0f;
+		}
+	}
+
+	float Engine::Impl::UpdateResolvePhysicsDelta(float dt)
+	{
+		float physicsDt = dt;
+		if (m_skipPhysicsNextFrame)
+		{
+			physicsDt = 0.0f;
+			m_physAccum = 0.0f;
+			m_skipPhysicsNextFrame = false;
+		}
+		return physicsDt;
 	}
 
 	void Engine::Impl::UpdateEnsurePhysicsWorldIfNeeded()

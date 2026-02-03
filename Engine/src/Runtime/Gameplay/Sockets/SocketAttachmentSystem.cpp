@@ -148,12 +148,19 @@ namespace Alice
 				continue;
 			}
 
-			const XMMATRIX extra =
-				XMMatrixScaling(att.extraScale.x, att.extraScale.y, att.extraScale.z) *
-				XMMatrixRotationRollPitchYaw(att.extraRotRad.x, att.extraRotRad.y, att.extraRotRad.z) *
-				XMMatrixTranslation(att.extraPos.x, att.extraPos.y, att.extraPos.z);
+			const XMMATRIX extraScale = XMMatrixScaling(att.extraScale.x, att.extraScale.y, att.extraScale.z);
+			const XMMATRIX extraRot = XMMatrixRotationRollPitchYaw(att.extraRotRad.x, att.extraRotRad.y, att.extraRotRad.z);
+			const XMMATRIX extraPos = XMMatrixTranslation(att.extraPos.x, att.extraPos.y, att.extraPos.z);
 
-			const XMMATRIX finalM = socketWorld * extra;
+			XMMATRIX base = socketWorld;
+			if (att.extraRotInWorld)
+				base = extraRot * base;
+
+			const XMMATRIX extraLocal = att.extraRotInWorld
+				? (extraScale * extraPos)
+				: (extraScale * extraRot * extraPos);
+
+			const XMMATRIX finalM = extraLocal * base;
 
 			XMVECTOR S, R, T;
 			if (!XMMatrixDecompose(&S, &R, &T, finalM))

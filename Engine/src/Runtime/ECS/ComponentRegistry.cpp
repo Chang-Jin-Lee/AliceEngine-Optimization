@@ -378,6 +378,13 @@ namespace Alice
 			.property("active", &WeaponTraceComponent::active)
 			.property("debugDraw", &WeaponTraceComponent::debugDraw)
 			.property("baseDamage", &WeaponTraceComponent::baseDamage)
+			.property("guardDurabilityCost", &WeaponTraceComponent::guardDurabilityCost)
+			.property("guardLockSec", &WeaponTraceComponent::guardLockSec)
+			.property("parryLockSec", &WeaponTraceComponent::parryLockSec)
+			.property("parryGroggyGain", &WeaponTraceComponent::parryGroggyGain)
+			.property("guardBreakWeakSec", &WeaponTraceComponent::guardBreakWeakSec)
+			.property("guardBreakPushbackSpeed", &WeaponTraceComponent::guardBreakPushbackSpeed)
+			.property("guardBreakPushbackDuration", &WeaponTraceComponent::guardBreakPushbackDuration)
 			.property("teamId", &WeaponTraceComponent::teamId)
 			.property("attackInstanceId", &WeaponTraceComponent::attackInstanceId)
 			.property("targetLayerBits", &WeaponTraceComponent::targetLayerBits)
@@ -394,10 +401,16 @@ namespace Alice
 			.property("dodgeActive", &HealthComponent::dodgeActive)
 			.property("guardActive", &HealthComponent::guardActive)
 			.property("guardDamageScale", &HealthComponent::guardDamageScale)
+			.property("weaponDurabilityMax", &HealthComponent::weaponDurabilityMax)
+			.property("weaponDurability", &HealthComponent::weaponDurability)
 			.property("groggy", &HealthComponent::groggy)
 			.property("groggyMax", &HealthComponent::groggyMax)
 			.property("groggyGainScale", &HealthComponent::groggyGainScale)
 			.property("groggyDuration", &HealthComponent::groggyDuration)
+			.property("weakRemainingSec", &HealthComponent::weakRemainingSec)
+			.property("pushbackRemainingSec", &HealthComponent::pushbackRemainingSec)
+			.property("pushbackDir", &HealthComponent::pushbackDir)
+			.property("pushbackSpeed", &HealthComponent::pushbackSpeed)
 			.property("hitThisFrame", &HealthComponent::hitThisFrame)
 			.property("guardHitThisFrame", &HealthComponent::guardHitThisFrame)
 			.property("dodgeAvoidedThisFrame", &HealthComponent::dodgeAvoidedThisFrame)
@@ -414,8 +427,9 @@ namespace Alice
 			(
 				rttr::value("Attack", AttackDriverNotifyType::Attack),
 				rttr::value("Dodge", AttackDriverNotifyType::Dodge),
-				rttr::value("Guard", AttackDriverNotifyType::Guard)
-				);
+				rttr::value("Guard", AttackDriverNotifyType::Guard),
+				rttr::value("Parry", AttackDriverNotifyType::Parry)
+			);
 
 		rttr::registration::enumeration<AttackDriverClipSource>("AttackDriverClipSource")
 			(
@@ -439,8 +453,12 @@ namespace Alice
 
 		rttr::registration::class_<AttackDriverComponent>("AttackDriverComponent")
 			.constructor<>()
+			.property("debugOwnerName", &AttackDriverComponent::debugOwnerName)
+			.property("debugTeamId", &AttackDriverComponent::debugTeamId)
+			.property("debugLogs", &AttackDriverComponent::debugLogs)
 			.property("traceGuid", &AttackDriverComponent::traceGuid)
-			.property("clips", &AttackDriverComponent::clips);
+			.property("clips", &AttackDriverComponent::clips)
+			.property("attackStateDurationSec", &AttackDriverComponent::attackStateDurationSec);
 
 		// SocketDef / SocketComponent 등록 (씬 저장/로드 및 인스펙터)
 		rttr::registration::class_<SocketDef>("SocketDef")
@@ -501,6 +519,7 @@ namespace Alice
             .property("shoulderSide", &CameraFollowComponent::shoulderSide)
             .property("enableInput", &CameraFollowComponent::enableInput)
             .property("sensitivity", &CameraFollowComponent::sensitivity)
+            .property("invertMouse", &CameraFollowComponent::invertMouse)
             .property("yawDeg", &CameraFollowComponent::yawDeg)
             .property("pitchDeg", &CameraFollowComponent::pitchDeg)
             .property("pitchMinDeg", &CameraFollowComponent::pitchMinDeg)
@@ -676,19 +695,25 @@ namespace Alice
             .constructor<>()
             .property("enabled", &ComputeEffectComponent::enabled)
             .property("shaderName", &ComputeEffectComponent::shaderName)
-            .property("effectParams", &ComputeEffectComponent::effectParams)
-            .property("intensity", &ComputeEffectComponent::intensity)
-            .property("useTransform", &ComputeEffectComponent::useTransform)
+            .property("simulationSpace", &ComputeEffectComponent::simulationSpace)
             .property("localOffset", &ComputeEffectComponent::localOffset)
-            .property("radius", &ComputeEffectComponent::radius)
-            .property("color", &ComputeEffectComponent::color)
-            .property("sizePx", &ComputeEffectComponent::sizePx)
-            .property("gravity", &ComputeEffectComponent::gravity)
-            .property("drag", &ComputeEffectComponent::drag)
             .property("lifeMin", &ComputeEffectComponent::lifeMin)
             .property("lifeMax", &ComputeEffectComponent::lifeMax)
+            .property("startSpeed", &ComputeEffectComponent::startSpeed)
+            .property("sizePx", &ComputeEffectComponent::sizePx)
+            .property("color", &ComputeEffectComponent::color)
+            .property("intensity", &ComputeEffectComponent::intensity)
+            .property("radius", &ComputeEffectComponent::radius)
+            .property("gravity", &ComputeEffectComponent::gravity)
+            .property("drag", &ComputeEffectComponent::drag)
             .property("depthTest", &ComputeEffectComponent::depthTest)
             .property("depthBiasMeters", &ComputeEffectComponent::depthBiasMeters);
+
+        rttr::registration::enumeration<ParticleSimulationSpace>("ParticleSimulationSpace")
+            (
+                rttr::value("World", ParticleSimulationSpace::World),
+                rttr::value("Local", ParticleSimulationSpace::Local)
+            );
 
         // === ColliderType enum 등록 ===
         rttr::registration::enumeration<ColliderType>("ColliderType")
@@ -1236,7 +1261,7 @@ namespace Alice
 
         r.Register<PostProcessVolumeComponent>("Post Process Volume", "Rendering");
 
-        r.Register<ComputeEffectComponent>("Compute Effect", "VFX");
+        r.Register<ComputeEffectComponent>("Particle System (Compute)", "VFX");
         r.Register<EffectComponent>("Effect", "VFX");
         r.Register<TrailEffectComponent>("Trail Effect", "VFX");
 
