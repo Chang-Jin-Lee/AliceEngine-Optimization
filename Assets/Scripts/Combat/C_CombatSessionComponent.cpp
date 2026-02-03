@@ -113,6 +113,7 @@ namespace Alice
 		float bossGuardExitLockSec = 0.0f;
 		float playerHitstunDurationSec = 0.0f;
 		float bossHitstunDurationSec = 0.0f;
+		float bossHitstopTimer = 0.0f;
 
 		struct ParryLockKey
 		{
@@ -174,6 +175,7 @@ namespace Alice
 			bossGuardExitLockSec = 0.0f;
 			playerHitstunDurationSec = 0.0f;
 			bossHitstunDurationSec = 0.0f;
+			bossHitstopTimer = 0.0f;
 			parryResolvedByVictim.clear();
 			fatal = {};
 		}
@@ -576,6 +578,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		m_state->boss.id = bossId;
 		m_state->boss.team = Combat::Team::Enemy;
 		m_state->boss.canBeHitstunned = m_bossCanBeHitstunned;
+		m_state->bossHitstopTimer = std::max(0.0f, m_state->bossHitstopTimer - deltaTime);
+		m_state->boss.moveSpeed = std::max(0.0f, m_state->player.moveSpeed * 0.5f);
 
 		m_state->fighterMap.clear();
 		m_state->fighterMap[playerId] = &m_state->player;
@@ -589,10 +593,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		}
 
 		Combat::Intent bossIntent{};
+		C_BossBrainComponent* bossBrain = nullptr;
 		if (auto* script = FindScriptOnEntity(world, bossId, "C_BossBrainComponent"))
 		{
 			if (auto* brain = dynamic_cast<C_BossBrainComponent*>(script))
+			{
+				bossBrain = brain;
 				bossIntent = brain->Think(deltaTime, playerId);
+			}
 		}
 
 		const bool playerGuardReleased = playerIntent.guardReleased;
@@ -1621,6 +1629,24 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		StopIfNotMoving(playerId, outPlayer.state, m_state->playerAttackMove);
 		StopIfNotMoving(bossId, outBoss.state, m_state->bossAttackMove);
 
+		auto FaceTarget = [&](EntityId selfId, EntityId targetId)
+			{
+				auto* selfTr = world.GetComponent<TransformComponent>(selfId);
+				auto* targetTr = world.GetComponent<TransformComponent>(targetId);
+				if (!selfTr || !targetTr)
+					return;
+				const float dx = targetTr->position.x - selfTr->position.x;
+				const float dz = targetTr->position.z - selfTr->position.z;
+				if (std::abs(dx) + std::abs(dz) <= 0.0001f)
+					return;
+				const float offsetRad = m_rotationOffsetDeg * kDegToRad;
+				const float yawRad = std::atan2(dx, dz) + offsetRad;
+				selfTr->SetRotation(0.0f, yawRad * kRadToDeg, 0.0f);
+			};
+
+		if (bossBrain && bossBrain->WantsFaceTarget())
+			FaceTarget(bossId, playerId);
+
 		auto UpdateRootMotionDrive = [&](EntityId entityId, Combat::ActionState state)
 			{
 				if (auto* anim = world.GetComponent<AdvancedAnimationComponent>(entityId))
@@ -2254,6 +2280,22 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
             playerGuardEnterPulse, false, m_state->playerChargeActive, outPlayer.attackRestarted);
         ApplyAnimByState(bossId, outBoss.state, m_state->prevBossState, m_state->bossAnim, m_state->bossMoveBlend,
             bossGuardEnterPulse, false, m_state->bossChargeActive, outBoss.attackRestarted);
+
+		auto ApplyHitstopToAnim = [&](EntityId entityId, float timerSec)
+			{
+				if (timerSec <= 0.0f)
+					return;
+				if (auto* anim = world.GetComponent<AdvancedAnimationComponent>(entityId))
+				{
+					anim->base.speedA = 0.0f;
+					anim->base.speedB = 0.0f;
+					anim->upper.speedA = 0.0f;
+					anim->upper.speedB = 0.0f;
+					anim->additive.speed = 0.0f;
+				}
+			};
+
+		ApplyHitstopToAnim(bossId, m_state->bossHitstopTimer);
 	}
 
 	void C_CombatSessionComponent::PostCombatUpdate(float deltaTime)
@@ -2394,6 +2436,11 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			const bool wasGuarded = (resolveResult == Combat::ResolveResult::Guard);
 			const bool wasGuardBreak = (resolveResult == Combat::ResolveResult::GuardBreak);
 			const bool wasHit = (resolveResult == Combat::ResolveResult::Hit);
+			if (wasHit && hit.victimOwner == bossId && hit.attackerOwner == playerId)
+			{
+				constexpr float kBossHitstopSec = 0.1f;
+				m_state->bossHitstopTimer = std::max(m_state->bossHitstopTimer, kBossHitstopSec);
+			}
 			float* parryNoDurability = nullptr;
 			if (hit.victimOwner == playerId)
 				parryNoDurability = &m_state->playerParryNoDurabilitySec;
