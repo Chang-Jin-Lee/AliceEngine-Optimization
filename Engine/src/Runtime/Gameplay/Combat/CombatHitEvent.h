@@ -18,13 +18,6 @@ namespace Alice
         uint32_t attackInstanceId = 0;
         uint32_t subShapeIndex = 0;
         float damage = 0.0f;
-        float guardDurabilityCost = 0.0f;
-        float guardLockSec = 0.0f;
-        float parryLockSec = 0.0f;
-        float parryGroggyGain = 0.0f;
-        float guardBreakWeakSec = 0.0f;
-        float guardBreakPushbackSpeed = 0.0f;
-        float guardBreakPushbackDuration = 0.0f;
         bool debugLog = false;
 
         float sweepFraction = 0.0f;

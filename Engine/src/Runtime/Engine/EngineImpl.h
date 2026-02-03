@@ -223,8 +223,6 @@ namespace Alice
 		void UpdateEditorFreeCam(float dt);
 		void UpdateApplyFinalCameraLookAt();
 		void UpdateUI(float dt);
-		void UpdateHandlePlayStartReset();
-		float UpdateResolvePhysicsDelta(float dt);
 
 		// =========================
 		// Physics helpers
@@ -248,6 +246,7 @@ namespace Alice
 		void RenderOnDemandSkinnedMeshLoading();
 		void RenderAudioUpdate();
 		void RenderMainPass();
+		void RenderCameraPreview();
 		void RenderUnbindDepthOnly();
 		void RenderComputeEffects();
 		void RenderParticleOverlayComposite();

@@ -5,12 +5,6 @@
 
 namespace Alice
 {
-    namespace
-    {
-        // Clamp large frame gaps (e.g., debugger break / alt-tab) to avoid huge sim steps.
-        constexpr double kMaxDeltaTimeSec = 0.1;
-    }
-
     GameTimer* GameTimer::m_Instance = nullptr;
 
     GameTimer::GameTimer()
@@ -105,9 +99,6 @@ namespace Alice
 
         // Force nonnegative.
         if (mDeltaTime < 0.0) mDeltaTime = 0.0;
-
-        // Avoid large spikes that can explode CCT/scripted movement.
-        if (mDeltaTime > kMaxDeltaTimeSec) mDeltaTime = kMaxDeltaTimeSec;
     }
 }
 

@@ -69,6 +69,17 @@ namespace Alice
                     bool editorMode = false,
                     bool isPlaying = false);
 
+        /// 선택된 카메라 미리보기용 렌더링을 수행합니다 (에디터 전용).
+        void RenderCameraPreview(const World& world,
+                                 const Camera& camera,
+                                 const std::unordered_set<EntityId>& cameraEntities,
+                                 int shadingMode,
+                                 bool enableFillLight,
+                                 const std::vector<SkinnedDrawCommand>& skinnedCommands,
+                                 bool editorMode = false,
+                                 bool isPlaying = false,
+                                 EntityId hiddenCameraEntity = InvalidEntityId);
+
         /// 씬 컬러 텍스처 SRV를 반환합니다 (에디터에서 사용).
         ID3D11ShaderResourceView* GetSceneColorSRV() const { return m_sceneColorSRV.Get(); }
         std::uint32_t GetSceneWidth()  const { return m_sceneWidth; }
@@ -76,6 +87,10 @@ namespace Alice
 
         /// 에디터 뷰포트 표시용(톤매핑 완료) SRV
         ID3D11ShaderResourceView* GetViewportSRV() const { return m_viewportSRV.Get(); }
+
+        /// 선택 카메라 미리보기용 SRV
+        ID3D11ShaderResourceView* GetCameraPreviewSRV() const { return m_cameraPreviewViewportSRV.Get(); }
+        float GetCameraPreviewAspect() const { return (m_cameraPreviewHeight > 0) ? (float)m_cameraPreviewWidth / (float)m_cameraPreviewHeight : 1.0f; }
         
         /// Scene Depth SRV를 반환합니다 (depth test용)
         ID3D11ShaderResourceView* GetSceneDepthSRV() const { return m_sceneDepthSRV.Get(); }
@@ -211,6 +226,7 @@ namespace Alice
         bool CreateIblResources(const std::string& iblDir = "Bridge", const std::string& iblName = "bridge");
         bool CreateShadowMapResources();
         bool CreateToneMappingResources(const std::uint32_t& width, const std::uint32_t& height);
+        bool CreateCameraPreviewTargets(std::uint32_t width, std::uint32_t height);
 
         bool CreateBloomResources(const std::uint32_t& width, const std::uint32_t& height);
         bool CreatePostBloomResources(const std::uint32_t& width, const std::uint32_t& height);
@@ -228,7 +244,8 @@ namespace Alice
                         const std::unordered_set<EntityId>& cameraEntities,
                         int shadingMode,
                         bool editorMode = false,
-                        bool isPlaying = false);
+                        bool isPlaying = false,
+                        EntityId hiddenCameraEntity = InvalidEntityId);
         void PassDeferredLight(const World& world,
                                const Camera& camera,
                                int shadingMode,
@@ -291,6 +308,9 @@ namespace Alice
         Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_gBufferTextures[GBufferCount];
         Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  m_gBufferRTVs[GBufferCount];
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_gBufferSRVs[GBufferCount];
+        Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_cameraPreviewGBufferTextures[GBufferCount];
+        Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  m_cameraPreviewGBufferRTVs[GBufferCount];
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cameraPreviewGBufferSRVs[GBufferCount];
 
         // ==== G-Buffer 셰이더 ====
         Microsoft::WRL::ComPtr<ID3D11VertexShader>      m_gBufferVS;
@@ -388,14 +408,25 @@ namespace Alice
         Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_sceneDepthTex;
         Microsoft::WRL::ComPtr<ID3D11DepthStencilView>  m_sceneDSV;
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_sceneDepthSRV;
+        Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_cameraPreviewSceneColorTex;
+        Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  m_cameraPreviewSceneRTV;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cameraPreviewSceneColorSRV;
+        Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_cameraPreviewSceneDepthTex;
+        Microsoft::WRL::ComPtr<ID3D11DepthStencilView>  m_cameraPreviewSceneDSV;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cameraPreviewSceneDepthSRV;
 
         // ==== 에디터 뷰포트 표시용 LDR 결과 텍스처 (ToneMapped) ====
         Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_viewportTex;
         Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  m_viewportRTV;
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_viewportSRV;
+        Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_cameraPreviewViewportTex;
+        Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  m_cameraPreviewViewportRTV;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cameraPreviewViewportSRV;
 
         std::uint32_t                                   m_sceneWidth  = 0;
         std::uint32_t                                   m_sceneHeight = 0;
+        std::uint32_t                                   m_cameraPreviewWidth  = 320;
+        std::uint32_t                                   m_cameraPreviewHeight = 180;
 
         // 이번 프레임에 실제로 사용한 카메라 정보 (ComputeEffect용)
         DirectX::XMMATRIX                               m_lastViewProj = DirectX::XMMatrixIdentity();
@@ -482,6 +513,11 @@ namespace Alice
         // ==== Default PostProcess Settings (EditorCore에서 설정) ====
         PostProcessSettings m_defaultPostProcessSettings;
         bool m_hasDefaultPostProcessSettings = false;
+
+        // ==== Camera Icon (Editor) ====
+        std::string m_cameraIconMeshKey = "Camera";
+        bool m_cameraIconLoadTried = false;
+        float m_cameraIconScale = 0.5f;
 
         // ==== UI 합성 리소스 ====
     };

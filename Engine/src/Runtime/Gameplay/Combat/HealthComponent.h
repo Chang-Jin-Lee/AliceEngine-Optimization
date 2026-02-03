@@ -23,23 +23,11 @@ namespace Alice
         // Guard 시 데미지 배율 (0.5 = 50% 피해)
         float guardDamageScale = 0.5f;
 
-        // Weapon durability (guard resource)
-        float weaponDurabilityMax = 100.0f;
-        float weaponDurability = 100.0f;
-
         // Groggy (boss only)
         float groggy = 0.0f;
         float groggyMax = 100.0f;
         float groggyGainScale = 1.0f; // hit damage * scale
         float groggyDuration = 1.5f;
-
-        // Weak state (guard/parry disabled)
-        float weakRemainingSec = 0.0f;
-
-        // Pushback (guard break)
-        float pushbackRemainingSec = 0.0f;
-        DirectX::XMFLOAT3 pushbackDir{ 0.0f, 0.0f, 0.0f };
-        float pushbackSpeed = 0.0f;
 
         bool alive = true;
         uint32_t teamId = 0;
