@@ -61,9 +61,10 @@ namespace Alice::Combat
         {
             Enter(ActionState::GuardBreakWeak);
         }
-        else if (HasEvent(events, CombatEventType::OnParrySuccess) && m_state != ActionState::Dead)
+        const bool parrySuccess = HasEvent(events, CombatEventType::OnParrySuccess) && m_state != ActionState::Dead;
+        if (parrySuccess)
         {
-            Enter(ActionState::JustGuardSuccess);
+            Enter(ActionState::Idle, true);
         }
 
         if (HasEvent(events, CombatEventType::OnGroggy) && m_state != ActionState::Dead)
@@ -115,7 +116,7 @@ namespace Alice::Combat
             }
         }
 
-        if (m_state != ActionState::Dead
+        if (!parrySuccess && m_state != ActionState::Dead
             && m_state != ActionState::Hitstun
             && m_state != ActionState::Groggy
             && m_state != ActionState::GuardBreakWeak
