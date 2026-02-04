@@ -674,7 +674,7 @@ void EditorCore::DrawInspectorPostProcessVolume(World& world, const EntityId& _s
 void EditorCore::DrawInspectorComputeEffect(World& world, const EntityId& _selectedEntity)
 	{
 		if (auto* effect = world.GetComponent<ComputeEffectComponent>(_selectedEntity)) {
-			if (ImGui::CollapsingHeader("Particle System (Compute)", ImGuiTreeNodeFlags_DefaultOpen)) {
+			if (ImGui::CollapsingHeader("Compute Effect", ImGuiTreeNodeFlags_DefaultOpen)) {
 				bool changed = false;
 				changed |= ImGui::Checkbox("Enabled##ComputeEffect", &effect->enabled);
 
@@ -692,48 +692,35 @@ void EditorCore::DrawInspectorComputeEffect(World& world, const EntityId& _selec
 					changed = true;
 				}
 
-				ImGui::TextDisabled("Emitter uses Transform. Use Local Offset for placement.");
+				// 위치 소스 선택
+				changed |= ImGui::Checkbox("Use Transform##ComputeEffect", &effect->useTransform);
 
-				// Main Module
-				if (ImGui::TreeNode("Main##ComputeEffect")) {
-					const char* simSpaces[] = { "World", "Local" };
-					int simIndex = (effect->simulationSpace == ParticleSimulationSpace::Local) ? 1 : 0;
-					if (ImGui::Combo("Simulation Space##ComputeEffect", &simIndex, simSpaces, IM_ARRAYSIZE(simSpaces))) {
-						effect->simulationSpace = (simIndex == 1) ? ParticleSimulationSpace::Local : ParticleSimulationSpace::World;
-						changed = true;
-					}
+				if (effect->useTransform) {
+					ImGui::Indent();
 					changed |= ImGui::SliderFloat3("Local Offset##ComputeEffect", &effect->localOffset.x, -10.0f, 10.0f);
-					changed |= ImGui::SliderFloat("Start Lifetime Min##ComputeEffect", &effect->lifeMin, 0.01f, 10.0f);
-					changed |= ImGui::SliderFloat("Start Lifetime Max##ComputeEffect", &effect->lifeMax, 0.01f, 10.0f);
-					if (effect->lifeMax < effect->lifeMin) effect->lifeMax = effect->lifeMin;
-					changed |= ImGui::SliderFloat("Start Speed##ComputeEffect", &effect->startSpeed, 0.0f, 10.0f);
-					changed |= ImGui::SliderFloat("Start Size (px)##ComputeEffect", &effect->sizePx, 0.5f, 50.0f);
-					changed |= ImGui::ColorEdit3("Start Color##ComputeEffect", &effect->color.x);
-					changed |= ImGui::SliderFloat("Intensity##ComputeEffect", &effect->intensity, 0.0f, 10.0f);
-					ImGui::TreePop();
+					ImGui::Unindent();
+				}
+				else {
+					changed |= ImGui::SliderFloat3("Emitter Position (World)##ComputeEffect", &effect->effectParams.x, -100.0f, 100.0f);
 				}
 
-				// Shape Module
-				if (ImGui::TreeNode("Shape##ComputeEffect")) {
-					changed |= ImGui::SliderFloat("Radius##ComputeEffect", &effect->radius, 0.01f, 5.0f);
-					ImGui::TreePop();
-				}
+				// 이미터 파라미터
+				changed |= ImGui::SliderFloat("Radius##ComputeEffect", &effect->radius, 0.01f, 5.0f);
+				changed |= ImGui::ColorEdit3("Color##ComputeEffect", &effect->color.x);
+				changed |= ImGui::SliderFloat("Size (px)##ComputeEffect", &effect->sizePx, 1.0f, 50.0f);
+				changed |= ImGui::SliderFloat("Intensity##ComputeEffect", &effect->intensity, 0.0f, 10.0f);
 
-				// Forces Module
-				if (ImGui::TreeNode("Forces##ComputeEffect")) {
+				// 물리/수명 파라미터
+				if (ImGui::TreeNode("Physics##ComputeEffect")) {
 					changed |= ImGui::SliderFloat3("Gravity##ComputeEffect", &effect->gravity.x, -10.0f, 10.0f);
 					changed |= ImGui::SliderFloat("Drag##ComputeEffect", &effect->drag, 0.0f, 1.0f);
+					changed |= ImGui::SliderFloat("Life Min##ComputeEffect", &effect->lifeMin, 0.1f, 5.0f);
+					changed |= ImGui::SliderFloat("Life Max##ComputeEffect", &effect->lifeMax, 0.1f, 10.0f);
 					ImGui::TreePop();
 				}
 
-				// Renderer Module
-				if (ImGui::TreeNode("Renderer##ComputeEffect")) {
-					changed |= ImGui::Checkbox("Depth Test##ComputeEffect", &effect->depthTest);
-					if (effect->depthTest) {
-						changed |= ImGui::SliderFloat("Depth Bias (m)##ComputeEffect", &effect->depthBiasMeters, 0.0f, 0.5f);
-					}
-					ImGui::TreePop();
-				}
+				// 기타 설정
+				changed |= ImGui::Checkbox("Depth Test##ComputeEffect", &effect->depthTest);
 
 				if (ImGui::Button("Remove Compute Effect")) {
 					world.RemoveComponent<ComputeEffectComponent>(_selectedEntity);

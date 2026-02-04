@@ -104,7 +104,7 @@ struct EmitterGPU
     float4 p4; // xyz = color, w = intensity
     float4 p5; // xyz = gravity, w = drag
     float4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
-    float4 p7; // reserved
+    float4 p7; // x = spawnRate(0..1), yzw = reserved
 };
 
 float3 EmitterToWorld(EmitterGPU e, float3 localPos)
@@ -179,10 +179,17 @@ void main(uint3 id : SV_DispatchThreadID)
     float lifeMin = e.p6.x;
     float lifeMax = e.p6.y;
     float startSpeed = max(e.p2.w, 0.001);
+    float spawnRate = saturate(e.p7.x);
 
     if (p.life <= 0.0)
     {
         float base = (float)i * 1.2345 + t * 13.37 + p.seed * 101.0;
+        if (Hash11(base + 17.0) > spawnRate)
+        {
+            p.life = 0.0;
+            particles[i] = p;
+            return;
+        }
 
         float2 r01 = Hash21(base);
         float3 r11 = float3(r01 * 2.0 - 1.0, Hash11(base + 37.0) * 2.0 - 1.0);
@@ -241,7 +248,7 @@ struct EmitterGPU
     float4 p4; // xyz = color, w = intensity
     float4 p5; // xyz = gravity, w = drag
     float4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
-    float4 p7; // reserved
+    float4 p7; // x = spawnRate(0..1), yzw = reserved
 };
 
 float3 EmitterToWorld(EmitterGPU e, float3 localPos)
@@ -395,7 +402,7 @@ struct EmitterGPU
     float4 p4; // xyz = color, w = intensity
     float4 p5; // xyz = gravity, w = drag
     float4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
-    float4 p7; // reserved
+    float4 p7; // x = spawnRate(0..1), yzw = reserved
 };
 
 float3 EmitterToWorld(EmitterGPU e, float3 localPos)
@@ -466,10 +473,17 @@ void main(uint3 id : SV_DispatchThreadID)
     float lifeMin = e.p6.x;
     float lifeMax = e.p6.y;
     float startSpeed = max(e.p2.w, 0.001);
+    float spawnRate = saturate(e.p7.x);
 
     if (p.life <= 0.0)
     {
         float base = (float)i * 1.913 + t * 19.71 + p.seed * 97.0;
+        if (Hash11(base + 17.0) > spawnRate)
+        {
+            p.life = 0.0;
+            particles[i] = p;
+            return;
+        }
         float2 r = Hash21(base);
         float3 r3 = float3(r * 2.0 - 1.0, Hash11(base + 37.0) * 2.0 - 1.0);
 
@@ -528,7 +542,7 @@ struct EmitterGPU
     float4 p4; // xyz = color, w = intensity
     float4 p5; // xyz = gravity, w = drag
     float4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
-    float4 p7; // reserved
+    float4 p7; // x = spawnRate(0..1), yzw = reserved
 };
 
 float3 EmitterToWorld(EmitterGPU e, float3 localPos)
@@ -689,7 +703,7 @@ struct EmitterGPU
     float4 p4; // xyz = color, w = intensity
     float4 p5; // xyz = gravity, w = drag
     float4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
-    float4 p7; // reserved
+    float4 p7; // x = spawnRate(0..1), yzw = reserved
 };
 
 float3 EmitterToWorld(EmitterGPU e, float3 localPos)
@@ -760,10 +774,17 @@ void main(uint3 id : SV_DispatchThreadID)
     float lifeMin = e.p6.x;
     float lifeMax = e.p6.y;
     float startSpeed = max(e.p2.w, 0.001);
+    float spawnRate = saturate(e.p7.x);
 
     if (p.life <= 0.0)
     {
         float base = (float)i * 0.777 + t * 3.1 + p.seed * 113.0;
+        if (Hash11(base + 17.0) > spawnRate)
+        {
+            p.life = 0.0;
+            particles[i] = p;
+            return;
+        }
         float2 r = Hash21(base);
         float3 r3 = float3(r * 2.0 - 1.0, Hash11(base + 33.0) * 2.0 - 1.0);
 
@@ -824,7 +845,7 @@ struct EmitterGPU
     float4 p4; // xyz = color, w = intensity
     float4 p5; // xyz = gravity, w = drag
     float4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
-    float4 p7; // reserved
+    float4 p7; // x = spawnRate(0..1), yzw = reserved
 };
 
 float3 EmitterToWorld(EmitterGPU e, float3 localPos)
@@ -968,7 +989,7 @@ struct EmitterGPU
     float4 p4; // xyz = color, w = intensity
     float4 p5; // xyz = gravity, w = drag
     float4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
-    float4 p7; // reserved
+    float4 p7; // x = spawnRate(0..1), yzw = reserved
 };
 
 float3 EmitterToWorld(EmitterGPU e, float3 localPos)
@@ -1040,10 +1061,17 @@ void main(uint3 id : SV_DispatchThreadID)
     float lifeMin = e.p6.x;
     float lifeMax = e.p6.y;
     float startSpeed = max(e.p2.w, 0.001);
+    float spawnRate = saturate(e.p7.x);
 
     if (p.life <= 0.0)
     {
         float base = (float)i * 2.11 + t * 7.7 + p.seed * 111.0;
+        if (Hash11(base + 17.0) > spawnRate)
+        {
+            p.life = 0.0;
+            particles[i] = p;
+            return;
+        }
         float2 r01 = Hash21(base);
         float ang = r01.x * 6.2831853;
         float rr = sqrt(r01.y) * radius;
@@ -1113,7 +1141,7 @@ struct EmitterGPU
     float4 p4; // xyz = color, w = intensity
     float4 p5; // xyz = gravity, w = drag
     float4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
-    float4 p7; // reserved
+    float4 p7; // x = spawnRate(0..1), yzw = reserved
 };
 
 float3 EmitterToWorld(EmitterGPU e, float3 localPos)
@@ -1246,7 +1274,7 @@ struct EmitterGPU
     float4 p4; // xyz = color, w = intensity
     float4 p5; // xyz = gravity, w = drag
     float4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
-    float4 p7; // reserved
+    float4 p7; // x = spawnRate(0..1), yzw = reserved
 };
 
 float3 EmitterToWorld(EmitterGPU e, float3 localPos)
@@ -1317,10 +1345,17 @@ void main(uint3 id : SV_DispatchThreadID)
     float lifeMin = e.p6.x;
     float lifeMax = e.p6.y;
     float startSpeed = max(e.p2.w, 0.001);
+    float spawnRate = saturate(e.p7.x);
     
     if (p.life <= 0.0)
     {
         float base = (float)i * 0.91 + t * 0.37 + p.seed * 401.0;
+        if (Hash11(base + 17.0) > spawnRate)
+        {
+            p.life = 0.0;
+            particles[i] = p;
+            return;
+        }
         float2 r = Hash21(base);
 
         float3 localPos = float3((r.x - 0.5) * radius * 2.0, radius * 0.5 + r.y * radius, (r.y - 0.5) * radius * 2.0);
@@ -1378,7 +1413,7 @@ struct EmitterGPU
     float4 p4; // xyz = color, w = intensity
     float4 p5; // xyz = gravity, w = drag
     float4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
-    float4 p7; // reserved
+    float4 p7; // x = spawnRate(0..1), yzw = reserved
 };
 
 float3 EmitterToWorld(EmitterGPU e, float3 localPos)
@@ -1511,7 +1546,7 @@ struct EmitterGPU
     float4 p4; // xyz = color, w = intensity
     float4 p5; // xyz = gravity, w = drag
     float4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
-    float4 p7; // reserved
+    float4 p7; // x = spawnRate(0..1), yzw = reserved
 };
 
 float3 EmitterToWorld(EmitterGPU e, float3 localPos)
@@ -1582,10 +1617,17 @@ void main(uint3 id : SV_DispatchThreadID)
     float lifeMin = e.p6.x;
     float lifeMax = e.p6.y;
     float startSpeed = max(e.p2.w, 0.001);
+    float spawnRate = saturate(e.p7.x);
 
     if (p.life <= 0.0)
     {
         float base = (float)i * 1.57 + t * 9.0 + p.seed * 181.0;
+        if (Hash11(base + 17.0) > spawnRate)
+        {
+            p.life = 0.0;
+            particles[i] = p;
+            return;
+        }
         float2 r = Hash21(base);
         float3 r3 = float3(r * 2.0 - 1.0, Hash11(base + 31.0) * 2.0 - 1.0);
         float3 dir = normalize(r3 + 1e-5);
@@ -1643,7 +1685,7 @@ struct EmitterGPU
     float4 p4; // xyz = color, w = intensity
     float4 p5; // xyz = gravity, w = drag
     float4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
-    float4 p7; // reserved
+    float4 p7; // x = spawnRate(0..1), yzw = reserved
 };
 
 float3 EmitterToWorld(EmitterGPU e, float3 localPos)

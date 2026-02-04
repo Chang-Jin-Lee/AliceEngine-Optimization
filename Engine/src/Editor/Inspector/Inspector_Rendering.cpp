@@ -3,6 +3,7 @@
 #include "Runtime/Resources/ResourceManager.h"
 #include "Runtime/Rendering/Data/Material.h"
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/ECS/GameObject.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Foundation/Logger.h"
@@ -728,6 +729,12 @@ namespace Alice
 					ImGui::TreePop();
 				}
 
+				// Emission Module
+				if (ImGui::TreeNode("Emission##ComputeEffect")) {
+					changed |= ImGui::SliderFloat("Spawn Rate##ComputeEffect", &effect->spawnRate, 0.0f, 1.0f);
+					ImGui::TreePop();
+				}
+
 				// Shape Module
 				if (ImGui::TreeNode("Shape##ComputeEffect")) {
 					changed |= ImGui::SliderFloat("Radius##ComputeEffect", &effect->radius, 0.01f, 5.0f);
@@ -752,6 +759,170 @@ namespace Alice
 
 				if (ImGui::Button("Remove Compute Effect")) {
 					world.RemoveComponent<ComputeEffectComponent>(_selectedEntity);
+					g_SceneDirty = true;
+					return;
+				}
+
+				if (changed) g_SceneDirty = true;
+			}
+		}
+	}
+
+	void EditorCore::DrawInspectorUnityVfx(World& world, const EntityId& _selectedEntity)
+	{
+		if (auto* vfx = world.GetComponent<UnityVfxComponent>(_selectedEntity)) {
+			if (ImGui::CollapsingHeader("Unity VFX (Particle)", ImGuiTreeNodeFlags_DefaultOpen)) {
+				bool changed = false;
+				auto DragFloatWithInput = [&](const char* label, float* value, float minValue, float maxValue, const char* fmt = "%.3f") -> bool {
+					float speed = (maxValue - minValue) / 200.0f;
+					if (speed <= 0.0f) speed = 0.01f;
+
+					ImGui::PushID(label);
+					bool localChanged = ImGui::DragFloat(label, value, speed, minValue, maxValue, fmt);
+
+					static float s_editValue = 0.0f;
+					if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+					{
+						s_editValue = *value;
+						ImGui::OpenPopup("EditValue");
+					}
+
+					if (ImGui::BeginPopup("EditValue"))
+					{
+						ImGui::SetNextItemWidth(140.0f);
+						bool edited = ImGui::InputFloat("Value", &s_editValue, 0.0f, 0.0f, fmt);
+						if (edited && ImGui::IsKeyPressed(ImGuiKey_Enter))
+						{
+							const float clamped = std::clamp(s_editValue, minValue, maxValue);
+							if (*value != clamped)
+							{
+								*value = clamped;
+								localChanged = true;
+							}
+							ImGui::CloseCurrentPopup();
+						}
+						if (ImGui::Button("OK"))
+						{
+							const float clamped = std::clamp(s_editValue, minValue, maxValue);
+							if (*value != clamped)
+							{
+								*value = clamped;
+								localChanged = true;
+							}
+							ImGui::CloseCurrentPopup();
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("Cancel"))
+						{
+							ImGui::CloseCurrentPopup();
+						}
+						ImGui::EndPopup();
+					}
+
+					ImGui::PopID();
+					return localChanged;
+				};
+
+				changed |= ImGui::Checkbox("Enabled##UnityVfx", &vfx->enabled);
+				changed |= ImGui::Checkbox("Use Mesh Renderer (v2)##UnityVfx", &vfx->useMeshRenderer);
+				changed |= ImGui::Checkbox("Use Compute Effect (v1)##UnityVfx", &vfx->useComputeEffect);
+				ImGui::Text("Effect JSON: %s", vfx->effectPath.empty() ? "None" : vfx->effectPath.c_str());
+
+				// Drag & drop
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_FILE_PATH"))
+					{
+						const char* pathStr = static_cast<const char*>(payload->Data);
+						std::filesystem::path droppedPath(pathStr);
+						std::string ext = droppedPath.extension().string();
+						std::transform(ext.begin(), ext.end(), ext.begin(),
+							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+						if (ext == ".json")
+						{
+							std::string logicalPath = droppedPath.string();
+							{
+								std::filesystem::path logical = ResourceManager::NormalizeResourcePathAbsoluteToLogical(droppedPath);
+								if (!logical.empty())
+									logicalPath = logical.string();
+							}
+							vfx->effectPath = logicalPath;
+							changed = true;
+							g_SceneDirty = true;
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				if (ImGui::Button("Browse...##UnityVfx"))
+				{
+					wchar_t buf[MAX_PATH] = {};
+					OPENFILENAMEW ofn = { sizeof(ofn) };
+					ofn.hwndOwner = m_hwnd;
+					ofn.lpstrFilter = L"JSON\0*.json\0All\0*.*\0";
+					ofn.lpstrFile = buf;
+					ofn.nMaxFile = MAX_PATH;
+					ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+					if (GetOpenFileNameW(&ofn))
+					{
+						std::filesystem::path p(buf);
+						std::string logicalPath = p.string();
+						{
+							std::filesystem::path logical = ResourceManager::NormalizeResourcePathAbsoluteToLogical(p);
+							if (!logical.empty())
+								logicalPath = logical.string();
+						}
+						vfx->effectPath = logicalPath;
+						changed = true;
+					}
+				}
+
+				if (ImGui::TreeNode("Playback##UnityVfx"))
+				{
+					changed |= DragFloatWithInput("Time Scale##UnityVfx", &vfx->timeScale, 0.0f, 4.0f);
+					changed |= DragFloatWithInput("Lifetime Scale##UnityVfx", &vfx->lifetimeScale, 0.1f, 5.0f);
+					changed |= DragFloatWithInput("Spawn Rate Scale##UnityVfx", &vfx->spawnRateScale, 0.0f, 2.0f);
+					changed |= ImGui::Checkbox("Override Loop##UnityVfx", &vfx->overrideLoop);
+					if (vfx->overrideLoop)
+					{
+						ImGui::SameLine();
+						changed |= ImGui::Checkbox("Loop##UnityVfx", &vfx->loop);
+					}
+					ImGui::TreePop();
+				}
+
+				if (ImGui::TreeNode("Transform/Movement##UnityVfx"))
+				{
+					changed |= DragFloatWithInput("Size Scale##UnityVfx", &vfx->sizeScale, 0.1f, 50.0f);
+					changed |= DragFloatWithInput("Speed Scale##UnityVfx", &vfx->speedScale, 0.1f, 10.0f);
+					ImGui::TreePop();
+				}
+
+				if (ImGui::TreeNode("Material Overrides##UnityVfx"))
+				{
+					changed |= DragFloatWithInput("Intensity Scale##UnityVfx", &vfx->intensityScale, 0.0f, 20.0f);
+					changed |= DragFloatWithInput("Color Scale##UnityVfx", &vfx->colorScale, 0.0f, 10.0f);
+					changed |= DragFloatWithInput("Alpha Scale##UnityVfx", &vfx->alphaScale, 0.0f, 5.0f);
+					changed |= DragFloatWithInput("HDR Color Clamp##UnityVfx", &vfx->hdrColorClamp, 0.0f, 20.0f);
+					changed |= DragFloatWithInput("UV Scroll Scale##UnityVfx", &vfx->uvScrollScale, 0.0f, 10.0f);
+					changed |= DragFloatWithInput("Dissolve Offset##UnityVfx", &vfx->dissolveOffset, -1.0f, 1.0f);
+					changed |= DragFloatWithInput("Noise Scale##UnityVfx", &vfx->noiseScale, 0.0f, 5.0f);
+					changed |= DragFloatWithInput("Ramp Scale##UnityVfx", &vfx->rampScale, 0.0f, 5.0f);
+					ImGui::TreePop();
+				}
+
+				if (ImGui::TreeNode("Trails##UnityVfx"))
+				{
+					changed |= ImGui::Checkbox("Enable Trails##UnityVfx", &vfx->enableTrails);
+					changed |= DragFloatWithInput("Trail Width Scale##UnityVfx", &vfx->trailWidthScale, 0.1f, 5.0f);
+					changed |= DragFloatWithInput("Trail Life Scale##UnityVfx", &vfx->trailLifeScale, 0.1f, 5.0f);
+					ImGui::TreePop();
+				}
+
+				if (ImGui::Button("Remove Unity VFX"))
+				{
+					world.RemoveComponent<UnityVfxComponent>(_selectedEntity);
 					g_SceneDirty = true;
 					return;
 				}

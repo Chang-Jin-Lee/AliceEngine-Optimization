@@ -68,12 +68,11 @@ namespace Alice
 		RenderCameraPreview();
 		RenderUnbindDepthOnly();
 
+		RenderOverlayEffects();
 		RenderComputeEffects();
 		RenderParticleOverlayComposite();
 		RenderDebugOverlayComposite();
 		RenderGameModeToneMappingAndUI();
-
-		RenderOverlayEffects();
 		if (m_editorMode)
 			RenderEditorDraw();
 
@@ -674,7 +673,61 @@ namespace Alice
 
 	void Engine::Impl::RenderOverlayEffects()
 	{
+		ID3D11RenderTargetView* overlayRTV = nullptr;
+		ID3D11DepthStencilView* overlayDSV = nullptr;
+
+		if (m_editorMode)
+		{
+			if (m_useForwardRendering && m_forwardRenderSystem)
+			{
+				overlayRTV = m_forwardRenderSystem->GetViewportRTV();
+				overlayDSV = nullptr;
+			}
+			else if (!m_useForwardRendering && m_deferredRenderSystem)
+			{
+				overlayRTV = m_deferredRenderSystem->GetViewportRTV();
+				overlayDSV = nullptr;
+			}
+		}
+		else
+		{
+			if (m_useForwardRendering && m_forwardRenderSystem)
+			{
+				overlayRTV = m_forwardRenderSystem->GetSceneRTV();
+				overlayDSV = m_forwardRenderSystem->GetSceneDSV();
+			}
+			else if (!m_useForwardRendering && m_deferredRenderSystem)
+			{
+				overlayRTV = m_deferredRenderSystem->GetSceneRTV();
+				overlayDSV = m_deferredRenderSystem->GetSceneDSV();
+			}
+		}
+
+		if (overlayRTV)
+		{
+			D3D11_VIEWPORT vp = {};
+			if (m_useForwardRendering && m_forwardRenderSystem)
+			{
+				vp.Width = static_cast<float>(m_forwardRenderSystem->GetSceneWidth());
+				vp.Height = static_cast<float>(m_forwardRenderSystem->GetSceneHeight());
+			}
+			else if (!m_useForwardRendering && m_deferredRenderSystem)
+			{
+				vp.Width = static_cast<float>(m_deferredRenderSystem->GetSceneWidth());
+				vp.Height = static_cast<float>(m_deferredRenderSystem->GetSceneHeight());
+			}
+			vp.MaxDepth = 1.0f;
+
+			auto* ctx = m_renderDevice ? m_renderDevice->GetImmediateContext() : nullptr;
+			if (ctx && vp.Width > 0.0f && vp.Height > 0.0f)
+			{
+				ctx->RSSetViewports(1, &vp);
+				ctx->OMSetRenderTargets(1, &overlayRTV, overlayDSV);
+			}
+		}
+
 		if (m_effectSystem) m_effectSystem->Render(m_world, m_camera);
+		if (m_unityVfxMeshRenderSystem) m_unityVfxMeshRenderSystem->Render(m_world, m_camera, m_timer.DeltaTime());
 		if (m_trailRenderSystem) m_trailRenderSystem->Render(m_world, m_camera);
 	}
 

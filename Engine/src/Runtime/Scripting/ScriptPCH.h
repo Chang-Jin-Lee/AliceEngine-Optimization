@@ -28,6 +28,7 @@
 #include "Runtime/Rendering/Components/EffectComponent.h"
 #include "Runtime/Rendering/Components/TrailEffectComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
 #include "Runtime/Rendering/Components/DebugDrawBoxComponent.h"
 
