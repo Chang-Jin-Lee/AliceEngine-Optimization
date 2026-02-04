@@ -91,7 +91,7 @@ namespace Alice
         }
     }
 
-    void AudioSystem::Update(World& world, double)
+    void AudioSystem::Update(World& world, double dtSec)
     {
         // 리소스가 없어도 Sound::Update는 무조건 호출해야 FMOD가 돌아갑니다.
 
@@ -254,7 +254,7 @@ namespace Alice
 
         // FMOD 시스템 업데이트 및 채널 정리 (항상 실행)
         // 리소스 유무와 무관하게 매 프레임 호출하여 채널 정리 및 시스템 업데이트 보장
-        Sound::Update();
+        Sound::Update(static_cast<float>(dtSec));
     }
 
 	void AudioSystem::UpdateListener(World& world, DirectX::XMFLOAT3& outPos)

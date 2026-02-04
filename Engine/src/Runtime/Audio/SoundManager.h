@@ -21,7 +21,7 @@ namespace Alice::Sound
 
     bool Initialize();
     void Shutdown();
-    void Update();
+    void Update(float deltaTime);
 
     bool Load(const std::wstring& key, const std::wstring& path, Type type);
     bool LoadAuto(const ResourceManager& resources,
@@ -36,9 +36,10 @@ namespace Alice::Sound
     void PauseAll(bool pause);
 
     // BGM
-    void PlayBGM(const std::wstring& key, float fadeTime = 0.0f);
+    constexpr float kDefaultBgmFadeTime = 0.5f;
+    void PlayBGM(const std::wstring& key, float fadeTime = kDefaultBgmFadeTime);
     void PauseBGM(bool pause);
-    void StopBGM(float fadeTime = 0.0f);
+    void StopBGM(float fadeTime = kDefaultBgmFadeTime);
     bool IsBGMPlaying();
     bool IsBGMPaused();
     bool SetBGMTimeSeconds(float sec);

@@ -1,4 +1,4 @@
-#include "Runtime/Audio/SoundManager.h"
+﻿#include "Runtime/Audio/SoundManager.h"
 
 #include <fmod.hpp>
 #include <fmod_errors.h>
@@ -27,7 +27,7 @@ namespace
         //        - Editor: vector 소유 (ownedBuffer)
         //        - Game: Chunk 메모리 참조만 (ptr + size, 소유권 없음)
         //        FMOD_OPENMEMORY_POINT 플래그 사용하여 Zero-copy 구현해야함 
-        std::vector<std::uint8_t> memoryBuffer; // 메모리 로드 시 버퍼 유지용
+        std::vector<std::uint8_t> memoryBuffer;
     };
     std::map<std::wstring, SoundData> g_SoundBank;
 
@@ -54,8 +54,19 @@ namespace
     struct Inst3D { FMOD::Channel* ch = nullptr; };
     std::map<std::wstring, Inst3D> g_Inst3D;
 
+    struct FadeInfo
+    {
+        FMOD::ChannelControl* control = nullptr;
+        float startVolume = 0.0f;
+        float targetVolume = 0.0f;
+        float duration = 0.0f;
+        float elapsedTime = 0.0f;
+        bool stopAfterFade = false;
+    };
+
+    std::vector<FadeInfo> g_ActiveFades;
     int g_SoftwareChannels = 64;
-    int g_ReserveVoices = 4; // BGM/3D 여유분
+    int g_ReserveVoices = 4; // BGM/3D
 
     inline bool Check(FMOD_RESULT r, const char* msg = "")
     {
@@ -74,7 +85,42 @@ namespace
         DirectX::XMStoreFloat3(&f3, v);
         return FMOD_VECTOR{ f3.x, f3.y, f3.z };
     }
+    void RemoveFadesForChannel(FMOD::ChannelControl* control)
+    {
+        if (!control) return;
+        g_ActiveFades.erase(
+            std::remove_if(g_ActiveFades.begin(), g_ActiveFades.end(),
+                [control](const FadeInfo& info) { return info.control == control; }),
+            g_ActiveFades.end());
+    }
 
+    void StartFade(FMOD::ChannelControl* control, float targetVolume, float duration, bool stopAfterFade)
+    {
+        if (!control)
+            return;
+
+        if (duration <= 0.0f)
+        {
+            control->setVolume(targetVolume);
+            if (stopAfterFade)
+                control->stop();
+            return;
+        }
+
+        RemoveFadesForChannel(control);
+
+        float startVolume = targetVolume;
+        control->getVolume(&startVolume);
+
+        FadeInfo info;
+        info.control = control;
+        info.startVolume = startVolume;
+        info.targetVolume = targetVolume;
+        info.duration = duration;
+        info.elapsedTime = 0.0f;
+        info.stopAfterFade = stopAfterFade;
+        g_ActiveFades.push_back(info);
+    }
     // 재생이 끝난 채널을 벡터에서 제거
     // 소리가 여러개 동시에 나올때 안들리게 되는 현상을 막음 
     void CleanupSFX()
@@ -275,10 +321,43 @@ namespace Alice::Sound
         ALICE_LOG_INFO("[SoundManager] Shutdown.");
     }
 
-    void Update()
+    void Update(float deltaTime)
     {
         if (!g_System) return;
-        
+
+        float dt = deltaTime;
+        if (dt <= 0.0f && !g_ActiveFades.empty())
+            dt = 1.0f / 60.0f;
+        dt = std::max(0.0f, dt);
+
+        if (!g_ActiveFades.empty())
+        {
+            for (auto it = g_ActiveFades.begin(); it != g_ActiveFades.end();)
+            {
+                if (!it->control)
+                {
+                    it = g_ActiveFades.erase(it);
+                    continue;
+                }
+
+                it->elapsedTime += dt;
+                const float t = (it->duration <= 0.0f) ? 1.0f : std::min(1.0f, it->elapsedTime / it->duration);
+                const float currentVol = it->startVolume + (it->targetVolume - it->startVolume) * t;
+                it->control->setVolume(currentVol);
+
+                if (t >= 1.0f)
+                {
+                    if (it->stopAfterFade)
+                        it->control->stop();
+                    it = g_ActiveFades.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
+        }
+
         // erase_if: 재생 중이지 않은 3D 인스턴스 정리
         std::erase_if(g_Inst3D, [](const auto& pair) {
             bool playing = false;
@@ -344,7 +423,7 @@ namespace Alice::Sound
         {
             ALICE_LOG_ERRORF("[SoundManager] LoadAuto Failed: Path=\"%s\" Key=\"%ls\"", 
                 logicalPath.string().c_str(), key.c_str());
-            g_SoundBank.erase(key); // 실패 시 항목 제거
+            g_SoundBank.erase(key); //
             return false;
         }
 
@@ -361,14 +440,14 @@ namespace Alice::Sound
 
         FMOD::Sound* newSound = nullptr;
         // data.memoryBuffer.data()는 맵 내부의 메모리이므로 이동되거나 해제되지 않음
-        // 마래에는 Chunk 시스템에서는 data.dataBlob.ptr을 사용
+        // 미래에는 Chunk 시스템에서는 data.dataBlob.ptr을 사용
         FMOD_RESULT r = g_System->createSound(reinterpret_cast<const char*>(data.memoryBuffer.data()), mode, &exinfo, &newSound);
         
         if (!Check(r, "LoadAuto") || !newSound)
         {
             ALICE_LOG_ERRORF("[SoundManager] CreateSound Failed: Key=\"%ls\" Size=%zu", 
                 key.c_str(), data.memoryBuffer.size());
-            g_SoundBank.erase(key); // 실패 시 항목 제거
+            g_SoundBank.erase(key); //
             return false;
         }
 
@@ -402,9 +481,11 @@ namespace Alice::Sound
         if (g_MasterGroup) g_MasterGroup->setPaused(pause);
     }
 
-    void PlayBGM(const std::wstring& key, float /*fadeTime*/)
+    void PlayBGM(const std::wstring& key, float fadeTime)
     {
         if (!g_System) return;
+        if (g_BgmGroup)
+            RemoveFadesForChannel(g_BgmGroup);
 
         ALICE_LOG_INFO("[SoundManager] PlayBGM: entered key=\"%ls\"", key.c_str());
 
@@ -415,12 +496,28 @@ namespace Alice::Sound
             return;
         }
 
-        StopBGM(0.0f); // 이전 BGM 정지
-
         if (!g_SoundBank.contains(key))
         {
             ALICE_LOG_WARN("[SoundManager] PlayBGM Failed: Key not found \"%ls\"", key.c_str());
             return;
+        }
+
+        FMOD::Channel* oldChannel = g_ChannelBGM;
+        float oldVolume = g_VolBGM;
+        if (oldChannel)
+            oldChannel->getVolume(&oldVolume);
+
+        // 이전 BGM 페이드 아웃
+        if (oldChannel)
+        {
+            if (fadeTime > 0.0f)
+            {
+                StartFade(oldChannel, 0.0f, fadeTime, true);
+            }
+            else
+            {
+                oldChannel->stop();
+            }
         }
 
         for (int attempt = 0; attempt < 8; ++attempt)
@@ -429,8 +526,11 @@ namespace Alice::Sound
             FMOD_RESULT r = g_System->playSound(g_SoundBank[key].fmodSound, g_BgmGroup, false, &ch);
             if (!Check(r, "PlayBGM") || !ch) return;
 
+            const float targetVol = (oldChannel ? oldVolume : g_VolBGM);
+            const float startVol = (fadeTime > 0.0f ? 0.0f : targetVol);
+
             ch->setMode(FMOD_2D);
-            ch->setVolume(g_VolBGM);
+            ch->setVolume(startVol);
             ch->setPriority(0);          // BGM 최우선
 
             g_System->update();          // virtual 판정이 바로 반영되게 1번 업데이트
@@ -440,13 +540,17 @@ namespace Alice::Sound
                 ALICE_LOG_INFO("[SoundManager] PlayBGM: g_ChannelBGM set, key=\"%ls\" attempt=%d", key.c_str(), attempt + 1);
                 g_ChannelBGM = ch;
                 g_CurrentBGMKey = key;
+
+                if (fadeTime > 0.0f)
+                    StartFade(ch, targetVol, fadeTime, false);
+
                 return;
             }
 
-            // virtual(무음)로 시작했으면 지금 프레임에서 해결하고 다시 시도
+            // virtual(무음)으로 시작했으면 우선 채널 정리 후 재시도
             ALICE_LOG_INFO("[SoundManager] PlayBGM: channel virtual, attempt %d", attempt + 1);
             ch->stop();
-            StopOldestOneShot();         // 원샷 하나만 비워서 보이스 확보
+            StopOldestOneShot();
         }
         ALICE_LOG_WARN("[SoundManager] PlayBGM: gave up after 8 attempts (all virtual?), key=\"%ls\"", key.c_str());
     }
@@ -457,17 +561,36 @@ namespace Alice::Sound
         g_ChannelBGM->setPaused(pause);
     }
 
-    void StopBGM(float /*fadeTime*/)
+    void StopBGM(float fadeTime)
     {
-
         ALICE_LOG_INFO("[SoundManager] StopBGM called, stopping channel");
 
         if (g_ChannelBGM)
         {
-            ALICE_LOG_INFO("[SoundManager] chennel is not NULL");
-            g_ChannelBGM->stop(); // FadeOut 구현 생략 (필요 시 DSP 사용)
+            if (fadeTime > 0.0f)
+            {
+                StartFade(g_ChannelBGM, 0.0f, fadeTime, true);
+            }
+            else
+            {
+                g_ChannelBGM->stop();
+            }
             g_ChannelBGM = nullptr;
         }
+
+        // 그룹 페이드: 추적되지 않은 BGM 채널도 함께 정리
+        if (g_BgmGroup)
+        {
+            if (fadeTime > 0.0f)
+            {
+                StartFade(g_BgmGroup, 0.0f, fadeTime, true);
+            }
+            else
+            {
+                g_BgmGroup->stop();
+            }
+        }
+
         g_CurrentBGMKey.clear();
     }
 
@@ -518,6 +641,7 @@ namespace Alice::Sound
     void PlaySFX(const std::wstring& key, float volume, float pitch, bool loop)
     {
         if (!g_System) return;
+
         if (!g_SoundBank.contains(key)) return;
 
         FMOD::Sound* sound = g_SoundBank[key].fmodSound;
@@ -567,7 +691,7 @@ namespace Alice::Sound
             // 최종적으로는 이번 클릭에서 소리가 나게 만든다.
             FMOD::Channel* ch = nullptr;
 
-            for (int attempt = 0; attempt < 8; ++attempt) // 무한루프 방지함. 최대 8번만
+            for (int attempt = 0; attempt < 8; ++attempt) //
             {
                 TrimOneShotLimit();
 
@@ -678,6 +802,7 @@ namespace Alice::Sound
                      const DirectX::XMFLOAT3& forward, const DirectX::XMFLOAT3& up)
     {
         if (!g_System) return;
+
         FMOD_VECTOR p = ToFmod(pos);
         FMOD_VECTOR v = ToFmod(vel);
         FMOD_VECTOR f = ToFmod(forward);
@@ -689,6 +814,7 @@ namespace Alice::Sound
                      const DirectX::XMVECTOR& forward, const DirectX::XMVECTOR& up)
     {
         if (!g_System) return;
+
         FMOD_VECTOR p = ToFmod(pos);
         FMOD_VECTOR v = ToFmod(vel);
         FMOD_VECTOR f = ToFmod(forward);
@@ -788,4 +914,20 @@ namespace Alice::Sound
         Update3D(instanceId, pos, volume01, minDist, maxDist);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
