@@ -78,6 +78,7 @@ namespace Alice
         /// 입력/씬/리소스 서비스
         IScriptInput* Input() const { return m_services ? m_services->input : nullptr; }
         IScriptScene* Scenes() const { return m_services ? m_services->scene : nullptr; }
+        IScriptAudio* Audio() const { return m_services ? m_services->audio : nullptr; }
         ResourceManager* Resources() const { return m_services ? m_services->resources : nullptr; }
 
     private:

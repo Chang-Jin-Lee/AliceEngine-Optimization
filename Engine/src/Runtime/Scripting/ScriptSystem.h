@@ -20,7 +20,7 @@ namespace Alice
     ALICE_DECLARE_DELEGATE(FOnAfterSceneLoaded);
 
     /// 모든 ScriptComponent 를 매 프레임 업데이트하는 간단한 시스템입니다.
-    class ScriptSystem : public IScriptInput, public IScriptScene
+    class ScriptSystem : public IScriptInput, public IScriptScene, public IScriptAudio
     {
     public:
         void SetServices(InputSystem* input,
@@ -55,6 +55,30 @@ namespace Alice
         void SwitchTo(const char* sceneName) override;
         void LoadSceneFile(const char* scenePathUtf8) override;
         bool LoadSceneFileRequest(const char* scenePathUtf8) override;
+
+        // === IScriptAudio ===
+        bool LoadAuto(const ResourceManager& resources,
+                      const std::wstring& key,
+                      const std::filesystem::path& logicalPath,
+                      Sound::Type type) override;
+        void SetBGMVolume(float volume) override;
+        void PlayBGM(const std::wstring& key) override;
+        void StopBGM() override;
+        void PlaySFX(const std::wstring& key, float volume, float pitch, bool loop) override;
+        void StopSfx(const std::wstring& key) override;
+        void StopAllSFX() override;
+        bool Play3D(const std::wstring& instanceId,
+                    const std::wstring& key,
+                    const DirectX::XMFLOAT3& pos,
+                    float volume,
+                    float pitch,
+                    bool loop) override;
+        void Stop3D(const std::wstring& instanceId) override;
+        void Update3D(const std::wstring& instanceId,
+                      const DirectX::XMFLOAT3& pos,
+                      float volume,
+                      float minDistance,
+                      float maxDistance) override;
 
         // 씬 요청이 남아있는지 체크 (엔진이 안전 지점에서 처리)
         bool HasPendingSceneRequests() const;

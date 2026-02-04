@@ -5,6 +5,7 @@
 #include "Runtime/Foundation/ImGuiEx.h"
 #include "Runtime/Resources/ResourceManager.h"
 #include "Runtime/Resources/SceneFile.h"
+#include "Runtime/Audio/SoundManager.h"
 #include "Runtime/Foundation/Logger.h"
 
 #include "imgui.h"
@@ -56,6 +57,8 @@ namespace Alice
 					// 실행 안 함: 즉시 로드
 					ALICE_LOG_INFO("[Editor] SceneFile::Load (no-save, not playing): \"%s\"\n",
 						g_NextScenePath.string().c_str());
+					Sound::StopBGM();
+					Sound::StopAllSFX();
 					const bool loadSuccess = SceneFile::LoadAuto(world, Alice::ResourceManager::Get(), g_NextScenePath);
 
 					if (!loadSuccess)
@@ -147,6 +150,8 @@ namespace Alice
 				else
 				{
 					// 실행 안 함: 즉시 로드
+					Sound::StopBGM();
+					Sound::StopAllSFX();
 					const bool loadSuccess = SceneFile::LoadAuto(world, Alice::ResourceManager::Get(), g_NextScenePath);
 
 					if (!loadSuccess)
@@ -209,6 +214,8 @@ namespace Alice
 					ALICE_LOG_INFO("[Editor] SceneFile::Load (dont-save, not playing): \"%s\"\n",
 						g_NextScenePath.string().c_str());
 
+					Sound::StopBGM();
+					Sound::StopAllSFX();
 					const bool loadSuccess = SceneFile::LoadAuto(world, Alice::ResourceManager::Get(), g_NextScenePath);
 
 					if (!loadSuccess)

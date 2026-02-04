@@ -1,6 +1,7 @@
 #include "Runtime/Resources/Scene.h"
 #include "Runtime/Resources/ResourceManager.h"
 #include "Runtime/Resources/SceneFile.h"
+#include "Runtime/Audio/SoundManager.h"
 #include "Runtime/Foundation/Logger.h"
 
 namespace Alice
@@ -40,7 +41,7 @@ namespace Alice
 	}
 
 	// =========================
-	// 즉시 전환 (엔진 안전 지점)
+	// 즉시 ?�환 (?�진 ?�전 지??
 	// =========================
 	bool SceneManager::SwitchToImmediate(const char* sceneName)
 	{
@@ -52,13 +53,13 @@ namespace Alice
 
 		m_currentScene = std::move(newScene);
 		m_currentScene->OnEnter(m_world, m_resources);
-		// 코드 씬으로 전환 시 파일 경로 초기화
+		// 코드 ?�으�??�환 ???�일 경로 초기??
 		m_currentSceneFilePath.clear();
 		return true;
 	}
 
 	// =========================
-	// 지연 전환 요청 (스크립트에서 호출 안전)
+	// 지???�환 ?�청 (?�크립트?�서 ?�출 ?�전)
 	// =========================
 	bool SceneManager::SwitchTo(const char* sceneName)
 	{
@@ -66,7 +67,7 @@ namespace Alice
 		if (!newScene) return false;
 
 		m_pendingScene = std::move(newScene);
-		m_pendingSceneFile.reset(); // 파일 로드 요청이 있던 걸 덮어씀
+		m_pendingSceneFile.reset(); // ?�일 로드 ?�청???�던 �???��?�
 		return true;
 	}
 
@@ -74,12 +75,12 @@ namespace Alice
 	{
 		if (logicalScenePath.empty()) return false;
 
-		// ".scene" 같은 닷파일/필터 문자열 방지
+		// ".scene" 같�? ?�파???�터 문자??방�?
 		if (!logicalScenePath.has_extension()) return false;
 		if (logicalScenePath.extension() != ".scene") return false;
 
 		m_pendingSceneFile = logicalScenePath;
-		m_pendingScene.reset(); // 코드 씬 전환 요청이 있던 걸 덮어씀
+		m_pendingScene.reset(); // 코드 ???�환 ?�청???�던 �???��?�
 		return true;
 	}
 
@@ -102,12 +103,16 @@ namespace Alice
 
 	bool SceneManager::CommitPendingSceneChange(World& world)
 	{
-		// pending 데이터 추출
+		// Stop any playing audio before tearing down/loading scenes.
+		Sound::StopBGM();
+		Sound::StopAllSFX();
+
+		// pending ?�이??추출
 		std::unique_ptr<IScene> pendingScene = std::move(m_pendingScene);
 		std::optional<std::filesystem::path> pendingFile = std::move(m_pendingSceneFile);
 		m_pendingSceneFile.reset();
 
-		// (A) 코드 기반 씬 전환 커밋
+		// (A) 코드 기반 ???�환 커밋
 		if (pendingScene)
 		{
 			if (m_currentScene)
@@ -116,17 +121,17 @@ namespace Alice
 			m_currentScene = std::move(pendingScene);
 			m_currentScene->OnEnter(m_world, m_resources);
 			
-			// 코드 씬 이름 저장
+			// 코드 ???�름 ?�??
 			if (m_currentScene)
 			{
 				m_currentSceneName = m_currentScene->GetName() ? m_currentScene->GetName() : "";
 			}
-			// 코드 기반 씬 전환 시 파일 경로 초기화
+			// 코드 기반 ???�환 ???�일 경로 초기??
 			m_currentSceneFilePath.clear();
 			return true;
 		}
 
-		// (B) .scene 파일 로드 커밋
+		// (B) .scene ?�일 로드 커밋
 		if (pendingFile.has_value())
 		{
 			const auto path = *pendingFile;
@@ -134,20 +139,20 @@ namespace Alice
 			if (m_currentScene)
 				m_currentScene->OnExit(m_world, m_resources);
 
-			// 파일 기반 로드면 "현재 코드 씬" 개념이 없어질 수 있으니 비워둠
+			// ?�일 기반 로드�?"?�재 코드 ?? 개념???�어�????�으??비워??
 			m_currentScene.reset();
 
 			const bool ok = SceneFile::LoadAuto(world, m_resources, path);
 
 			if (ok)
 			{
-				// 로드 성공 시 현재 씬 파일 경로 저장
+				// 로드 ?�공 ???�재 ???�일 경로 ?�??
 				m_currentSceneFilePath = path;
 			}
 			else
 			{
 				ALICE_LOG_ERRORF("[SceneManager] SceneFile::LoadAuto failed: %s", path.generic_string().c_str());
-				// 로드 실패 시 경로는 유지하지 않음
+				// 로드 ?�패 ??경로???��??��? ?�음
 			}
 			return ok;
 		}
@@ -155,3 +160,4 @@ namespace Alice
 		return false;
 	}
 }
+

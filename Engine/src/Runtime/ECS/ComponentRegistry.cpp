@@ -1313,6 +1313,10 @@ namespace Alice
         r.Register<CameraBlendComponent>("Blend", "Camera");
         r.Register<CameraInputComponent>("Input", "Camera");
 
+        r.Register<AudioListenerComponent>("Audio Listener", "Audio");
+        r.Register<AudioSourceComponent>("Audio Source", "Audio");
+        r.Register<SoundBoxComponent>("Sound Box", "Audio");
+
         r.Register<PointLightComponent>("Point Light", "Lighting");
         r.Register<SpotLightComponent>("Spot Light", "Lighting");
         r.Register<RectLightComponent>("Rect Light", "Lighting");
