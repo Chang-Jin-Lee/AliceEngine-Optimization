@@ -621,6 +621,9 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			return;
 		}
 
+		m_state->prevPlayerState = m_state->player.state;
+		m_state->prevBossState = m_state->boss.state;
+
 		m_state->player.id = playerId;
 		m_state->player.team = Combat::Team::Player;
 		m_state->player.canBeHitstunned = m_playerCanBeHitstunned;
@@ -1380,22 +1383,6 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		const auto& eBoss = m_state->bus.PeekDeferred(bossId);
 		const bool freezePlayerFsm = playerHitstopActive;
 		const bool freezeBossFsm = bossHitstopActive;
-		const bool playerParrySuccess = HasEvent(ePlayer, Combat::CombatEventType::OnParrySuccess);
-		const bool bossParrySuccess = HasEvent(eBoss, Combat::CombatEventType::OnParrySuccess);
-		const bool playerGuardSuccess = HasEvent(ePlayer, Combat::CombatEventType::OnGuarded);
-		const bool bossGuardSuccess = HasEvent(eBoss, Combat::CombatEventType::OnGuarded);
-		if (!freezePlayerFsm && playerParrySuccess)
-		{
-			playerIntent.guardHeld = false;
-			playerIntent.guardPressed = false;
-			playerIntent.guardReleased = false;
-		}
-		if (!freezeBossFsm && bossParrySuccess)
-		{
-			bossIntent.guardHeld = false;
-			bossIntent.guardPressed = false;
-			bossIntent.guardReleased = false;
-		}
 
 		Combat::FsmOutput outPlayer{};
 		Combat::FsmOutput outBoss{};
@@ -2987,6 +2974,15 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		for (auto hit : m_state->bus.Hits())
 		{
+			const bool attackerHitstop = (hit.attackerOwner == playerId)
+				? playerHitstopActive
+				: (hit.attackerOwner == bossId) ? bossHitstopActive : false;
+			const bool victimHitstop = (hit.victimOwner == playerId)
+				? playerHitstopActive
+				: (hit.victimOwner == bossId) ? bossHitstopActive : false;
+			if (attackerHitstop || victimHitstop)
+				continue;
+
 			auto itParry = m_state->parryResolvedByVictim.find(hit.victimOwner);
 			if (itParry != m_state->parryResolvedByVictim.end())
 			{
