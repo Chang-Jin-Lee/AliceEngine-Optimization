@@ -67,6 +67,9 @@ namespace Alice
 
 		// 런타임 상태 (직렬화 금지)
 		bool attackActive = false;
+		// Trace suppression latch while attack window is still active (script combat).
+		bool attackSuppressed = false;
+		bool attackPaused = false;
 		bool dodgeActive = false;
 		bool guardActive = false;
 		bool parryActive = false;
