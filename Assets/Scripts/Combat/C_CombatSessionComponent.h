@@ -50,8 +50,15 @@ namespace Alice
         ALICE_PROPERTY(float, m_guardSuccessPushbackScale, 0.1f);
         ALICE_PROPERTY(float, m_hitPushbackScale, 0.2f);
         ALICE_PROPERTY(float, m_hitInvulnSec, 0.2f);
+        ALICE_PROPERTY(float, m_hitstopSec, 0.05f);
         ALICE_PROPERTY(float, m_guardBreakPushbackDurationSec, 1.0f);
         ALICE_PROPERTY(float, m_hitPushbackDurationSec, 0.3f);
+        ALICE_PROPERTY(bool, m_playerInteractionEnabled, false);
+        ALICE_PROPERTY(float, m_healStartDelaySec, 1.0f);
+        ALICE_PROPERTY(float, m_healTickIntervalSec, 1.0f);
+        ALICE_PROPERTY(float, m_healTransferRatio, 0.1f);
+        ALICE_PROPERTY(float, m_healWeaponMinRatio, 0.1f);
+        ALICE_PROPERTY(float, m_healPlayerMaxRatio, 0.9f);
 
         // Boss groggy tuning
         ALICE_PROPERTY(float, m_bossGroggyGainLight, 8.0f);
@@ -63,6 +70,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_chargeScale2, 1.4f);
         ALICE_PROPERTY(float, m_chargeScale3, 1.8f);
         ALICE_PROPERTY(float, m_lightComboWindowSec, 0.5f);
+        ALICE_PROPERTY(float, m_chargeCombo2Speed, 0.7f);
 
         // Animation blending
         ALICE_PROPERTY(float, m_animBlendSec, 0.12f);
@@ -78,10 +86,13 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_heavyAttackClipA, "");
         ALICE_PROPERTY(std::string, m_heavyAttackClipB, "");
         ALICE_PROPERTY(std::string, m_dodgeClip, "");
+        ALICE_PROPERTY(std::string, m_chargeEnterClip, "");
         ALICE_PROPERTY(std::string, m_chargeLoopClip, "");
         ALICE_PROPERTY(std::string, m_hitClip, "");
         ALICE_PROPERTY(std::string, m_guardBreakClip, "");
         ALICE_PROPERTY(std::string, m_fatalAttackClip, "");
+        ALICE_PROPERTY(std::string, m_interactionClip, "");
+        ALICE_PROPERTY(std::string, m_healLoopClip, "");
         ALICE_PROPERTY(std::string, m_guardEnterClip, "");
         ALICE_PROPERTY(std::string, m_guardLoopClip, "");
         ALICE_PROPERTY(std::string, m_guardExitClip, "");
@@ -89,22 +100,25 @@ namespace Alice
         ALICE_PROPERTY(float, m_guardExitDurationSec, 0.0f);
 
         // Per-entity animation overrides (optional)
-        ALICE_PROPERTY(std::string, m_playerIdleClip, "");
-        ALICE_PROPERTY(std::string, m_playerMoveClip, "");
-        ALICE_PROPERTY(std::string, m_playerLightAttackClip, "");
-        ALICE_PROPERTY(std::string, m_playerLightAttackClip1, "");
-        ALICE_PROPERTY(std::string, m_playerLightAttackClip2, "");
-        ALICE_PROPERTY(std::string, m_playerLightAttackClip3, "");
+        ALICE_PROPERTY(std::string, m_playerIdleClip, "rig|Tia_IDLE");
+        ALICE_PROPERTY(std::string, m_playerMoveClip, "rig|Tia_Run");
+        ALICE_PROPERTY(std::string, m_playerLightAttackClip, "rig|Tia_Normal_Attack_1");
+        ALICE_PROPERTY(std::string, m_playerLightAttackClip1, "rig|Tia_Normal_Attack_1");
+        ALICE_PROPERTY(std::string, m_playerLightAttackClip2, "rig|Tia_Normal_Attack_2");
+        ALICE_PROPERTY(std::string, m_playerLightAttackClip3, "rig|Tia_Normal_Attack_3");
         ALICE_PROPERTY(std::string, m_playerHeavyAttackClipA, "");
         ALICE_PROPERTY(std::string, m_playerHeavyAttackClipB, "");
-        ALICE_PROPERTY(std::string, m_playerDodgeClip, "");
-        ALICE_PROPERTY(std::string, m_playerChargeLoopClip, "");
-        ALICE_PROPERTY(std::string, m_playerHitClip, "");
-        ALICE_PROPERTY(std::string, m_playerGuardBreakClip, "");
-        ALICE_PROPERTY(std::string, m_playerFatalAttackClip, "");
-        ALICE_PROPERTY(std::string, m_playerGuardEnterClip, "");
-        ALICE_PROPERTY(std::string, m_playerGuardLoopClip, "");
-        ALICE_PROPERTY(std::string, m_playerGuardExitClip, "");
+        ALICE_PROPERTY(std::string, m_playerDodgeClip, "rig|Tia_Rolling");
+        ALICE_PROPERTY(std::string, m_playerChargeEnterClip, "rig|Tia_Charging");
+        ALICE_PROPERTY(std::string, m_playerChargeLoopClip, "rig|Tia_Charged");
+        ALICE_PROPERTY(std::string, m_playerHitClip, "rig|Tia_Hit");
+        ALICE_PROPERTY(std::string, m_playerGuardBreakClip, "rig|Tia_Guard_Brake");
+        ALICE_PROPERTY(std::string, m_playerFatalAttackClip, "rig|Tia_Grogi Attack");
+        ALICE_PROPERTY(std::string, m_playerInteractionClip, "rig|Tia_Interaction");
+        ALICE_PROPERTY(std::string, m_playerHealLoopClip, "rig|Tia_Hill");
+        ALICE_PROPERTY(std::string, m_playerGuardEnterClip, "rig|Tia_Guard");
+        ALICE_PROPERTY(std::string, m_playerGuardLoopClip, "rig|Tia_Guarding");
+        ALICE_PROPERTY(std::string, m_playerGuardExitClip, "rig|Tia_Guard");
         ALICE_PROPERTY(float, m_playerGuardEnterDurationSec, 0.0f);
         ALICE_PROPERTY(float, m_playerGuardExitDurationSec, 0.0f);
         ALICE_PROPERTY(std::string, m_bossIdleClip, "");
@@ -116,9 +130,12 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_bossHeavyAttackClipA, "");
         ALICE_PROPERTY(std::string, m_bossHeavyAttackClipB, "");
         ALICE_PROPERTY(std::string, m_bossDodgeClip, "");
+        ALICE_PROPERTY(std::string, m_bossChargeEnterClip, "");
         ALICE_PROPERTY(std::string, m_bossChargeLoopClip, "");
         ALICE_PROPERTY(std::string, m_bossHitClip, "");
         ALICE_PROPERTY(std::string, m_bossGuardBreakClip, "");
+        ALICE_PROPERTY(std::string, m_bossInteractionClip, "");
+        ALICE_PROPERTY(std::string, m_bossHealLoopClip, "");
         ALICE_PROPERTY(std::string, m_bossGuardEnterClip, "");
         ALICE_PROPERTY(std::string, m_bossGuardLoopClip, "");
         ALICE_PROPERTY(std::string, m_bossGuardExitClip, "");
@@ -166,10 +183,13 @@ namespace Alice
             std::string heavyAttackClipA;
             std::string heavyAttackClipB;
             std::string dodgeClip;
+            std::string chargeEnterClip;
             std::string chargeLoopClip;
             std::string hitClip;
             std::string guardBreakClip;
             std::string fatalAttackClip;
+            std::string interactionClip;
+            std::string healLoopClip;
             std::string groggyLoopClip;
             std::string guardEnterClip;
             std::string guardLoopClip;

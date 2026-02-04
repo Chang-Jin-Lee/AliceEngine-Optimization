@@ -39,6 +39,11 @@ namespace Alice
             std::uniform_real_distribution<float> dist(minVal, maxVal);
             return dist(rng);
         }
+
+        int RandomSign()
+        {
+            return (RandomRange(0.0f, 1.0f) < 0.5f) ? -1 : 1;
+        }
     }
 
     void C_BossBrainComponent::Start()
@@ -125,6 +130,10 @@ namespace Alice
                 {
                     m_state = next;
                     m_stateTimer = 0.0f;
+                    if (next == BrainState::Orbit)
+                        m_patrolDirection = RandomSign();
+                    if (next != BrainState::Idle)
+                        m_idleTargetSec = 0.0f;
                 }
             };
 
@@ -178,6 +187,8 @@ namespace Alice
             const float traceMin = std::max(0.0f, m_testTraceMinSec);
             const float traceMax = std::max(traceMin, m_testTraceMaxSec);
             const float traceFallback = std::max(0.0f, m_testTraceDurationSec);
+            const float idleMin = std::max(0.0f, m_testIdleMinSec);
+            const float idleMax = std::max(idleMin, m_testIdleMaxSec);
 
             if (m_state == BrainState::Orbit && blocked && m_blockedCooldownTimer <= 0.0f)
             {
@@ -224,6 +235,17 @@ namespace Alice
                 if (dist >= retreatDist || (retreatMax > 0.0f && m_testRetreatTimer >= retreatMax))
                 {
                     m_testRetreatTimer = 0.0f;
+                    m_testTraceTimer = 0.0f;
+                    m_testTraceTargetSec = 0.0f;
+                    m_idleTargetSec = (idleMax > 0.0f) ? RandomRange(idleMin, idleMax) : 0.0f;
+                    EnterState(BrainState::Idle);
+                }
+            }
+            else if (m_state == BrainState::Idle)
+            {
+                const float holdSec = std::max(0.0f, m_idleTargetSec);
+                if (holdSec <= 0.0f || m_stateTimer >= holdSec)
+                {
                     m_testTraceTimer = 0.0f;
                     m_testTraceTargetSec = 0.0f;
                     EnterState(BrainState::Orbit);
@@ -746,6 +768,7 @@ namespace Alice
         m_testTraceTimer = 0.0f;
         m_testTraceTargetSec = 0.0f;
         m_testRetreatTimer = 0.0f;
+        m_idleTargetSec = 0.0f;
         m_debugLabel = "Idle";
     }
 }
