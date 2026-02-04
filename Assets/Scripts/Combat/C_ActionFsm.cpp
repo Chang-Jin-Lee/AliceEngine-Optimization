@@ -145,6 +145,10 @@ namespace Alice::Combat
                 m_dodgeMoveTimer = 0.0f;
                 m_dodgeMoveStopped = false;
                 m_dodgeDirValid = Normalize(intent.move, m_dodgeDir);
+                if (!m_dodgeDirValid && sensors.dodgeFallbackValid)
+                {
+                    m_dodgeDirValid = Normalize(sensors.dodgeFallbackDir, m_dodgeDir);
+                }
                 if (!m_dodgeDirValid && m_lastMoveValid)
                 {
                     m_dodgeDir = m_lastMoveDir;
