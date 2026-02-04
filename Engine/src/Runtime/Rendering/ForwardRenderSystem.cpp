@@ -1697,6 +1697,7 @@ namespace Alice
                 if (cameraEntities.contains(id)) continue;
                 if (world.GetComponent<SkinnedMeshComponent>(id)) continue;
                 if (!transform.enabled || !transform.visible) continue;
+                if (!world.GetComponent<MaterialComponent>(id)) continue; // Empty 등 렌더 불필요 엔티티는 스킵
 
                 XMMATRIX worldM = BuildWorldMatrix(world, id, transform);
 
@@ -1934,6 +1935,8 @@ namespace Alice
         {
             if (world.GetComponent<SkinnedMeshComponent>(id)) continue; // 스키닝 메시는 제외
             if (!transform.enabled || !transform.visible) continue;
+            const MaterialComponent* mat = world.GetComponent<MaterialComponent>(id);
+            if (!mat) continue; // Empty 등 렌더 불필요 엔티티는 스킵
 
             XMMATRIX worldM = BuildWorldMatrix(world, id, transform);
 
@@ -1947,7 +1950,6 @@ namespace Alice
             XMFLOAT4 toonCuts = DefaultToonPbrCuts();
             XMFLOAT4 toonLevels = DefaultToonPbrLevels();
 
-            const MaterialComponent* mat = world.GetComponent<MaterialComponent>(id);
             if (mat) {
                 color = { mat->color.x, mat->color.y, mat->color.z, mat->alpha };
                 rough = mat->roughness; metal = mat->metalness;

@@ -27,6 +27,9 @@ namespace Alice {
         DirectX::XMFLOAT3 color{ 1.0f, 1.0f, 0.0f };    // 파티클 색상
         float intensity{ 1.0f };                       // 이펙트 강도
 
+        // === Emission Module (단순화) ===
+        float spawnRate{ 1.0f };                       // 리스폰 비율 (0..1, 1=항상 스폰)
+
         // === Shape Module ===
         float radius{ 0.5f };                          // 이미터 반경
 

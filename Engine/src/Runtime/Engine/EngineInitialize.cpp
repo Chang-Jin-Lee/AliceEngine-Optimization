@@ -345,6 +345,13 @@ namespace Alice
 		m_trailRenderSystem->SetResourceManager(&m_resourceManager);
 		if (!m_trailRenderSystem->Initialize()) return false;
 
+		m_unityVfxMeshRenderSystem = std::make_unique<UnityVfxMeshRenderSystem>(*m_renderDevice);
+		if (!m_unityVfxMeshRenderSystem->Initialize())
+		{
+			ALICE_LOG_ERRORF("m_unityVfxMeshRenderSystem->Initialize(): fail...");
+			return false;
+		}
+
 		if (m_deferredRenderSystem && m_trailRenderSystem)
 			m_deferredRenderSystem->SetSwordRenderSystem(m_trailRenderSystem.get());
 

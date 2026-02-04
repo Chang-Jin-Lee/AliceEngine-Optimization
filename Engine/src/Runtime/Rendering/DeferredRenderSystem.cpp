@@ -1904,6 +1904,7 @@ namespace Alice
             {
                 if (cameraEntities.contains(id)) continue;
                 if (world.GetComponent<SkinnedMeshComponent>(id)) continue;
+                if (!world.GetComponent<MaterialComponent>(id)) continue; // Empty 등 렌더 불필요 엔티티는 스킵
                 if (!tr.enabled || !tr.visible) continue;
 
                 // [프러스텀 컬링] 카메라 시야 밖 오브젝트는 건너뛰기
@@ -2701,6 +2702,8 @@ namespace Alice
             if (cameraEntities.contains(id)) continue;
             if (world.GetComponent<SkinnedMeshComponent>(id)) continue;
             if (!transform.enabled || !transform.visible) continue;
+            const MaterialComponent* mat = world.GetComponent<MaterialComponent>(id);
+            if (!mat) continue; // Empty 등 렌더 불필요 엔티티는 스킵
 
             // [프러스텀 컬링] 카메라 시야 밖 오브젝트는 건너뛰기
             float maxScale = std::max({ transform.scale.x, transform.scale.y, transform.scale.z });
@@ -2727,7 +2730,6 @@ namespace Alice
             XMFLOAT4 toonLevels = DefaultToonPbrLevels();
             int objectShadingMode = shadingMode;
             
-            const MaterialComponent* mat = world.GetComponent<MaterialComponent>(id);
             if (mat) {
                 color = { mat->color.x, mat->color.y, mat->color.z, mat->alpha };
                 rough = mat->roughness; 

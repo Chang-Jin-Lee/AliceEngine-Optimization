@@ -147,6 +147,7 @@ namespace Alice
 			if (typeName == "TransformComponent" ||
 				typeName == "MaterialComponent" ||
 				typeName == "ComputeEffectComponent" ||
+				typeName == "UnityVfxComponent" ||
 				typeName == "PointLightComponent" ||
 				typeName == "SpotLightComponent" ||
 				typeName == "RectLightComponent" ||

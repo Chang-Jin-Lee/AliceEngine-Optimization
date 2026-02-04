@@ -132,6 +132,7 @@ namespace Alice
 
 			// 3-3. Compute Effect
 			DrawInspectorComputeEffect(world, selectedEntity);
+			DrawInspectorUnityVfx(world, selectedEntity);
 
 			// 3-4. Camera 컴포넌트들
 			DrawInspectorCameraSpringArm(world, selectedEntity);

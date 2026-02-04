@@ -24,6 +24,7 @@
 #include "Runtime/Rendering/Components/SpotLightComponent.h"
 #include "Runtime/Rendering/Components/RectLightComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/Rendering/Components/EffectComponent.h"
 #include "Runtime/Rendering/Components/TrailEffectComponent.h"
 #include "Runtime/Audio/Components/AudioListenerComponent.h"
@@ -684,11 +685,38 @@ namespace Alice
             .property("sizePx", &ComputeEffectComponent::sizePx)
             .property("color", &ComputeEffectComponent::color)
             .property("intensity", &ComputeEffectComponent::intensity)
+            .property("spawnRate", &ComputeEffectComponent::spawnRate)
             .property("radius", &ComputeEffectComponent::radius)
             .property("gravity", &ComputeEffectComponent::gravity)
             .property("drag", &ComputeEffectComponent::drag)
             .property("depthTest", &ComputeEffectComponent::depthTest)
             .property("depthBiasMeters", &ComputeEffectComponent::depthBiasMeters);
+
+        // === UnityVfxComponent 등록 ===
+        rttr::registration::class_<UnityVfxComponent>("UnityVfxComponent")
+            .constructor<>()
+            .property("enabled", &UnityVfxComponent::enabled)
+            .property("effectPath", &UnityVfxComponent::effectPath)
+            .property("useMeshRenderer", &UnityVfxComponent::useMeshRenderer)
+            .property("useComputeEffect", &UnityVfxComponent::useComputeEffect)
+            .property("timeScale", &UnityVfxComponent::timeScale)
+            .property("lifetimeScale", &UnityVfxComponent::lifetimeScale)
+            .property("overrideLoop", &UnityVfxComponent::overrideLoop)
+            .property("loop", &UnityVfxComponent::loop)
+            .property("sizeScale", &UnityVfxComponent::sizeScale)
+            .property("speedScale", &UnityVfxComponent::speedScale)
+            .property("intensityScale", &UnityVfxComponent::intensityScale)
+            .property("spawnRateScale", &UnityVfxComponent::spawnRateScale)
+            .property("colorScale", &UnityVfxComponent::colorScale)
+            .property("alphaScale", &UnityVfxComponent::alphaScale)
+            .property("hdrColorClamp", &UnityVfxComponent::hdrColorClamp)
+            .property("uvScrollScale", &UnityVfxComponent::uvScrollScale)
+            .property("dissolveOffset", &UnityVfxComponent::dissolveOffset)
+            .property("noiseScale", &UnityVfxComponent::noiseScale)
+            .property("rampScale", &UnityVfxComponent::rampScale)
+            .property("enableTrails", &UnityVfxComponent::enableTrails)
+            .property("trailWidthScale", &UnityVfxComponent::trailWidthScale)
+            .property("trailLifeScale", &UnityVfxComponent::trailLifeScale);
 
         rttr::registration::enumeration<ParticleSimulationSpace>("ParticleSimulationSpace")
             (
@@ -1243,6 +1271,7 @@ namespace Alice
         r.Register<PostProcessVolumeComponent>("Post Process Volume", "Rendering");
 
         r.Register<ComputeEffectComponent>("Particle System (Compute)", "VFX");
+        r.Register<UnityVfxComponent>("Unity VFX (Particle)", "VFX");
         r.Register<EffectComponent>("Effect", "VFX");
         r.Register<TrailEffectComponent>("Trail Effect", "VFX");
 

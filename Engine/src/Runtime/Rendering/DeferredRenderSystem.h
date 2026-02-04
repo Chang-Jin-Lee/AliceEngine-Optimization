@@ -82,11 +82,14 @@ namespace Alice
 
         /// 씬 컬러 텍스처 SRV를 반환합니다 (에디터에서 사용).
         ID3D11ShaderResourceView* GetSceneColorSRV() const { return m_sceneColorSRV.Get(); }
+        ID3D11RenderTargetView* GetSceneRTV() const { return m_sceneRTV.Get(); }
+        ID3D11DepthStencilView* GetSceneDSV() const { return m_sceneDSV.Get(); }
         std::uint32_t GetSceneWidth()  const { return m_sceneWidth; }
         std::uint32_t GetSceneHeight() const { return m_sceneHeight; }
 
         /// 에디터 뷰포트 표시용(톤매핑 완료) SRV
         ID3D11ShaderResourceView* GetViewportSRV() const { return m_viewportSRV.Get(); }
+        ID3D11RenderTargetView* GetViewportRTV() const { return m_viewportRTV.Get(); }
 
         /// 선택 카메라 미리보기용 SRV
         ID3D11ShaderResourceView* GetCameraPreviewSRV() const { return m_cameraPreviewViewportSRV.Get(); }
