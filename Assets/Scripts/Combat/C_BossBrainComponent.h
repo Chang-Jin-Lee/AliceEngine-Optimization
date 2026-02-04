@@ -42,6 +42,8 @@ namespace Alice
         ALICE_PROPERTY(float, m_testApproachDistance, 0.5f);
         ALICE_PROPERTY(float, m_testRetreatDistance, 1.6f);
         ALICE_PROPERTY(float, m_testRetreatMaxSec, 0.4f);
+        ALICE_PROPERTY(float, m_testIdleMinSec, 1.0f);
+        ALICE_PROPERTY(float, m_testIdleMaxSec, 3.0f);
         ALICE_PROPERTY(float, m_patrolDistance, 4.0f);
         ALICE_PROPERTY(float, m_patrolTolerance, 0.8f);
         ALICE_PROPERTY(float, m_meleeDistance, 2.4f);
@@ -118,6 +120,7 @@ namespace Alice
         float m_testTraceTimer = 0.0f;
         float m_testTraceTargetSec = 0.0f;
         float m_testRetreatTimer = 0.0f;
+        float m_idleTargetSec = 0.0f;
         bool m_attackIssued = false;
         bool m_specialPending = false;
         bool m_gimmickActive = false;

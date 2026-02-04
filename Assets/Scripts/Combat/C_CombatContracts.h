@@ -44,6 +44,10 @@ namespace Alice::Combat
         Hitstun,
         Groggy,
         Dead,
+        Interaction,
+        HealEnter,
+        HealLoop,
+        HealExit,
     };
 
     struct ActionFlags
@@ -74,6 +78,9 @@ namespace Alice::Combat
         float guardHeldSec = 0.0f;
         float parryTapWindowSec = 0.0f;
         bool itemPressed = false;
+        bool itemHeld = false;
+        bool itemReleased = false;
+        float itemHeldSec = 0.0f;
         bool interactPressed = false;
         bool ragePressed = false;
         bool runHeld = false;
@@ -111,6 +118,12 @@ namespace Alice::Combat
         float weaponDurability = 100.0f;
         float weaponDurabilityMax = 100.0f;
         float hitstunDurationSec = 0.0f;
+        bool interactAvailable = false;
+        bool healAllowed = false;
+        float interactionDurationSec = 0.0f;
+        float healEnterDurationSec = 0.0f;
+        float healExitDurationSec = 0.0f;
+        float guardEnterDurationSec = 0.0f;
 
         float groggyDuration = 1.5f;
         float moveSpeed = 5.0f;
