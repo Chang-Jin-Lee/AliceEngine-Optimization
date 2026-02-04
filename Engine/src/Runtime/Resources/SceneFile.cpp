@@ -6,6 +6,7 @@
 #include "Runtime/ECS/ComponentRegistry.h"  // RTTR 등록 코드 포함
 #include "Runtime/Resources/Serialization/JsonRttr.h"
 #include "Runtime/Resources/ResourceManager.h"
+#include "Runtime/Audio/SoundManager.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/Foundation/ThreadSafety.h"
 #include "Runtime/ECS/Components/IDComponent.h"
@@ -1555,6 +1556,10 @@ namespace Alice
             auto itEntities = root.find("entities");
             if (itEntities == root.end() || !itEntities->is_array())
                 return false;
+
+            // Stop any playing audio before clearing/loading a new scene.
+            Sound::StopBGM();
+            Sound::StopAllSFX();
 
             world.Clear();
 

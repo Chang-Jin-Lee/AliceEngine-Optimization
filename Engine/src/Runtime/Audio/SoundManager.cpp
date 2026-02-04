@@ -405,9 +405,15 @@ namespace Alice::Sound
     void PlayBGM(const std::wstring& key, float /*fadeTime*/)
     {
         if (!g_System) return;
-        
+
+        ALICE_LOG_INFO("[SoundManager] PlayBGM: entered key=\"%ls\"", key.c_str());
+
         // 이미 재생 중이면 무시
-        if (g_CurrentBGMKey == key && IsBGMPlaying()) return;
+        if (g_CurrentBGMKey == key && IsBGMPlaying())
+        {
+            ALICE_LOG_INFO("[SoundManager] PlayBGM: skip (same key already playing)");
+            return;
+        }
 
         StopBGM(0.0f); // 이전 BGM 정지
 
@@ -431,15 +437,18 @@ namespace Alice::Sound
 
             if (!IsVirtual(ch))
             {
+                ALICE_LOG_INFO("[SoundManager] PlayBGM: g_ChannelBGM set, key=\"%ls\" attempt=%d", key.c_str(), attempt + 1);
                 g_ChannelBGM = ch;
                 g_CurrentBGMKey = key;
                 return;
             }
 
             // virtual(무음)로 시작했으면 지금 프레임에서 해결하고 다시 시도
+            ALICE_LOG_INFO("[SoundManager] PlayBGM: channel virtual, attempt %d", attempt + 1);
             ch->stop();
             StopOldestOneShot();         // 원샷 하나만 비워서 보이스 확보
         }
+        ALICE_LOG_WARN("[SoundManager] PlayBGM: gave up after 8 attempts (all virtual?), key=\"%ls\"", key.c_str());
     }
 
     void PauseBGM(bool pause)
@@ -450,8 +459,12 @@ namespace Alice::Sound
 
     void StopBGM(float /*fadeTime*/)
     {
+
+        ALICE_LOG_INFO("[SoundManager] StopBGM called, stopping channel");
+
         if (g_ChannelBGM)
         {
+            ALICE_LOG_INFO("[SoundManager] chennel is not NULL");
             g_ChannelBGM->stop(); // FadeOut 구현 생략 (필요 시 DSP 사용)
             g_ChannelBGM = nullptr;
         }

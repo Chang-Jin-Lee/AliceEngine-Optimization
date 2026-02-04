@@ -71,7 +71,7 @@
                     "name": "SceneChangekPressScript",
                     "props": {
                         "changeKey": 20,
-                        "targetScenePath": "Assets/Scenes/UI/DemoiScene.scene"
+                        "targetScenePath": "Assets/Scenes/TestSound/soundTestScene.scene"
                     }
                 }
             ],
