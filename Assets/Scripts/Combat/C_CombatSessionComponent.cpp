@@ -808,6 +808,49 @@ namespace Alice
 		RecomputeTargetInFront(playerId, bossId, sPlayer, m_state->player);
 		RecomputeTargetInFront(bossId, playerId, sBoss, m_state->boss);
 
+		auto SetDodgeFallback = [&](Combat::Sensors& s,
+			const Combat::Intent& intent,
+			EntityId entityId,
+			bool lockOnActive)
+			{
+				s.dodgeFallbackValid = false;
+				const float inputMag = std::abs(intent.move.x) + std::abs(intent.move.y);
+				if (inputMag > 0.001f)
+					return;
+
+				if (!lockOnActive)
+				{
+					s.dodgeFallbackDir = { 0.0f, 1.0f };
+					s.dodgeFallbackValid = true;
+					return;
+				}
+
+				auto* tr = world.GetComponent<TransformComponent>(entityId);
+				if (!tr)
+					return;
+
+				const float offsetRad = m_rotationOffsetDeg * kDegToRad;
+				const float yawRad = tr->rotation.y - offsetRad;
+				const float fx = std::sin(yawRad);
+				const float fz = std::cos(yawRad);
+
+				float inputX = fx;
+				float inputZ = fz;
+				if (camBasis.valid)
+				{
+					inputX = fx * camBasis.rightX + fz * camBasis.rightZ;
+					inputZ = fx * camBasis.forwardX + fz * camBasis.forwardZ;
+				}
+
+				const float len = std::sqrt(inputX * inputX + inputZ * inputZ);
+				if (len <= 0.0001f)
+					return;
+
+				s.dodgeFallbackDir = { inputX / len, inputZ / len };
+				s.dodgeFallbackValid = true;
+			};
+		SetDodgeFallback(sPlayer, playerIntent, playerId, m_state->playerLockOnActive);
+
 		if (fatalTriggered)
 			sBoss.groggyDuration = 0.0f;
 
