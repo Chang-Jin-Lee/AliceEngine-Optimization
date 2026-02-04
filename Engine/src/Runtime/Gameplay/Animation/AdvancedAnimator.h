@@ -424,6 +424,7 @@ namespace Alice
                     }
                 }
             };
+                     
 
             auto BlendMatricesSRT = [&](const XMMATRIX& aCol,
                                         const XMMATRIX& bCol,
