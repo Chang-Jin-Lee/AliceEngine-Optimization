@@ -156,17 +156,6 @@ namespace Alice::Combat
             out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, move, dodgeSpeed, true, true } });
         };
 
-        if (m_state == ActionState::JustGuardSuccess)
-        {
-            if (m_stateTime >= m_justGuardDurationSec)
-            {
-                if (wantsGuard)
-                    Enter(ActionState::Guard);
-                else
-                    EnterIdleOrMove();
-            }
-        }
-
         if (m_state == ActionState::GuardBreakWeak)
         {
             if (sensors.weakRemainingSec <= 0.0f)
@@ -222,7 +211,6 @@ namespace Alice::Combat
             && m_state != ActionState::Hitstun
             && m_state != ActionState::Groggy
             && m_state != ActionState::GuardBreakWeak
-            && m_state != ActionState::JustGuardSuccess
             && m_state != ActionState::Interaction
             && m_state != ActionState::HealEnter
             && m_state != ActionState::HealLoop
@@ -364,8 +352,7 @@ namespace Alice::Combat
         flags.canBeInterrupted = (m_state != ActionState::Dodge)
             && (m_state != ActionState::Dead)
             && (m_state != ActionState::Groggy)
-            && (m_state != ActionState::GuardBreakWeak)
-            && (m_state != ActionState::JustGuardSuccess);
+            && (m_state != ActionState::GuardBreakWeak);
 
         if (m_state == ActionState::Interaction)
         {

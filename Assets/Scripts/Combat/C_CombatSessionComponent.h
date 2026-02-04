@@ -50,7 +50,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_guardSuccessPushbackScale, 0.1f);
         ALICE_PROPERTY(float, m_hitPushbackScale, 0.2f);
         ALICE_PROPERTY(float, m_hitInvulnSec, 0.2f);
-        ALICE_PROPERTY(float, m_hitstopSec, 0.05f);
+        ALICE_PROPERTY(float, m_hitstopSec, 2.0f);
         ALICE_PROPERTY(float, m_guardBreakPushbackDurationSec, 1.0f);
         ALICE_PROPERTY(float, m_hitPushbackDurationSec, 0.3f);
         ALICE_PROPERTY(bool, m_playerInteractionEnabled, false);
