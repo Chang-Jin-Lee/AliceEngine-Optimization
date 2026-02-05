@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
 
 namespace Alice
 {
@@ -10,6 +11,7 @@ namespace Alice
     {
         bool enabled{ true };
         std::string effectPath{};     // effect.json logical path (Assets/...)
+        std::uint32_t playId{ 0 };    // 재생 요청 토큰 (증가 시 런타임 리셋)
 
         // Render path toggles (v2 mesh renderer vs v1 compute overlay)
         bool useMeshRenderer{ true };
