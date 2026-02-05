@@ -118,12 +118,18 @@ namespace Alice
         void NotifyDamageTaken(float amount);
         void NotifyPlayerParry(bool success);
         void NotifyPlayerGuardOrEvade();
+        void NotifyAttackOutcome(bool evaded);
 
         // 공격/패턴 튜닝
         ALICE_PROPERTY(float, m_attackCooldown, 1.0f);
         ALICE_PROPERTY(float, m_attackStateHoldSec, 0.45f);
         ALICE_PROPERTY(float, m_specialPatternHoldSec, 1.2f);
         ALICE_PROPERTY(float, m_specialIntervalSec, 60.0f);
+        ALICE_PROPERTY(bool, m_usePhaseRules, true);
+        ALICE_PROPERTY(float, m_phase2HpRatio, 0.7f);
+        ALICE_PROPERTY(float, m_chargeIntervalSec, 30.0f);
+        ALICE_PROPERTY(float, m_chargeRerollSec, 5.0f);
+        ALICE_PROPERTY(float, m_walkDashTimeoutSec, 5.0f);
         ALICE_PROPERTY(int, m_patternQueueTarget, 2);
         ALICE_PROPERTY(int, m_patternQueueMax, 3);
         ALICE_PROPERTY(bool, m_testSwingLoop, false);
@@ -204,6 +210,13 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_clipPhaseHowling, "Boss|Boss|Phase_Howling");
 
     private:
+        enum class AttackOutcome : uint8_t
+        {
+            None,
+            HitOrParry,
+            Evaded
+        };
+
         DistanceBand ComputeDistanceBand(float dist) const;
         Sector ComputeSector(float dot, float side) const;
         void UpdateDecisionState(float dt, float dist, bool hasDir, float dot, float side);
@@ -234,6 +247,7 @@ namespace Alice
         float m_lastDistance = 0.0f;
         float m_chargeTimer = 0.0f;
         float m_specialTimer = 0.0f;
+        float m_chargeIntervalTimer = 0.0f;
         float m_backAttackTimer = 0.0f;
         float m_backAttackCooldownTimer = 0.0f;
         float m_testTraceTimer = 0.0f;
@@ -244,10 +258,19 @@ namespace Alice
         bool m_specialPending = false;
         bool m_backAttackPending = false;
         bool m_gimmickActive = false;
+        bool m_phase2Active = false;
+        bool m_chargePending = false;
+        bool m_forceWalkAfterAttack = false;
+        bool m_rerollAfterAttack = false;
         bool m_wantsFaceTarget = false;
         float m_targetDot = 1.0f;
         float m_targetSideDot = 0.0f;
         DecisionState m_decision{};
         std::string m_debugLabel;
+        float m_traceEnterDist = 0.0f;
+        PatternType m_lastPattern = PatternType::None;
+        PatternType m_lastAttackPattern = PatternType::None;
+        AttackOutcome m_attackOutcome = AttackOutcome::None;
+        bool m_attackOutcomeSet = false;
     };
 }
