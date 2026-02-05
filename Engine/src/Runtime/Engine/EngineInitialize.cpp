@@ -1,6 +1,8 @@
 #include "Runtime/Engine/EngineImpl.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Resources/Prefab.h"
+#include <chrono>
+#include <thread>
 
 namespace Alice
 {
@@ -184,6 +186,9 @@ namespace Alice
 		ALICE_LOG_INFO("Engine::Initialize: Success (Entities: %zu)",
 			m_world.GetComponents<TransformComponent>().size());
 
+		if (m_editorMode)
+			m_editorCore.RequestEngineLogoDismiss();
+
 		return true;
 	}
 
@@ -332,6 +337,44 @@ namespace Alice
 
 		if (!m_editorCore.Initialize(m_hWnd, *m_renderDevice))
 			return false;
+
+		m_editorCore.SetEngineLogoHoldUntilRelease(true);
+		m_editorCore.StartEngineLogoOverlay(m_resourceManager, "Resource/Icon/AliceBanner.png");
+		if (!RenderStartupLogoFrames(0.7f))
+			return false;
+
+		return true;
+	}
+
+	bool Engine::Impl::RenderStartupLogoFrames(float seconds)
+	{
+		if (!m_editorMode || !m_renderDevice || seconds <= 0.0f)
+			return true;
+
+		using namespace std::chrono;
+		const auto endTime = steady_clock::now() + duration<float>(seconds);
+		MSG msg{};
+
+		while (steady_clock::now() < endTime)
+		{
+			while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+			{
+				if (msg.message == WM_QUIT)
+					return false;
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+
+			float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			m_renderDevice->BeginFrame(clearColor);
+
+			m_editorCore.BeginFrame();
+			m_editorCore.DrawEngineLogoOnly();
+			m_editorCore.RenderDrawData();
+
+			m_renderDevice->EndFrame();
+			std::this_thread::sleep_for(16ms);
+		}
 
 		return true;
 	}

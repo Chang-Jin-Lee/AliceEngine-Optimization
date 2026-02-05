@@ -236,6 +236,8 @@ namespace Alice
 		if (!m_initialized)
 			return;
 
+		m_engineLogo.Stop();
+
 		if (ImGui::GetCurrentContext() != nullptr)
 		{
 			ImGui_ImplDX11_Shutdown();
@@ -264,6 +266,43 @@ namespace Alice
 
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}
+
+	void EditorCore::StartEngineLogoOverlay(ResourceManager& resources,
+		const std::string& logicalPath,
+		float fadeInSec,
+		float holdSec,
+		float fadeOutSec)
+	{
+		auto* device = m_renderDevice ? m_renderDevice->GetDevice() : nullptr;
+		if (!device)
+		{
+			ALICE_LOG_WARN("[EngineLogo] Start skipped: D3D device is null.");
+			return;
+		}
+		m_engineLogo.Start(resources, device, logicalPath, fadeInSec, holdSec, fadeOutSec);
+	}
+
+	void EditorCore::DrawEngineLogoOnly()
+	{
+		if (!m_initialized)
+			return;
+		DrawEngineLogo();
+	}
+
+	void EditorCore::SetEngineLogoHoldUntilRelease(bool enable)
+	{
+		m_engineLogo.SetHoldUntilRelease(enable);
+	}
+
+	void EditorCore::RequestEngineLogoDismiss()
+	{
+		m_engineLogo.RequestDismiss();
+	}
+
+	void EditorCore::DrawEngineLogo()
+	{
+		m_engineLogo.Draw();
 	}
 
 	void EditorCore::HandleGlobalUndoRedo(World& world, EntityId& selectedEntity, bool isPlaying)
@@ -346,6 +385,8 @@ namespace Alice
 
 		DrawMaterialAssetEditorWindow(world);
 		DrawUICurveAssetEditorWindow();
+
+		DrawEngineLogo();
 
 		HandleSceneLoadFlow(world, sceneManager, isPlaying, selectedEntity);
 	}

@@ -47,9 +47,11 @@
 #include <functional>
 #include <string>
 #include <memory>
+#include "Editor/UI/EngineLogoOverlay.h"
 
 // Forward declaration
 class UIRenderer;
+struct ID3D11ShaderResourceView;
 
 namespace Alice
 {
@@ -171,6 +173,22 @@ namespace Alice
 			int& pvdPort,
 			bool& isDebugDraw
 		);
+
+		/// 시작 로고 표시
+		void StartEngineLogoOverlay(ResourceManager& resources,
+			const std::string& logicalPath,
+			float fadeInSec = 0.6f,
+			float holdSec = 2.0f,
+			float fadeOutSec = 0.6f);
+
+		/// 시작 로고를 강제로 그립니다 (스플래시 프레임용)
+		void DrawEngineLogoOnly();
+
+		/// 로고를 준비 완료까지 유지할지 여부
+		void SetEngineLogoHoldUntilRelease(bool enable);
+
+		/// 로고 페이드 아웃 요청 (준비 완료 시 호출)
+		void RequestEngineLogoDismiss();
 
 		template<typename T>
 		void DrawEngineComponent(const char* label, T* comp, std::function<void()> removeFn, const EntityId& _selectedEntity, const std::string& compTypeName)
@@ -320,6 +338,7 @@ namespace Alice
 		const PostProcessSettings& GetDefaultPostProcessSettings() const { return m_defaultPostProcessSettings; }
 
 	private:
+		void DrawEngineLogo();
 		/// 씬을 로드한 뒤, World 에 존재하는 SkinnedMeshComponent 들이
 		/// SkinnedMeshRegistry 에도 등록되어 있는지 확인하고,
 		/// 누락된 경우 .fbxasset / FBX 원본을 통해 간단히 재-임포트합니다.
@@ -393,6 +412,8 @@ namespace Alice
 
 		// Default PostProcess Settings (Inspector에서 설정하고 저장)
 		PostProcessSettings m_defaultPostProcessSettings;
+
+		EngineLogoOverlay m_engineLogo;
 	};
 }
 
