@@ -1,5 +1,6 @@
 #include "Runtime/Engine/EngineImpl.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Resources/Prefab.h"
 
 namespace Alice
 {
@@ -248,6 +249,9 @@ namespace Alice
 		if (m_editorMode)
 			ResourceManager::Get().Configure(false, exeDir);
 
+		Prefab::SetDefaultWorld(&m_world);
+		Prefab::SetDefaultResources(&m_resourceManager);
+		ScriptHotReload_SetServices(&m_world, &m_resourceManager);
 		return true;
 	}
 

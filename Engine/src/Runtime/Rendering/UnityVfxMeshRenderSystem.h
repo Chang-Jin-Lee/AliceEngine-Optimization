@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <cstdint>
 
 #include <DirectXMath.h>
 #include <wrl/client.h>
@@ -327,6 +328,7 @@ namespace Alice
         struct EffectRuntime
         {
             std::string effectPath;
+            std::uint32_t playId{ 0 };
             std::vector<EmitterRuntime> emitters;
         };
 

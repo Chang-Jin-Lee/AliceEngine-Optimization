@@ -1,0 +1,47 @@
+{
+    "Transform": {
+        "enabled": true,
+        "position": {
+            "x": -4.854215145111084,
+            "y": 2.7998908080917317e-08,
+            "z": 0.8023388385772705
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "visible": true
+    },
+    "UnityVfx": {
+        "alphaScale": 1.0,
+        "colorScale": 1.0,
+        "dissolveOffset": 0.0,
+        "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_03/effect.json",
+        "enableTrails": true,
+        "enabled": true,
+        "hdrColorClamp": 1.0,
+        "intensityScale": 1.0,
+        "lifetimeScale": 1.0,
+        "loop": true,
+        "noiseScale": 1.0,
+        "overrideLoop": false,
+        "rampScale": 1.0,
+        "sizeScale": 2.375999927520752,
+        "spawnRateScale": 1.0,
+        "speedScale": 1.0,
+        "timeScale": 1.0,
+        "trailLifeScale": 1.0,
+        "trailWidthScale": 1.0,
+        "useComputeEffect": false,
+        "useMeshRenderer": true,
+        "uvScrollScale": 1.0
+    },
+    "name": "Combo_slash_fx_03",
+    "version": 1
+}

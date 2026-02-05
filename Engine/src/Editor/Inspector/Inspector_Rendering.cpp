@@ -989,6 +989,7 @@ namespace Alice
 				if (ImGui::TreeNode("Material Overrides##UnityVfx"))
 				{
 					changed |= DragFloatWithInput("Intensity Scale##UnityVfx", &vfx->intensityScale, 0.0f, 20.0f);
+					changed |= ImGui::ColorEdit3("Color Tint##UnityVfx", &vfx->colorTint.x);
 					changed |= DragFloatWithInput("Color Scale##UnityVfx", &vfx->colorScale, 0.0f, 10.0f);
 					changed |= DragFloatWithInput("Alpha Scale##UnityVfx", &vfx->alphaScale, 0.0f, 5.0f);
 					changed |= DragFloatWithInput("HDR Color Clamp##UnityVfx", &vfx->hdrColorClamp, 0.0f, 20.0f);

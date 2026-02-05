@@ -738,6 +738,7 @@ namespace Alice
             .property("speedScale", &UnityVfxComponent::speedScale)
             .property("intensityScale", &UnityVfxComponent::intensityScale)
             .property("spawnRateScale", &UnityVfxComponent::spawnRateScale)
+            .property("colorTint", &UnityVfxComponent::colorTint)
             .property("colorScale", &UnityVfxComponent::colorScale)
             .property("alphaScale", &UnityVfxComponent::alphaScale)
             .property("hdrColorClamp", &UnityVfxComponent::hdrColorClamp)
