@@ -251,6 +251,7 @@ namespace Alice
 
 		Prefab::SetDefaultWorld(&m_world);
 		Prefab::SetDefaultResources(&m_resourceManager);
+		ScriptHotReload_SetServices(&m_world, &m_resourceManager);
 		return true;
 	}
 
