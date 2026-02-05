@@ -608,13 +608,13 @@ namespace Alice
 			ImGui::SameLine();
 			if (ImGui::Button("Select All"))
 			{
-				for (bool& selected : s_SceneSelected)
+				for (bool&& selected : s_SceneSelected)
 					selected = true;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Deselect All"))
 			{
-				for (bool& selected : s_SceneSelected)
+				for (bool&& selected : s_SceneSelected)
 					selected = false;
 				s_DefaultScene = -1;
 			}

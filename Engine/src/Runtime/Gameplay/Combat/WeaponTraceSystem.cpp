@@ -282,12 +282,17 @@ namespace Alice
 
 							trace.hitVictims.insert(victimGuid);
 
-							if (outHits)
-							{
-								const EntityId victimOwner = (hurt->ownerGuid != 0)
-									? world.FindEntityByGuid(hurt->ownerGuid)
-									: (hurt->ownerCached != InvalidEntityId ? hurt->ownerCached : hitEntity);
+                        if (outHits)
+                        {
+                            const EntityId victimOwner = (hurt->ownerGuid != 0)
+                                ? world.FindEntityByGuid(hurt->ownerGuid)
+                                : (hurt->ownerCached != InvalidEntityId ? hurt->ownerCached : hitEntity);
 
+                            // SFX/VFX hook (raw hit detection):
+                            // This is the earliest point with hitPosWS/hitNormalWS.
+                            // Prefer spawning impact effects in CombatSession after resolve
+                            // (Hit vs Guard vs Parry vs GuardBreak), but use this for
+                            // generic debug, sparks, or tracer impacts if needed.
                             if (trace.debugDraw)
                             {
                                 ALICE_LOG_INFO("[WeaponTrace] Hit attacker=%llu victim=%llu hurtbox=%llu part=%u dmg=%.2f attackId=%u shape=%s type=%s layerMask=0x%08X queryMask=0x%08X pos=(%.2f,%.2f,%.2f)",
@@ -312,6 +317,13 @@ namespace Alice
                             ev.attackInstanceId = trace.attackInstanceId;
                             ev.subShapeIndex = shapeIndex;
                             ev.damage = trace.baseDamage * hurt->damageScale;
+                            ev.guardDurabilityCost = trace.guardDurabilityCost;
+                            ev.guardLockSec = trace.guardLockSec;
+                            ev.parryLockSec = trace.parryLockSec;
+                            ev.parryGroggyGain = trace.parryGroggyGain;
+                            ev.guardBreakWeakSec = trace.guardBreakWeakSec;
+                            ev.guardBreakPushbackSpeed = trace.guardBreakPushbackSpeed;
+                            ev.guardBreakPushbackDuration = trace.guardBreakPushbackDuration;
                             ev.debugLog = trace.debugDraw;
                             ev.sweepFraction = sweepFraction;
                             ev.hasSweepFraction = hasSweepFraction;
