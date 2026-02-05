@@ -2,6 +2,7 @@
 #include "Runtime/Rendering/DebugDrawSystem.h"
 
 #include "Runtime/Rendering/Components/DebugDrawBoxComponent.h"
+#include "Runtime/Rendering/Components/DecalComponent.h"
 #include "Runtime/Audio/Components/SoundBoxComponent.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
@@ -377,6 +378,36 @@ namespace Alice
         DebugDrawSystem* target = overlay ? overlay : depth;
         if (!target)
             return;
+
+        // Decal volume debug draw
+        for (const auto& [entityId, decal] : world.GetComponents<DecalComponent>())
+        {
+            if (!decal.enabled) continue;
+            if (decal.albedoTexturePath.empty()) continue;
+            if (decal.opacity <= 0.0f) continue;
+
+            const TransformComponent* tr = world.GetComponent<TransformComponent>(entityId);
+            if (!tr || !tr->enabled || !tr->visible) continue;
+
+            XMMATRIX worldM = world.ComputeWorldMatrix(entityId);
+            XMVECTOR s, r, t;
+            if (!XMMatrixDecompose(&s, &r, &t, worldM))
+                continue;
+
+            XMFLOAT3 center{};
+            XMStoreFloat3(&center, t);
+            XMFLOAT3 halfExtents{};
+            XMStoreFloat3(&halfExtents, s);
+            halfExtents.x = std::abs(halfExtents.x);
+            halfExtents.y = std::abs(halfExtents.y);
+            halfExtents.z = std::abs(halfExtents.z);
+
+            const XMFLOAT4 color = (entityId == selectedEntity)
+                ? XMFLOAT4(1.0f, 0.4f, 0.1f, 1.0f)
+                : XMFLOAT4(decal.color.x, decal.color.y, decal.color.z, 1.0f);
+
+            DrawBox(*target, center, halfExtents, r, color);
+        }
 
         // Collider debug draw
         for (const auto& [entityId, collider] : world.GetComponents<Phy_ColliderComponent>())
