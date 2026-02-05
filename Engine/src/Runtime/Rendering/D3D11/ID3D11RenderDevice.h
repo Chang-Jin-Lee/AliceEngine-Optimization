@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Runtime/Rendering/IRenderDevice.h"
+#include <dxgiformat.h>
 
 // DirectX 11 전방 선언 (헤더 의존성 최소화)
 struct ID3D11Device;
