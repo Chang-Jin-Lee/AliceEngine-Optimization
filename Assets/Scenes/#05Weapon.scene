@@ -3755,7 +3755,7 @@
                         "m_animBlendSec": 0.11999999731779099,
                         "m_autoResolveByName": true,
                         "m_blockPlayerActionsDuringGimmick": true,
-                        "m_bossCanBeHitstunned": false,
+                        "m_bossCanBeHitstunned": true,
                         "m_bossChargeEnterClip": "",
                         "m_bossChargeLoopClip": "",
                         "m_bossDodgeClip": "",
@@ -3889,6 +3889,9 @@
                         "bossBrainTextName": "UI_BossBrain",
                         "bossEntityName": "Enemy",
                         "bossGroggyGaugeName": "UI_BossGroggy_Gauge",
+                        "bossScreenLineSpacing": 40.0,
+                        "bossScreenPosX": 300.0,
+                        "bossScreenPosY": -300.0,
                         "bossHeightOffset": 1.600000023841858,
                         "bossHpGaugeName": "UI_BossHP_Gauge",
                         "bossRightOffset": 0.800000011920929,
@@ -7419,8 +7422,169 @@
             },
             "guid": "2202086449808752079",
             "name": "EGO_Blade(combined)"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.800000011920929,
+                    "y": 1.2999999523162842,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.001875000074505806,
+                    "y": 0.001875000074505806,
+                    "z": 0.001875000074505806
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 0.8999999761581421,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 22.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Player Debug",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -650.0,
+                    "y": 220.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 600.0,
+                    "y": 520.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_PlayerDebug"
+            },
+            "guid": "15100000000000000100",
+            "name": "UI_PlayerDebug"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.800000011920929,
+                    "y": 1.2999999523162842,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.001875000074505806,
+                    "y": 0.001875000074505806,
+                    "z": 0.001875000074505806
+                },
+                "visible": false
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 0.8999999761581421,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 22.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Boss Debug",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 650.0,
+                    "y": 220.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 600.0,
+                    "y": 520.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_BossDebug"
+            },
+            "guid": "15100000000000000101",
+            "name": "UI_BossDebug"
         }
     ],
     "sceneName": "#05Weapon",
     "version": 1
 }
+
+
+

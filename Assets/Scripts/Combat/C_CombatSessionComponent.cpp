@@ -3184,6 +3184,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		if (playerId == InvalidEntityId || bossId == InvalidEntityId)
 			return;
 
+	C_BossBrainComponent* bossBrain = nullptr;
+	if (auto* script = FindScriptOnEntity(world, bossId, "C_BossBrainComponent"))
+	{
+		if (auto* brain = dynamic_cast<C_BossBrainComponent*>(script))
+			bossBrain = brain;
+	}
+
 		m_state->player.id = playerId;
 		m_state->player.team = Combat::Team::Player;
 		const bool playerSuperArmorResolve = (m_state->player.state == Combat::ActionState::Attack
@@ -3487,6 +3494,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			const bool wasGuarded = (resolveResult == Combat::ResolveResult::Guard);
 			const bool wasGuardBreak = (resolveResult == Combat::ResolveResult::GuardBreak);
 			const bool wasHit = (resolveResult == Combat::ResolveResult::Hit);
+
+			if (bossBrain && hit.attackerOwner == bossId && hit.victimOwner == playerId)
+			{
+				if (parrySuccess || wasHit)
+					bossBrain->NotifyAttackOutcome(false);
+				else if (wasGuarded || wasGuardBreak)
+					bossBrain->NotifyAttackOutcome(true);
+			}
 
 			if (parrySuccess || wasGuarded || wasGuardBreak || wasHit)
 				ApplyHitstopTimer(hit.attackerOwner);

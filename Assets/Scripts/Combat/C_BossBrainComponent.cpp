@@ -4,6 +4,7 @@
 #include <array>
 #include <cmath>
 #include <random>
+#include <vector>
 
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/ECS/World.h"
@@ -139,7 +140,10 @@ namespace Alice
                     m_state = next;
                     m_stateTimer = 0.0f;
                     if (next == BrainState::Orbit)
+                    {
                         m_patrolDirection = RandomSign();
+                        m_traceEnterDist = dist;
+                    }
                     if (next != BrainState::Idle)
                         m_idleTargetSec = 0.0f;
                 }
@@ -150,6 +154,12 @@ namespace Alice
                 m_activePattern = type;
                 m_attackIssued = false;
                 m_chargeTimer = (type == PatternType::Charge) ? std::max(0.0f, m_chargeHoldSec) : 0.0f;
+                m_attackOutcome = AttackOutcome::None;
+                m_attackOutcomeSet = false;
+                m_lastAttackPattern = type;
+                m_lastPattern = type;
+                if (type == PatternType::Charge)
+                    m_chargePending = false;
                 m_decision.lockedSector = m_decision.sector;
                 m_decision.sectorLocked = true;
                 m_decision.sectorLockedSec = 0.0f;
@@ -286,6 +296,268 @@ namespace Alice
             label += GetStateLabel(m_state);
             if (m_state == BrainState::Orbit)
                 label += (m_patrolDirection >= 0) ? " (Right)" : " (Left)";
+            m_debugLabel = label;
+            return intent;
+        }
+
+        if (m_usePhaseRules)
+        {
+            const float phase2Ratio = std::clamp(m_phase2HpRatio, 0.0f, 1.0f);
+            if (!m_phase2Active && hpRatio <= phase2Ratio)
+            {
+                m_phase2Active = true;
+                // TODO: Phase2 gimmick sequence (howling + effects) before resuming combat.
+            }
+
+            if (m_chargeIntervalSec > 0.0f)
+            {
+                m_chargeIntervalTimer += dt;
+                if (m_chargeIntervalTimer >= m_chargeIntervalSec)
+                {
+                    m_chargeIntervalTimer -= m_chargeIntervalSec;
+                    m_chargePending = true;
+                }
+            }
+
+            auto IsPatternInRange = [&](PatternType type) -> bool
+                {
+                    const float minRange = GetPatternMinRange(type);
+                    const float maxRange = GetPatternMaxRange(type);
+                    if (type == PatternType::Ranged)
+                        return dist >= minRange;
+                    return dist >= minRange && dist <= maxRange;
+                };
+
+            auto PickRandomPattern = [&](PatternType avoid, bool includeCharge) -> PatternType
+                {
+                    std::vector<PatternType> pool;
+                    pool.reserve(4);
+                    pool.push_back(PatternType::AttackA);
+                    pool.push_back(PatternType::AttackB);
+                    pool.push_back(PatternType::AttackC);
+                    if (includeCharge)
+                        pool.push_back(PatternType::Charge);
+
+                    if (pool.size() > 1 && avoid != PatternType::None)
+                    {
+                        pool.erase(std::remove(pool.begin(), pool.end(), avoid), pool.end());
+                    }
+                    if (pool.empty())
+                        return PatternType::None;
+
+                    const float r = RandomRange(0.0f, static_cast<float>(pool.size()));
+                    size_t idx = static_cast<size_t>(r);
+                    if (idx >= pool.size())
+                        idx = pool.size() - 1;
+                    return pool[idx];
+                };
+
+            if (m_state == BrainState::Attack)
+            {
+                if (m_activePattern == PatternType::Charge)
+                {
+                    if (m_chargeTimer > 0.0f)
+                    {
+                        m_chargeTimer = std::max(0.0f, m_chargeTimer - dt);
+                        intent.chargeActive = true;
+                        intent.chargeLevel = std::max(0, m_chargeLevel);
+                    }
+
+                    if (m_chargeTimer <= 0.0f && !m_attackIssued)
+                    {
+                        intent.heavyAttackPressed = true;
+                        intent.attackPressed = true;
+                        intent.chargeLevel = std::max(0, m_chargeLevel);
+                        m_attackIssued = true;
+                    }
+                }
+                else if (!m_attackIssued)
+                {
+                    switch (m_activePattern)
+                    {
+                    case PatternType::AttackA:
+                    case PatternType::AttackB:
+                    case PatternType::AttackC:
+                    case PatternType::Dash:
+                    case PatternType::Ranged:
+                    case PatternType::Side:
+                        intent.lightAttackPressed = true;
+                        intent.attackPressed = true;
+                        break;
+                    case PatternType::Kick:
+                        intent.heavyAttackPressed = true;
+                        intent.attackPressed = true;
+                        break;
+                    default:
+                        break;
+                    }
+                    m_attackIssued = true;
+                }
+
+                const float holdSec = std::max(0.0f, m_attackStateHoldSec);
+                const float minAttackTime = (m_activePattern == PatternType::Charge)
+                    ? (std::max(0.0f, m_chargeHoldSec) + holdSec)
+                    : holdSec;
+
+                if (m_attackIssued && m_stateTimer >= minAttackTime)
+                {
+                    AttackOutcome outcome = m_attackOutcomeSet ? m_attackOutcome : AttackOutcome::Evaded;
+                    PatternType followUp = PatternType::None;
+                    if (m_phase2Active && outcome == AttackOutcome::Evaded)
+                    {
+                        switch (m_lastAttackPattern)
+                        {
+                        case PatternType::AttackB: followUp = PatternType::AttackA; break;
+                        case PatternType::Kick:
+                        case PatternType::Side: followUp = PatternType::Charge; break;
+                        case PatternType::AttackA: followUp = PatternType::Charge; break;
+                        case PatternType::AttackC: followUp = PatternType::AttackC; break;
+                        default: break;
+                        }
+                    }
+
+                    m_attackIssued = false;
+                    m_chargeTimer = 0.0f;
+                    m_attackOutcomeSet = false;
+                    m_attackOutcome = AttackOutcome::None;
+                    m_decision.sectorLocked = false;
+                    m_decision.sectorLockedSec = 0.0f;
+                    m_decision.lockedSector = Sector::Unknown;
+
+                    if (m_rerollAfterAttack)
+                    {
+                        m_rerollAfterAttack = false;
+                        m_activePattern = PatternType::None;
+                        m_attackCooldownTimer = 0.0f;
+                        EnterState(BrainState::Orbit);
+                    }
+                    else if (followUp != PatternType::None)
+                    {
+                        m_activePattern = followUp;
+                        if (followUp == PatternType::Charge)
+                            m_chargeTimer = std::max(0.0f, m_chargeHoldSec);
+                        EnterState(BrainState::Orbit);
+                    }
+                    else
+                    {
+                        m_activePattern = PatternType::None;
+                        m_attackCooldownTimer = std::max(0.0f, m_attackCooldown);
+                        if (m_forceWalkAfterAttack)
+                        {
+                            m_forceWalkAfterAttack = false;
+                            EnterState(BrainState::Approach);
+                        }
+                        else
+                        {
+                            EnterState(BrainState::Idle);
+                        }
+                    }
+                }
+            }
+            else if (m_state == BrainState::Orbit)
+            {
+                const bool rangedReady = (m_rangedCooldownSec <= 0.0f)
+                    || (m_decision.timeSinceRangedSec >= m_rangedCooldownSec);
+                if (dist > m_traceEnterDist && rangedReady)
+                {
+                    m_activePattern = PatternType::Ranged;
+                    m_forceWalkAfterAttack = true;
+                }
+
+                if (m_activePattern == PatternType::None && m_attackCooldownTimer <= 0.0f)
+                {
+                    const float closeRange = std::max(0.0f, m_kickRange);
+                    if (dist <= closeRange)
+                    {
+                        m_activePattern = targetInFront ? PatternType::Kick : PatternType::Side;
+                    }
+                    else if (m_chargePending && m_lastPattern != PatternType::Charge)
+                    {
+                        m_activePattern = PatternType::Charge;
+                        m_chargePending = false;
+                    }
+                    else
+                    {
+                        const bool includeCharge = m_chargePending;
+                        m_activePattern = PickRandomPattern(m_lastPattern, includeCharge);
+                        if (m_activePattern == PatternType::Charge)
+                            m_chargePending = false;
+                    }
+                }
+
+                if (m_activePattern != PatternType::None)
+                {
+                    if (m_activePattern == PatternType::Dash || IsPatternInRange(m_activePattern))
+                    {
+                        if (m_activePattern == PatternType::Ranged)
+                            m_forceWalkAfterAttack = true;
+                        BeginAttack(m_activePattern);
+                    }
+                    else
+                    {
+                        EnterState(BrainState::Approach);
+                    }
+                }
+            }
+            else if (m_state == BrainState::Approach || m_state == BrainState::Chase)
+            {
+                if (m_activePattern == PatternType::None)
+                {
+                    EnterState(BrainState::Orbit);
+                }
+                else if (IsPatternInRange(m_activePattern))
+                {
+                    if (m_activePattern == PatternType::Ranged)
+                        m_forceWalkAfterAttack = true;
+                    BeginAttack(m_activePattern);
+                }
+                else
+                {
+                    const float dashTimeout = std::max(0.0f, m_walkDashTimeoutSec);
+                    const float rerollSec = std::max(0.0f, m_chargeRerollSec);
+                    if (m_activePattern == PatternType::Charge && rerollSec > 0.0f && m_stateTimer >= rerollSec)
+                    {
+                        m_activePattern = PatternType::None;
+                        m_chargePending = false;
+                        m_attackCooldownTimer = 0.0f;
+                        EnterState(BrainState::Orbit);
+                    }
+                    else if (dashTimeout > 0.0f && m_stateTimer >= dashTimeout)
+                    {
+                        m_activePattern = PatternType::Dash;
+                        m_rerollAfterAttack = true;
+                        BeginAttack(PatternType::Dash);
+                    }
+                }
+            }
+            else if (m_state == BrainState::Idle)
+            {
+                if (m_attackCooldownTimer <= 0.0f)
+                    EnterState(BrainState::Orbit);
+            }
+
+            if (m_state == BrainState::Orbit)
+            {
+                if (hasDir)
+                    intent.move = { right.x * static_cast<float>(m_patrolDirection), right.y * static_cast<float>(m_patrolDirection) };
+            }
+            else if (m_state == BrainState::Approach || m_state == BrainState::Chase)
+            {
+                if (hasDir)
+                    intent.move = { toTarget.x, toTarget.y };
+            }
+
+            intent.runHeld = (m_state == BrainState::Chase);
+            m_wantsFaceTarget = (m_state != BrainState::Gimmick);
+
+            std::string label = GetStateLabel(m_state);
+            if (m_state == BrainState::Orbit)
+                label += (m_patrolDirection >= 0) ? " (Right)" : " (Left)";
+            label += m_phase2Active ? " | Phase2" : " | Phase1";
+            label += " | Active: ";
+            label += GetPatternLabel(m_activePattern);
+            if (m_chargePending)
+                label += " | ChargePending";
             m_debugLabel = label;
             return intent;
         }
@@ -865,6 +1137,23 @@ namespace Alice
         m_decision.lastFeedbackTimer = std::max(0.0f, m_feedbackHoldSec);
     }
 
+    void C_BossBrainComponent::NotifyAttackOutcome(bool evaded)
+    {
+        if (m_activePattern == PatternType::None)
+            return;
+        if (evaded)
+        {
+            if (!m_attackOutcomeSet)
+            {
+                m_attackOutcome = AttackOutcome::Evaded;
+                m_attackOutcomeSet = true;
+            }
+            return;
+        }
+        m_attackOutcome = AttackOutcome::HitOrParry;
+        m_attackOutcomeSet = true;
+    }
+
     C_BossBrainComponent::DistanceBand C_BossBrainComponent::ComputeDistanceBand(float dist) const
     {
         float d2 = std::max(0.0f, m_distBand2);
@@ -983,12 +1272,17 @@ namespace Alice
         m_lastDistance = 0.0f;
         m_chargeTimer = 0.0f;
         m_specialTimer = 0.0f;
+        m_chargeIntervalTimer = 0.0f;
         m_backAttackTimer = 0.0f;
         m_backAttackCooldownTimer = 0.0f;
         m_attackIssued = false;
         m_specialPending = false;
         m_backAttackPending = false;
         m_gimmickActive = false;
+        m_phase2Active = false;
+        m_chargePending = false;
+        m_forceWalkAfterAttack = false;
+        m_rerollAfterAttack = false;
         m_wantsFaceTarget = false;
         m_targetDot = 1.0f;
         m_targetSideDot = 0.0f;
@@ -998,5 +1292,10 @@ namespace Alice
         m_testRetreatTimer = 0.0f;
         m_idleTargetSec = 0.0f;
         m_debugLabel = "Idle";
+        m_traceEnterDist = 0.0f;
+        m_lastPattern = PatternType::None;
+        m_lastAttackPattern = PatternType::None;
+        m_attackOutcome = AttackOutcome::None;
+        m_attackOutcomeSet = false;
     }
 }

@@ -57,6 +57,8 @@ namespace Alice
         ALICE_PROPERTY(std::string, playerWindowTextName, "UI_PlayerWindow");
         ALICE_PROPERTY(std::string, bossWindowTextName, "UI_BossWindow");
         ALICE_PROPERTY(std::string, bossBrainTextName, "UI_BossBrain");
+        ALICE_PROPERTY(std::string, playerDebugTextName, "UI_PlayerDebug");
+        ALICE_PROPERTY(std::string, bossDebugTextName, "UI_BossDebug");
 
         // Color/alpha for active/inactive state text
         ALICE_PROPERTY(float, activeTextAlpha, 1.0f);
@@ -87,6 +89,16 @@ namespace Alice
         ALICE_PROPERTY(float, playerScreenPosX, -500.0f);
         ALICE_PROPERTY(float, playerScreenPosY, 300.0f);
         ALICE_PROPERTY(float, playerScreenLineSpacing, 28.0f);
+        ALICE_PROPERTY(float, bossScreenPosX, 500.0f);
+        ALICE_PROPERTY(float, bossScreenPosY, 300.0f);
+        ALICE_PROPERTY(float, bossScreenLineSpacing, 28.0f);
+        ALICE_PROPERTY(float, playerDebugScreenPosX, -650.0f);
+        ALICE_PROPERTY(float, playerDebugScreenPosY, 220.0f);
+        ALICE_PROPERTY(float, bossDebugScreenPosX, 650.0f);
+        ALICE_PROPERTY(float, bossDebugScreenPosY, 220.0f);
+        ALICE_PROPERTY(float, playerDebugFontSize, 28.0f);
+        ALICE_PROPERTY(float, bossDebugFontSize, 28.0f);
+        ALICE_PROPERTY(float, debugLineSpacing, 2.0f);
         ALICE_PROPERTY(bool, worldAutoScaleBySize, true);
         ALICE_PROPERTY(float, worldTargetSize, 0.6f);
         ALICE_PROPERTY(float, worldScale, 0.01f);
@@ -106,6 +118,8 @@ namespace Alice
         UITextComponent* m_playerWindowText = nullptr;
         UITextComponent* m_bossWindowText = nullptr;
         UITextComponent* m_bossBrainText = nullptr;
+        UITextComponent* m_playerDebugText = nullptr;
+        UITextComponent* m_bossDebugText = nullptr;
 
         EntityId m_playerHpGaugeId = InvalidEntityId;
         EntityId m_bossHpGaugeId = InvalidEntityId;
@@ -116,6 +130,8 @@ namespace Alice
         EntityId m_playerWindowTextId = InvalidEntityId;
         EntityId m_bossWindowTextId = InvalidEntityId;
         EntityId m_bossBrainTextId = InvalidEntityId;
+        EntityId m_playerDebugTextId = InvalidEntityId;
+        EntityId m_bossDebugTextId = InvalidEntityId;
 
         EntityId m_playerId = InvalidEntityId;
         EntityId m_bossId = InvalidEntityId;
