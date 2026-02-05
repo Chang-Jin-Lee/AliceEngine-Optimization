@@ -608,14 +608,14 @@ namespace Alice
 			ImGui::SameLine();
 			if (ImGui::Button("Select All"))
 			{
-				for (bool&& selected : s_SceneSelected)
-					selected = true;
+				for (std::size_t i = 0; i < s_SceneSelected.size(); ++i)
+					s_SceneSelected[i] = true;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Deselect All"))
 			{
-				for (bool&& selected : s_SceneSelected)
-					selected = false;
+				for (std::size_t i = 0; i < s_SceneSelected.size(); ++i)
+				s_SceneSelected[i] = false;
 				s_DefaultScene = -1;
 			}
 			ImGui::SameLine();
