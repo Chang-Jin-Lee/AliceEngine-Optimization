@@ -504,6 +504,96 @@ GBufferOut main(VertexOut pIn)
 }
 )";
 
+        // Decal Pass Vertex Shader
+        inline static const char* DecalVS = R"(
+cbuffer DecalCB : register(b0)
+{
+    float4x4 g_DecalWorldViewProj;
+    float4x4 g_WorldToDecal;
+    float4x4 g_InvViewProj;
+    float4   g_ColorOpacity;
+    float4   g_UVScaleOffset;
+    float2   g_ScreenSize;
+    float2   g_Pad;
+};
+
+struct VSInput
+{
+    float3 Position : POSITION;
+};
+
+struct VSOutput
+{
+    float4 Position : SV_POSITION;
+};
+
+VSOutput main(VSInput input)
+{
+    VSOutput o;
+    o.Position = mul(float4(input.Position, 1.0f), g_DecalWorldViewProj);
+    return o;
+}
+)";
+
+        // Decal Pass Pixel Shader (DBuffer Albedo)
+        inline static const char* DecalPS = R"(
+cbuffer DecalCB : register(b0)
+{
+    float4x4 g_DecalWorldViewProj;
+    float4x4 g_WorldToDecal;
+    float4x4 g_InvViewProj;
+    float4   g_ColorOpacity;
+    float4   g_UVScaleOffset;
+    float2   g_ScreenSize;
+    float2   g_Pad;
+};
+
+Texture2D g_DecalAlbedo : register(t0);
+Texture2D<float> g_SceneDepth : register(t1);
+SamplerState g_Sam : register(s0);
+
+struct PSInput
+{
+    float4 Position : SV_POSITION;
+};
+
+struct DBufferOut
+{
+    float4 Albedo : SV_Target0;
+};
+
+DBufferOut main(PSInput input)
+{
+    DBufferOut o;
+
+    float2 uv = input.Position.xy / g_ScreenSize;
+    float depth = g_SceneDepth.Sample(g_Sam, uv);
+    if (depth >= 0.9999f) discard;
+
+    float2 ndc;
+    ndc.x = uv.x * 2.0f - 1.0f;
+    ndc.y = (1.0f - uv.y) * 2.0f - 1.0f;
+    float4 clip = float4(ndc, depth, 1.0f);
+    float4 posW4 = mul(clip, g_InvViewProj);
+    float3 posW = posW4.xyz / max(posW4.w, 1e-6f);
+
+    float3 localPos = mul(float4(posW, 1.0f), g_WorldToDecal).xyz;
+    if (abs(localPos.x) > 1.0f || abs(localPos.y) > 1.0f || abs(localPos.z) > 1.0f)
+        discard;
+
+    float2 decalUV = localPos.xy * 0.5f + 0.5f;
+    decalUV = decalUV * g_UVScaleOffset.xy + g_UVScaleOffset.zw;
+
+    float4 tex = g_DecalAlbedo.Sample(g_Sam, decalUV);
+    float alpha = tex.a * g_ColorOpacity.a;
+    if (alpha <= 0.001f) discard;
+
+    float3 color = tex.rgb * g_ColorOpacity.rgb;
+    o.Albedo = float4(color * alpha, alpha);
+    return o;
+}
+)";
+
         // Deferred Light Pixel Shader
         inline static const char* LightPS1 = R"(
 // PBR 헬퍼 함수들
@@ -639,6 +729,7 @@ TextureCube g_IBL_Diffuse : register(t5);
 TextureCube g_IBL_Specular : register(t6);
 Texture2D   g_IBL_BRDF_LUT : register(t7);
 Texture2D<float> g_ShadowMap : register(t8);
+Texture2D g_DecalAlbedo : register(t9);
 
 SamplerState g_Sam : register(s0);
 SamplerComparisonState g_ShadowSampler : register(s1);
@@ -825,6 +916,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     float4 metalness_packed = g_Metalness.Sample(g_Sam, pIn.uv);
     float4 baseColor = g_BaseColor.Sample(g_Sam, pIn.uv);
     float4 toonParams = g_ToonParams.Sample(g_Sam, pIn.uv);
+    float4 decalAlbedo = g_DecalAlbedo.Sample(g_Sam, pIn.uv);
     float depth = g_SceneDepth.Sample(g_Sam, pIn.uv);
     
     // 배경 체크 (Depth가 1.0이면 배경)
@@ -848,6 +940,8 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     float4 clip = float4(ndc, depth, 1.0f);
     float4 posW4 = mul(clip, g_InvViewProj);
     float3 posW = posW4.xyz / max(posW4.w, 1e-6f);
+    // Decal (premultiplied)
+    baseColor.rgb = baseColor.rgb * (1.0f - decalAlbedo.a) + decalAlbedo.rgb;
     float3 albedo = baseColor.rgb;
     float3 albedoLinear = pow(max(albedo, 0.0f), 2.2f);
     

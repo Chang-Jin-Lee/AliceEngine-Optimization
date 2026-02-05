@@ -90,6 +90,8 @@ namespace Alice
         /// 에디터 뷰포트 표시용(톤매핑 완료) SRV
         ID3D11ShaderResourceView* GetViewportSRV() const { return m_viewportSRV.Get(); }
         ID3D11RenderTargetView* GetViewportRTV() const { return m_viewportRTV.Get(); }
+        /// Decal D-Buffer SRV (디버그 뷰용)
+        ID3D11ShaderResourceView* GetDecalDBufferSRV() const { return m_dBufferSRVs[0].Get(); }
 
         /// 선택 카메라 미리보기용 SRV
         ID3D11ShaderResourceView* GetCameraPreviewSRV() const { return m_cameraPreviewViewportSRV.Get(); }
@@ -211,9 +213,13 @@ namespace Alice
         void RestoreBackBuffer();
         // G-Buffer 개수 (Normal+Roughness, Metalness+ToonCuts, BaseColor, ToonParams)
         static constexpr int GBufferCount = 4;
+        // D-Buffer 개수 (Decal Albedo)
+        static constexpr int DBufferCount = 1;
 
         // G-Buffer 생성
         bool CreateGBuffer(std::uint32_t width, std::uint32_t height);
+        // D-Buffer 생성
+        bool CreateDBuffer(std::uint32_t width, std::uint32_t height);
         
         // 셰이더 및 리소스 생성
         bool CreateShaders();
@@ -249,6 +255,7 @@ namespace Alice
                         bool editorMode = false,
                         bool isPlaying = false,
                         EntityId hiddenCameraEntity = InvalidEntityId);
+        void PassDecals(const World& world, const Camera& camera);
         void PassDeferredLight(const World& world,
                                const Camera& camera,
                                int shadingMode,
@@ -315,12 +322,25 @@ namespace Alice
         Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  m_cameraPreviewGBufferRTVs[GBufferCount];
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cameraPreviewGBufferSRVs[GBufferCount];
 
+        // ==== D-Buffer 리소스 (Decal) ====
+        Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_dBufferTextures[DBufferCount];
+        Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  m_dBufferRTVs[DBufferCount];
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_dBufferSRVs[DBufferCount];
+        Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_cameraPreviewDBufferTextures[DBufferCount];
+        Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  m_cameraPreviewDBufferRTVs[DBufferCount];
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cameraPreviewDBufferSRVs[DBufferCount];
+
         // ==== G-Buffer 셰이더 ====
         Microsoft::WRL::ComPtr<ID3D11VertexShader>      m_gBufferVS;
         Microsoft::WRL::ComPtr<ID3D11PixelShader>      m_gBufferPS;
         Microsoft::WRL::ComPtr<ID3D11InputLayout>      m_gBufferInputLayout;
         Microsoft::WRL::ComPtr<ID3D11VertexShader>      m_gBufferInstancedVS;
         Microsoft::WRL::ComPtr<ID3D11InputLayout>      m_gBufferInstancedInputLayout;
+
+        // ==== Decal 패스 셰이더 ====
+        Microsoft::WRL::ComPtr<ID3D11VertexShader>      m_decalVS;
+        Microsoft::WRL::ComPtr<ID3D11PixelShader>       m_decalPS;
+        Microsoft::WRL::ComPtr<ID3D11InputLayout>       m_decalInputLayout;
 
         // ==== 스키닝용 G-Buffer 셰이더 ====
         Microsoft::WRL::ComPtr<ID3D11VertexShader>      m_gBufferSkinnedVS;
@@ -395,6 +415,7 @@ namespace Alice
         Microsoft::WRL::ComPtr<ID3D11Buffer>           m_cbBones;
         Microsoft::WRL::ComPtr<ID3D11Buffer>           m_cbPostProcess;
         Microsoft::WRL::ComPtr<ID3D11Buffer>           m_cbBloom;
+        Microsoft::WRL::ComPtr<ID3D11Buffer>           m_cbDecal;
         // Transparent Forward-Style 패스용 최소 조명 CB
         Microsoft::WRL::ComPtr<ID3D11Buffer>           m_cbTransparentLight;
         // Shadow 전용 CB (정확한 패킹/행렬 전달용)
@@ -447,6 +468,7 @@ namespace Alice
         // ==== 블렌드 상태 ====
         Microsoft::WRL::ComPtr<ID3D11BlendState>        m_blendStateAdditive; // 라이트 패스용
         Microsoft::WRL::ComPtr<ID3D11BlendState>        m_alphaBlendState;    // 반투명 Forward 패스용
+        Microsoft::WRL::ComPtr<ID3D11BlendState>        m_decalBlendState;    // 데칼 패스용
 
         // ==== 래스터라이저 상태 ====
         Microsoft::WRL::ComPtr<ID3D11RasterizerState>   m_rasterizerState;
