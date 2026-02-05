@@ -897,6 +897,9 @@ namespace Alice
                         col.z *= over.z;
                         col.w *= over.w;
                     }
+                    col.x *= vfx.colorTint.x;
+                    col.y *= vfx.colorTint.y;
+                    col.z *= vfx.colorTint.z;
                     p.color = col;
 
                     if (def.rotationOverLifetime.enabled)

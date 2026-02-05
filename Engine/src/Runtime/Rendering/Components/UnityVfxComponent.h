@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstdint>
+#include <DirectXMath.h>
 
 namespace Alice
 {
@@ -30,6 +31,7 @@ namespace Alice
         float spawnRateScale{ 1.0f };  // Emission rate 스케일 (0..1)
 
         // Rendering/material overrides
+        DirectX::XMFLOAT3 colorTint{ 1.0f, 1.0f, 1.0f }; // RGB tint
         float colorScale{ 1.0f };      // RGB scale
         float alphaScale{ 1.0f };
         float hdrColorClamp{ 1.0f };   // 0 = off, otherwise clamp max RGB
