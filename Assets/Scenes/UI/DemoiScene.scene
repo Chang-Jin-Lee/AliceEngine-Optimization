@@ -1023,7 +1023,7 @@
                 "raycastTarget": true,
                 "shaderName": "Default",
                 "space": "Screen",
-                "visibility": "Visible",
+                "visibility": "Collapsed",
                 "widgetName": "UI_Image"
             },
             "_parentGuid": "1992265194099958174",
@@ -1103,7 +1103,7 @@
                 "raycastTarget": true,
                 "shaderName": "Default",
                 "space": "Screen",
-                "visibility": "Visible",
+                "visibility": "Collapsed",
                 "widgetName": "UI_Image"
             },
             "_parentGuid": "1992265194099958174",
@@ -1271,7 +1271,7 @@
                 "raycastTarget": true,
                 "shaderName": "Default",
                 "space": "Screen",
-                "visibility": "Visible",
+                "visibility": "Collapsed",
                 "widgetName": "UI_Text"
             },
             "_parentGuid": "1992265194099958174",
@@ -1408,7 +1408,7 @@
                 "raycastTarget": true,
                 "shaderName": "Default",
                 "space": "Screen",
-                "visibility": "Visible",
+                "visibility": "Collapsed",
                 "widgetName": "UI_Slider"
             },
             "_parentGuid": "1992265194099958174",
@@ -1436,7 +1436,41 @@
                 "visible": true
             },
             "UICheckBox": {
-                "isCheck": false
+                "backgroundSize": {
+                    "x": 5.0,
+                    "y": 5.0
+                },
+                "disabledTexture": "",
+                "disabledTint": {
+                    "w": 1.0,
+                    "x": 0.4000000059604645,
+                    "y": 0.4000000059604645,
+                    "z": 0.4000000059604645
+                },
+                "enabled": true,
+                "hoveredTexture": "",
+                "hoveredTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "isCheck": false,
+                "normalTexture": "",
+                "normalTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "pressedTexture": "",
+                "pressedTint": {
+                    "w": 1.0,
+                    "x": 0.8500000238418579,
+                    "y": 0.8500000238418579,
+                    "z": 0.8500000238418579
+                },
+                "state": "Normal"
             },
             "UIImage": {
                 "color": {
@@ -1491,7 +1525,7 @@
                 "raycastTarget": true,
                 "shaderName": "Default",
                 "space": "Screen",
-                "visibility": "Visible",
+                "visibility": "Collapsed",
                 "widgetName": "UI_CheckBox"
             },
             "_parentGuid": "1992265194099958174",

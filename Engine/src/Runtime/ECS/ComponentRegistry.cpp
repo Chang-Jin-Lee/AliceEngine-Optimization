@@ -72,7 +72,7 @@ using namespace DirectX;
 namespace Alice
 {
 	void LinkComponentRegistry() {
-        ALICE_LOG_INFO("[?ê·ë—«íƒ£??ê¹…Â€? rttr Success");
+        ALICE_LOG_INFO("[?±Ñ‹ëµ†??±ë€? rttr Success");
     }
 
     RTTR_REGISTRATION
@@ -93,7 +93,7 @@ namespace Alice
                 rttr::value("VitalAmplitude", UIAnimProperty::VitalAmplitude)
             );
 
-        // === DirectX ?????æºë‚†ì¨¯ ===
+        // === DirectX Å¸ÀÔ µî·Ï ===
         rttr::registration::class_<XMFLOAT2>("XMFLOAT2")
             .constructor<>()
             .property("x", &XMFLOAT2::x)
@@ -112,8 +112,8 @@ namespace Alice
             .property("z", &XMFLOAT4::z)
             .property("w", &XMFLOAT4::w);
 
-        // XMFLOAT4X4??4x4 ??ê³—ì¡Š???????Â€??????
-        // ???ì­ç­Œë»ë‚±é‡‰???4x4 ??ê³—ì¡Š?????ì­ç­Œë»ë‚±é‡‰?ë¬¾??è¢ã‚‹í‰¸ ?æºë‚†ì¨¯
+        // XMFLOAT4X4´Â 4x4 Çà·ÄÀ» ³ªÅ¸³»´Â Å¸ÀÔ
+        // ·»´õ¸µÇÒ ¶§ 4x4 Çà·ÄÀ» ·»´õ¸µÇÏ±â À§ÇØ µî·Ï
         rttr::registration::class_<XMFLOAT4X4>("XMFLOAT4X4")
             .constructor<>()
             .property("_11", &XMFLOAT4X4::_11)
@@ -463,7 +463,7 @@ namespace Alice
 			.property("clips", &AttackDriverComponent::clips)
 			.property("attackStateDurationSec", &AttackDriverComponent::attackStateDurationSec);
 
-		// SocketDef / SocketComponent ?æºë‚†ì¨¯ (??????åš¥â‰ªë®†è«­?ç„??ï§ê¾¨ë®??ë¯ìˆ²)
+        // SocketDef / SocketComponent µî·Ï (¾À ÀúÀå/·Îµå ¹× ÀÎ½ºÆåÅÍ)
 		rttr::registration::class_<SocketDef>("SocketDef")
 			.constructor<>()
 			.property("name", &SocketDef::name)
@@ -476,12 +476,12 @@ namespace Alice
 			.constructor<>()
 			.property("sockets", &SocketComponent::sockets);
 
-		//  AudioListenerComponent ?æºë‚†ì¨¯
+        //  AudioListenerComponent µî·Ï
 		rttr::registration::class_<AudioListenerComponent>("AudioListenerComponent")
 			.constructor<>()
 			.property("primary", &AudioListenerComponent::primary);
 
-		//  AudioSourceComponent ?æºë‚†ì¨¯
+        //  AudioSourceComponent µî·Ï
 		rttr::registration::class_<AudioSourceComponent>("AudioSourceComponent")
 			.constructor<>()
 			.property("soundKey", &AudioSourceComponent::soundKey)
@@ -498,8 +498,8 @@ namespace Alice
 			.property("requestStop", &AudioSourceComponent::requestStop)
 			.property("debugDraw", &AudioSourceComponent::debugDraw);
 
-        // === CameraComponent ?æºë‚†ì¨¯ ===
-        // Transform?? TransformComponent?ç™’?í£ ??Â€????åš¥???ç”±????ë½°ë‡š
+        // === CameraComponent µî·Ï ===
+       // TransformÀº TransformComponent¿¡¼­ ´ã´çÇÏ¹Ç·Î ¿©±â¼± Á¦¿Ü
         rttr::registration::class_<CameraComponent>("CameraComponent")
             .constructor<>()
             .property("primary", &CameraComponent::GetPrimary, &CameraComponent::SetPrimary)
@@ -512,7 +512,7 @@ namespace Alice
             .property("useAspectOverride", &CameraComponent::useAspectOverride)
             .property("aspectOverride", &CameraComponent::aspectOverride);
 
-        // === CameraFollowComponent ?æºë‚†ì¨¯ ===
+        // === CameraFollowComponent µî·Ï ===
         rttr::registration::class_<CameraFollowComponent>("CameraFollowComponent")
             .constructor<>()
             .property("enabled", &CameraFollowComponent::enabled)
@@ -557,7 +557,7 @@ namespace Alice
             .property("allowManualOrbitInLockOn", &CameraFollowComponent::allowManualOrbitInLockOn)
             .property("cameraTimeScale", &CameraFollowComponent::cameraTimeScale);
 
-        // === CameraSpringArmComponent ?æºë‚†ì¨¯ ===
+        // === CameraSpringArmComponent µî·Ï ===
         rttr::registration::class_<CameraSpringArmComponent>("CameraSpringArmComponent")
             .constructor<>()
             .property("enabled", &CameraSpringArmComponent::enabled)
@@ -572,14 +572,14 @@ namespace Alice
             .property("probePadding", &CameraSpringArmComponent::probePadding)
             .property("minHeight", &CameraSpringArmComponent::minHeight);
 
-        // === CameraLookAtComponent ?æºë‚†ì¨¯ ===
+        // === CameraLookAtComponent µî·Ï ===
         rttr::registration::class_<CameraLookAtComponent>("CameraLookAtComponent")
             .constructor<>()
             .property("enabled", &CameraLookAtComponent::enabled)
             .property("targetName", &CameraLookAtComponent::targetName)
             .property("rotationDamping", &CameraLookAtComponent::rotationDamping);
 
-        // === CameraShakeComponent ?æºë‚†ì¨¯ ===
+        // === CameraShakeComponent µî·Ï ===
         rttr::registration::class_<CameraShakeComponent>("CameraShakeComponent")
             .constructor<>()
             .property("enabled", &CameraShakeComponent::enabled)
@@ -588,7 +588,7 @@ namespace Alice
             .property("duration", &CameraShakeComponent::duration)
             .property("decay", &CameraShakeComponent::decay);
 
-        // === CameraBlendComponent ?æºë‚†ì¨¯ ===
+        // === CameraBlendComponent µî·Ï ===
         rttr::registration::class_<CameraBlendComponent>("CameraBlendComponent")
             .constructor<>()
             .property("targetName", &CameraBlendComponent::targetName)
@@ -598,7 +598,7 @@ namespace Alice
             .property("slowDuration", &CameraBlendComponent::slowDuration)
             .property("slowTimeScale", &CameraBlendComponent::slowTimeScale);
 
-        // === CameraInputComponent ?æºë‚†ì¨¯ ===
+        // === CameraInputComponent µî·Ï ===
         rttr::registration::class_<CameraInputComponent>("CameraInputComponent")
             .constructor<>()
             .property("enabled", &CameraInputComponent::enabled)
@@ -615,7 +615,7 @@ namespace Alice
             .property("slowTimeScaleKey5", &CameraInputComponent::slowTimeScaleKey5)
             .property("lookAtTargetName", &CameraInputComponent::lookAtTargetName);
 
-        // === PointLightComponent ?æºë‚†ì¨¯ ===
+        // === PointLightComponent µî·Ï ===
         rttr::registration::class_<PointLightComponent>("PointLightComponent")
             .constructor<>()
             .property("color", &PointLightComponent::color)
@@ -623,7 +623,7 @@ namespace Alice
             .property("range", &PointLightComponent::range)
             .property("enabled", &PointLightComponent::enabled);
 
-        // === SpotLightComponent ?æºë‚†ì¨¯ ===
+        // === SpotLightComponent µî·Ï ===
         rttr::registration::class_<SpotLightComponent>("SpotLightComponent")
             .constructor<>()
             .property("color", &SpotLightComponent::color)
@@ -633,7 +633,7 @@ namespace Alice
             .property("outerAngleDeg", &SpotLightComponent::outerAngleDeg)
             .property("enabled", &SpotLightComponent::enabled);
 
-        // === RectLightComponent ?æºë‚†ì¨¯ ===
+        // === RectLightComponent µî·Ï ===
         rttr::registration::class_<RectLightComponent>("RectLightComponent")
             .constructor<>()
             .property("color", &RectLightComponent::color)
@@ -643,7 +643,7 @@ namespace Alice
             .property("range", &RectLightComponent::range)
             .property("enabled", &RectLightComponent::enabled);
 
-        // === PostProcessVolumeComponent ?æºë‚†ì¨¯ ===
+        // === PostProcessVolumeComponent µî·Ï ===
         rttr::registration::enumeration<PostProcessVolumeShape>("PostProcessVolumeShape")
             (
                 rttr::value("Box", PostProcessVolumeShape::Box)
@@ -662,7 +662,7 @@ namespace Alice
             .property("useReferenceObject", &PostProcessVolumeComponent::GetUseReferenceObject, &PostProcessVolumeComponent::SetUseReferenceObject)
             .property("settings", &PostProcessVolumeComponent::settings);
 
-        // === PostProcessSettings ?æºë‚†ì¨¯ ===
+        // === PostProcessSettings µî·Ï ===
         rttr::registration::class_<PostProcessSettings>("PostProcessSettings")
             .constructor<>()
             // Exposure
@@ -693,7 +693,7 @@ namespace Alice
             .property("bOverride_BloomDownsample", &PostProcessSettings::bOverride_BloomDownsample)
             .property("bloomDownsample", &PostProcessSettings::bloomDownsample);
 
-        // === ComputeEffectComponent ?æºë‚†ì¨¯ ===
+        // === ComputeEffectComponent µî·Ï ===
         rttr::registration::class_<ComputeEffectComponent>("ComputeEffectComponent")
             .constructor<>()
             .property("enabled", &ComputeEffectComponent::enabled)
@@ -719,7 +719,7 @@ namespace Alice
                 rttr::value("Local", ParticleSimulationSpace::Local)
             );
 
-        // === ColliderType enum ë“±ë¡ ===
+        // === ColliderType enum µî·Ï ===
 
         rttr::registration::enumeration<ColliderType>("ColliderType")
             (
@@ -734,7 +734,7 @@ namespace Alice
                 rttr::value("Convex", MeshColliderType::Convex)
                 );
 
-        // === RigidBodyLockFlags enum ?æºë‚†ì¨¯ ===
+        // === RigidBodyLockFlags enum µî·Ï ===
         rttr::registration::enumeration<RigidBodyLockFlags>("RigidBodyLockFlags")
             (
                 rttr::value("None", RigidBodyLockFlags::None),
@@ -746,7 +746,7 @@ namespace Alice
                 rttr::value("LockAngularZ", RigidBodyLockFlags::LockAngularZ)
                 );
 
-        // === Phy_RigidBodyComponent ?æºë‚†ì¨¯ (physicsActorHandle????Â€???ë±€ëµ æ²ƒìƒ•Â€åš¥??æºë‚†ì¨¯??? ??ë†ë²‰) ===
+        // === Phy_RigidBodyComponent µî·Ï (physicsActorHandle´Â ³»ºÎ¿ëÀÌ¹Ç·Î µî·ÏÇÏÁö ¾ÊÀ½) ===
         rttr::registration::class_<Phy_RigidBodyComponent>("Phy_RigidBodyComponent")
             .constructor<>()
             .property("density", &Phy_RigidBodyComponent::density)
@@ -768,7 +768,7 @@ namespace Alice
             .property("teleport", &Phy_RigidBodyComponent::teleport)
             .property("resetVelocityOnTeleport", &Phy_RigidBodyComponent::resetVelocityOnTeleport);
 
-        // === Phy_ColliderComponent ?æºë‚†ì¨¯ (physicsActorHandle????Â€???ë±€ëµ æ²ƒìƒ•Â€åš¥??æºë‚†ì¨¯??? ??ë†ë²‰) ===
+        // === Phy_ColliderComponent µî·Ï (physicsActorHandle´Â ³»ºÎ¿ëÀÌ¹Ç·Î µî·ÏÇÏÁö ¾ÊÀ½) ===
         rttr::registration::class_<Phy_ColliderComponent>("Phy_ColliderComponent")
             .constructor<>()
             .property("type", &Phy_ColliderComponent::type)
@@ -786,7 +786,7 @@ namespace Alice
             .property("isTrigger", &Phy_ColliderComponent::isTrigger)
             .property("debugDraw", &Phy_ColliderComponent::debugDraw);
 
-        // === Phy_MeshColliderComponent ?æºë‚†ì¨¯ (physicsActorHandle????Â€???ë±€ëµ æ²ƒìƒ•Â€åš¥??æºë‚†ì¨¯??? ??ë†ë²‰) ===
+        // === Phy_MeshColliderComponent µî·Ï (physicsActorHandle´Â ³»ºÎ¿ëÀÌ¹Ç·Î µî·ÏÇÏÁö ¾ÊÀ½) ===
         rttr::registration::class_<Phy_MeshColliderComponent>("Phy_MeshColliderComponent")
             .constructor<>()
             .property("type", &Phy_MeshColliderComponent::type)
@@ -804,7 +804,7 @@ namespace Alice
             .property("vertexLimit", &Phy_MeshColliderComponent::vertexLimit)
             .property("debugDraw", &Phy_MeshColliderComponent::debugDraw);
 
-        // === Phy_TerrainHeightFieldComponent ?æºë‚†ì¨¯ (physicsActorHandle????Â€???ë±€ëµ æ²ƒìƒ•Â€åš¥??æºë‚†ì¨¯??? ??ë†ë²‰) ===
+        // === Phy_TerrainHeightFieldComponent µî·Ï (physicsActorHandle´Â ³»ºÎ¿ëÀÌ¹Ç·Î µî·ÏÇÏÁö ¾ÊÀ½) ===
         rttr::registration::class_<Phy_TerrainHeightFieldComponent>("Phy_TerrainHeightFieldComponent")
             .constructor<>()
             .property("numRows", &Phy_TerrainHeightFieldComponent::numRows)
@@ -821,7 +821,7 @@ namespace Alice
             .property("layerBits", &Phy_TerrainHeightFieldComponent::layerBits)
             .property("ignoreLayers", &Phy_TerrainHeightFieldComponent::ignoreLayers);
 
-        // === EffectComponent ?æºë‚†ì¨¯ ===
+        // === EffectComponent µî·Ï ===
         rttr::registration::class_<EffectComponent>("EffectComponent")
             .constructor<>()
             .property("color", &EffectComponent::color)
@@ -829,7 +829,7 @@ namespace Alice
             .property("enabled", &EffectComponent::enabled)
             .property("alpha", &EffectComponent::alpha);
 
-	// === TrailEffectComponent ?æºë‚†ì¨¯ (trailSamples????Â€???ë±€ëµ æ²ƒìƒ•Â€åš¥??æºë‚†ì¨¯??? ??ë†ë²‰) ===
+        // === TrailEffectComponent µî·Ï (trailSamples´Â ³»ºÎ¿ëÀÌ¹Ç·Î µî·ÏÇÏÁö ¾ÊÀ½) ===
 	rttr::registration::class_<TrailEffectComponent>("TrailEffectComponent")
 		.constructor<>()
 		.property("color", &TrailEffectComponent::color)
@@ -838,21 +838,21 @@ namespace Alice
 		.property("maxSamples", &TrailEffectComponent::maxSamples)
 		.property("sampleInterval", &TrailEffectComponent::sampleInterval)
 		.property("fadeDuration", &TrailEffectComponent::fadeDuration);
-        // === CCTNonWalkableMode enum ?æºë‚†ì¨¯ ===
+        // === CCTNonWalkableMode enum µî·Ï ===
         rttr::registration::enumeration<CCTNonWalkableMode>("CCTNonWalkableMode")
             (
                 rttr::value("PreventClimbing", CCTNonWalkableMode::PreventClimbing),
                 rttr::value("PreventClimbingAndForceSliding", CCTNonWalkableMode::PreventClimbingAndForceSliding)
             );
 
-        // === CCTCapsuleClimbingMode enum ?æºë‚†ì¨¯ ===
+        // === CCTCapsuleClimbingMode enum µî·Ï ===
         rttr::registration::enumeration<CCTCapsuleClimbingMode>("CCTCapsuleClimbingMode")
             (
                 rttr::value("Easy", CCTCapsuleClimbingMode::Easy),
                 rttr::value("Constrained", CCTCapsuleClimbingMode::Constrained)
             );
 
-        // === Phy_CCTComponent ?æºë‚†ì¨¯ (??Â€? ?ï§ê»Šêµ¶???ê³—ë®†??æ¶ì…?è«­?? ??ë½°ë‡š) ===
+        // === Phy_CCTComponent µî·Ï (³»ºÎ ÇÚµé°ú Ãâ·Â °ªµéÀº Á¦¿Ü) ===
         rttr::registration::class_<Phy_CCTComponent>("Phy_CCTComponent")
             .constructor<>()
             .property("radius", &Phy_CCTComponent::radius)
@@ -875,7 +875,7 @@ namespace Alice
             .property("jumpSpeed", &Phy_CCTComponent::jumpSpeed)
             .property("teleport", &Phy_CCTComponent::teleport);
 
-        // === Phy_SettingsComponent ?æºë‚†ì¨¯ ===
+        // === Phy_SettingsComponent µî·Ï ===
         rttr::registration::class_<Phy_SettingsComponent>("Phy_SettingsComponent")
             .constructor<>()
             .property("enablePhysics", &Phy_SettingsComponent::enablePhysics)
@@ -896,7 +896,7 @@ namespace Alice
             .property("layerNames", &Phy_SettingsComponent::layerNames)
             .property("filterRevision", &Phy_SettingsComponent::filterRevision);
 
-        // === Joint enums ?æºë‚†ì¨¯ ===
+        // === Joint enums µî·Ï ===
         rttr::registration::enumeration<Phy_JointType>("Phy_JointType")
             (
                 rttr::value("Fixed", Phy_JointType::Fixed),
@@ -914,7 +914,7 @@ namespace Alice
                 rttr::value("Free", Phy_D6Motion::Free)
             );
 
-        // === Joint ??ì‡±ì Ÿ ?????æºë‚†ì¨¯ ===
+        // === Joint ??¼ì ™ ?????ê¹…ì¤‰ ===
         rttr::registration::class_<Phy_JointFrame>("Phy_JointFrame")
             .constructor<>()
             .property("position", &Phy_JointFrame::position)
@@ -1024,7 +1024,7 @@ namespace Alice
             .property("driveLinearVelocity", &Phy_D6JointSettings::driveLinearVelocity)
             .property("driveAngularVelocity", &Phy_D6JointSettings::driveAngularVelocity);
 
-        // === Phy_JointComponent ?æºë‚†ì¨¯ (jointHandle ??Â€?????ë½°ë‡š) ===
+        // === Phy_JointComponent ?ê¹…ì¤‰ (jointHandle ??€?????–ì‡…) ===
         rttr::registration::class_<Phy_JointComponent>("Phy_JointComponent")
             .constructor<>()
             .property("type", &Phy_JointComponent::type)
@@ -1043,7 +1043,7 @@ namespace Alice
         rttr::registration::class_<IScript>("IScript")
             .constructor<>();
 
-        // === AliceUI ?ëš®ë˜¾çŒ·??ê³•ë±œ/??ìš§íƒ¢???æºë‚†ì¨¯ ===
+        // === AliceUI ?ŒëŒ„ë£??°ë“ƒ/??¿êµ…???ê¹…ì¤‰ ===
         rttr::registration::enumeration<AliceUI::UISpace>("UISpace")
             (
                 rttr::value("Screen", AliceUI::UISpace::Screen),
@@ -1278,14 +1278,21 @@ namespace Alice
             .property("pencilJitterStrength", &UIPencilComponent::pencilJitterStrength)
             .property("pencilContrast", &UIPencilComponent::pencilContrast);
 
+        rttr::registration::class_<UIDieLineParamsComponent>("UIDieLineParamsComponent")
+            .constructor<>()
+            .property("totalCycle", &UIDieLineParamsComponent::totalCycle)
+            .property("phase1Duration", &UIDieLineParamsComponent::phase1Duration)
+            .property("phase2End", &UIDieLineParamsComponent::phase2End)
+            .property("phase3Duration", &UIDieLineParamsComponent::phase3Duration)
+            .property("startTime", &UIDieLineParamsComponent::startTime);
     }
 
-    // EditorComponentRegistry???ëš®ë˜¾çŒ·??ê³•ë±œ ?æºë‚†ì¨¯
+    // EditorComponentRegistry???ŒëŒ„ë£??°ë“ƒ ?ê¹…ì¤‰
     static void RegisterEditorComponentsOnce()
     {
         auto& r = EditorComponentRegistry::Get();
 
-        // Transform?? ?è¢â‘¸ë•¾??ê²¹ëŠº addable/removable ?ëš¢ë«‚?ê»…ì—?
+        // Transform?? ?ê¾©ë‹”??°ãˆƒ addable/removable ?Œâ‘¦?ƒæ¿¡?
         r.Register<TransformComponent>("Transform", "Core",
             /*addFn*/{}, /*addable*/false, /*removable*/false);
 
@@ -1297,7 +1304,7 @@ namespace Alice
 
         r.Register<SkinnedMeshComponent>("Skinned Mesh", "Rendering",
             [](World& w, EntityId e) {
-                w.AddComponent<SkinnedMeshComponent>(e, ""); // ç–«ê¿¸í€¡??ì²?
+                w.AddComponent<SkinnedMeshComponent>(e, ""); // æ¹²ê³•??ª›?
             });
 
         r.Register<SkinnedAnimationComponent>("Skinned Animation", "Rendering");
@@ -1359,11 +1366,12 @@ namespace Alice
         r.Register<UIHover3DComponent>("UI Hover 3D", "UI");
         r.Register<UIVitalComponent>("UI Vital", "UI");
         r.Register<UIEmptyGaugeEffectComponent>("UI Gauge Empty Effect", "UI");
+        r.Register<UIDieLineParamsComponent>("UI Die Line Params", "UI");
 
         r.SortByCategoryThenName();
     }
 
-    // ?ï§ã…¼ì… ?Î»ëœƒç”±?éºì– ì¨® 1????ìˆë»¬
+    // ?ëº¤ìŸ» ?¥ë‡ë¦?ë¶¾ì¤ˆ 1????½ë»¾
     static const bool s_regEditorComponents = [] {
         RegisterEditorComponentsOnce();
         return true;

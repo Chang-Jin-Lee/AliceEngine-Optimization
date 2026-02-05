@@ -1,4 +1,4 @@
-﻿#include "Runtime/UI/UIShaderCode.h"
+#include "Runtime/UI/UIShaderCode.h"
 
 namespace Alice
 {
@@ -371,6 +371,77 @@ float4 main(PSInput input) : SV_Target
     finalColor.a = color.a * gTime.y;
 
     return finalColor;
+}
+)";
+
+		const char* UIDieLinePS = R"(
+Texture2D gTexture : register(t0);
+SamplerState gSampler : register(s0);
+
+cbuffer UIPixelConstants : register(b1)
+{
+    float4 gOutlineColor;
+    float4 gGlowColor;
+    float4 gVitalColor;
+    float4 gVitalBgColor;
+    float4 gParams0;
+    float4 gParams1;
+    float4 gParams2;
+    float4 gParams3;
+    float4 gParams4;
+    float4 gParams5;
+    float4 gGaugeParams;
+    float4 gGaugeParams2;
+    float4 gEmptyColor;
+    float4 gEmptyParams;
+    float4 gPencilParams;
+    float4 gTime;
+};
+
+struct PSInput
+{
+    float4 Position : SV_POSITION;
+    float2 TexCoord : TEXCOORD0;
+    float4 Color    : COLOR0;
+};
+
+float4 main(PSInput Input) : SV_Target
+{
+    float2 uv = Input.TexCoord;
+
+    float timeSec = gTime.x;
+    float totalCycle = gParams0.x > 0.0f ? gParams0.x : 3.2f;
+    float phase1Dur = gParams0.y > 0.0f ? gParams0.y : 1.2f;
+    float phase2End = gParams0.z > 0.0f ? gParams0.z : 2.0f;
+    float phase3Dur = gParams0.w > 0.0f ? gParams0.w : 1.2f;
+    float startTime = gParams1.x;
+
+    float t;
+    if (startTime >= 0.0f)
+    {
+        t = timeSec - startTime;
+        if (t < 0.0f || t > totalCycle)
+            return float4(0, 0, 0, 0);
+    }
+    else
+        t = fmod(timeSec, totalCycle);
+
+    float progress = 0.0f;
+    if (t < phase1Dur)       progress = t / phase1Dur;
+    else if (t < phase2End)  progress = 1.0f;
+    else                     progress = 1.0f - (t - phase2End) / phase3Dur;
+    progress = saturate(progress);
+
+    float currentSoftness = lerp(0.5f, 0.05f, progress);
+    float currentMaxAlpha = lerp(0.0f, 0.8f, progress);
+
+    float center = 0.5f;
+    float halfThickness = 0.1f;
+    float mask1 = smoothstep(center - halfThickness - currentSoftness, center - halfThickness, uv.y);
+    float mask2 = smoothstep(center + halfThickness, center + halfThickness + currentSoftness, uv.y);
+    float lineIntensity = saturate(mask1 - mask2);
+
+    return float4(0, 0, 0, lineIntensity * currentMaxAlpha * gTime.y);
 }
 )";
 	}

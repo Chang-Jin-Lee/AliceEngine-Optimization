@@ -267,7 +267,12 @@ namespace Alice
 			ALICE_LOG_ERRORF("[AliceUI] Failed to register Pencil shader.");
 			return false;
 		}
-		
+		if (!RegisterShader("DieLine", AliceUIShader::UIDieLinePS))
+		{
+			ALICE_LOG_ERRORF("[AliceUI] Failed to register DieLine shader.");
+			return false;
+		}
+
 		// Constant buffer
 		D3D11_BUFFER_DESC cbDesc{};
 		cbDesc.ByteWidth = sizeof(UIConstants);
@@ -1661,7 +1666,11 @@ namespace Alice
 			pencilTex = GetTexture(pencil->pencilTexturePath);
 		}
 
-		DrawQuad(verts, GetTexture(texPath), GetPixelShader(widget->shaderName), pixel, pencilTex);
+		std::string psName = widget->shaderName;
+		if (widget->widgetName == "UI_Die" && (psName.empty() || psName == "Default"))
+			psName = "DieLine";
+		ID3D11PixelShader* ps = GetPixelShader(psName);
+		DrawQuad(verts, GetTexture(texPath), ps, pixel, pencilTex);
 	}
 
 	void UIRenderer::RenderText(const World& world, EntityId id, const ScreenLayout& layout)
@@ -2506,6 +2515,24 @@ void UIRenderer::RenderGauge(const World& world, EntityId id, const ScreenLayout
 			pixel.params4 = DirectX::XMFLOAT4(1.0f, vital->amplitude, vital->frequency, vital->speed);
 			pixel.params5 = DirectX::XMFLOAT4(vital->thickness, 0.0f, 0.0f, 0.0f);
 		}
+
+		// DieLine 쉐이더: UIDieLineParamsComponent 또는 기본값으로 gParams0/gParams1 전달
+		const auto* widget = world.GetComponent<UIWidgetComponent>(id);
+		if (widget && widget->widgetName == "UI_Die")
+		{
+			const auto* dieParams = world.GetComponent<UIDieLineParamsComponent>(id);
+			if (dieParams)
+			{
+				pixel.params0 = DirectX::XMFLOAT4(dieParams->totalCycle, dieParams->phase1Duration, dieParams->phase2End, dieParams->phase3Duration);
+				pixel.params1 = DirectX::XMFLOAT4(dieParams->startTime, 0.0f, 0.0f, 0.0f);
+			}
+			else
+			{
+				pixel.params0 = DirectX::XMFLOAT4(3.2f, 1.2f, 2.0f, 1.2f);
+				pixel.params1 = DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 0.0f);
+			}
+		}
+
 		return pixel;
 	}
 

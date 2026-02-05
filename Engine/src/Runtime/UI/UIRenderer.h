@@ -58,6 +58,9 @@ namespace Alice
 		void SetScreenMouseOverride(float x, float y);
 		void ClearScreenMouseOverride();
 
+		/// UI 시간(gTime.x) 리셋. Play 시작 시 호출하여 DieLine 등 시간 기반 쉐이더가 스크립트와 동기화되도록 함.
+		void ResetTime() { m_timeSeconds = 0.0f; }
+
 	private:
 		struct ScreenLayout
 		{
