@@ -340,6 +340,11 @@ namespace Alice
 		ViewportPicker& picker,
 		float& cameraMoveSpeed,
 		bool& useForwardRendering,
+		LightingParameters& lightingParams,
+		int& skyboxChoice,
+		std::string& skyboxCustomDir,
+		std::string& skyboxCustomPrefix,
+		int& skyboxResolution,
 		bool& pvdEnabled,
 		std::string& pvdHost,
 		int& pvdPort,
@@ -373,7 +378,8 @@ namespace Alice
 		DrawProjectWindow(world, selectedEntity);
 		DrawGameViewportWindow(world, camera, forward, deferred, selectedEntity, picker, cameraMoveSpeed, useForwardRendering, isPlaying, shadingMode, useFillLight);
 		DrawCameraWindow(world, camera, forward, deferred, cameraMoveSpeed, selectedEntity, useForwardRendering);
-		DrawLightingWindow(world, forward, deferred, shadingMode, useFillLight, useForwardRendering);
+		DrawLightingWindow(world, forward, deferred, shadingMode, useFillLight, useForwardRendering,
+			lightingParams, skyboxChoice, skyboxCustomDir, skyboxCustomPrefix, skyboxResolution);
 
 		// 첫 프레임 기본 포커스를 Inspector 탭으로 강제
 		static bool s_focusInspector = false;
