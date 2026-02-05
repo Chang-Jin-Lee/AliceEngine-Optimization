@@ -177,6 +177,8 @@ set(ENGINE_SOURCES
     ${ALICE_SRC_DIR}/Runtime/Rendering/DebugDrawSystem.cpp
     ${ALICE_SRC_DIR}/Runtime/Rendering/TrailEffectRenderSystem.cpp
     ${ALICE_SRC_DIR}/Runtime/Rendering/TrailEffectRenderSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/UnityVfxMeshRenderSystem.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/UnityVfxMeshRenderSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/PostProcessVolumeSystem.cpp
     
     # PhysX
@@ -311,6 +313,7 @@ set(ENGINE_HEADERS
     ${ALICE_SRC_DIR}/Runtime/Rendering/DebugDrawComponentSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/RenderTypes.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/TrailEffectRenderSystem.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/UnityVfxMeshRenderSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/PostProcessSettings.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/PostProcessVolumeSystem.h
     

@@ -24,6 +24,7 @@
 #include "Runtime/Scripting/Components/ScriptComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/Rendering/Components/EffectComponent.h"
 #include "Runtime/Rendering/Components/TrailEffectComponent.h"
 #include "Runtime/Rendering/Components/DebugDrawBoxComponent.h"
@@ -849,6 +850,12 @@ namespace Alice
                 outEntity["ComputeEffect"] = JsonRttr::ToJsonObject(inst);
             }
 
+            if (const auto* unityVfx = world.GetComponent<UnityVfxComponent>(id); unityVfx)
+            {
+                rttr::instance inst = const_cast<UnityVfxComponent&>(*unityVfx);
+                outEntity["UnityVfx"] = JsonRttr::ToJsonObject(inst);
+            }
+
             if (const auto* postProcessVolume = world.GetComponent<PostProcessVolumeComponent>(id); postProcessVolume)
             {
                 rttr::instance inst = const_cast<PostProcessVolumeComponent&>(*postProcessVolume);
@@ -1230,6 +1237,15 @@ namespace Alice
                         }
                     }
                 }
+            }
+
+            // UnityVfx 선택
+            auto itUnityVfx = e.find("UnityVfx");
+            if (itUnityVfx != e.end() && itUnityVfx->is_object())
+            {
+                UnityVfxComponent& uv = world.AddComponent<UnityVfxComponent>(id);
+                rttr::instance inst = uv;
+                if (!JsonRttr::FromJsonObject(inst, *itUnityVfx)) return false;
             }
 
             // PostProcessVolume 선택
