@@ -3,6 +3,7 @@
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "",
                 "color": {
@@ -46,13 +47,15 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
             "guid": "5083617741050252772"
         },
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "",
                 "color": {
@@ -96,7 +99,8 @@
                     "x": 47.62660598754883,
                     "y": 0.5068082213401794,
                     "z": 20.796457290649414
-                }
+                },
+                "visible": true
             },
             "guid": "13111894040444351091",
             "name": "Entity2"
@@ -107,7 +111,7 @@
                     "enabled": true,
                     "name": "SceneSwitchExample",
                     "props": {
-                        "targetSceneA": "Assets/Scenes/SceneChange/SceneChange2.scene",
+                        "targetSceneA": "Assets/Scenes/Decal/DecalDemo.scene",
                         "targetSceneB": ""
                     }
                 }
@@ -128,7 +132,8 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
             "guid": "6019181538089298767",
             "name": "GameObject3"
@@ -158,7 +163,8 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
             "guid": "3194661419505541374",
             "name": "Camera1"
@@ -166,6 +172,7 @@
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Weapon1_0.mat",
                 "color": {
@@ -220,7 +227,8 @@
                     "x": 0.009999999776482582,
                     "y": 0.009999999776482582,
                     "z": 0.009999999776482582
-                }
+                },
+                "visible": true
             },
             "guid": "6489649354442884182"
         }
