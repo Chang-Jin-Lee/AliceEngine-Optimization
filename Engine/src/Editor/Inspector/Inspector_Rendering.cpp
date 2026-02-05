@@ -4,6 +4,7 @@
 #include "Runtime/Rendering/Data/Material.h"
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
 #include "Runtime/Rendering/Components/UnityVfxComponent.h"
+#include "Runtime/Rendering/Components/DecalComponent.h"
 #include "Runtime/ECS/GameObject.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Foundation/Logger.h"
@@ -176,6 +177,92 @@ namespace Alice
 				world.RemoveComponent<MaterialComponent>(_selectedEntity);
 				g_SceneDirty = true;
 			}
+		}
+	}
+
+	void EditorCore::DrawInspectorDecal(World& world, const EntityId& _selectedEntity)
+	{
+		if (auto* decal = world.GetComponent<DecalComponent>(_selectedEntity))
+		{
+			ImGui::PushID("DecalComponent");
+			if (ImGui::CollapsingHeader("Decal##DecalComponent", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				bool changed = false;
+
+				changed |= ImGui::Checkbox("Enabled##Decal", &decal->enabled);
+
+				auto IsImageExt = [](std::string ext)
+					{
+						std::transform(ext.begin(), ext.end(), ext.begin(),
+							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+						return ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".dds" || ext == ".tga" || ext == ".bmp";
+					};
+
+				auto NormalizeToLogicalIfPossible = [&](const std::filesystem::path& p) -> std::string
+					{
+						std::string out = p.string();
+						std::filesystem::path logical = ResourceManager::NormalizeResourcePathAbsoluteToLogical(p);
+						if (!logical.empty() && !logical.is_absolute())
+							out = logical.string();
+						return out;
+					};
+
+				auto ApplyAlbedoPath = [&](const std::filesystem::path& anyPath)
+					{
+						if (!IsImageExt(anyPath.extension().string()))
+							return;
+						decal->albedoTexturePath = NormalizeToLogicalIfPossible(anyPath);
+						changed = true;
+						g_SceneDirty = true;
+					};
+
+				ImGui::Text("Albedo: %s", decal->albedoTexturePath.empty() ? "None" : decal->albedoTexturePath.c_str());
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_FILE_PATH"))
+					{
+						const char* pathStr = static_cast<const char*>(payload->Data);
+						if (pathStr && pathStr[0] != '\0')
+						{
+							ApplyAlbedoPath(std::filesystem::path(pathStr));
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				if (ImGui::Button("Browse...##DecalAlbedo"))
+				{
+					wchar_t buf[MAX_PATH] = {};
+					OPENFILENAMEW ofn = { sizeof(ofn) };
+					ofn.hwndOwner = m_hwnd;
+					ofn.lpstrFilter = L"Images\0*.png;*.jpg;*.jpeg;*.dds;*.tga;*.bmp\0All\0*.*\0";
+					ofn.lpstrFile = buf;
+					ofn.nMaxFile = MAX_PATH;
+					ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+					if (GetOpenFileNameW(&ofn))
+					{
+						ApplyAlbedoPath(std::filesystem::path(buf));
+					}
+				}
+
+				auto filter = [](const std::string& propName)
+					{
+						return propName != "albedoTexturePath" && propName != "enabled";
+					};
+				changed |= ReflectionUI::RenderInspector(*decal, filter).changed;
+
+				if (ImGui::Button("Remove Decal"))
+				{
+					world.RemoveComponent<DecalComponent>(_selectedEntity);
+					g_SceneDirty = true;
+					return;
+				}
+
+				if (changed) g_SceneDirty = true;
+			}
+			ImGui::PopID();
 		}
 	}
 

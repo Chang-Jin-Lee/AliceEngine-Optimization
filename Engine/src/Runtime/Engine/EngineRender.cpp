@@ -68,11 +68,11 @@ namespace Alice
 		RenderCameraPreview();
 		RenderUnbindDepthOnly();
 
-		RenderOverlayEffects();
 		RenderComputeEffects();
 		RenderParticleOverlayComposite();
 		RenderDebugOverlayComposite();
 		RenderGameModeToneMappingAndUI();
+		RenderOverlayEffects();
 		if (m_editorMode)
 			RenderEditorDraw();
 
@@ -589,39 +589,6 @@ namespace Alice
 				}
 			}
 		}
-
-		// 게임 모드: 백버퍼에 파티클 오버레이 합성
-		if (!m_editorMode && m_computeEffectSystem && m_computeEffectSystem->HasActiveEffect() && m_forwardRenderSystem)
-		{
-			ID3D11RenderTargetView* backBufferRTV = m_renderDevice->GetBackBufferRTV();
-			if (backBufferRTV)
-			{
-				D3D11_VIEWPORT viewport = {};
-				viewport.Width = static_cast<float>(m_width);
-				viewport.Height = static_cast<float>(m_height);
-				viewport.MaxDepth = 1.0f;
-
-				if (m_useForwardRendering)
-				{
-					m_forwardRenderSystem->RenderToneMapping(backBufferRTV, viewport);
-				}
-				else
-				{
-					DeferredRenderSystem* deferred = m_deferredRenderSystem.get();
-					ID3D11ShaderResourceView* sceneSRV = deferred->GetSceneColorSRV();
-					deferred->RenderToneMapping(sceneSRV, backBufferRTV, viewport);
-					deferred->RenderPostProcess(backBufferRTV, viewport);
-				}
-
-				ID3D11ShaderResourceView* particleSRV = m_computeEffectSystem->GetOutputSRV();
-				if (particleSRV)
-				{
-					m_forwardRenderSystem->RenderParticleOverlay(particleSRV, backBufferRTV, viewport);
-				}
-
-				m_aliceUIRenderer.RenderScreen(m_world, m_camera, backBufferRTV, viewport.Width, viewport.Height);
-			}
-		}
 	}
 
 	void Engine::Impl::RenderDebugOverlayComposite()
@@ -660,15 +627,31 @@ namespace Alice
 		if (m_useForwardRendering)
 		{
 			m_forwardRenderSystem->RenderToneMapping(backBufferRTV, viewport);
-			m_aliceUIRenderer.RenderScreen(m_world, m_camera, backBufferRTV, viewport.Width, viewport.Height);
 		}
 		else
 		{
 			DeferredRenderSystem* deferred = m_deferredRenderSystem.get();
-			ID3D11ShaderResourceView* sceneSRV = deferred->GetSceneColorSRV();
 			deferred->RenderPostProcess(backBufferRTV, viewport);
-			m_aliceUIRenderer.RenderScreen(m_world, m_camera, backBufferRTV, viewport.Width, viewport.Height);
 		}
+
+		// 파티클 오버레이 합성 (게임 모드)
+		if (m_computeEffectSystem && m_computeEffectSystem->HasActiveEffect())
+		{
+			ID3D11ShaderResourceView* particleSRV = m_computeEffectSystem->GetOutputSRV();
+			if (particleSRV)
+			{
+				if (m_useForwardRendering && m_forwardRenderSystem)
+				{
+					m_forwardRenderSystem->RenderParticleOverlay(particleSRV, backBufferRTV, viewport);
+				}
+				else if (!m_useForwardRendering && m_deferredRenderSystem)
+				{
+					m_deferredRenderSystem->RenderParticleOverlay(particleSRV, backBufferRTV, viewport);
+				}
+			}
+		}
+
+		m_aliceUIRenderer.RenderScreen(m_world, m_camera, backBufferRTV, viewport.Width, viewport.Height);
 	}
 
 	void Engine::Impl::RenderOverlayEffects()
@@ -691,30 +674,30 @@ namespace Alice
 		}
 		else
 		{
-			if (m_useForwardRendering && m_forwardRenderSystem)
-			{
-				overlayRTV = m_forwardRenderSystem->GetSceneRTV();
-				overlayDSV = m_forwardRenderSystem->GetSceneDSV();
-			}
-			else if (!m_useForwardRendering && m_deferredRenderSystem)
-			{
-				overlayRTV = m_deferredRenderSystem->GetSceneRTV();
-				overlayDSV = m_deferredRenderSystem->GetSceneDSV();
-			}
+			overlayRTV = m_renderDevice ? m_renderDevice->GetBackBufferRTV() : nullptr;
+			overlayDSV = nullptr;
 		}
 
 		if (overlayRTV)
 		{
 			D3D11_VIEWPORT vp = {};
-			if (m_useForwardRendering && m_forwardRenderSystem)
+			if (m_editorMode)
 			{
-				vp.Width = static_cast<float>(m_forwardRenderSystem->GetSceneWidth());
-				vp.Height = static_cast<float>(m_forwardRenderSystem->GetSceneHeight());
+				if (m_useForwardRendering && m_forwardRenderSystem)
+				{
+					vp.Width = static_cast<float>(m_forwardRenderSystem->GetSceneWidth());
+					vp.Height = static_cast<float>(m_forwardRenderSystem->GetSceneHeight());
+				}
+				else if (!m_useForwardRendering && m_deferredRenderSystem)
+				{
+					vp.Width = static_cast<float>(m_deferredRenderSystem->GetSceneWidth());
+					vp.Height = static_cast<float>(m_deferredRenderSystem->GetSceneHeight());
+				}
 			}
-			else if (!m_useForwardRendering && m_deferredRenderSystem)
+			else
 			{
-				vp.Width = static_cast<float>(m_deferredRenderSystem->GetSceneWidth());
-				vp.Height = static_cast<float>(m_deferredRenderSystem->GetSceneHeight());
+				vp.Width = static_cast<float>(m_width);
+				vp.Height = static_cast<float>(m_height);
 			}
 			vp.MaxDepth = 1.0f;
 
@@ -729,6 +712,19 @@ namespace Alice
 		if (m_effectSystem) m_effectSystem->Render(m_world, m_camera);
 		if (m_unityVfxMeshRenderSystem) m_unityVfxMeshRenderSystem->Render(m_world, m_camera, m_timer.DeltaTime());
 		if (m_trailRenderSystem) m_trailRenderSystem->Render(m_world, m_camera);
+
+		// 에디터 모드에서는 뷰포트 RTV를 SRV로 읽어야 하므로 백버퍼로 복귀
+		if (m_editorMode && m_renderDevice)
+		{
+			auto* ctx = m_renderDevice->GetImmediateContext();
+			ID3D11RenderTargetView* backBufferRTV = m_renderDevice->GetBackBufferRTV();
+			ID3D11DepthStencilView* backBufferDSV = m_renderDevice->GetBackBufferDSV();
+			if (ctx && backBufferRTV)
+			{
+				ID3D11RenderTargetView* rtvs[] = { backBufferRTV };
+				ctx->OMSetRenderTargets(1, rtvs, backBufferDSV);
+			}
+		}
 	}
 
 	void Engine::Impl::RenderEditorDraw()
