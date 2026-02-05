@@ -41,7 +41,7 @@ namespace Alice
 			return resolved;
 		}
 
-		bool TryGetSocketWorldMatrix(World& world, EntityId owner, const std::string& socketName, DirectX::XMMATRIX& out)
+		bool TryGetSocketWorldMatrixOnEntity(World& world, EntityId owner, const std::string& socketName, DirectX::XMMATRIX& out)
 		{
 			if (auto* poses = world.GetComponent<SocketPoseOutputComponent>(owner))
 			{
@@ -95,6 +95,28 @@ namespace Alice
 						return true;
 					}
 				}
+			}
+
+			return false;
+		}
+
+		bool TryGetSocketWorldMatrix(World& world, EntityId owner, const std::string& socketName, DirectX::XMMATRIX& out)
+		{
+			// 1) owner entity first
+			if (TryGetSocketWorldMatrixOnEntity(world, owner, socketName, out))
+				return true;
+
+			// 2) search children (common case: sockets live on a child object)
+			std::vector<EntityId> stack = world.GetChildren(owner);
+			for (size_t i = 0; i < stack.size(); ++i)
+			{
+				const EntityId child = stack[i];
+				if (TryGetSocketWorldMatrixOnEntity(world, child, socketName, out))
+					return true;
+
+				auto kids = world.GetChildren(child);
+				if (!kids.empty())
+					stack.insert(stack.end(), kids.begin(), kids.end());
 			}
 
 			return false;
