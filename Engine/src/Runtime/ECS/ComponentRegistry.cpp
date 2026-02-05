@@ -9,6 +9,7 @@
 // 컴포넌트 헤더들
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/DecalComponent.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
 #include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
 #include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
@@ -175,6 +176,17 @@ namespace Alice
             .property("toonPbrLevel3", &MaterialComponent::toonPbrLevel3)
             .property("toonPbrStrength", &MaterialComponent::toonPbrStrength)
             .property("toonPbrBlur", &MaterialComponent::toonPbrBlur);
+
+        // === DecalComponent 등록 ===
+        rttr::registration::class_<DecalComponent>("DecalComponent")
+            .constructor<>()
+            .property("enabled", &DecalComponent::enabled)
+            .property("albedoTexturePath", &DecalComponent::albedoTexturePath)
+            .property("color", &DecalComponent::color)
+            .property("opacity", &DecalComponent::opacity)
+            .property("sortOrder", &DecalComponent::sortOrder)
+            .property("uvScale", &DecalComponent::uvScale)
+            .property("uvOffset", &DecalComponent::uvOffset);
 
         // === SkinnedMeshComponent 등록 ===
         // boneMatrices는 뼈 행렬을 나타내는 프로퍼티
@@ -1244,6 +1256,11 @@ namespace Alice
             [](World& w, EntityId e) {
                 DirectX::XMFLOAT3 defaultColor(0.7f, 0.7f, 0.7f);
                 w.AddComponent<MaterialComponent>(e, defaultColor);
+            });
+
+        r.Register<DecalComponent>("Decal", "Rendering",
+            [](World& w, EntityId e) {
+                w.AddComponent<DecalComponent>(e);
             });
 
         r.Register<SkinnedMeshComponent>("Skinned Mesh", "Rendering",

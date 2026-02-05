@@ -120,6 +120,7 @@ namespace Alice
 
 			// 3. Material
 			DrawInspectorMaterial(world, selectedEntity);
+			DrawInspectorDecal(world, selectedEntity);
 			ImGui::Separator();
 
 			// 3-2. Lights

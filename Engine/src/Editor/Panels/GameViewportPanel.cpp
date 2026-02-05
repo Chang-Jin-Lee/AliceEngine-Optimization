@@ -126,6 +126,7 @@ namespace Alice
 		static float snapRotation = 15.0f; // degrees
 		static float snapScale = 1.0f;
 		static float objectSnapDistance = 0.5f; // 오브젝트 스냅 거리
+		static int viewMode = 0; // 0: Scene, 1: Decal DBuffer
 
 		// 키보드 단축키로 Gizmo 모드 변경 (InputSystem 사용)
 		// 텍스트 입력 중이 아닐 때만 단축키 작동
@@ -181,6 +182,30 @@ namespace Alice
 		if (ImGui::SmallButton("Snap"))
 		{
 			showSnapSettings = !showSnapSettings;
+		}
+
+		// View Mode (Scene / DBuffer)
+		{
+			const char* viewItems[] = { "Scene", "Decal DBuffer" };
+			const bool canShowDBuffer = !useForwardRendering;
+			if (!canShowDBuffer && viewMode == 1)
+			{
+				viewMode = 0;
+			}
+
+			ImGui::SameLine();
+			ImGui::Text(" | ");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(160.0f);
+			ImGui::BeginDisabled(!canShowDBuffer);
+			ImGui::Combo("View", &viewMode, viewItems, IM_ARRAYSIZE(viewItems));
+			ImGui::EndDisabled();
+
+			if (!canShowDBuffer)
+			{
+				ImGui::SameLine();
+				ImGui::TextDisabled("(Deferred only)");
+			}
 		}
 
 		// 스냅 설정 UI (토글이 켜져 있을 때만 표시)
@@ -270,6 +295,16 @@ namespace Alice
 			sceneSRV = deferred.GetViewportSRV();
 			sceneWidth = static_cast<float>(deferred.GetSceneWidth());
 			sceneHeight = static_cast<float>(deferred.GetSceneHeight());
+		}
+
+		if (!useForwardRendering && viewMode == 1)
+		{
+			if (ID3D11ShaderResourceView* decalSrv = deferred.GetDecalDBufferSRV())
+			{
+				sceneSRV = decalSrv;
+				sceneWidth = static_cast<float>(deferred.GetSceneWidth());
+				sceneHeight = static_cast<float>(deferred.GetSceneHeight());
+			}
 		}
 
 		if (sceneSRV)
