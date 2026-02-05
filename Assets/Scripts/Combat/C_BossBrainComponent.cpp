@@ -101,14 +101,22 @@ namespace Alice
             right = { toTarget.y, -toTarget.x };
 
         bool targetInFront = true;
+        float targetDot = 1.0f;
+        float targetSideDot = 0.0f;
         if (hasDir)
         {
             const float yaw = selfTr->rotation.y;
             const float fx = std::sin(yaw);
             const float fz = std::cos(yaw);
-            const float dot = fx * toTarget.x + fz * toTarget.y;
-            targetInFront = (dot >= 0.0f);
+            targetDot = fx * toTarget.x + fz * toTarget.y;
+            const float rx = fz;
+            const float rz = -fx;
+            targetSideDot = rx * toTarget.x + rz * toTarget.y;
+            targetInFront = (targetDot >= 0.0f);
         }
+        m_targetDot = targetDot;
+        m_targetSideDot = targetSideDot;
+        UpdateDecisionState(dt, dist, hasDir, targetDot, targetSideDot);
 
         bool blocked = false;
         if (auto* cct = world->GetComponent<Phy_CCTComponent>(selfId))
@@ -142,6 +150,10 @@ namespace Alice
                 m_activePattern = type;
                 m_attackIssued = false;
                 m_chargeTimer = (type == PatternType::Charge) ? std::max(0.0f, m_chargeHoldSec) : 0.0f;
+                m_decision.lockedSector = m_decision.sector;
+                m_decision.sectorLocked = true;
+                m_decision.sectorLockedSec = 0.0f;
+                MarkPatternUsed(type);
                 EnterState(BrainState::Attack);
             };
 
@@ -294,6 +306,29 @@ namespace Alice
             }
         }
 
+        m_backAttackCooldownTimer = std::max(0.0f, m_backAttackCooldownTimer - dt);
+        const float backRange = std::max(0.0f, m_backAttackRange);
+        const float backDotThreshold = std::clamp(m_backAttackDotThreshold, -1.0f, 1.0f);
+        const bool targetBehind = hasDir && (targetDot <= backDotThreshold);
+        if (targetBehind && dist <= backRange)
+        {
+            m_backAttackTimer += dt;
+        }
+        else
+        {
+            m_backAttackTimer = 0.0f;
+        }
+        if (m_backAttackTriggerSec > 0.0f
+            && m_backAttackCooldownTimer <= 0.0f
+            && targetBehind
+            && dist <= backRange
+            && m_backAttackTimer >= m_backAttackTriggerSec)
+        {
+            m_backAttackPending = true;
+            m_backAttackTimer = 0.0f;
+            m_backAttackCooldownTimer = std::max(0.0f, m_backAttackCooldownSec);
+        }
+
         const float patrolDist = std::max(0.0f, m_patrolDistance);
         const float patrolTol = std::max(0.0f, m_patrolTolerance);
         const float patrolMin = std::max(0.0f, patrolDist - patrolTol);
@@ -327,6 +362,11 @@ namespace Alice
         {
             if (PushPattern(PatternType::Special, false))
                 m_specialPending = false;
+        }
+        if (m_backAttackPending && static_cast<int>(m_patternQueue.size()) < queueMax)
+        {
+            if (PushPattern(PatternType::Side, false))
+                m_backAttackPending = false;
         }
 
         while (static_cast<int>(m_patternQueue.size()) < queueTarget)
@@ -365,6 +405,12 @@ namespace Alice
         {
             if (m_state != BrainState::Gimmick)
                 EnterState(BrainState::Gimmick);
+            if (!m_attackIssued)
+            {
+                intent.lightAttackPressed = true;
+                intent.attackPressed = true;
+                m_attackIssued = true;
+            }
             if (m_stateTimer >= std::max(0.0f, m_specialPatternHoldSec))
                 finishedPattern = true;
         }
@@ -398,6 +444,7 @@ namespace Alice
                     case PatternType::AttackC:
                     case PatternType::Dash:
                     case PatternType::Ranged:
+                    case PatternType::Side:
                         intent.lightAttackPressed = true;
                         intent.attackPressed = true;
                         break;
@@ -475,6 +522,9 @@ namespace Alice
             m_attackIssued = false;
             m_chargeTimer = 0.0f;
             m_attackCooldownTimer = std::max(0.0f, m_attackCooldown);
+            m_decision.sectorLocked = false;
+            m_decision.sectorLockedSec = 0.0f;
+            m_decision.lockedSector = Sector::Unknown;
             if (inMelee)
                 EnterState(BrainState::Idle);
             else
@@ -514,7 +564,7 @@ namespace Alice
 
             if (m_stuckTimeoutSec > 0.0f && m_stuckTimer >= m_stuckTimeoutSec)
             {
-                // TODO: Boss unreachable fallback (teleport, reset orbit, or force ranged pattern).
+                // TODO: Stuck recovery when unable to move for N seconds (teleport, reset orbit, or force ranged pattern).
                 m_stuckTimer = 0.0f;
             }
         }
@@ -687,6 +737,8 @@ namespace Alice
     {
         switch (type)
         {
+        case PatternType::Side:
+            return 0.0f;
         case PatternType::Dash:
             return std::max(0.0f, m_dashRangeMin);
         case PatternType::Ranged:
@@ -700,6 +752,8 @@ namespace Alice
     {
         switch (type)
         {
+        case PatternType::Side:
+            return std::max(0.0f, m_backAttackRange);
         case PatternType::Kick:
             return std::max(0.0f, m_kickRange);
         case PatternType::Charge:
@@ -743,7 +797,175 @@ namespace Alice
         case PatternType::Kick: return "Kick";
         case PatternType::Charge: return "Charge";
         case PatternType::Special: return "Special";
+        case PatternType::Side: return "Side";
         default: return "None";
+        }
+    }
+
+    float C_BossBrainComponent::GetTurnInPlaceDotThreshold() const
+    {
+        constexpr float kDegToRad = 0.01745329252f;
+        const float angle = std::clamp(m_turnInPlaceAngleDeg, 0.0f, 180.0f);
+        return std::cos(angle * kDegToRad);
+    }
+
+    const std::string& C_BossBrainComponent::GetPatternClip(PatternType type) const
+    {
+        static const std::string kEmpty{};
+        switch (type)
+        {
+        case PatternType::AttackA: return m_clipAttackA;
+        case PatternType::AttackB: return m_clipAttackBC;
+        case PatternType::AttackC: return m_clipAttackABC;
+        case PatternType::Dash: return m_clipDash;
+        case PatternType::Ranged: return m_clipSoul;
+        case PatternType::Kick: return m_clipKick;
+        case PatternType::Charge: return m_clipCharge;
+        case PatternType::Special: return m_clipPhaseHowling;
+        case PatternType::Side: return m_clipSide;
+        default: break;
+        }
+        return kEmpty;
+    }
+
+    void C_BossBrainComponent::NotifyDamageTaken(float amount)
+    {
+        if (amount <= 0.0f)
+            return;
+        const float windowSec = std::max(0.0f, m_damageWindowSec);
+        if (windowSec <= 0.0f)
+            return;
+        if (m_decision.damageWindowTimer <= 0.0f)
+        {
+            m_decision.damageWindowTimer = windowSec;
+            m_decision.damageWindowTotal = 0.0f;
+            m_decision.damageWindowTriggered = false;
+        }
+        m_decision.damageWindowTotal += amount;
+        if (m_damageWindowThreshold > 0.0f
+            && m_decision.damageWindowTotal >= m_damageWindowThreshold)
+        {
+            m_decision.damageWindowTriggered = true;
+        }
+    }
+
+    void C_BossBrainComponent::NotifyPlayerParry(bool success)
+    {
+        m_decision.lastParrySuccess = success;
+        m_decision.lastParryFailed = !success;
+        m_decision.lastGuardOrEvade = false;
+        m_decision.lastFeedbackTimer = std::max(0.0f, m_feedbackHoldSec);
+    }
+
+    void C_BossBrainComponent::NotifyPlayerGuardOrEvade()
+    {
+        m_decision.lastGuardOrEvade = true;
+        m_decision.lastParrySuccess = false;
+        m_decision.lastParryFailed = false;
+        m_decision.lastFeedbackTimer = std::max(0.0f, m_feedbackHoldSec);
+    }
+
+    C_BossBrainComponent::DistanceBand C_BossBrainComponent::ComputeDistanceBand(float dist) const
+    {
+        float d2 = std::max(0.0f, m_distBand2);
+        float d4 = std::max(d2, m_distBand4);
+        float d6 = std::max(d4, m_distBand6);
+        float d8 = std::max(d6, m_distBand8);
+        float d10 = std::max(d8, m_distBand10);
+
+        if (dist <= d2) return DistanceBand::Within2;
+        if (dist <= d4) return DistanceBand::Within4;
+        if (dist <= d6) return DistanceBand::Within6;
+        if (dist <= d8) return DistanceBand::Within8;
+        if (dist <= d10) return DistanceBand::Within10;
+        return DistanceBand::Over10;
+    }
+
+    C_BossBrainComponent::Sector C_BossBrainComponent::ComputeSector(float dot, float side) const
+    {
+        if (!std::isfinite(dot) || !std::isfinite(side))
+            return Sector::Unknown;
+        constexpr float kRadToDeg = 57.2957795f;
+        const float halfAngle = std::clamp(m_sectorAngleDeg * 0.5f, 1.0f, 180.0f);
+        const float angleDeg = std::atan2(side, dot) * kRadToDeg;
+        if (angleDeg >= -halfAngle && angleDeg <= halfAngle)
+            return Sector::Front;
+        if (angleDeg > halfAngle && angleDeg <= 180.0f - halfAngle)
+            return Sector::Right;
+        if (angleDeg < -halfAngle && angleDeg >= -180.0f + halfAngle)
+            return Sector::Left;
+        return Sector::Back;
+    }
+
+    void C_BossBrainComponent::UpdateDecisionState(float dt, float dist, bool hasDir, float dot, float side)
+    {
+        auto& ds = m_decision;
+        ds.dist = dist;
+        ds.distBand = ComputeDistanceBand(dist);
+
+        const Sector newSector = hasDir ? ComputeSector(dot, side) : Sector::Unknown;
+        if (newSector != ds.sector)
+        {
+            ds.sector = newSector;
+            ds.sectorStaySec = 0.0f;
+        }
+        else
+        {
+            ds.sectorStaySec += dt;
+        }
+
+        if (ds.sectorLocked)
+            ds.sectorLockedSec += dt;
+        ds.sectorDifferentFromLocked = ds.sectorLocked && (ds.sector != ds.lockedSector);
+
+        const float behindDot = std::clamp(m_backAttackDotThreshold, -1.0f, 1.0f);
+        ds.targetBehind = hasDir && (dot <= behindDot);
+
+        ds.timeSinceDashSec += dt;
+        ds.timeSinceRangedSec += dt;
+        ds.timeSinceChargeSec += dt;
+        ds.timeSinceSpecialSec += dt;
+
+        if (ds.damageWindowTimer > 0.0f)
+        {
+            ds.damageWindowTimer = std::max(0.0f, ds.damageWindowTimer - dt);
+            if (ds.damageWindowTimer <= 0.0f)
+            {
+                ds.damageWindowTotal = 0.0f;
+                ds.damageWindowTriggered = false;
+            }
+        }
+
+        if (ds.lastFeedbackTimer > 0.0f)
+        {
+            ds.lastFeedbackTimer = std::max(0.0f, ds.lastFeedbackTimer - dt);
+            if (ds.lastFeedbackTimer <= 0.0f)
+            {
+                ds.lastParrySuccess = false;
+                ds.lastParryFailed = false;
+                ds.lastGuardOrEvade = false;
+            }
+        }
+    }
+
+    void C_BossBrainComponent::MarkPatternUsed(PatternType type)
+    {
+        switch (type)
+        {
+        case PatternType::Dash:
+            m_decision.timeSinceDashSec = 0.0f;
+            break;
+        case PatternType::Ranged:
+            m_decision.timeSinceRangedSec = 0.0f;
+            break;
+        case PatternType::Charge:
+            m_decision.timeSinceChargeSec = 0.0f;
+            break;
+        case PatternType::Special:
+            m_decision.timeSinceSpecialSec = 0.0f;
+            break;
+        default:
+            break;
         }
     }
 
@@ -761,10 +983,16 @@ namespace Alice
         m_lastDistance = 0.0f;
         m_chargeTimer = 0.0f;
         m_specialTimer = 0.0f;
+        m_backAttackTimer = 0.0f;
+        m_backAttackCooldownTimer = 0.0f;
         m_attackIssued = false;
         m_specialPending = false;
+        m_backAttackPending = false;
         m_gimmickActive = false;
         m_wantsFaceTarget = false;
+        m_targetDot = 1.0f;
+        m_targetSideDot = 0.0f;
+        m_decision = {};
         m_testTraceTimer = 0.0f;
         m_testTraceTargetSec = 0.0f;
         m_testRetreatTimer = 0.0f;
