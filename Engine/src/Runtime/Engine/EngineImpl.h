@@ -198,6 +198,7 @@ namespace Alice
 		bool InitializeWindowAndInput(Engine& owner, int nCmdShow);
 		bool InitializeRenderDevice();
 		bool InitializeEditorCoreIfNeeded();
+		bool RenderStartupLogoFrames(float seconds);
 		void InitializeAudio();
 		bool InitializeRenderSystems();
 		bool InitializeUI();

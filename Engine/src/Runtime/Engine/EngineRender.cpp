@@ -729,8 +729,29 @@ namespace Alice
 
 	void Engine::Impl::RenderEditorDraw()
 	{
-		if (m_editorMode)
-			m_editorCore.RenderDrawData();
+		if (!m_editorMode)
+			return;
+
+		if (m_renderDevice)
+		{
+			auto* ctx = m_renderDevice->GetImmediateContext();
+			ID3D11RenderTargetView* backBufferRTV = m_renderDevice->GetBackBufferRTV();
+			ID3D11DepthStencilView* backBufferDSV = m_renderDevice->GetBackBufferDSV();
+			if (ctx && backBufferRTV)
+			{
+				ID3D11RenderTargetView* rtvs[] = { backBufferRTV };
+				ctx->OMSetRenderTargets(1, rtvs, backBufferDSV);
+
+				D3D11_VIEWPORT vp = {};
+				vp.Width = static_cast<float>(m_width);
+				vp.Height = static_cast<float>(m_height);
+				vp.MinDepth = 0.0f;
+				vp.MaxDepth = 1.0f;
+				ctx->RSSetViewports(1, &vp);
+			}
+		}
+
+		m_editorCore.RenderDrawData();
 	}
 
 	void Engine::Impl::RenderEndFrame()
