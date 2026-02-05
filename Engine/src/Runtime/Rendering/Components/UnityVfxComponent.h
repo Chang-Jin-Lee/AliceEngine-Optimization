@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
+#include <DirectXMath.h>
 
 namespace Alice
 {
@@ -10,6 +12,7 @@ namespace Alice
     {
         bool enabled{ true };
         std::string effectPath{};     // effect.json logical path (Assets/...)
+        std::uint32_t playId{ 0 };    // 재생 요청 토큰 (증가 시 런타임 리셋)
 
         // Render path toggles (v2 mesh renderer vs v1 compute overlay)
         bool useMeshRenderer{ true };
@@ -28,6 +31,7 @@ namespace Alice
         float spawnRateScale{ 1.0f };  // Emission rate 스케일 (0..1)
 
         // Rendering/material overrides
+        DirectX::XMFLOAT3 colorTint{ 1.0f, 1.0f, 1.0f }; // RGB tint
         float colorScale{ 1.0f };      // RGB scale
         float alphaScale{ 1.0f };
         float hdrColorClamp{ 1.0f };   // 0 = off, otherwise clamp max RGB
