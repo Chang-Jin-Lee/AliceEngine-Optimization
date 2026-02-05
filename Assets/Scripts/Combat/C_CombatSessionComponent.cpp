@@ -3199,7 +3199,9 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		m_state->player.canBeHitstunned = m_playerCanBeHitstunned && !playerSuperArmorResolve;
 		m_state->boss.id = bossId;
 		m_state->boss.team = Combat::Team::Enemy;
-		m_state->boss.canBeHitstunned = m_bossCanBeHitstunned;
+		const bool bossSuperArmorResolve = (m_state->boss.state == Combat::ActionState::Attack)
+			|| m_state->bossChargeActive;
+		m_state->boss.canBeHitstunned = m_bossCanBeHitstunned && !bossSuperArmorResolve;
 
 		auto* registry = SkinnedRegistry();
 
@@ -3219,7 +3221,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			Combat::ActionState state,
 			const Combat::Sensors& sensors,
 			bool hitstopActive,
-			bool guardEnterPhaseActive) -> Combat::FighterSnapshot
+			bool guardEnterPhaseActive,
+			bool forceNoInterrupt) -> Combat::FighterSnapshot
 			{
 				Combat::FighterSnapshot snap = fighter.Snapshot();
 				snap.hp = sensors.hp;
@@ -3242,6 +3245,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					&& (state != Combat::ActionState::Dead)
 					&& (state != Combat::ActionState::Groggy)
 					&& (state != Combat::ActionState::GuardBreakWeak);
+				if (forceNoInterrupt)
+					flags.canBeInterrupted = false;
 
 				if (state == Combat::ActionState::Interaction)
 				{
@@ -3330,13 +3335,15 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			m_state->player.state,
 			resolvePlayerSensors,
 			playerHitstopActive,
-			m_state->playerAnim.guardEnterActive);
+			m_state->playerAnim.guardEnterActive,
+			false);
 		m_state->bossSnapshot = BuildResolveSnapshot(
 			m_state->boss,
 			m_state->boss.state,
 			resolveBossSensors,
 			bossHitstopActive,
-			m_state->bossAnim.guardEnterActive);
+			m_state->bossAnim.guardEnterActive,
+			bossSuperArmorResolve);
 
 		m_state->bus.ClearFrame();
 		if (world.HasFrameCombatHits())
@@ -3648,6 +3655,18 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					if (auto* hc = world.GetComponent<HealthComponent>(hit.victimOwner))
 						hc->invulnRemaining = std::max(hc->invulnRemaining, invulnSec);
 				}
+			}
+			if (bossId != InvalidEntityId)
+			{
+				immediate.erase(std::remove_if(immediate.begin(), immediate.end(),
+					[&](const Combat::Command& cmd)
+					{
+						if (cmd.type != Combat::CommandType::ForceCancelAttack)
+							return false;
+						const auto& payload = std::get<Combat::CmdForceCancelAttack>(cmd.payload);
+						return payload.target == bossId;
+					}),
+					immediate.end());
 			}
 			m_state->apply.ApplyImmediate(world, m_state->fighterMap, m_state->bus, immediate, false);
 
