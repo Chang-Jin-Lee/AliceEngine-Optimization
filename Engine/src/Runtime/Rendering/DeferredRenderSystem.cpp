@@ -1930,6 +1930,9 @@ namespace Alice
         {
             if (cameraEntities.contains(id)) continue;
             if (!tr.enabled || !tr.visible) continue;
+            const bool hasSkinned = (world.GetComponent<SkinnedMeshComponent>(id) != nullptr);
+            const bool hasMaterial = (world.GetComponent<MaterialComponent>(id) != nullptr);
+            if (!hasSkinned && !hasMaterial) continue;
             hasObjects = true;
             minP.x = (std::min)(minP.x, tr.position.x); minP.y = (std::min)(minP.y, tr.position.y); minP.z = (std::min)(minP.z, tr.position.z);
             maxP.x = (std::max)(maxP.x, tr.position.x); maxP.y = (std::max)(maxP.y, tr.position.y); maxP.z = (std::max)(maxP.z, tr.position.z);
@@ -2043,7 +2046,7 @@ namespace Alice
             {
                 if (cameraEntities.contains(id)) continue;
                 if (world.GetComponent<SkinnedMeshComponent>(id)) continue;
-                if (!world.GetComponent<MaterialComponent>(id)) continue; // Empty 등 렌더 불필요 엔티티는 스킵
+                if (!world.GetComponent<MaterialComponent>(id)) continue;
                 if (!tr.enabled || !tr.visible) continue;
 
                 // [프러스텀 컬링] 카메라 시야 밖 오브젝트는 건너뛰기
@@ -2542,8 +2545,8 @@ namespace Alice
             m_uiRenderer->RenderWorld(world, camera, m_sceneRTV.Get(), m_sceneDSV.Get());
         }
 
-        // 에디터 뷰포트 표시용 LDR 텍스처로 Bloom + 톤매핑 (ImGui::Image에서 사용)
-        if (m_viewportRTV)
+        // 에디터 모드: 뷰포트 표시용 LDR 텍스처로 Bloom + 톤매핑 (ImGui::Image에서 사용)
+        if (editorMode && m_viewportRTV)
         {
             D3D11_VIEWPORT viewport = {};
             viewport.Width = static_cast<float>(m_sceneWidth);
@@ -2558,10 +2561,10 @@ namespace Alice
             {
                 m_uiRenderer->RenderScreen(world, camera, m_viewportRTV.Get(), viewport.Width, viewport.Height);
             }
-        }
 
-        // 최종 백버퍼 복귀 (ImGui 등 UI 렌더링을 위해)
-        RestoreBackBuffer();
+            // 최종 백버퍼 복귀 (ImGui 등 UI 렌더링을 위해)
+            RestoreBackBuffer();
+        }
     }
 
     void DeferredRenderSystem::RenderCameraPreview(const World& world,
@@ -2867,7 +2870,7 @@ namespace Alice
             if (world.GetComponent<SkinnedMeshComponent>(id)) continue;
             if (!transform.enabled || !transform.visible) continue;
             const MaterialComponent* mat = world.GetComponent<MaterialComponent>(id);
-            if (!mat) continue; // Empty 등 렌더 불필요 엔티티는 스킵
+            if (!mat) continue;
 
             // [프러스텀 컬링] 카메라 시야 밖 오브젝트는 건너뛰기
             float maxScale = std::max({ transform.scale.x, transform.scale.y, transform.scale.z });
@@ -2893,7 +2896,6 @@ namespace Alice
             XMFLOAT4 toonCuts = DefaultToonPbrCuts();
             XMFLOAT4 toonLevels = DefaultToonPbrLevels();
             int objectShadingMode = shadingMode;
-            
             if (mat) {
                 color = { mat->color.x, mat->color.y, mat->color.z, mat->alpha };
                 rough = mat->roughness; 
@@ -4828,13 +4830,9 @@ namespace Alice
         m_context->PSSetShaderResources(0, 1, &nullSRV);
     }
 
-    void DeferredRenderSystem::RenderParticleOverlayToViewport(ID3D11ShaderResourceView* particleSRV)
+    void DeferredRenderSystem::RenderParticleOverlay(ID3D11ShaderResourceView* particleSRV, ID3D11RenderTargetView* targetRTV, const D3D11_VIEWPORT& viewport)
     {
-        // 씬 전환 중 리소스가 유효하지 않을 수 있으므로 모든 리소스 확인
-        if (!particleSRV) return;
-        ID3D11RenderTargetView* viewportRTV = m_viewportRTV.Get();
-        if (!viewportRTV) return;
-        if (m_sceneWidth == 0 || m_sceneHeight == 0) return;
+        if (!particleSRV || !targetRTV) return;
         if (!m_particleOverlayPS || !m_quadVS || !m_quadVB || !m_quadIB || !m_quadInputLayout) return;
         
         // UAV와 SRV 동시 바인딩 충돌 방지: Compute Shader에서 사용한 UAV/SRV를 명시적으로 unbind
@@ -4852,16 +4850,11 @@ namespace Alice
         ID3D11ShaderResourceView* nullSRVs[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
         m_context->PSSetShaderResources(0, 8, nullSRVs);
         
-        D3D11_VIEWPORT viewport = {};
-        viewport.Width = static_cast<float>(m_sceneWidth);
-        viewport.Height = static_cast<float>(m_sceneHeight);
-        viewport.MaxDepth = 1.0f;
-        
         // 뷰포트 설정
         m_context->RSSetViewports(1, &viewport);
         
         // 렌더 타겟 설정
-        m_context->OMSetRenderTargets(1, m_viewportRTV.GetAddressOf(), nullptr);
+        m_context->OMSetRenderTargets(1, &targetRTV, nullptr);
         
         // Additive blending 활성화
         float blendFactor[4] = { 0, 0, 0, 0 };
@@ -4897,6 +4890,22 @@ namespace Alice
         m_context->OMSetBlendState(m_ppBlendOpaque.Get(), blendFactor, 0xFFFFFFFF);
         m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
         m_context->RSSetState(m_rasterizerState.Get());
+    }
+
+    void DeferredRenderSystem::RenderParticleOverlayToViewport(ID3D11ShaderResourceView* particleSRV)
+    {
+        // 씬 전환 중 리소스가 유효하지 않을 수 있으므로 모든 리소스 확인
+        if (!particleSRV) return;
+        ID3D11RenderTargetView* viewportRTV = m_viewportRTV.Get();
+        if (!viewportRTV) return;
+        if (m_sceneWidth == 0 || m_sceneHeight == 0) return;
+
+        D3D11_VIEWPORT viewport = {};
+        viewport.Width = static_cast<float>(m_sceneWidth);
+        viewport.Height = static_cast<float>(m_sceneHeight);
+        viewport.MaxDepth = 1.0f;
+
+        RenderParticleOverlay(particleSRV, viewportRTV, viewport);
         
         // 뷰포트 RTV를 SRV로 읽을 수 있도록 BackBuffer로 복귀 (ImGui::Image가 viewportSRV를 읽기 위해 필수)
         // DirectX11에서는 같은 리소스를 RTV와 SRV로 동시에 바인딩할 수 없음

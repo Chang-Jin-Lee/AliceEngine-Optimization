@@ -142,6 +142,8 @@ namespace Alice
                 
         /// 뷰포트 렌더 타겟에 파티클 오버레이 합성 (에디터 모드용)
         void RenderParticleOverlayToViewport(ID3D11ShaderResourceView* particleSRV);
+        /// 파티클 오버레이 합성 (게임 모드용)
+        void RenderParticleOverlay(ID3D11ShaderResourceView* particleSRV, ID3D11RenderTargetView* targetRTV, const D3D11_VIEWPORT& viewport);
 
         /// 에디터 뷰포트에 DebugDraw 라인을 합성합니다.
         void RenderDebugOverlayToViewport(DebugDrawSystem& debugDraw, const Camera& camera, bool depthTest);
