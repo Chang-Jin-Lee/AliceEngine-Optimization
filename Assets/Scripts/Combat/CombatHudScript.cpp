@@ -14,6 +14,7 @@
 #include "Runtime/UI/UITransformComponent.h"
 #include "Runtime/Gameplay/Combat/HealthComponent.h"
 #include "C_CombatSessionComponent.h"
+#include "C_BossBrainComponent.h"
 
 
 namespace Alice
@@ -133,6 +134,28 @@ namespace Alice
         UpdateStateTexts(m_bossStateTexts.data(), bossStates, bossStateCount, bossState, bossStateInactive, bossStateActive);
         UpdateWindowText(m_playerWindowText, playerFlags, playerWindowInactive, playerWindowActive);
         UpdateWindowText(m_bossWindowText, bossFlags, bossWindowInactive, bossWindowActive);
+        if (m_bossBrainText)
+        {
+            std::string label = "None";
+            if (m_bossId != InvalidEntityId)
+            {
+                if (auto* scripts = world->GetScripts(m_bossId))
+                {
+                    for (auto& sc : *scripts)
+                    {
+                        if (sc.scriptName == "C_BossBrainComponent" && sc.instance)
+                        {
+                            auto* brain = static_cast<C_BossBrainComponent*>(sc.instance.get());
+                            label = brain->GetDebugLabel();
+                            break;
+                        }
+                    }
+                }
+            }
+            if (label.empty())
+                label = "None";
+            m_bossBrainText->text = label;
+        }
 
         if (Get_useWorldSpace())
             UpdateWorldAnchors();
@@ -184,8 +207,10 @@ namespace Alice
 
         m_playerWindowTextId = FindWidgetByName(*world, Get_playerWindowTextName());
         m_bossWindowTextId = FindWidgetByName(*world, Get_bossWindowTextName());
+        m_bossBrainTextId = FindWidgetByName(*world, Get_bossBrainTextName());
         m_playerWindowText = (m_playerWindowTextId != InvalidEntityId) ? world->GetComponent<UITextComponent>(m_playerWindowTextId) : nullptr;
         m_bossWindowText = (m_bossWindowTextId != InvalidEntityId) ? world->GetComponent<UITextComponent>(m_bossWindowTextId) : nullptr;
+        m_bossBrainText = (m_bossBrainTextId != InvalidEntityId) ? world->GetComponent<UITextComponent>(m_bossBrainTextId) : nullptr;
 
         m_playerStateTextIds = {
             FindWidgetByName(*world, Get_playerStateIdleTextName()),
@@ -391,6 +416,7 @@ namespace Alice
                         m_bossHpGaugeId,
                         m_bossGroggyGaugeId,
                         m_bossWindowTextId,
+                        m_bossBrainTextId,
                         m_bossStateTextIds[0],
                         m_bossStateTextIds[1],
                         m_bossStateTextIds[2],
@@ -424,6 +450,7 @@ namespace Alice
                         m_bossHpGaugeId,
                         m_bossGroggyGaugeId,
                         m_bossWindowTextId,
+                        m_bossBrainTextId,
                         m_bossStateTextIds[0],
                         m_bossStateTextIds[1],
                         m_bossStateTextIds[2],

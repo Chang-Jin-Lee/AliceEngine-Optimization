@@ -3,6 +3,7 @@
 #include "Runtime/ECS/GameObject.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Physics/Components/Phy_SettingsComponent.h"
+#include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/Foundation/ThreadSafety.h"
@@ -2087,6 +2088,14 @@ void PhysicsSystem::CreatePhysicsActor(EntityId entityId)
                 rb->physicsActorHandle = body;
                 meshCollider->physicsActorHandle = body;
                 m_entityToActor[entityId] = std::move(handle);
+
+                // Convex mesh can yield extremely small mass; clamp to 1.0f unless user overrides.
+                if (body && body->IsValid() && rb->massOverride <= 0.0f)
+                {
+                    const float curMass = body->GetMass();
+                    if (curMass > 0.0f && curMass < 1.0f)
+                        body->SetMass(1.0f, true);
+                }
             }
             return;
         }
@@ -2950,6 +2959,13 @@ void PhysicsSystem::RebuildShapes(EntityId entityId)
     if (body && body->IsValid())
     {
         body->RecomputeMass();
+        auto* rb = m_world.GetComponent<Phy_RigidBodyComponent>(entityId);
+        if (rb && rb->massOverride <= 0.0f)
+        {
+            const float curMass = body->GetMass();
+            if (curMass > 0.0f && curMass < 1.0f)
+                body->SetMass(1.0f, true);
+        }
     }
 }
 
@@ -3171,6 +3187,76 @@ void PhysicsSystem::SyncPhysicsToGame(const ActiveTransform& transform)
         transformComp->scale
     };
     m_world.MarkTransformDirty(entityId);
+}
+
+void PhysicsSystem::ApplyRootMotionDeltas(float deltaTime)
+{
+	if (!m_physicsWorld || deltaTime <= 0.0f)
+		return;
+
+	auto ccts = m_world.GetComponents<Phy_CCTComponent>();
+	if (ccts.empty())
+		return;
+
+	for (auto&& [entityId, ccc] : ccts)
+	{
+		auto* anim = m_world.GetComponent<AdvancedAnimationComponent>(entityId);
+		if (!anim || !anim->enabled || !anim->rootMotionDriveCct || !anim->rootMotionDeltaValid)
+			continue;
+
+		auto it = m_entityToCCT.find(entityId);
+		if (it == m_entityToCCT.end() || !it->second.IsValid())
+			continue;
+
+		ICharacterController* ctrl = it->second.cct;
+		if (!ctrl)
+			continue;
+
+		auto* tr = m_world.GetComponent<TransformComponent>(entityId);
+		if (!tr)
+			continue;
+
+		const DirectX::XMFLOAT3 prevPos = tr->position;
+		Vec3 disp;
+		disp.x = anim->rootMotionDeltaWS.x;
+		disp.y = anim->rootMotionDeltaWS.y;
+		disp.z = anim->rootMotionDeltaWS.z;
+
+		RuntimeMasks& runtime = m_runtimeCCTMasks[entityId];
+		CCTCollisionFlags cf = ctrl->Move(
+			disp,
+			deltaTime,
+			runtime.collideMask,
+			ccc.layerBits,
+			ccc.hitTriggers);
+
+		CharacterControllerState st = ctrl->GetState(runtime.collideMask, ccc.layerBits, 0.2f, ccc.hitTriggers);
+		ccc.onGround = st.onGround;
+		ccc.groundNormal = ToXMFLOAT3(st.groundNormal);
+		ccc.groundDistance = st.groundDistance;
+		ccc.collisionFlags = static_cast<uint8_t>(cf);
+
+		const DirectX::XMFLOAT3 newPos = ToXMFLOAT3(ctrl->GetFootPosition());
+		tr->position = newPos;
+		m_world.MarkTransformDirty(entityId);
+
+		const DirectX::XMFLOAT3 appliedDelta{
+			newPos.x - prevPos.x,
+			newPos.y - prevPos.y,
+			newPos.z - prevPos.z
+		};
+
+		// Keep advanced animation socket world matrices in sync with late root motion.
+		for (auto& s : anim->sockets)
+		{
+			s.worldMatrix._41 += appliedDelta.x;
+			s.worldMatrix._42 += appliedDelta.y;
+			s.worldMatrix._43 += appliedDelta.z;
+		}
+
+		anim->rootMotionDeltaValid = false;
+		anim->rootMotionDeltaWS = { 0.0f, 0.0f, 0.0f };
+	}
 }
 
 bool PhysicsSystem::IsTrackedEntity(Alice::EntityId id) const noexcept
