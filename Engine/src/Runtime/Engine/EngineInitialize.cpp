@@ -155,6 +155,7 @@ namespace Alice
 		InitializeMainThreadAndRegistry();
 
 		const std::filesystem::path exeDir = InitializeResolveExeDir();
+		ApplyEditorModeFromExeName(exeDir);
 
 		if (!InitializeConfigureResourceManagers(exeDir)) return false;
 		if (!InitializeValidateGameDataIfNeeded()) return false;
@@ -197,6 +198,47 @@ namespace Alice
 		wchar_t pathBuf[MAX_PATH] = {};
 		GetModuleFileNameW(nullptr, pathBuf, MAX_PATH);
 		return std::filesystem::path(pathBuf).parent_path();
+	}
+
+	void Engine::Impl::ApplyEditorModeFromExeName(const std::filesystem::path& exeDir)
+	{
+		// 실행 파일 이름에 따라 에디터/게임 모드를 강제합니다.
+		// - Launch.exe / AliceRenderer.exe  : 에디터 모드
+		// - AlicePlayer.exe : 게임 모드
+		wchar_t exePathBuf[MAX_PATH] = {};
+		std::filesystem::path exePath = exeDir;
+		if (GetModuleFileNameW(nullptr, exePathBuf, MAX_PATH) > 0)
+			exePath = std::filesystem::path(exePathBuf);
+
+		const std::wstring exeName = exePath.filename().wstring();
+		auto IsExe = [&](const wchar_t* name)
+		{
+			return _wcsicmp(exeName.c_str(), name) == 0;
+		};
+
+		bool forced = false;
+		if (IsExe(L"Launch.exe") || IsExe(L"AliceRenderer.exe"))
+		{
+			if (!m_editorMode)
+			{
+				m_editorMode = true;
+				forced = true;
+			}
+		}
+		else if (IsExe(L"AlicePlayer.exe"))
+		{
+			if (m_editorMode)
+			{
+				m_editorMode = false;
+				forced = true;
+			}
+		}
+
+		if (forced)
+		{
+			m_scriptSystem.SetEditorMode(m_editorMode);
+			ALICE_LOG_INFO("Engine::Initialize: editorMode forced by exe name (%ls) -> %d", exeName.c_str(), m_editorMode ? 1 : 0);
+		}
 	}
 
 	bool Engine::Impl::InitializeConfigureResourceManagers(const std::filesystem::path& exeDir)
