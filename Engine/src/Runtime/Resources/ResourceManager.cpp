@@ -9,6 +9,7 @@
 #include <system_error>
 #include <cstdint>
 #include <cstring>
+#include <cctype>
 #include <algorithm>
 #include "Runtime/Foundation/Logger.h"
 #include "ThirdParty/json/json.hpp" // JSON 구현부 포함
@@ -850,84 +851,334 @@ namespace Alice
         return std::memcmp(data.data() + offset, signature, sigLen) == 0;
     }
 
+    static bool IsUnityBuiltinExtraPath(const std::filesystem::path& path)
+    {
+        std::string name = path.filename().string();
+        std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+        return (name == "unity_builtin_extra" || name == "unity_builtin_extra.png" || name == "unity_builtin_extra.tga");
+    }
+
+    static bool IsUnityExportVfxPath(const std::filesystem::path& path)
+    {
+        std::string s = path.generic_string();
+        std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+        return (s.find("assets/vfx/unityexport/") != std::string::npos) ||
+               (s.find("resource/vfx/unityexport/") != std::string::npos);
+    }
+
+    static bool TryResolveTexturePath(const ResourceManager& rm,
+                                      const std::filesystem::path& inPath,
+                                      std::filesystem::path& outPath)
+    {
+        namespace fs = std::filesystem;
+        std::error_code ec;
+
+        fs::path resolved = rm.Resolve(inPath);
+        if (fs::exists(resolved, ec))
+        {
+            outPath = inPath;
+            return true;
+        }
+
+        if (inPath.has_extension())
+            return false;
+
+        static const char* kExts[] = { ".png", ".jpg", ".jpeg", ".dds", ".tga", ".bmp" };
+        for (const char* ext : kExts)
+        {
+            fs::path candidate = inPath;
+            candidate += ext;
+            fs::path resolvedCandidate = rm.Resolve(candidate);
+            if (fs::exists(resolvedCandidate, ec))
+            {
+                outPath = candidate;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    static void SanitizeJsonNumberLiterals(std::string& text)
+    {
+        std::string out;
+        out.reserve(text.size());
+
+        auto matchToken = [&](size_t pos, const char* token) -> bool
+        {
+            size_t len = std::strlen(token);
+            if (pos + len > text.size()) return false;
+            return std::memcmp(text.data() + pos, token, len) == 0;
+        };
+
+        bool inString = false;
+        bool escape = false;
+        for (size_t i = 0; i < text.size();)
+        {
+            char c = text[i];
+            if (inString)
+            {
+                out.push_back(c);
+                if (escape) escape = false;
+                else if (c == '\\') escape = true;
+                else if (c == '"') inString = false;
+                ++i;
+                continue;
+            }
+
+            if (c == '"')
+            {
+                inString = true;
+                out.push_back(c);
+                ++i;
+                continue;
+            }
+
+            if (matchToken(i, "-Infinity"))
+            {
+                out.append("0");
+                i += 9;
+                continue;
+            }
+            if (matchToken(i, "Infinity"))
+            {
+                out.append("0");
+                i += 8;
+                continue;
+            }
+            if (matchToken(i, "+Infinity"))
+            {
+                out.append("0");
+                i += 9;
+                continue;
+            }
+            if (matchToken(i, "NaN") || matchToken(i, "nan") || matchToken(i, "NAN"))
+            {
+                out.append("0");
+                i += 3;
+                continue;
+            }
+            if (matchToken(i, "-inf") || matchToken(i, "+inf") || matchToken(i, "-INF") || matchToken(i, "+INF"))
+            {
+                out.append("0");
+                i += 4;
+                continue;
+            }
+            if (matchToken(i, "inf") || matchToken(i, "INF"))
+            {
+                out.append("0");
+                i += 3;
+                continue;
+            }
+            if (matchToken(i, "1.#INF"))
+            {
+                out.append("0");
+                i += 6;
+                continue;
+            }
+            if (matchToken(i, "-1.#INF"))
+            {
+                out.append("0");
+                i += 7;
+                continue;
+            }
+            if (matchToken(i, "1.#IND"))
+            {
+                out.append("0");
+                i += 6;
+                continue;
+            }
+            if (matchToken(i, "-1.#IND"))
+            {
+                out.append("0");
+                i += 7;
+                continue;
+            }
+            if (matchToken(i, "1.#QNAN"))
+            {
+                out.append("0");
+                i += 7;
+                continue;
+            }
+            if (matchToken(i, "-1.#QNAN"))
+            {
+                out.append("0");
+                i += 8;
+                continue;
+            }
+
+            out.push_back(c);
+            ++i;
+        }
+
+        text.swap(out);
+    }
+
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> 
     ResourceLoader<ID3D11ShaderResourceView>::Load(const ResourceManager& rm, 
                                                    const std::filesystem::path& path, 
                                                    ID3D11Device* device)
     {
-        if (!device)
+        try
         {
-            ALICE_LOG_ERRORF("ResourceLoader<SRV>: Device is null. \"%s\"", path.string().c_str());
-            return nullptr;
-        }
+            if (!device)
+            {
+                ALICE_LOG_ERRORF("ResourceLoader<SRV>: Device is null. \"%s\"", path.string().c_str());
+                return nullptr;
+            }
 
-        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> outSrv = nullptr;
-        Microsoft::WRL::ComPtr<ID3D11DeviceContext> ctx;
-        device->GetImmediateContext(ctx.GetAddressOf());
+            if (IsUnityBuiltinExtraPath(path))
+                return nullptr;
+
+            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> outSrv = nullptr;
+            Microsoft::WRL::ComPtr<ID3D11DeviceContext> ctx;
+            device->GetImmediateContext(ctx.GetAddressOf());
 
         // 1. ResourceManager의 자동 로드(암호화/경로 처리) 기능을 사용하여 바이너리 확보
-        std::vector<std::uint8_t> data;
-        if (!rm.LoadBinaryAuto(path, data) || data.empty())
-        {
-            ALICE_LOG_ERRORF("ResourceLoader<SRV>: Failed to load binary. \"%s\"", path.string().c_str());
-            return nullptr;
-        }
+            std::vector<std::uint8_t> data;
+            std::filesystem::path loadPath = path;
+            if (!rm.LoadBinaryAuto(loadPath, data) || data.empty())
+            {
+                std::filesystem::path resolvedPath;
+                if (TryResolveTexturePath(rm, path, resolvedPath))
+                {
+                    loadPath = resolvedPath;
+                    if (!rm.LoadBinaryAuto(loadPath, data) || data.empty())
+                    {
+                        ALICE_LOG_ERRORF("ResourceLoader<SRV>: Failed to load binary. \"%s\"", loadPath.string().c_str());
+                        return nullptr;
+                    }
+                }
+                else
+                {
+                    ALICE_LOG_ERRORF("ResourceLoader<SRV>: Failed to load binary. \"%s\"", path.string().c_str());
+                    return nullptr;
+                }
+            }
 
         // 2. 바이트 시그니처로 포맷 판별 (확장자 기반이 아닌 실제 파일 포맷 확인)
         //    .alice 파일로 감싸진 경우도 올바르게 처리하기 위함
-        HRESULT hr = E_FAIL;
+            HRESULT hr = E_FAIL;
         
-        if (IsDDS(data))
-        {
-            // DDS 파일인 경우
-            hr = DirectX::CreateDDSTextureFromMemory(
-                device,
-                data.data(),
-                static_cast<size_t>(data.size()),
-                nullptr,
-                outSrv.GetAddressOf()
-            );
+            if (IsDDS(data))
+            {
+                // DDS 파일인 경우
+                hr = DirectX::CreateDDSTextureFromMemory(
+                    device,
+                    data.data(),
+                    static_cast<size_t>(data.size()),
+                    nullptr,
+                    outSrv.GetAddressOf()
+                );
+            }
+            else if (IsTGA(data) || path.extension() == ".tga" || path.extension() == ".TGA")
+            {
+                // TGA는 DirectXTK WIC 로더가 지원하지 않습니다.
+                ALICE_LOG_ERRORF("[ResourceManager] Load<SRV> Error: .tga is NOT supported by runtime loader (WIC limitation). Use .dds or .png! \"%s\"", 
+                    path.string().c_str());
+                return nullptr;
+            }
+            else
+            {
+                const bool isVfx = IsUnityExportVfxPath(loadPath);
+                if (isVfx)
+                {
+                    size_t maxSize = 2048;
+                    hr = DirectX::CreateWICTextureFromMemoryEx(
+                        device,
+                        ctx.Get(),
+                        data.data(),
+                        static_cast<size_t>(data.size()),
+                        maxSize,
+                        D3D11_USAGE_DEFAULT,
+                        D3D11_BIND_SHADER_RESOURCE,
+                        0,
+                        0,
+                        DirectX::WIC_LOADER_DEFAULT,
+                        nullptr,
+                        outSrv.GetAddressOf()
+                    );
+                    if ((hr == E_OUTOFMEMORY || hr == 0x8007000E) && maxSize > 1024)
+                    {
+                        maxSize = 1024;
+                        hr = DirectX::CreateWICTextureFromMemoryEx(
+                            device,
+                            ctx.Get(),
+                            data.data(),
+                            static_cast<size_t>(data.size()),
+                            maxSize,
+                            D3D11_USAGE_DEFAULT,
+                            D3D11_BIND_SHADER_RESOURCE,
+                            0,
+                            0,
+                            DirectX::WIC_LOADER_DEFAULT,
+                            nullptr,
+                            outSrv.GetAddressOf()
+                        );
+                    }
+                }
+                else
+                {
+                    // WIC로 로드 (PNG, JPG, BMP 등) + MipMap 생성
+                    Microsoft::WRL::ComPtr<ID3D11Resource> res;
+                    hr = DirectX::CreateWICTextureFromMemoryEx(
+                        device,
+                        ctx.Get(),
+                        data.data(),
+                        static_cast<size_t>(data.size()),
+                        0,
+                        D3D11_USAGE_DEFAULT,
+                        D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET,
+                        0,
+                        D3D11_RESOURCE_MISC_GENERATE_MIPS,
+                        DirectX::WIC_LOADER_DEFAULT,
+                        res.GetAddressOf(),
+                        outSrv.GetAddressOf()
+                    );
+
+                    if (SUCCEEDED(hr) && ctx && outSrv)
+                    {
+                        ctx->GenerateMips(outSrv.Get());
+                    }
+                    else if (hr == E_OUTOFMEMORY || hr == 0x8007000E)
+                    {
+                        hr = DirectX::CreateWICTextureFromMemoryEx(
+                            device,
+                            ctx.Get(),
+                            data.data(),
+                            static_cast<size_t>(data.size()),
+                            0,
+                            D3D11_USAGE_DEFAULT,
+                            D3D11_BIND_SHADER_RESOURCE,
+                            0,
+                            0,
+                            DirectX::WIC_LOADER_DEFAULT,
+                            nullptr,
+                            outSrv.GetAddressOf()
+                        );
+                    }
+                }
+            }
+
+            if (FAILED(hr))
+            {
+                ALICE_LOG_ERRORF("[ResourceManager] Load<SRV> Error: CreateTextureFromMemory failed. HRESULT=0x%08X path=\"%s\"", 
+                    static_cast<unsigned int>(hr), path.string().c_str());
+                return nullptr;
+            }
+
+            return outSrv;
         }
-        else if (IsTGA(data) || path.extension() == ".tga" || path.extension() == ".TGA")
+        catch (const std::bad_alloc&)
         {
-            // TGA는 DirectXTK WIC 로더가 지원하지 않습니다.
-            ALICE_LOG_ERRORF("[ResourceManager] Load<SRV> Error: .tga is NOT supported by runtime loader (WIC limitation). Use .dds or .png! \"%s\"", 
-                path.string().c_str());
+            ALICE_LOG_ERRORF("[ResourceManager] Load<SRV> Error: out of memory \"%s\"", path.string().c_str());
             return nullptr;
         }
-        else
+        catch (...)
         {
-           // WIC로 로드 (PNG, JPG, BMP 등) + MipMap 생성
-           Microsoft::WRL::ComPtr<ID3D11Resource> res;
-           hr = DirectX::CreateWICTextureFromMemoryEx(
-                device,
-               ctx.Get(),
-                data.data(),
-                static_cast<size_t>(data.size()),
-               0,
-               D3D11_USAGE_DEFAULT,
-               D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET,
-               0,
-               D3D11_RESOURCE_MISC_GENERATE_MIPS,
-               DirectX::WIC_LOADER_DEFAULT,
-               res.GetAddressOf(),
-                outSrv.GetAddressOf()
-            );
-
-           if (SUCCEEDED(hr) && ctx && outSrv)
-           {
-               ctx->GenerateMips(outSrv.Get());
-           }
-        }
-
-        if (FAILED(hr))
-        {
-            ALICE_LOG_ERRORF("[ResourceManager] Load<SRV> Error: CreateTextureFromMemory failed. HRESULT=0x%08X path=\"%s\"", 
-                static_cast<unsigned int>(hr), path.string().c_str());
+            ALICE_LOG_ERRORF("[ResourceManager] Load<SRV> Error: unknown exception \"%s\"", path.string().c_str());
             return nullptr;
         }
-
-        return outSrv;
     }
 
     // std::string 로더 구현 텍스트 파일
@@ -962,7 +1213,9 @@ namespace Alice
 
         try
         {
-            auto j = std::make_shared<nlohmann::json>(nlohmann::json::parse(data.begin(), data.end()));
+            std::string text(data.begin(), data.end());
+            SanitizeJsonNumberLiterals(text);
+            auto j = std::make_shared<nlohmann::json>(nlohmann::json::parse(text.begin(), text.end()));
             return j;
         }
         catch (const std::exception& e)

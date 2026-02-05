@@ -9,6 +9,7 @@
 // 컴포넌트 헤더들
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/DecalComponent.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
 #include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
 #include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
@@ -24,6 +25,7 @@
 #include "Runtime/Rendering/Components/SpotLightComponent.h"
 #include "Runtime/Rendering/Components/RectLightComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/Rendering/Components/EffectComponent.h"
 #include "Runtime/Rendering/Components/TrailEffectComponent.h"
 #include "Runtime/Audio/Components/AudioListenerComponent.h"
@@ -174,6 +176,17 @@ namespace Alice
             .property("toonPbrLevel3", &MaterialComponent::toonPbrLevel3)
             .property("toonPbrStrength", &MaterialComponent::toonPbrStrength)
             .property("toonPbrBlur", &MaterialComponent::toonPbrBlur);
+
+        // === DecalComponent 등록 ===
+        rttr::registration::class_<DecalComponent>("DecalComponent")
+            .constructor<>()
+            .property("enabled", &DecalComponent::enabled)
+            .property("albedoTexturePath", &DecalComponent::albedoTexturePath)
+            .property("color", &DecalComponent::color)
+            .property("opacity", &DecalComponent::opacity)
+            .property("sortOrder", &DecalComponent::sortOrder)
+            .property("uvScale", &DecalComponent::uvScale)
+            .property("uvOffset", &DecalComponent::uvOffset);
 
         // === SkinnedMeshComponent 등록 ===
         // boneMatrices는 뼈 행렬을 나타내는 프로퍼티
@@ -703,11 +716,38 @@ namespace Alice
             .property("sizePx", &ComputeEffectComponent::sizePx)
             .property("color", &ComputeEffectComponent::color)
             .property("intensity", &ComputeEffectComponent::intensity)
+            .property("spawnRate", &ComputeEffectComponent::spawnRate)
             .property("radius", &ComputeEffectComponent::radius)
             .property("gravity", &ComputeEffectComponent::gravity)
             .property("drag", &ComputeEffectComponent::drag)
             .property("depthTest", &ComputeEffectComponent::depthTest)
             .property("depthBiasMeters", &ComputeEffectComponent::depthBiasMeters);
+
+        // === UnityVfxComponent 등록 ===
+        rttr::registration::class_<UnityVfxComponent>("UnityVfxComponent")
+            .constructor<>()
+            .property("enabled", &UnityVfxComponent::enabled)
+            .property("effectPath", &UnityVfxComponent::effectPath)
+            .property("useMeshRenderer", &UnityVfxComponent::useMeshRenderer)
+            .property("useComputeEffect", &UnityVfxComponent::useComputeEffect)
+            .property("timeScale", &UnityVfxComponent::timeScale)
+            .property("lifetimeScale", &UnityVfxComponent::lifetimeScale)
+            .property("overrideLoop", &UnityVfxComponent::overrideLoop)
+            .property("loop", &UnityVfxComponent::loop)
+            .property("sizeScale", &UnityVfxComponent::sizeScale)
+            .property("speedScale", &UnityVfxComponent::speedScale)
+            .property("intensityScale", &UnityVfxComponent::intensityScale)
+            .property("spawnRateScale", &UnityVfxComponent::spawnRateScale)
+            .property("colorScale", &UnityVfxComponent::colorScale)
+            .property("alphaScale", &UnityVfxComponent::alphaScale)
+            .property("hdrColorClamp", &UnityVfxComponent::hdrColorClamp)
+            .property("uvScrollScale", &UnityVfxComponent::uvScrollScale)
+            .property("dissolveOffset", &UnityVfxComponent::dissolveOffset)
+            .property("noiseScale", &UnityVfxComponent::noiseScale)
+            .property("rampScale", &UnityVfxComponent::rampScale)
+            .property("enableTrails", &UnityVfxComponent::enableTrails)
+            .property("trailWidthScale", &UnityVfxComponent::trailWidthScale)
+            .property("trailLifeScale", &UnityVfxComponent::trailLifeScale);
 
         rttr::registration::enumeration<ParticleSimulationSpace>("ParticleSimulationSpace")
             (
@@ -1237,6 +1277,11 @@ namespace Alice
                 w.AddComponent<MaterialComponent>(e, defaultColor);
             });
 
+        r.Register<DecalComponent>("Decal", "Rendering",
+            [](World& w, EntityId e) {
+                w.AddComponent<DecalComponent>(e);
+            });
+
         r.Register<SkinnedMeshComponent>("Skinned Mesh", "Rendering",
             [](World& w, EntityId e) {
                 w.AddComponent<SkinnedMeshComponent>(e, ""); // 기본값
@@ -1262,6 +1307,7 @@ namespace Alice
         r.Register<PostProcessVolumeComponent>("Post Process Volume", "Rendering");
 
         r.Register<ComputeEffectComponent>("Particle System (Compute)", "VFX");
+        r.Register<UnityVfxComponent>("Unity VFX (Particle)", "VFX");
         r.Register<EffectComponent>("Effect", "VFX");
         r.Register<TrailEffectComponent>("Trail Effect", "VFX");
 

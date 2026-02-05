@@ -7,6 +7,7 @@
 #include "Runtime/Rendering/DebugDrawComponentSystem.h"
 #include "Runtime/Rendering/EffectSystem.h"
 #include "Runtime/Rendering/TrailEffectRenderSystem.h"
+#include "Runtime/Rendering/UnityVfxMeshRenderSystem.h"
 
 // ImGui
 #include "imgui.h"
@@ -157,6 +158,7 @@ namespace Alice
 		DebugDrawComponentSystem m_debugDrawComponentSystem;
 		std::unique_ptr<class EffectSystem> m_effectSystem;
 		std::unique_ptr<class TrailEffectRenderSystem> m_trailRenderSystem;
+		std::unique_ptr<class UnityVfxMeshRenderSystem> m_unityVfxMeshRenderSystem;
 		std::unique_ptr<ComputeEffectSystem> m_computeEffectSystem;
 
 		// 렌더링 모드 전환 (true: Forward, false: Deferred)
@@ -188,6 +190,7 @@ namespace Alice
 		bool InitializeAll(Engine& owner, HINSTANCE hInstance, int nCmdShow);
 		void InitializeMainThreadAndRegistry();
 		std::filesystem::path InitializeResolveExeDir();
+		void ApplyEditorModeFromExeName(const std::filesystem::path& exeDir);
 		bool InitializeConfigureResourceManagers(const std::filesystem::path& exeDir);
 		bool InitializeValidateGameDataIfNeeded();
 		void InitializeLoadPvdSettings(const std::filesystem::path& exeDir);
