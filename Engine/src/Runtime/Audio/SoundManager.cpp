@@ -1,4 +1,4 @@
-﻿#include "Runtime/Audio/SoundManager.h"
+#include "Runtime/Audio/SoundManager.h"
 
 #include <fmod.hpp>
 #include <fmod_errors.h>

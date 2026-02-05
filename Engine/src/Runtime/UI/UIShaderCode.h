@@ -9,5 +9,6 @@ namespace Alice
 		extern const char* UIGrayPS;
 		extern const char* UIGaugeCustomPS;
 		extern const char* UIPencilPS;
+		extern const char* UIDieLinePS;
 	}
 }

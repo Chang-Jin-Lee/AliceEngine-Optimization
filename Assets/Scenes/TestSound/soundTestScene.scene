@@ -241,6 +241,35 @@
             },
             "guid": "5591873112691894352",
             "name": "SoundInput"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "AnimSoundBindingScript",
+                    "props": {
+                        "clipName1": "",
+                        "clipName2": "",
+                        "notifyTime1": 0.0,
+                        "notifyTime2": 0.0,
+                        "pitch": 1.0,
+                        "soundPath1": "",
+                        "soundPath2": "",
+                        "targetEntityName1": "",
+                        "targetEntityName2": "",
+                        "volume": 1.0
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                "scale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                "visible": true
+            },
+            "guid": "16000000000000000001",
+            "name": "AnimSoundBinding"
         }
     ],
     "sceneName": "soundTestScene",

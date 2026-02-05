@@ -817,6 +817,11 @@ namespace Alice
                 rttr::instance inst = const_cast<UIPencilComponent&>(*uiPencil);
                 outEntity["UIPencil"] = JsonRttr::ToJsonObject(inst);
             }
+            if (const auto* uiDieLineParams = world.GetComponent<UIDieLineParamsComponent>(id); uiDieLineParams)
+            {
+                rttr::instance inst = const_cast<UIDieLineParamsComponent&>(*uiDieLineParams);
+                outEntity["UIDieLineParams"] = JsonRttr::ToJsonObject(inst);
+            }
 
             if (const auto* cam = world.GetComponent<CameraComponent>(id); cam)
             {
@@ -1546,6 +1551,13 @@ namespace Alice
                 UIPencilComponent& comp = world.AddComponent<UIPencilComponent>(id);
                 rttr::instance inst = comp;
                 if (!JsonRttr::FromJsonObject(inst, *itUIPencil)) return false;
+            }
+            auto itUIDieLineParams = e.find("UIDieLineParams");
+            if (itUIDieLineParams != e.end() && itUIDieLineParams->is_object())
+            {
+                UIDieLineParamsComponent& comp = world.AddComponent<UIDieLineParamsComponent>(id);
+                rttr::instance inst = comp;
+                if (!JsonRttr::FromJsonObject(inst, *itUIDieLineParams)) return false;
             }
 
             return true;

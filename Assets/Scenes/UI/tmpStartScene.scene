@@ -6,6 +6,8 @@
                     "enabled": true,
                     "name": "SceneChangeButtonScript",
                     "props": {
+                        "TextWidgetName": "UI_StartText",
+                        "UnderLineWidgetName": "UI_StartUnderLine",
                         "buttonWidgetName": "UI_StartButton",
                         "rootWidgetName": "UI_StartButton",
                         "targetScenePath": "Assets/Scenes/UI/DemoiScene.scene"
@@ -376,6 +378,262 @@
             "_parentGuid": "13672869145420085345",
             "guid": "414409378586304520",
             "name": "UI_Text"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "PrintDarkQuardScript",
+                    "props": {
+                        "m_totalCycle": 3.200000047683716,
+                        "m_triggerKey": 3
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIDieLineParams": {
+                "phase1Duration": 1.2000000476837158,
+                "phase2End": 2.0,
+                "phase3Duration": 1.2000000476837158,
+                "startTime": -1.0,
+                "totalCycle": 3.200000047683716
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 1000.0,
+                    "y": 100.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 2000.0,
+                    "y": 300.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "DieLine",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Die"
+            },
+            "_parentGuid": "8067992724437108823",
+            "guid": "8904883877652021523",
+            "name": "UI_Die"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 1.0,
+                    "x": 0.24324321746826172,
+                    "y": 0.0009391644853167236,
+                    "z": 0.0009391644853167236
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 120.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Text",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 100.0,
+                    "y": 15.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 200.0,
+                    "y": 80.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_DieText"
+            },
+            "_parentGuid": "8067992724437108823",
+            "guid": "6817700141886351624",
+            "name": "UI_DieText"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Image"
+            },
+            "guid": "8067992724437108823",
+            "name": "UI_Image"
         }
     ],
     "sceneName": "tmpStartScene",
