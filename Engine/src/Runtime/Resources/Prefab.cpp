@@ -10,6 +10,7 @@
 #include "Runtime/ECS/World.h"
 #include "Runtime/Scripting/Components/ScriptComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/DecalComponent.h"
 #include "Runtime/Rendering/Components/PointLightComponent.h"
 #include "Runtime/Rendering/Components/SpotLightComponent.h"
 #include "Runtime/Rendering/Components/RectLightComponent.h"
@@ -369,6 +370,15 @@ namespace Alice
                 MaterialComponent& mc = world.AddComponent<MaterialComponent>(entity, DirectX::XMFLOAT3(0.7f, 0.7f, 0.7f));
                 rttr::instance inst = mc;
                 if (!JsonRttr::FromJsonObject(inst, *itM))
+                    return InvalidEntityId;
+            }
+
+            auto itD = root.find("Decal");
+            if (itD != root.end() && itD->is_object())
+            {
+                DecalComponent& dc = world.AddComponent<DecalComponent>(entity);
+                rttr::instance inst = dc;
+                if (!JsonRttr::FromJsonObject(inst, *itD))
                     return InvalidEntityId;
             }
 
@@ -749,6 +759,14 @@ namespace Alice
                 
                 rttr::instance inst = matCopy;
                 root["Material"] = JsonRttr::ToJsonObject(inst);
+            }
+
+            if (const auto* decal = world.GetComponent<DecalComponent>(entity); decal)
+            {
+                DecalComponent decalCopy = *decal;
+                decalCopy.albedoTexturePath = NormalizePathToRelative(decalCopy.albedoTexturePath);
+                rttr::instance inst = decalCopy;
+                root["Decal"] = JsonRttr::ToJsonObject(inst);
             }
 
             // SkinnedMesh

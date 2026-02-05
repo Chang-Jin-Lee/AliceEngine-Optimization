@@ -146,6 +146,7 @@ namespace Alice
 			std::string typeName = d.type.get_name().to_string();
 			if (typeName == "TransformComponent" ||
 				typeName == "MaterialComponent" ||
+				typeName == "DecalComponent" ||
 				typeName == "ComputeEffectComponent" ||
 				typeName == "UnityVfxComponent" ||
 				typeName == "PointLightComponent" ||

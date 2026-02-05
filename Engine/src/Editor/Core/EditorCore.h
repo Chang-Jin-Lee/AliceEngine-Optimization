@@ -267,6 +267,7 @@ namespace Alice
 		void DrawInspectorComputeEffect(World& world, const EntityId& _selectedEntity);
 		void DrawInspectorUnityVfx(World& world, const EntityId& _selectedEntity);
 		void DrawInspectorMaterial(World& world, const EntityId& _selectedEntity);
+		void DrawInspectorDecal(World& world, const EntityId& _selectedEntity);
 		void DrawInspectorPointLight(World& world, const EntityId& _selectedEntity);
 		void DrawInspectorSpotLight(World& world, const EntityId& _selectedEntity);
 		void DrawInspectorRectLight(World& world, const EntityId& _selectedEntity);

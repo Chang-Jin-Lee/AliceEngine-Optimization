@@ -20,6 +20,7 @@
 #include "Runtime/Rendering/Components/CameraBlendComponent.h"
 #include "Runtime/Rendering/Components/CameraInputComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/DecalComponent.h"
 #include "Runtime/Rendering/Components/PointLightComponent.h"
 #include "Runtime/Rendering/Components/SpotLightComponent.h"
 #include "Runtime/Rendering/Components/RectLightComponent.h"

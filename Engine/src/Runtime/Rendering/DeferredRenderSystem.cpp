@@ -20,6 +20,7 @@
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Importing/FbxImporter.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/DecalComponent.h"
 #include "Runtime/Rendering/Components/CameraComponent.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
 #include "Runtime/Rendering/Components/TrailEffectComponent.h"
@@ -238,6 +239,13 @@ namespace Alice
             return false;
         }
 
+        // D-Buffer 생성 (Decal)
+        if (!CreateDBuffer(width, height))
+        {
+            ALICE_LOG_ERRORF("DeferredRenderSystem::Initialize: CreateDBuffer failed.");
+            return false;
+        }
+
         // 셰이더 생성
         if (!CreateShaders())
         {
@@ -343,6 +351,7 @@ namespace Alice
 
         // G-Buffer 리사이즈
         CreateGBuffer(width, height);
+        CreateDBuffer(width, height);
 
         // 씬 렌더 타겟 리사이즈
         m_sceneColorTex.Reset();
@@ -453,6 +462,45 @@ namespace Alice
         return true;
     }
 
+    bool DeferredRenderSystem::CreateDBuffer(std::uint32_t width, std::uint32_t height)
+    {
+        for (int i = 0; i < DBufferCount; ++i)
+        {
+            m_dBufferSRVs[i].Reset();
+            m_dBufferRTVs[i].Reset();
+            m_dBufferTextures[i].Reset();
+        }
+
+        DXGI_FORMAT formats[DBufferCount] = {
+            DXGI_FORMAT_R8G8B8A8_UNORM_SRGB // 0: Decal Albedo (premultiplied) + Alpha
+        };
+
+        for (int i = 0; i < DBufferCount; ++i)
+        {
+            D3D11_TEXTURE2D_DESC td = {};
+            td.Width = width;
+            td.Height = height;
+            td.MipLevels = 1;
+            td.ArraySize = 1;
+            td.Format = formats[i];
+            td.SampleDesc.Count = 1;
+            td.SampleDesc.Quality = 0;
+            td.Usage = D3D11_USAGE_DEFAULT;
+            td.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+            td.CPUAccessFlags = 0;
+            td.MiscFlags = 0;
+
+            if (FAILED(m_device->CreateTexture2D(&td, nullptr, m_dBufferTextures[i].ReleaseAndGetAddressOf())))
+                return false;
+            if (FAILED(m_device->CreateRenderTargetView(m_dBufferTextures[i].Get(), nullptr, m_dBufferRTVs[i].ReleaseAndGetAddressOf())))
+                return false;
+            if (FAILED(m_device->CreateShaderResourceView(m_dBufferTextures[i].Get(), nullptr, m_dBufferSRVs[i].ReleaseAndGetAddressOf())))
+                return false;
+        }
+
+        return true;
+    }
+
     bool DeferredRenderSystem::CreateCameraPreviewTargets(std::uint32_t width, std::uint32_t height)
     {
         m_cameraPreviewWidth = width;
@@ -463,6 +511,13 @@ namespace Alice
             m_cameraPreviewGBufferSRVs[i].Reset();
             m_cameraPreviewGBufferRTVs[i].Reset();
             m_cameraPreviewGBufferTextures[i].Reset();
+        }
+
+        for (int i = 0; i < DBufferCount; ++i)
+        {
+            m_cameraPreviewDBufferSRVs[i].Reset();
+            m_cameraPreviewDBufferRTVs[i].Reset();
+            m_cameraPreviewDBufferTextures[i].Reset();
         }
 
         DXGI_FORMAT formats[GBufferCount] = {
@@ -493,6 +548,36 @@ namespace Alice
                 return false;
             if (FAILED(m_device->CreateShaderResourceView(m_cameraPreviewGBufferTextures[i].Get(), nullptr, m_cameraPreviewGBufferSRVs[i].ReleaseAndGetAddressOf())))
                 return false;
+        }
+
+        // D-Buffer (Decal) for camera preview
+        {
+            DXGI_FORMAT dFormats[DBufferCount] = {
+                DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
+            };
+
+            for (int i = 0; i < DBufferCount; ++i)
+            {
+                D3D11_TEXTURE2D_DESC td = {};
+                td.Width = width;
+                td.Height = height;
+                td.MipLevels = 1;
+                td.ArraySize = 1;
+                td.Format = dFormats[i];
+                td.SampleDesc.Count = 1;
+                td.SampleDesc.Quality = 0;
+                td.Usage = D3D11_USAGE_DEFAULT;
+                td.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+                td.CPUAccessFlags = 0;
+                td.MiscFlags = 0;
+
+                if (FAILED(m_device->CreateTexture2D(&td, nullptr, m_cameraPreviewDBufferTextures[i].ReleaseAndGetAddressOf())))
+                    return false;
+                if (FAILED(m_device->CreateRenderTargetView(m_cameraPreviewDBufferTextures[i].Get(), nullptr, m_cameraPreviewDBufferRTVs[i].ReleaseAndGetAddressOf())))
+                    return false;
+                if (FAILED(m_device->CreateShaderResourceView(m_cameraPreviewDBufferTextures[i].Get(), nullptr, m_cameraPreviewDBufferSRVs[i].ReleaseAndGetAddressOf())))
+                    return false;
+            }
         }
 
         m_cameraPreviewSceneColorTex.Reset();
@@ -693,6 +778,39 @@ namespace Alice
             ALICE_LOG_ERRORF("Failed to create G-Buffer PS");
             return false;
         }
+
+        // Decal Shaders
+        vsBlob.Reset();
+        errorBlob.Reset();
+        if (FAILED(D3DCompile(DeferredShader::DecalVS, strlen(DeferredShader::DecalVS), nullptr, nullptr, nullptr, "main", "vs_5_0", 0, 0, vsBlob.GetAddressOf(), errorBlob.GetAddressOf())))
+        {
+            if (errorBlob)
+            {
+                ALICE_LOG_ERRORF("Decal VS compile error: %s", (char*)errorBlob->GetBufferPointer());
+            }
+            return false;
+        }
+        if (FAILED(m_device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, m_decalVS.ReleaseAndGetAddressOf())))
+            return false;
+
+        D3D11_INPUT_ELEMENT_DESC decalLayout[] = {
+            {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+        };
+        if (FAILED(m_device->CreateInputLayout(decalLayout, ARRAYSIZE(decalLayout), vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), m_decalInputLayout.ReleaseAndGetAddressOf())))
+            return false;
+
+        psBlob.Reset();
+        errorBlob.Reset();
+        if (FAILED(D3DCompile(DeferredShader::DecalPS, strlen(DeferredShader::DecalPS), nullptr, nullptr, nullptr, "main", "ps_5_0", 0, 0, psBlob.GetAddressOf(), errorBlob.GetAddressOf())))
+        {
+            if (errorBlob)
+            {
+                ALICE_LOG_ERRORF("Decal PS compile error: %s", (char*)errorBlob->GetBufferPointer());
+            }
+            return false;
+        }
+        if (FAILED(m_device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, m_decalPS.ReleaseAndGetAddressOf())))
+            return false;
 
         // Deferred Light Pixel Shader 컴파일
         psBlob.Reset();
@@ -1189,6 +1307,14 @@ namespace Alice
         if (FAILED(m_device->CreateBuffer(&cbDesc, nullptr, m_cbBloom.ReleaseAndGetAddressOf())))
             return false;
 
+        // Decal CB
+        {
+            cbDesc.ByteWidth = sizeof(DirectX::XMMATRIX) * 3 + sizeof(DirectX::XMFLOAT4) * 2 + sizeof(float) * 4;
+            cbDesc.ByteWidth = (cbDesc.ByteWidth + 15u) & ~15u;
+            if (FAILED(m_device->CreateBuffer(&cbDesc, nullptr, m_cbDecal.ReleaseAndGetAddressOf())))
+                return false;
+        }
+
         // Transparent Forward-Style Light CB (register(b1))
         // float3 dir + float intensity + float3 color + pad + float3 camPos + pad = 48 bytes (16B 정렬)
         cbDesc.ByteWidth = sizeof(float) * 12;
@@ -1313,6 +1439,19 @@ namespace Alice
         alphaDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
         alphaDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
         if (FAILED(m_device->CreateBlendState(&alphaDesc, m_alphaBlendState.ReleaseAndGetAddressOf())))
+            return false;
+
+        // Decal Blend State (premultiplied alpha)
+        D3D11_BLEND_DESC decalDesc = {};
+        decalDesc.RenderTarget[0].BlendEnable = TRUE;
+        decalDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+        decalDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        decalDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+        decalDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+        decalDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+        decalDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+        decalDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+        if (FAILED(m_device->CreateBlendState(&decalDesc, m_decalBlendState.ReleaseAndGetAddressOf())))
             return false;
 
         return true;
@@ -1791,6 +1930,9 @@ namespace Alice
         {
             if (cameraEntities.contains(id)) continue;
             if (!tr.enabled || !tr.visible) continue;
+            const bool hasSkinned = (world.GetComponent<SkinnedMeshComponent>(id) != nullptr);
+            const bool hasMaterial = (world.GetComponent<MaterialComponent>(id) != nullptr);
+            if (!hasSkinned && !hasMaterial) continue;
             hasObjects = true;
             minP.x = (std::min)(minP.x, tr.position.x); minP.y = (std::min)(minP.y, tr.position.y); minP.z = (std::min)(minP.z, tr.position.z);
             maxP.x = (std::max)(maxP.x, tr.position.x); maxP.y = (std::max)(maxP.y, tr.position.y); maxP.z = (std::max)(maxP.z, tr.position.z);
@@ -1904,7 +2046,7 @@ namespace Alice
             {
                 if (cameraEntities.contains(id)) continue;
                 if (world.GetComponent<SkinnedMeshComponent>(id)) continue;
-                if (!world.GetComponent<MaterialComponent>(id)) continue; // Empty 등 렌더 불필요 엔티티는 스킵
+                if (!world.GetComponent<MaterialComponent>(id)) continue;
                 if (!tr.enabled || !tr.visible) continue;
 
                 // [프러스텀 컬링] 카메라 시야 밖 오브젝트는 건너뛰기
@@ -2277,6 +2419,9 @@ namespace Alice
         // G-Buffer 패스
         PassGBuffer(world, camera, skinnedCommands, cameraEntities, shadingMode, editorMode, isPlaying, InvalidEntityId);
 
+        // Decal 패스 (DBuffer)
+        PassDecals(world, camera);
+
         // Deferred Light 패스 (IBL 포함)
         PassDeferredLight(world, camera, shadingMode, enableFillLight, lightViewProj);
 
@@ -2400,8 +2545,8 @@ namespace Alice
             m_uiRenderer->RenderWorld(world, camera, m_sceneRTV.Get(), m_sceneDSV.Get());
         }
 
-        // 에디터 뷰포트 표시용 LDR 텍스처로 Bloom + 톤매핑 (ImGui::Image에서 사용)
-        if (m_viewportRTV)
+        // 에디터 모드: 뷰포트 표시용 LDR 텍스처로 Bloom + 톤매핑 (ImGui::Image에서 사용)
+        if (editorMode && m_viewportRTV)
         {
             D3D11_VIEWPORT viewport = {};
             viewport.Width = static_cast<float>(m_sceneWidth);
@@ -2416,10 +2561,10 @@ namespace Alice
             {
                 m_uiRenderer->RenderScreen(world, camera, m_viewportRTV.Get(), viewport.Width, viewport.Height);
             }
-        }
 
-        // 최종 백버퍼 복귀 (ImGui 등 UI 렌더링을 위해)
-        RestoreBackBuffer();
+            // 최종 백버퍼 복귀 (ImGui 등 UI 렌더링을 위해)
+            RestoreBackBuffer();
+        }
     }
 
     void DeferredRenderSystem::RenderCameraPreview(const World& world,
@@ -2454,6 +2599,15 @@ namespace Alice
             savedGBufferRTVs[i] = m_gBufferRTVs[i];
             savedGBufferSRVs[i] = m_gBufferSRVs[i];
         }
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> savedDBufferTextures[DBufferCount];
+        Microsoft::WRL::ComPtr<ID3D11RenderTargetView> savedDBufferRTVs[DBufferCount];
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> savedDBufferSRVs[DBufferCount];
+        for (int i = 0; i < DBufferCount; ++i)
+        {
+            savedDBufferTextures[i] = m_dBufferTextures[i];
+            savedDBufferRTVs[i] = m_dBufferRTVs[i];
+            savedDBufferSRVs[i] = m_dBufferSRVs[i];
+        }
 
         auto savedSceneColorTex = m_sceneColorTex;
         auto savedSceneRTV = m_sceneRTV;
@@ -2476,6 +2630,12 @@ namespace Alice
             m_gBufferTextures[i] = m_cameraPreviewGBufferTextures[i];
             m_gBufferRTVs[i] = m_cameraPreviewGBufferRTVs[i];
             m_gBufferSRVs[i] = m_cameraPreviewGBufferSRVs[i];
+        }
+        for (int i = 0; i < DBufferCount; ++i)
+        {
+            m_dBufferTextures[i] = m_cameraPreviewDBufferTextures[i];
+            m_dBufferRTVs[i] = m_cameraPreviewDBufferRTVs[i];
+            m_dBufferSRVs[i] = m_cameraPreviewDBufferSRVs[i];
         }
 
         m_sceneColorTex = m_cameraPreviewSceneColorTex;
@@ -2502,6 +2662,7 @@ namespace Alice
 
         // G-Buffer + Deferred light
         PassGBuffer(world, camera, skinnedCommands, cameraEntities, shadingMode, editorMode, isPlaying, hiddenCameraEntity);
+        PassDecals(world, camera);
         PassDeferredLight(world, camera, shadingMode, enableFillLight, lightViewProj);
 
         if (m_skyboxEnabled)
@@ -2600,6 +2761,12 @@ namespace Alice
             m_gBufferTextures[i] = savedGBufferTextures[i];
             m_gBufferRTVs[i] = savedGBufferRTVs[i];
             m_gBufferSRVs[i] = savedGBufferSRVs[i];
+        }
+        for (int i = 0; i < DBufferCount; ++i)
+        {
+            m_dBufferTextures[i] = savedDBufferTextures[i];
+            m_dBufferRTVs[i] = savedDBufferRTVs[i];
+            m_dBufferSRVs[i] = savedDBufferSRVs[i];
         }
 
         m_sceneColorTex = savedSceneColorTex;
@@ -2703,7 +2870,7 @@ namespace Alice
             if (world.GetComponent<SkinnedMeshComponent>(id)) continue;
             if (!transform.enabled || !transform.visible) continue;
             const MaterialComponent* mat = world.GetComponent<MaterialComponent>(id);
-            if (!mat) continue; // Empty 등 렌더 불필요 엔티티는 스킵
+            if (!mat) continue;
 
             // [프러스텀 컬링] 카메라 시야 밖 오브젝트는 건너뛰기
             float maxScale = std::max({ transform.scale.x, transform.scale.y, transform.scale.z });
@@ -2729,7 +2896,6 @@ namespace Alice
             XMFLOAT4 toonCuts = DefaultToonPbrCuts();
             XMFLOAT4 toonLevels = DefaultToonPbrLevels();
             int objectShadingMode = shadingMode;
-            
             if (mat) {
                 color = { mat->color.x, mat->color.y, mat->color.z, mat->alpha };
                 rough = mat->roughness; 
@@ -3304,6 +3470,147 @@ namespace Alice
         m_context->OMSetRenderTargets(GBufferCount, nullRTVs, nullptr);
     }
 
+    void DeferredRenderSystem::PassDecals(const World& world, const Camera& camera)
+    {
+        if (!m_device || !m_context) return;
+        if (!m_decalVS || !m_decalPS || !m_decalInputLayout || !m_cbDecal) return;
+        if (!m_sceneDepthSRV) return;
+        if (!m_dBufferRTVs[0]) return;
+        if (!m_decalBlendState) return;
+
+        // 뷰포트 설정
+        D3D11_VIEWPORT vp{};
+        vp.Width = (float)m_sceneWidth;
+        vp.Height = (float)m_sceneHeight;
+        vp.MaxDepth = 1.0f;
+        m_context->RSSetViewports(1, &vp);
+
+        // D-Buffer 클리어
+        float clear[4] = { 0, 0, 0, 0 };
+        for (int i = 0; i < DBufferCount; ++i)
+        {
+            m_context->ClearRenderTargetView(m_dBufferRTVs[i].Get(), clear);
+        }
+
+        // 렌더 타깃 설정 (Depth는 SRV로 읽어야 하므로 DSV는 바인딩하지 않음)
+        ID3D11RenderTargetView* rtvs[DBufferCount] = { m_dBufferRTVs[0].Get() };
+        m_context->OMSetRenderTargets(DBufferCount, rtvs, nullptr);
+
+        float blendFactor[4] = { 0,0,0,0 };
+        m_context->OMSetBlendState(m_decalBlendState.Get(), blendFactor, 0xFFFFFFFF);
+        m_context->OMSetDepthStencilState(m_ppDepthOff.Get(), 0);
+        m_context->RSSetState(m_rasterizerState.Get());
+
+        // 파이프라인 설정
+        m_context->VSSetShader(m_decalVS.Get(), nullptr, 0);
+        m_context->PSSetShader(m_decalPS.Get(), nullptr, 0);
+        m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        m_context->IASetInputLayout(m_decalInputLayout.Get());
+
+        UINT stride = sizeof(SimpleVertex);
+        UINT offset = 0;
+        ID3D11Buffer* vb = m_cubeVB.Get();
+        m_context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+        m_context->IASetIndexBuffer(m_cubeIB.Get(), DXGI_FORMAT_R16_UINT, 0);
+
+        ID3D11SamplerState* samplers[] = { m_samplerLinear.Get() };
+        m_context->PSSetSamplers(0, 1, samplers);
+
+        // 프러스텀 컬링
+        BoundingFrustum cameraFrustum = camera.GetWorldFrustum();
+
+        struct DecalDraw
+        {
+            int order = 0;
+            EntityId id = InvalidEntityId;
+        };
+        std::vector<DecalDraw> decals;
+        decals.reserve(world.GetComponents<DecalComponent>().size());
+
+        for (const auto& [id, decal] : world.GetComponents<DecalComponent>())
+        {
+            if (!decal.enabled) continue;
+            if (decal.albedoTexturePath.empty()) continue;
+            if (decal.opacity <= 0.0f) continue;
+
+            const auto* tr = world.GetComponent<TransformComponent>(id);
+            if (!tr || !tr->enabled || !tr->visible) continue;
+
+            float maxScale = std::max({ std::fabs(tr->scale.x), std::fabs(tr->scale.y), std::fabs(tr->scale.z) });
+            BoundingSphere bounds(tr->position, maxScale * 1.8f);
+            if (cameraFrustum.Contains(bounds) == DISJOINT)
+                continue;
+
+            decals.push_back({ decal.sortOrder, id });
+        }
+
+        if (decals.empty())
+        {
+            return;
+        }
+
+        std::sort(decals.begin(), decals.end(), [](const DecalDraw& a, const DecalDraw& b) {
+            return a.order < b.order;
+        });
+
+        XMMATRIX view = camera.GetViewMatrix();
+        XMMATRIX proj = camera.GetProjectionMatrix();
+        XMMATRIX invViewProj = XMMatrixInverse(nullptr, camera.GetViewProjectionMatrix());
+
+        struct DecalCBData
+        {
+            XMMATRIX decalWorldViewProj;
+            XMMATRIX worldToDecal;
+            XMMATRIX invViewProj;
+            XMFLOAT4 colorOpacity;
+            XMFLOAT4 uvScaleOffset;
+            XMFLOAT2 screenSize;
+            XMFLOAT2 pad;
+        };
+
+        for (const auto& item : decals)
+        {
+            const auto* decal = world.GetComponent<DecalComponent>(item.id);
+            const auto* tr = world.GetComponent<TransformComponent>(item.id);
+            if (!decal || !tr) continue;
+
+            ID3D11ShaderResourceView* decalSrv = GetOrCreateTexture(decal->albedoTexturePath);
+            if (!decalSrv) continue;
+
+            XMMATRIX worldM = BuildWorldMatrix(world, item.id, *tr);
+            XMMATRIX worldToDecal = XMMatrixInverse(nullptr, worldM);
+
+            DecalCBData cb{};
+            cb.decalWorldViewProj = XMMatrixTranspose(worldM * view * proj);
+            cb.worldToDecal = XMMatrixTranspose(worldToDecal);
+            cb.invViewProj = XMMatrixTranspose(invViewProj);
+            const float opacity = std::clamp(decal->opacity, 0.0f, 1.0f);
+            cb.colorOpacity = XMFLOAT4(decal->color.x, decal->color.y, decal->color.z, opacity);
+            cb.uvScaleOffset = XMFLOAT4(decal->uvScale.x, decal->uvScale.y, decal->uvOffset.x, decal->uvOffset.y);
+            cb.screenSize = XMFLOAT2((float)m_sceneWidth, (float)m_sceneHeight);
+            cb.pad = XMFLOAT2(0, 0);
+
+            D3D11_MAPPED_SUBRESOURCE mapped{};
+            if (SUCCEEDED(m_context->Map(m_cbDecal.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+            {
+                std::memcpy(mapped.pData, &cb, sizeof(cb));
+                m_context->Unmap(m_cbDecal.Get(), 0);
+            }
+
+            ID3D11Buffer* cbuffers[] = { m_cbDecal.Get() };
+            m_context->VSSetConstantBuffers(0, 1, cbuffers);
+            m_context->PSSetConstantBuffers(0, 1, cbuffers);
+
+            ID3D11ShaderResourceView* srvs[] = { decalSrv, m_sceneDepthSRV.Get() };
+            m_context->PSSetShaderResources(0, 2, srvs);
+
+            m_context->DrawIndexed(m_cubeIndexCount, 0, 0);
+        }
+
+        ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
+        m_context->PSSetShaderResources(0, 2, nullSRVs);
+    }
+
     void DeferredRenderSystem::PassDeferredLight(const World& world, const Camera& camera, int shadingMode, bool enableFillLight, DirectX::CXMMATRIX lightViewProj)
     {
         // 뷰포트 설정 (ForwardRenderSystem과 동일)
@@ -3333,7 +3640,8 @@ namespace Alice
             m_iblDiffuseSRV.Get(),   // IBL Diffuse
             m_iblSpecularSRV.Get(),  // IBL Specular
             m_iblBrdfLutSRV.Get(),   // IBL BRDF LUT
-            m_shadowSRV.Get()        // Shadow Map
+            m_shadowSRV.Get(),       // Shadow Map
+            m_dBufferSRVs[0].Get()   // Decal D-Buffer
         };
         m_context->PSSetShaderResources(0, static_cast<UINT>(srvs.size()), srvs.data());
 
@@ -3389,8 +3697,8 @@ namespace Alice
         m_context->DrawIndexed(m_quadIndexCount, 0, 0);
 
         // 리소스 해제
-        ID3D11ShaderResourceView* nullSRVs[9] = { nullptr };
-        m_context->PSSetShaderResources(0, 9, nullSRVs);
+        ID3D11ShaderResourceView* nullSRVs[10] = { nullptr };
+        m_context->PSSetShaderResources(0, 10, nullSRVs);
     }
 
     void DeferredRenderSystem::PassTransparentForward(
@@ -4522,13 +4830,9 @@ namespace Alice
         m_context->PSSetShaderResources(0, 1, &nullSRV);
     }
 
-    void DeferredRenderSystem::RenderParticleOverlayToViewport(ID3D11ShaderResourceView* particleSRV)
+    void DeferredRenderSystem::RenderParticleOverlay(ID3D11ShaderResourceView* particleSRV, ID3D11RenderTargetView* targetRTV, const D3D11_VIEWPORT& viewport)
     {
-        // 씬 전환 중 리소스가 유효하지 않을 수 있으므로 모든 리소스 확인
-        if (!particleSRV) return;
-        ID3D11RenderTargetView* viewportRTV = m_viewportRTV.Get();
-        if (!viewportRTV) return;
-        if (m_sceneWidth == 0 || m_sceneHeight == 0) return;
+        if (!particleSRV || !targetRTV) return;
         if (!m_particleOverlayPS || !m_quadVS || !m_quadVB || !m_quadIB || !m_quadInputLayout) return;
         
         // UAV와 SRV 동시 바인딩 충돌 방지: Compute Shader에서 사용한 UAV/SRV를 명시적으로 unbind
@@ -4546,16 +4850,11 @@ namespace Alice
         ID3D11ShaderResourceView* nullSRVs[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
         m_context->PSSetShaderResources(0, 8, nullSRVs);
         
-        D3D11_VIEWPORT viewport = {};
-        viewport.Width = static_cast<float>(m_sceneWidth);
-        viewport.Height = static_cast<float>(m_sceneHeight);
-        viewport.MaxDepth = 1.0f;
-        
         // 뷰포트 설정
         m_context->RSSetViewports(1, &viewport);
         
         // 렌더 타겟 설정
-        m_context->OMSetRenderTargets(1, m_viewportRTV.GetAddressOf(), nullptr);
+        m_context->OMSetRenderTargets(1, &targetRTV, nullptr);
         
         // Additive blending 활성화
         float blendFactor[4] = { 0, 0, 0, 0 };
@@ -4591,6 +4890,22 @@ namespace Alice
         m_context->OMSetBlendState(m_ppBlendOpaque.Get(), blendFactor, 0xFFFFFFFF);
         m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
         m_context->RSSetState(m_rasterizerState.Get());
+    }
+
+    void DeferredRenderSystem::RenderParticleOverlayToViewport(ID3D11ShaderResourceView* particleSRV)
+    {
+        // 씬 전환 중 리소스가 유효하지 않을 수 있으므로 모든 리소스 확인
+        if (!particleSRV) return;
+        ID3D11RenderTargetView* viewportRTV = m_viewportRTV.Get();
+        if (!viewportRTV) return;
+        if (m_sceneWidth == 0 || m_sceneHeight == 0) return;
+
+        D3D11_VIEWPORT viewport = {};
+        viewport.Width = static_cast<float>(m_sceneWidth);
+        viewport.Height = static_cast<float>(m_sceneHeight);
+        viewport.MaxDepth = 1.0f;
+
+        RenderParticleOverlay(particleSRV, viewportRTV, viewport);
         
         // 뷰포트 RTV를 SRV로 읽을 수 있도록 BackBuffer로 복귀 (ImGui::Image가 viewportSRV를 읽기 위해 필수)
         // DirectX11에서는 같은 리소스를 RTV와 SRV로 동시에 바인딩할 수 없음
