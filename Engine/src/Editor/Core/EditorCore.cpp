@@ -336,6 +336,14 @@ namespace Alice
 		DrawCameraWindow(world, camera, forward, deferred, cameraMoveSpeed, selectedEntity, useForwardRendering);
 		DrawLightingWindow(world, forward, deferred, shadingMode, useFillLight, useForwardRendering);
 
+		// 첫 프레임 기본 포커스를 Inspector 탭으로 강제
+		static bool s_focusInspector = false;
+		if (!s_focusInspector)
+		{
+			ImGui::SetWindowFocus("Inspector");
+			s_focusInspector = true;
+		}
+
 		DrawMaterialAssetEditorWindow(world);
 		DrawUICurveAssetEditorWindow();
 
