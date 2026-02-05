@@ -63,20 +63,7 @@ namespace Alice::Combat
         {
             Enter(ActionState::GuardBreakWeak);
         }
-        const bool parrySuccess = HasEvent(events, CombatEventType::OnParrySuccess) && m_state != ActionState::Dead;
-        if (parrySuccess)
-        {
-            Enter(ActionState::Idle, true);
-        }
         const bool gotHit = HasEvent(events, CombatEventType::OnHit) && m_state != ActionState::Dead;
-        const bool guardSuccess = HasEvent(events, CombatEventType::OnGuarded)
-            && m_state != ActionState::Dead
-            && !guardBreak
-            && !gotHit;
-        if (guardSuccess)
-        {
-            Enter(ActionState::Idle, true);
-        }
 
         if (HasEvent(events, CombatEventType::OnGroggy) && m_state != ActionState::Dead)
         {
@@ -207,7 +194,7 @@ namespace Alice::Combat
             }
         }
 
-        if (!parrySuccess && !guardSuccess && m_state != ActionState::Dead
+        if (m_state != ActionState::Dead
             && m_state != ActionState::Hitstun
             && m_state != ActionState::Groggy
             && m_state != ActionState::GuardBreakWeak
@@ -346,9 +333,17 @@ namespace Alice::Combat
         ActionFlags flags{};
         // Flags are pass-through windows from sensors (single source of truth).
         flags.hitActive = sensors.attackWindowActive;
-        flags.guardActive = sensors.guardWindowActive && !sensors.weakActive;
+        // Guard/Parry are sequential phases:
+        // - GuardEnter (parry) phase: parry window active, guard window disabled.
+        // - GuardLoop phase: guard window active, parry window disabled.
+        flags.guardActive = (m_state == ActionState::Guard)
+            && !guardEnterActive
+            && sensors.guardWindowActive
+            && !sensors.weakActive;
         flags.invulnActive = sensors.dodgeWindowActive || sensors.invulnActive;
-        flags.parryWindowActive = sensors.parryWindowActive && !sensors.weakActive;
+        flags.parryWindowActive = (m_state == ActionState::Guard)
+            && guardEnterActive
+            && !sensors.weakActive;
         flags.canBeInterrupted = (m_state != ActionState::Dodge)
             && (m_state != ActionState::Dead)
             && (m_state != ActionState::Groggy)

@@ -133,6 +133,8 @@ namespace Alice
 		float bossPushbackFreezeMax = 0.0f;
 		float playerAttackSpeedScale = 1.0f;
 		float bossAttackSpeedScale = 1.0f;
+		bool playerGuardHeldAtHitstop = false;
+		bool bossGuardHeldAtHitstop = false;
 		float playerHealLoopSec = 0.0f;
 		float playerHealNextTickSec = 0.0f;
 		std::vector<PendingDeferredEvent> pendingDeferred;
@@ -635,6 +637,10 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		m_state->bossHitstopTimer = std::max(0.0f, m_state->bossHitstopTimer - deltaTime);
 		const bool playerHitstopActive = (m_state->playerHitstopTimer > 0.0f);
 		const bool bossHitstopActive = (m_state->bossHitstopTimer > 0.0f);
+		if (!playerHitstopActive)
+			m_state->playerGuardHeldAtHitstop = false;
+		if (!bossHitstopActive)
+			m_state->bossGuardHeldAtHitstop = false;
 		const float playerLogicDt = playerHitstopActive ? 0.0f : deltaTime;
 		const float bossLogicDt = bossHitstopActive ? 0.0f : deltaTime;
 		m_state->boss.moveSpeed = std::max(0.0f, m_state->player.moveSpeed * 0.5f);
@@ -683,12 +689,26 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		}
 
 		Combat::Intent playerIntent{};
-		if (!playerHitstopActive)
+		if (auto* script = FindScriptOnEntity(world, playerId, "C_PlayerInputSourceComponent"))
 		{
-			if (auto* script = FindScriptOnEntity(world, playerId, "C_PlayerInputSourceComponent"))
+			if (auto* input = dynamic_cast<C_PlayerInputSourceComponent*>(script))
+				playerIntent = input->GetIntent(playerHitstopActive ? 0.0f : deltaTime);
+		}
+		if (playerHitstopActive)
+		{
+			Combat::Intent filtered{};
+			filtered.guardHeld = playerIntent.guardHeld;
+			filtered.guardPressed = playerIntent.guardPressed;
+			filtered.guardReleased = playerIntent.guardReleased;
+			filtered.guardHeldSec = playerIntent.guardHeldSec;
+			playerIntent = filtered;
+			if (m_state->playerGuardHeldAtHitstop)
 			{
-				if (auto* input = dynamic_cast<C_PlayerInputSourceComponent*>(script))
-					playerIntent = input->GetIntent(deltaTime);
+				// During hitstop, treat guard as "still held" if it was active on entry.
+				// This avoids interpreting a release edge mid-hitstop as a guard cancel.
+				playerIntent.guardHeld = true;
+				playerIntent.guardPressed = false;
+				playerIntent.guardReleased = false;
 			}
 		}
 
@@ -1036,15 +1056,15 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		const bool playerGuardPressed = playerIntent.guardPressed;
 		const bool bossGuardPressed = bossIntent.guardPressed;
 
-		auto UpdateDriverInput = [&](EntityId entityId, const Combat::Intent& intent)
+		auto UpdateDriverInput = [&](EntityId entityId, const Combat::Intent& intent, float inputDt)
 			{
 				if (auto* driver = world.GetComponent<AttackDriverComponent>(entityId))
 				{
 					driver->guardInputHeld = intent.guardHeld;
 					driver->guardInputPressed = intent.guardPressed;
 					driver->guardInputReleased = intent.guardReleased;
-					driver->guardLockRemainingSec = std::max(0.0f, driver->guardLockRemainingSec - deltaTime);
-					driver->parryOverrideRemainingSec = std::max(0.0f, driver->parryOverrideRemainingSec - deltaTime);
+					driver->guardLockRemainingSec = std::max(0.0f, driver->guardLockRemainingSec - inputDt);
+					driver->parryOverrideRemainingSec = std::max(0.0f, driver->parryOverrideRemainingSec - inputDt);
 					const bool sessionActive = intent.guardHeld || intent.guardPressed || driver->guardLockRemainingSec > 0.0f;
 					if (!sessionActive)
 					{
@@ -1068,10 +1088,22 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 			};
 
-		if (!playerHitstopActive)
-			UpdateDriverInput(playerId, playerIntent);
-		if (!bossHitstopActive)
-			UpdateDriverInput(bossId, bossIntent);
+		UpdateDriverInput(playerId, playerIntent, playerHitstopActive ? 0.0f : deltaTime);
+		UpdateDriverInput(bossId, bossIntent, bossHitstopActive ? 0.0f : deltaTime);
+
+		auto ApplyHitstopGuardHold = [&](EntityId entityId, bool hitstopActive, bool holdGuard)
+			{
+				if (!hitstopActive || !holdGuard)
+					return;
+				if (auto* driver = world.GetComponent<AttackDriverComponent>(entityId))
+				{
+					driver->guardInputHeld = true;
+					driver->guardInputPressed = false;
+					driver->guardInputReleased = false;
+				}
+			};
+		ApplyHitstopGuardHold(playerId, playerHitstopActive, m_state->playerGuardHeldAtHitstop);
+		ApplyHitstopGuardHold(bossId, bossHitstopActive, m_state->bossGuardHeldAtHitstop);
 
 		const EntityId cameraId = ResolvePrimaryCamera(world);
 		auto* camFollow = (cameraId != InvalidEntityId) ? world.GetComponent<CameraFollowComponent>(cameraId) : nullptr;
@@ -1136,6 +1168,11 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			if (m_state->playerLockOnActive)
 				camLookAt->targetName = m_bossName.empty() ? std::string("Enemy") : m_bossName;
 		}
+
+		const bool playerSuperArmorEarly = (m_state->player.state == Combat::ActionState::Attack
+			&& m_state->playerLastAttackHeavy)
+			|| m_state->playerChargeActive;
+		m_state->player.canBeHitstunned = m_playerCanBeHitstunned && !playerSuperArmorEarly;
 
 		Combat::Sensors sPlayer = m_state->player.BuildSensors(world, bossId, deltaTime);
 		Combat::Sensors sBoss = m_state->boss.BuildSensors(world, playerId, deltaTime);
@@ -1892,7 +1929,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			m_state->bossHitstunDurationSec = 0.0f;
 		}
 		const bool playerSuperArmor = (outPlayer.state == Combat::ActionState::Attack
-			&& m_state->playerLastAttackHeavy);
+			&& m_state->playerLastAttackHeavy)
+			|| m_state->playerChargeActive;
 		m_state->player.canBeHitstunned = m_playerCanBeHitstunned && !playerSuperArmor;
 		m_state->playerSnapshot = m_state->player.Snapshot();
 		m_state->bossSnapshot = m_state->boss.Snapshot();
@@ -2845,15 +2883,20 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		m_state->player.id = playerId;
 		m_state->player.team = Combat::Team::Player;
-		m_state->player.canBeHitstunned = m_playerCanBeHitstunned;
+		const bool playerSuperArmorResolve = (m_state->player.state == Combat::ActionState::Attack
+			&& m_state->playerLastAttackHeavy)
+			|| m_state->playerChargeActive;
+		m_state->player.canBeHitstunned = m_playerCanBeHitstunned && !playerSuperArmorResolve;
 		m_state->boss.id = bossId;
 		m_state->boss.team = Combat::Team::Enemy;
 		m_state->boss.canBeHitstunned = m_bossCanBeHitstunned;
 
 		auto* registry = SkinnedRegistry();
 
-		const bool playerHitstopActive = (m_state->playerHitstopTimer > 0.0f);
-		const bool bossHitstopActive = (m_state->bossHitstopTimer > 0.0f);
+		bool playerHitstopActive = (m_state->playerHitstopTimer > 0.0f);
+		bool bossHitstopActive = (m_state->bossHitstopTimer > 0.0f);
+		bool playerHitstopTriggeredThisFrame = false;
+		bool bossHitstopTriggeredThisFrame = false;
 		const float playerLogicDt = playerHitstopActive ? 0.0f : deltaTime;
 		const float bossLogicDt = bossHitstopActive ? 0.0f : deltaTime;
 
@@ -2864,7 +2907,9 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		auto BuildResolveSnapshot = [&](Combat::Fighter& fighter,
 			Combat::ActionState state,
-			const Combat::Sensors& sensors) -> Combat::FighterSnapshot
+			const Combat::Sensors& sensors,
+			bool hitstopActive,
+			bool guardEnterPhaseActive) -> Combat::FighterSnapshot
 			{
 				Combat::FighterSnapshot snap = fighter.Snapshot();
 				snap.hp = sensors.hp;
@@ -2875,10 +2920,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				snap.canBeHitstunned = fighter.canBeHitstunned;
 
 				Combat::ActionFlags flags = snap.flags;
-				flags.hitActive = sensors.attackWindowActive;
-				flags.guardActive = sensors.guardWindowActive && !sensors.weakActive;
+				flags.hitActive = (state == Combat::ActionState::Attack) && sensors.attackWindowActive;
+				const bool weakActive = sensors.weakActive;
+				const bool inGuard = (state == Combat::ActionState::Guard) && !weakActive;
+				const bool parryPhase = inGuard && guardEnterPhaseActive;
+				flags.guardActive = inGuard && !parryPhase && sensors.guardWindowActive;
 				flags.invulnActive = sensors.dodgeWindowActive || sensors.invulnActive;
-				flags.parryWindowActive = sensors.parryWindowActive && !sensors.weakActive;
+				// Parry is the full GuardEnter phase (no overlap with guard loop).
+				flags.parryWindowActive = parryPhase;
 				flags.canBeInterrupted = (state != Combat::ActionState::Dodge)
 					&& (state != Combat::ActionState::Dead)
 					&& (state != Combat::ActionState::Groggy)
@@ -2906,14 +2955,78 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				if (state == Combat::ActionState::Groggy)
 					flags.canBeInterrupted = false;
 
+				if (hitstopActive)
+				{
+					// Preserve guard/parry flags while time is frozen.
+					flags.guardActive = flags.guardActive || snap.flags.guardActive;
+					flags.parryWindowActive = flags.parryWindowActive || snap.flags.parryWindowActive;
+				}
+
+				// Enforce sequential phase separation even when preserving frozen flags.
+				if (!inGuard)
+				{
+					flags.guardActive = false;
+					flags.parryWindowActive = false;
+				}
+				else if (parryPhase)
+				{
+					flags.guardActive = false;
+				}
+				else
+				{
+					flags.parryWindowActive = false;
+				}
+
 				snap.flags = flags;
 				return snap;
 			};
 
-		const Combat::Sensors resolvePlayerSensors = m_state->player.BuildSensors(world, bossId, deltaTime);
-		const Combat::Sensors resolveBossSensors = m_state->boss.BuildSensors(world, playerId, deltaTime);
-		m_state->playerSnapshot = BuildResolveSnapshot(m_state->player, m_state->player.state, resolvePlayerSensors);
-		m_state->bossSnapshot = BuildResolveSnapshot(m_state->boss, m_state->boss.state, resolveBossSensors);
+		Combat::Sensors resolvePlayerSensors = m_state->player.BuildSensors(world, bossId, deltaTime);
+		Combat::Sensors resolveBossSensors = m_state->boss.BuildSensors(world, playerId, deltaTime);
+
+		{
+			auto RecomputeTargetInFront = [&](EntityId selfId,
+				EntityId targetId,
+				Combat::Sensors& s,
+				Combat::Fighter& fighter)
+				{
+					auto* selfTr = world.GetComponent<TransformComponent>(selfId);
+					auto* targetTr = world.GetComponent<TransformComponent>(targetId);
+					if (!selfTr || !targetTr)
+						return;
+
+					const float dx = targetTr->position.x - selfTr->position.x;
+					const float dz = targetTr->position.z - selfTr->position.z;
+					const float dist = std::sqrt(dx * dx + dz * dz);
+					if (dist <= 0.0001f)
+						return;
+
+					const float offsetRad = m_rotationOffsetDeg * 0.01745329252f;
+					const float yawRad = selfTr->rotation.y - offsetRad;
+					const float fx = std::sin(yawRad);
+					const float fz = std::cos(yawRad);
+					const float tx = dx / dist;
+					const float tz = dz / dist;
+					const float dot = fx * tx + fz * tz;
+					s.targetInFront = (dot >= 0.0f);
+					fighter.lastTargetInFront = s.targetInFront;
+				};
+
+			RecomputeTargetInFront(playerId, bossId, resolvePlayerSensors, m_state->player);
+			RecomputeTargetInFront(bossId, playerId, resolveBossSensors, m_state->boss);
+		}
+		m_state->playerSnapshot = BuildResolveSnapshot(
+			m_state->player,
+			m_state->player.state,
+			resolvePlayerSensors,
+			playerHitstopActive,
+			m_state->playerAnim.guardEnterActive);
+		m_state->bossSnapshot = BuildResolveSnapshot(
+			m_state->boss,
+			m_state->boss.state,
+			resolveBossSensors,
+			bossHitstopActive,
+			m_state->bossAnim.guardEnterActive);
 
 		m_state->bus.ClearFrame();
 		if (world.HasFrameCombatHits())
@@ -2963,12 +3076,26 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				if (entityId == playerId)
 				{
 					if (m_state->playerHitstopTimer <= 0.0f)
+					{
 						m_state->playerHitstopTimer = hitstopSec;
+						playerHitstopActive = true;
+						playerHitstopTriggeredThisFrame = true;
+						m_state->playerGuardHeldAtHitstop = (m_state->player.state == Combat::ActionState::Guard)
+							|| m_state->playerSnapshot.flags.guardActive
+							|| m_state->playerSnapshot.flags.parryWindowActive;
+					}
 				}
 				else if (entityId == bossId)
 				{
 					if (m_state->bossHitstopTimer <= 0.0f)
+					{
 						m_state->bossHitstopTimer = hitstopSec;
+						bossHitstopActive = true;
+						bossHitstopTriggeredThisFrame = true;
+						m_state->bossGuardHeldAtHitstop = (m_state->boss.state == Combat::ActionState::Guard)
+							|| m_state->bossSnapshot.flags.guardActive
+							|| m_state->bossSnapshot.flags.parryWindowActive;
+					}
 				}
 			};
 
@@ -3007,6 +3134,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			auto resolvedDetail = m_state->resolver.ResolveOneDetailed(hit, attacker, victim);
 			auto resolved = resolvedDetail.output;
 			const Combat::ResolveResult resolveResult = resolvedDetail.result;
+
+			// SFX/VFX hook (resolved hit result):
+			// - Use hit.hitPosWS / hit.hitNormalWS for impact location and orientation.
+			// - Use resolveResult to branch: Parry, Guard, GuardBreak, Hit.
+			// - Good place to fire: parry spark + clang, guard block spark, hit blood, guard-break burst.
+			// - If you need attacker/weapon position, fetch sockets from AdvancedAnimationComponent here.
+			// - For footsteps/attack whoosh, use anim notifies (AdvancedAnimationComponent::AddNotify).
 
 			if (m_enableCombatLogs)
 			{
@@ -3054,15 +3188,23 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			if (parrySuccess || wasGuarded || wasGuardBreak || wasHit)
 				ApplyHitstopTimer(hit.attackerOwner);
 
-			bool victimHitstop = false;
+			bool m_victimHitstop = false;
+
 			if (parrySuccess || wasGuarded)
-				victimHitstop = true;
+				m_victimHitstop = true;
 			else if (wasGuardBreak)
-				victimHitstop = true;
+				m_victimHitstop = true;
 			else if (wasHit && victim.canBeHitstunned)
-				victimHitstop = true;
-			if (victimHitstop)
+				m_victimHitstop = true;
+			if (m_victimHitstop)
 				ApplyHitstopTimer(hit.victimOwner);
+
+			const bool shouldStopTrace = parrySuccess || wasGuarded || wasGuardBreak || wasHit;
+			if (shouldStopTrace)
+			{
+				immediate.push_back({ Combat::CommandType::DisableTrace,
+					Combat::CmdDisableTrace{ hit.attackerOwner } });
+			}
 
 			float* parryNoDurability = nullptr;
 			if (hit.victimOwner == playerId)
@@ -3278,7 +3420,40 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			}
 		}
 
+		if (playerHitstopTriggeredThisFrame || bossHitstopTriggeredThisFrame)
+		{
+			auto ApplyHitstopVelocityStop = [&](EntityId entityId, float timerSec)
+				{
+					if (timerSec <= 0.0f)
+						return;
+					if (auto* cct = world.GetComponent<Phy_CCTComponent>(entityId))
+						cct->desiredVelocity = { 0.0f, 0.0f, 0.0f };
+				};
+			auto ApplyHitstopToAnim = [&](EntityId entityId, float timerSec)
+				{
+					if (timerSec <= 0.0f)
+						return;
+					if (auto* anim = world.GetComponent<AdvancedAnimationComponent>(entityId))
+					{
+						anim->base.speedA = 0.0f;
+						anim->base.speedB = 0.0f;
+						anim->upper.speedA = 0.0f;
+						anim->upper.speedB = 0.0f;
+						anim->additive.speed = 0.0f;
+					}
+				};
 
+			if (playerHitstopTriggeredThisFrame)
+			{
+				ApplyHitstopVelocityStop(playerId, m_state->playerHitstopTimer);
+				ApplyHitstopToAnim(playerId, m_state->playerHitstopTimer);
+			}
+			if (bossHitstopTriggeredThisFrame)
+			{
+				ApplyHitstopVelocityStop(bossId, m_state->bossHitstopTimer);
+				ApplyHitstopToAnim(bossId, m_state->bossHitstopTimer);
+			}
+		}
 	}
 }
 

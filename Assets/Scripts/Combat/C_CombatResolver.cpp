@@ -53,7 +53,7 @@ namespace Alice::Combat
             return detail;
         }
 
-        if (!parryWindowActive && victim.flags.guardActive && targetInFront && !weakActive)
+        if (victim.flags.guardActive && targetInFront && !weakActive)
         {
             const float guardCost = (hit.guardDurabilityCost > 0.0f)
                 ? hit.guardDurabilityCost

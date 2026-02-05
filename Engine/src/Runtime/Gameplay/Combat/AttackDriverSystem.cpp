@@ -635,6 +635,8 @@ namespace Alice
                 SanitizeTimes(clip, startTime, endTime);
                 registeredAny = true;
 
+                // SFX/VFX hook: attack window start (whoosh, trail enable, camera micro-shake).
+                // Use hit/guard/parry impacts in CombatSession (they know resolve result and hit position).
                 anim->AddNotify(resolvedName, startTime, [entityId, gen, &world]() {
                     if (!world.IsEntityValid(entityId, gen))
                         return;
@@ -649,6 +651,7 @@ namespace Alice
                     ActivateTrace(world, traceId, true);
                 }, driver.notifyTag);
 
+                // SFX/VFX hook: attack window end (trail disable, swing tail, etc.).
                 anim->AddNotify(resolvedName, endTime, [entityId, gen, &world]() {
                     if (!world.IsEntityValid(entityId, gen))
                         return;
