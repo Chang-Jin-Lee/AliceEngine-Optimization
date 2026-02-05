@@ -355,7 +355,11 @@ namespace Alice
         }
 
         if (auto* vfx = world.GetComponent<UnityVfxComponent>(id))
+        {
             vfx->enabled = active;
+            if (active)
+                vfx->playId += 1;
+        }
 
         if (auto* ce = world.GetComponent<ComputeEffectComponent>(id))
             ce->enabled = active;
