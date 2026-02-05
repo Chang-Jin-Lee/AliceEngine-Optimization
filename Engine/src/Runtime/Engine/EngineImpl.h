@@ -190,6 +190,7 @@ namespace Alice
 		bool InitializeAll(Engine& owner, HINSTANCE hInstance, int nCmdShow);
 		void InitializeMainThreadAndRegistry();
 		std::filesystem::path InitializeResolveExeDir();
+		void ApplyEditorModeFromExeName(const std::filesystem::path& exeDir);
 		bool InitializeConfigureResourceManagers(const std::filesystem::path& exeDir);
 		bool InitializeValidateGameDataIfNeeded();
 		void InitializeLoadPvdSettings(const std::filesystem::path& exeDir);
