@@ -253,6 +253,12 @@ namespace Alice
             return WindowIntersects(state.prevTime, state.currTime, start, end, state.duration, state.loop, forward, state.validPrev);
         }
 
+        bool IsStatePaused(const ClipTimeState& state)
+        {
+            return std::abs(state.speed) <= 0.0001f
+                && std::abs(state.currTime - state.prevTime) <= 0.0001f;
+        }
+
         std::string ResolveClipName(const AttackDriverClip& clip, const AdvancedAnimationComponent& anim)
         {
             switch (clip.source)
@@ -371,8 +377,10 @@ namespace Alice
         void ResetDriverState(AttackDriverComponent& driver)
         {
             driver.attackActive = false;
+            driver.attackPaused = false;
             driver.dodgeActive = false;
             driver.guardActive = false;
+            driver.parryActive = false;
             driver.attackCancelable = true;
         }
 
@@ -399,6 +407,9 @@ namespace Alice
             case AttackDriverNotifyType::Guard:
                 driver.guardActive = driver.guardActive || active;
                 break;
+            case AttackDriverNotifyType::Parry:
+                driver.parryActive = driver.parryActive || active;
+                break;
             case AttackDriverNotifyType::Attack:
             default:
                 driver.attackActive = driver.attackActive || active;
@@ -406,6 +417,17 @@ namespace Alice
                     driver.attackCancelable = false;
                 break;
             }
+        }
+
+        void ApplyInputOverrides(AttackDriverComponent& driver)
+        {
+            driver.guardLockActive = (driver.guardLockRemainingSec > 0.0f);
+            if (driver.guardInputHeld || driver.guardLockActive)
+                driver.guardActive = true;
+            if (driver.parryOverrideRemainingSec > 0.0f)
+                driver.parryActive = true;
+            if (driver.parryUsedThisPress)
+                driver.parryActive = false;
         }
 
         bool IsClipWindowActiveSkinned(const AttackDriverClip& clip,
@@ -466,6 +488,42 @@ namespace Alice
             }
         }
 
+        bool IsClipPaused(const AttackDriverClip& clip,
+                          const ClipTimeState& baseA,
+                          const ClipTimeState& baseB,
+                          const ClipTimeState& upperA,
+                          const ClipTimeState& upperB,
+                          const ClipTimeState& additive)
+        {
+            if (!clip.enabled || clip.type != AttackDriverNotifyType::Attack)
+                return false;
+
+            if (clip.source == AttackDriverClipSource::Explicit)
+            {
+                const std::string& name = clip.clipName;
+                if (name.empty())
+                    return false;
+                if (baseA.clipName == name) return IsStatePaused(baseA);
+                if (baseB.clipName == name) return IsStatePaused(baseB);
+                if (upperA.clipName == name) return IsStatePaused(upperA);
+                if (upperB.clipName == name) return IsStatePaused(upperB);
+                if (additive.clipName == name) return IsStatePaused(additive);
+                return false;
+            }
+
+            switch (clip.source)
+            {
+            case AttackDriverClipSource::BaseA: return IsStatePaused(baseA);
+            case AttackDriverClipSource::BaseB: return IsStatePaused(baseB);
+            case AttackDriverClipSource::UpperA: return IsStatePaused(upperA);
+            case AttackDriverClipSource::UpperB: return IsStatePaused(upperB);
+            case AttackDriverClipSource::Additive: return IsStatePaused(additive);
+            case AttackDriverClipSource::Explicit:
+            default:
+                return false;
+            }
+        }
+
         EntityId ResolveTraceEntity(World& world, AttackDriverComponent& driver, EntityId self)
         {
             if (driver.traceGuid == 0)
@@ -497,20 +555,23 @@ namespace Alice
             return self;
         }
 
-        void ActivateTrace(World& world, EntityId traceId)
+        void ActivateTrace(World& world, EntityId traceId, bool resetState)
         {
             auto* trace = world.GetComponent<WeaponTraceComponent>(traceId);
             if (!trace)
                 return;
 
-            trace->attackInstanceId++;
+            if (resetState)
+            {
+                trace->attackInstanceId++;
+                trace->hasPrevBasis = false;
+                trace->hasPrevShapes = false;
+                trace->prevCentersWS.clear();
+                trace->prevRotsWS.clear();
+                trace->hitVictims.clear();
+                trace->lastAttackInstanceId = trace->attackInstanceId;
+            }
             trace->active = true;
-            trace->hasPrevBasis = false;
-            trace->hasPrevShapes = false;
-            trace->prevCentersWS.clear();
-            trace->prevRotsWS.clear();
-            trace->hitVictims.clear();
-            trace->lastAttackInstanceId = trace->attackInstanceId;
         }
 
         void DeactivateTrace(World& world, EntityId traceId)
@@ -522,12 +583,13 @@ namespace Alice
             trace->active = false;
         }
 
-        void LogStateChange(EntityId entityId, const char* label, bool prevState, bool currState)
+        void LogStateChange(EntityId entityId, const char* ownerName, const char* label, bool prevState, bool currState)
         {
             if (prevState == currState)
                 return;
 
-            ALICE_LOG_INFO("[AttackDriver] entity=%llu %s=%s",
+            ALICE_LOG_INFO("[AttackDriver] %s entity=%llu %s=%s",
+                ownerName ? ownerName : "",
                 static_cast<unsigned long long>(entityId),
                 label,
                 currState ? "ON" : "OFF");
@@ -573,6 +635,8 @@ namespace Alice
                 SanitizeTimes(clip, startTime, endTime);
                 registeredAny = true;
 
+                // SFX/VFX hook: attack window start (whoosh, trail enable, camera micro-shake).
+                // Use hit/guard/parry impacts in CombatSession (they know resolve result and hit position).
                 anim->AddNotify(resolvedName, startTime, [entityId, gen, &world]() {
                     if (!world.IsEntityValid(entityId, gen))
                         return;
@@ -581,15 +645,20 @@ namespace Alice
                         return;
                     if (driverComp->cancelAttackRequested)
                         return;
+                    if (world.IsScriptCombatEnabled())
+                        return;
                     EntityId traceId = ResolveTraceEntity(world, *driverComp, entityId);
-                    ActivateTrace(world, traceId);
+                    ActivateTrace(world, traceId, true);
                 }, driver.notifyTag);
 
+                // SFX/VFX hook: attack window end (trail disable, swing tail, etc.).
                 anim->AddNotify(resolvedName, endTime, [entityId, gen, &world]() {
                     if (!world.IsEntityValid(entityId, gen))
                         return;
                     auto* driverComp = world.GetComponent<AttackDriverComponent>(entityId);
                     if (!driverComp)
+                        return;
+                    if (world.IsScriptCombatEnabled())
                         return;
                     EntityId traceId = ResolveTraceEntity(world, *driverComp, entityId);
                     DeactivateTrace(world, traceId);
@@ -613,14 +682,62 @@ namespace Alice
             const bool prevAttack = driver.attackActive;
             const bool prevDodge = driver.dodgeActive;
             const bool prevGuard = driver.guardActive;
+            const bool prevParry = driver.parryActive;
             auto LogChanges = [&]() {
-                LogStateChange(entityId, "Attack", prevAttack, driver.attackActive);
-                LogStateChange(entityId, "Dodge", prevDodge, driver.dodgeActive);
-                LogStateChange(entityId, "Guard", prevGuard, driver.guardActive);
+                if (!driver.debugLogs)
+                    return;
+                const std::string name = !driver.debugOwnerName.empty()
+                    ? driver.debugOwnerName
+                    : world.GetEntityName(entityId);
+                const char* ownerLabel = name.empty() ? "Unknown" : name.c_str();
+                LogStateChange(entityId, ownerLabel, "Attack", prevAttack, driver.attackActive);
+                LogStateChange(entityId, ownerLabel, "Dodge", prevDodge, driver.dodgeActive);
+                LogStateChange(entityId, ownerLabel, "Guard", prevGuard, driver.guardActive);
+                LogStateChange(entityId, ownerLabel, "Parry", prevParry, driver.parryActive);
             };
 
             EntityId traceId = ResolveTraceEntity(world, driver, entityId);
             auto* anim = world.GetComponent<AdvancedAnimationComponent>(entityId);
+            auto UpdateAttackStateDuration = [&](AttackDriverComponent& target,
+                                                 const AdvancedAnimationComponent* adv,
+                                                 const SkinnedMeshComponent* skinned) {
+                if (target.attackStateDurationSec > 0.0f)
+                {
+                    target.attackStateDurationAutoSec = target.attackStateDurationSec;
+                    return;
+                }
+
+                target.attackStateDurationAutoSec = 0.0f;
+                if (!m_registry || !skinned)
+                    return;
+
+                for (const auto& clip : target.clips)
+                {
+                    if (!clip.enabled || clip.type != AttackDriverNotifyType::Attack)
+                        continue;
+
+                    std::string name;
+                    if (adv)
+                        name = ResolveClipName(clip, *adv);
+                    else
+                    {
+                        if (clip.source != AttackDriverClipSource::Explicit)
+                            continue;
+                        name = clip.clipName;
+                    }
+
+                    if (name.empty())
+                        continue;
+
+                    const aiAnimation* animClip = ResolveClip(m_registry, skinned, name);
+                    const float duration = GetClipDurationSec(animClip);
+                    if (duration > 0.0f)
+                    {
+                        target.attackStateDurationAutoSec = duration;
+                        return;
+                    }
+                }
+            };
             if (!anim)
             {
                 ResetDriverState(driver);
@@ -634,6 +751,8 @@ namespace Alice
                 if (!skinnedAnim || !skinnedAnim->playing)
                 {
                     ResetHistory(driver.prevSkinned);
+                    driver.attackSuppressed = false;
+                    ApplyInputOverrides(driver);
                     ApplyHealthState(world, entityId, driver);
                     LogChanges();
                     DeactivateTrace(world, traceId);
@@ -641,10 +760,13 @@ namespace Alice
                 }
 
                 const auto* skinnedMesh = world.GetComponent<SkinnedMeshComponent>(entityId);
+                UpdateAttackStateDuration(driver, nullptr, skinnedMesh);
                 std::string currentClipName;
                 if (!TryResolveSkinnedClipName(m_registry, skinnedMesh, skinnedAnim->clipIndex, currentClipName))
                 {
                     ResetHistory(driver.prevSkinned);
+                    driver.attackSuppressed = false;
+                    ApplyInputOverrides(driver);
                     ApplyHealthState(world, entityId, driver);
                     LogChanges();
                     DeactivateTrace(world, traceId);
@@ -674,10 +796,24 @@ namespace Alice
                 if (durationSec > 0.0f)
                     skinnedState.prevTime = NormalizeTime(skinnedState.prevTime, durationSec);
 
+                bool attackPausedThisFrame = false;
+                bool attackWindowActiveThisFrame = false;
                 for (const auto& clip : driver.clips)
                 {
                     if (IsClipWindowActiveSkinned(clip, skinnedState))
+                    {
                         ApplyWindowState(driver, clip.type, true, clip.canBeInterrupted);
+                        if (clip.type == AttackDriverNotifyType::Attack)
+                            attackWindowActiveThisFrame = true;
+                    }
+
+                    if (!attackPausedThisFrame && clip.enabled && clip.type == AttackDriverNotifyType::Attack)
+                    {
+                        const std::string targetName =
+                            (clip.source == AttackDriverClipSource::Explicit) ? clip.clipName : skinnedState.clipName;
+                        if (!targetName.empty() && targetName == skinnedState.clipName && IsStatePaused(skinnedState))
+                            attackPausedThisFrame = true;
+                    }
                 }
 
                 CommitPrevTimeSec(driver.prevSkinned, currentClipName, currTimeSec);
@@ -685,27 +821,42 @@ namespace Alice
                 if (driver.cancelAttackRequested)
                 {
                     if (driver.attackCancelable)
+                    {
                         driver.attackActive = false;
+                        if (!attackWindowActiveThisFrame && !attackPausedThisFrame)
+                            driver.cancelAttackRequested = false;
+                    }
                     else
+                    {
                         driver.cancelAttackRequested = false;
+                    }
                 }
-
-                if (!driver.attackActive)
-                    driver.cancelAttackRequested = false;
-
+                ApplyInputOverrides(driver);
                 ApplyHealthState(world, entityId, driver);
                 LogChanges();
 
-                auto* trace = world.GetComponent<WeaponTraceComponent>(traceId);
-                if (driver.attackActive)
+                if (!world.IsScriptCombatEnabled())
                 {
-                    if (trace && !trace->active)
-                        ActivateTrace(world, traceId);
-                }
-                else
-                {
-                    if (trace && trace->active)
-                        DeactivateTrace(world, traceId);
+                    auto* trace = world.GetComponent<WeaponTraceComponent>(traceId);
+                    if (prevAttack && !driver.attackActive && attackPausedThisFrame)
+                        driver.attackPaused = true;
+                    if (!driver.attackActive && !attackPausedThisFrame)
+                        driver.attackPaused = false;
+
+                    if (driver.attackActive)
+                    {
+                        if (trace && !trace->active)
+                        {
+                            const bool resetTrace = !driver.attackPaused;
+                            ActivateTrace(world, traceId, resetTrace);
+                        }
+                        driver.attackPaused = false;
+                    }
+                    else
+                    {
+                        if (trace && trace->active)
+                            DeactivateTrace(world, traceId);
+                    }
                 }
                 continue;
             }
@@ -714,6 +865,8 @@ namespace Alice
             {
                 ResetDriverState(driver);
                 ResetDriverHistories(driver);
+                driver.attackSuppressed = false;
+                ApplyInputOverrides(driver);
                 ApplyHealthState(world, entityId, driver);
                 LogChanges();
                 DeactivateTrace(world, traceId);
@@ -724,6 +877,7 @@ namespace Alice
             ResetHistory(driver.prevSkinned);
 
             const auto* skinnedMesh = world.GetComponent<SkinnedMeshComponent>(entityId);
+            UpdateAttackStateDuration(driver, anim, skinnedMesh);
             auto BuildState = [&](const std::string& clipName,
                                   float currTime,
                                   float speed,
@@ -764,10 +918,18 @@ namespace Alice
             ClipTimeState upperB = BuildState(anim->upper.clipB, anim->upper.timeB, anim->upper.speedB, anim->upper.loopB, driver.prevUpperB);
             ClipTimeState additive = BuildState(anim->additive.clip, anim->additive.time, anim->additive.speed, anim->additive.loop, driver.prevAdditive);
 
+            bool attackPausedThisFrame = false;
+            bool attackWindowActiveThisFrame = false;
             for (const auto& clip : driver.clips)
             {
                 if (IsClipWindowActive(clip, baseA, baseB, upperA, upperB, additive))
+                {
                     ApplyWindowState(driver, clip.type, true, clip.canBeInterrupted);
+                    if (clip.type == AttackDriverNotifyType::Attack)
+                        attackWindowActiveThisFrame = true;
+                }
+                if (!attackPausedThisFrame && IsClipPaused(clip, baseA, baseB, upperA, upperB, additive))
+                    attackPausedThisFrame = true;
             }
 
             CommitPrevTimeSec(driver.prevBaseA, baseA.clipName, baseA.currTime);
@@ -779,27 +941,42 @@ namespace Alice
             if (driver.cancelAttackRequested)
             {
                 if (driver.attackCancelable)
+                {
                     driver.attackActive = false;
+                    if (!attackWindowActiveThisFrame && !attackPausedThisFrame)
+                        driver.cancelAttackRequested = false;
+                }
                 else
+                {
                     driver.cancelAttackRequested = false;
+                }
             }
-
-            if (!driver.attackActive)
-                driver.cancelAttackRequested = false;
-
+            ApplyInputOverrides(driver);
             ApplyHealthState(world, entityId, driver);
             LogChanges();
 
-            auto* trace = world.GetComponent<WeaponTraceComponent>(traceId);
-            if (driver.attackActive)
+            if (!world.IsScriptCombatEnabled())
             {
-                if (trace && !trace->active)
-                    ActivateTrace(world, traceId);
-            }
-            else
-            {
-                if (trace && trace->active)
-                    DeactivateTrace(world, traceId);
+                auto* trace = world.GetComponent<WeaponTraceComponent>(traceId);
+                if (prevAttack && !driver.attackActive && attackPausedThisFrame)
+                    driver.attackPaused = true;
+                if (!driver.attackActive && !attackPausedThisFrame)
+                    driver.attackPaused = false;
+
+                if (driver.attackActive)
+                {
+                    if (trace && !trace->active)
+                    {
+                        const bool resetTrace = !driver.attackPaused;
+                        ActivateTrace(world, traceId, resetTrace);
+                    }
+                    driver.attackPaused = false;
+                }
+                else
+                {
+                    if (trace && trace->active)
+                        DeactivateTrace(world, traceId);
+                }
             }
         }
     }

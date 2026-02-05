@@ -13,6 +13,7 @@ namespace Alice
 		Attack = 0,
 		Dodge = 1,
 		Guard = 2,
+		Parry = 3,
 	};
 
 	enum class AttackDriverClipSource : std::uint8_t
@@ -45,6 +46,11 @@ namespace Alice
 
 	struct AttackDriverComponent
 	{
+		// Debug labels (optional)
+		std::string debugOwnerName;
+		std::uint32_t debugTeamId = 0;
+		bool debugLogs = false;
+
 		// 공격을 제어할 트레이스 엔티티 GUID (0이면 자기 자신)
 		std::uint64_t traceGuid = 0;
 		EntityId traceCached = InvalidEntityId; // 런타임 캐시 (직렬화 금지)
@@ -52,16 +58,33 @@ namespace Alice
 		// AnimNotify 타이밍 목록
 		std::vector<AttackDriverClip> clips;
 
+		// 공격 상태 유지 시간(애니 전체 길이). 0 이하면 자동 계산값 사용.
+		float attackStateDurationSec = 0.0f;
+
 		// 내부 상태
 		std::uint64_t registeredHash = 0;
 		std::uint64_t notifyTag = 0;
 
 		// 런타임 상태 (직렬화 금지)
 		bool attackActive = false;
+		// Trace suppression latch while attack window is still active (script combat).
+		bool attackSuppressed = false;
+		bool attackPaused = false;
 		bool dodgeActive = false;
 		bool guardActive = false;
+		bool parryActive = false;
 		bool attackCancelable = true;
 		bool cancelAttackRequested = false;
+		float attackStateDurationAutoSec = 0.0f;
+		bool guardInputHeld = false;
+		bool guardInputPressed = false;
+		bool guardInputReleased = false;
+		float guardLockRemainingSec = 0.0f;
+		bool guardLockActive = false;
+		float parryOverrideRemainingSec = 0.0f;
+		bool parryUsedThisPress = false;
+		std::uint8_t parryTapCredit = 0;
+		bool guardSessionActive = false;
 
 		// 이전 프레임 시간 캐시 (직렬화 금지)
 		AttackDriverClipHistory prevBaseA;

@@ -38,14 +38,13 @@ namespace Alice::Combat
         const bool targetInFront = victim.targetInFront;
         const bool weakActive = victim.weakActive;
 
-        if (victim.flags.parryWindowActive && targetInFront && !weakActive)
+        const bool parryWindowActive = victim.flags.parryWindowActive && !weakActive;
+        if (parryWindowActive && targetInFront)
         {
             detail.result = ResolveResult::Parry;
             out.deferred.push_back({ CombatEventType::OnParrySuccess, victim.id, attacker.id, hit.attackInstanceId, 0.0f });
             out.deferred.push_back({ CombatEventType::OnGotParried, attacker.id, victim.id, hit.attackInstanceId, 0.0f });
             out.immediate.push_back({ CommandType::ConsumeParry, CmdConsumeParry{ victim.id } });
-            if (hit.parryLockSec > 0.0f)
-                out.immediate.push_back({ CommandType::StartGuardLock, CmdStartGuardLock{ victim.id, hit.parryLockSec } });
             if (hit.parryGroggyGain > 0.0f)
                 out.immediate.push_back({ CommandType::AddGroggy, CmdAddGroggy{ attacker.id, hit.parryGroggyGain } });
             out.immediate.push_back({ CommandType::DisableTrace, CmdDisableTrace{ attacker.id } });

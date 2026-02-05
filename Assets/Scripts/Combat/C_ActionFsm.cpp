@@ -1,6 +1,7 @@
 #include "C_ActionFsm.h"
 
 #include <cmath>
+#include <algorithm>
 
 namespace Alice::Combat
 {
@@ -57,28 +58,38 @@ namespace Alice::Combat
             Enter(ActionState::Dead);
         }
 
-        if (HasEvent(events, CombatEventType::OnGuardBreak) && m_state != ActionState::Dead)
+        const bool guardBreak = HasEvent(events, CombatEventType::OnGuardBreak) && m_state != ActionState::Dead;
+        if (guardBreak)
         {
             Enter(ActionState::GuardBreakWeak);
         }
-        else if (HasEvent(events, CombatEventType::OnParrySuccess) && m_state != ActionState::Dead)
-        {
-            Enter(ActionState::JustGuardSuccess);
-        }
+        const bool gotHit = HasEvent(events, CombatEventType::OnHit) && m_state != ActionState::Dead;
 
         if (HasEvent(events, CombatEventType::OnGroggy) && m_state != ActionState::Dead)
         {
             Enter(ActionState::Groggy);
         }
 
-        if (HasEvent(events, CombatEventType::OnHit) && m_state != ActionState::Dead)
+        if (gotHit)
         {
             if (sensors.canBeHitstunned)
                 Enter(ActionState::Hitstun);
         }
 
+        const float guardEnterDurationSec = std::max(0.0f, sensors.guardEnterDurationSec);
         const bool hasMove = (Abs(intent.move.x) + Abs(intent.move.y)) > 0.001f;
-        const bool wantsGuard = (intent.guardHeld || sensors.guardLockActive) && !sensors.weakActive;
+        if (m_state == ActionState::Guard && intent.guardPressed && !sensors.weakActive)
+        {
+            Enter(ActionState::Guard, true);
+        }
+        const bool guardEnterActive = (m_state == ActionState::Guard)
+            && (guardEnterDurationSec > 0.0f)
+            && (m_stateTime < guardEnterDurationSec);
+        const bool wantsGuard = ((intent.guardHeld || intent.guardPressed || sensors.guardLockActive) || guardEnterActive)
+            && !sensors.weakActive;
+        const bool wantsInteract = intent.interactPressed && sensors.interactAvailable;
+        const bool wantsHealStart = intent.itemPressed && sensors.healAllowed;
+        const bool healHeld = intent.itemHeld && sensors.healAllowed;
 
         auto EnterIdleOrMove = [&]() {
             if (hasMove)
@@ -93,16 +104,44 @@ namespace Alice::Combat
             }
         };
 
-        if (m_state == ActionState::JustGuardSuccess)
+        auto Normalize = [](const Vec2& v, Vec2& out) -> bool {
+            const float len = std::sqrt(v.x * v.x + v.y * v.y);
+            if (len < 0.0001f)
+                return false;
+            out.x = v.x / len;
+            out.y = v.y / len;
+            return true;
+        };
+
+        Vec2 moveDir{};
+        const bool moveDirValid = Normalize(intent.move, moveDir);
+        if (moveDirValid)
         {
-            if (m_stateTime >= m_justGuardDurationSec)
-            {
-                if (wantsGuard)
-                    Enter(ActionState::Guard);
-                else
-                    EnterIdleOrMove();
-            }
+            m_lastMoveDir = moveDir;
+            m_lastMoveValid = true;
         }
+
+        auto BeginDodge = [&]() {
+            Enter(ActionState::Dodge);
+            m_dodgeMoveTimer = 0.0f;
+            m_dodgeMoveStopped = false;
+            m_dodgeDirValid = Normalize(intent.move, m_dodgeDir);
+            if (!m_dodgeDirValid && sensors.dodgeFallbackValid)
+            {
+                m_dodgeDirValid = Normalize(sensors.dodgeFallbackDir, m_dodgeDir);
+            }
+            if (!m_dodgeDirValid && m_lastMoveValid)
+            {
+                m_dodgeDir = m_lastMoveDir;
+                m_dodgeDirValid = true;
+            }
+            const float moveDuration = (m_dodgeMoveDurationSec > 0.0f) ? m_dodgeMoveDurationSec : 0.0f;
+            const float dodgeSpeed = (moveDuration > 0.0f)
+                ? (m_dodgeDistance / moveDuration)
+                : sensors.moveSpeed;
+            const Vec2 move = m_dodgeDirValid ? m_dodgeDir : Vec2{ 0.0f, 0.0f };
+            out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, move, dodgeSpeed, true, true } });
+        };
 
         if (m_state == ActionState::GuardBreakWeak)
         {
@@ -115,54 +154,74 @@ namespace Alice::Combat
             }
         }
 
+        const float interactionDuration = (sensors.interactionDurationSec > 0.0f) ? sensors.interactionDurationSec : 0.5f;
+        const float healEnterDuration = (sensors.healEnterDurationSec > 0.0f) ? sensors.healEnterDurationSec : interactionDuration;
+        const float healExitDuration = (sensors.healExitDurationSec > 0.0f) ? sensors.healExitDurationSec : interactionDuration;
+
+        if (m_state == ActionState::Interaction)
+        {
+            if (m_stateTime >= interactionDuration)
+                EnterIdleOrMove();
+        }
+        else if (m_state == ActionState::HealEnter)
+        {
+            if (intent.dodgePressed && sensors.stamina >= 10.0f)
+            {
+                BeginDodge();
+            }
+            else if (m_stateTime >= healEnterDuration)
+            {
+                if (healHeld)
+                    Enter(ActionState::HealLoop);
+                else
+                    Enter(ActionState::HealExit);
+            }
+        }
+        else if (m_state == ActionState::HealLoop)
+        {
+            if (!healHeld)
+                Enter(ActionState::HealExit);
+        }
+        else if (m_state == ActionState::HealExit)
+        {
+            if (intent.dodgePressed && sensors.stamina >= 10.0f)
+            {
+                BeginDodge();
+            }
+            else if (m_stateTime >= healExitDuration)
+            {
+                EnterIdleOrMove();
+            }
+        }
+
         if (m_state != ActionState::Dead
             && m_state != ActionState::Hitstun
             && m_state != ActionState::Groggy
             && m_state != ActionState::GuardBreakWeak
-            && m_state != ActionState::JustGuardSuccess)
+            && m_state != ActionState::Interaction
+            && m_state != ActionState::HealEnter
+            && m_state != ActionState::HealLoop
+            && m_state != ActionState::HealExit)
         {
             const bool wantsAttack = intent.lightAttackPressed
                 || intent.heavyAttackPressed
                 || (intent.attackPressed && !intent.attackHeld);
-            auto Normalize = [](const Vec2& v, Vec2& out) -> bool {
-                const float len = std::sqrt(v.x * v.x + v.y * v.y);
-                if (len < 0.0001f)
-                    return false;
-                out.x = v.x / len;
-                out.y = v.y / len;
-                return true;
-            };
-            Vec2 moveDir{};
-            const bool moveDirValid = Normalize(intent.move, moveDir);
-            if (moveDirValid)
+            const bool canStartInteraction = (m_state == ActionState::Idle
+                || m_state == ActionState::Move
+                || m_state == ActionState::Guard);
+            const bool canStartHeal = canStartInteraction;
+
+            if (wantsInteract && canStartInteraction)
             {
-                m_lastMoveDir = moveDir;
-                m_lastMoveValid = true;
+                Enter(ActionState::Interaction);
+                out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, {0.0f, 0.0f}, 0.0f, true, false } });
             }
-
-            auto BeginDodge = [&]() {
-                Enter(ActionState::Dodge);
-                m_dodgeMoveTimer = 0.0f;
-                m_dodgeMoveStopped = false;
-                m_dodgeDirValid = Normalize(intent.move, m_dodgeDir);
-                if (!m_dodgeDirValid && sensors.dodgeFallbackValid)
-                {
-                    m_dodgeDirValid = Normalize(sensors.dodgeFallbackDir, m_dodgeDir);
-                }
-                if (!m_dodgeDirValid && m_lastMoveValid)
-                {
-                    m_dodgeDir = m_lastMoveDir;
-                    m_dodgeDirValid = true;
-                }
-                const float moveDuration = (m_dodgeMoveDurationSec > 0.0f) ? m_dodgeMoveDurationSec : 0.0f;
-                const float dodgeSpeed = (moveDuration > 0.0f)
-                    ? (m_dodgeDistance / moveDuration)
-                    : sensors.moveSpeed;
-                const Vec2 move = m_dodgeDirValid ? m_dodgeDir : Vec2{ 0.0f, 0.0f };
-                out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, move, dodgeSpeed, true, true } });
-            };
-
-            if (m_state == ActionState::Dodge)
+            else if (wantsHealStart && canStartHeal)
+            {
+                Enter(ActionState::HealEnter);
+                out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, {0.0f, 0.0f}, 0.0f, true, false } });
+            }
+            else if (m_state == ActionState::Dodge)
             {
                 m_dodgeMoveTimer += dtSec;
                 if (!m_dodgeMoveStopped && m_dodgeMoveTimer >= m_dodgeMoveDurationSec)
@@ -274,19 +333,46 @@ namespace Alice::Combat
         ActionFlags flags{};
         // Flags are pass-through windows from sensors (single source of truth).
         flags.hitActive = sensors.attackWindowActive;
-        flags.guardActive = sensors.guardWindowActive && !sensors.weakActive;
+        // Guard/Parry are sequential phases:
+        // - GuardEnter (parry) phase: parry window active, guard window disabled.
+        // - GuardLoop phase: guard window active, parry window disabled.
+        flags.guardActive = (m_state == ActionState::Guard)
+            && !guardEnterActive
+            && sensors.guardWindowActive
+            && !sensors.weakActive;
         flags.invulnActive = sensors.dodgeWindowActive || sensors.invulnActive;
-        flags.parryWindowActive = sensors.parryWindowActive && !sensors.weakActive;
+        flags.parryWindowActive = (m_state == ActionState::Guard)
+            && guardEnterActive
+            && !sensors.weakActive;
         flags.canBeInterrupted = (m_state != ActionState::Dodge)
             && (m_state != ActionState::Dead)
             && (m_state != ActionState::Groggy)
-            && (m_state != ActionState::GuardBreakWeak)
-            && (m_state != ActionState::JustGuardSuccess);
+            && (m_state != ActionState::GuardBreakWeak);
+
+        if (m_state == ActionState::Interaction)
+        {
+            flags.hitActive = false;
+            flags.guardActive = false;
+            flags.parryWindowActive = false;
+            flags.invulnActive = true;
+            flags.canBeInterrupted = false;
+        }
+        else if (m_state == ActionState::HealEnter
+            || m_state == ActionState::HealLoop
+            || m_state == ActionState::HealExit)
+        {
+            flags.hitActive = false;
+            flags.guardActive = false;
+            flags.parryWindowActive = false;
+        }
 
         if (m_state == ActionState::Hitstun)
         {
             flags.canBeInterrupted = false;
-            if (m_stateTime > 0.4f)
+            const float hitstunDuration = (sensors.hitstunDurationSec > 0.0f)
+                ? sensors.hitstunDurationSec
+                : 0.4f;
+            if (m_stateTime > hitstunDuration)
                 Enter(ActionState::Idle);
         }
 

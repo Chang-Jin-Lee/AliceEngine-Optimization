@@ -28,5 +28,7 @@ namespace Alice
         DirectX::XMFLOAT3 extraPos{ 0.0f, 0.0f, 0.0f };
         DirectX::XMFLOAT3 extraRotRad{ 0.0f, 0.0f, 0.0f };
         DirectX::XMFLOAT3 extraScale{ 1.0f, 1.0f, 1.0f };
+        // 추가 회전 적용 공간 (true=월드/부모 기준, false=소켓 로컬 기준)
+        bool extraRotInWorld = true;
     };
 }
