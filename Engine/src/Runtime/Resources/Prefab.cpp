@@ -75,6 +75,9 @@ namespace Alice
                 0, 0, 1, 0,
                 0, 0, 0, 1);
 
+            static World* g_DefaultWorld = nullptr;
+            static ResourceManager* g_DefaultResources = nullptr;
+
             // 프로젝트 루트 경로를 구하는 헬퍼 함수
             static std::filesystem::path GetProjectRoot()
             {
@@ -1029,6 +1032,138 @@ namespace Alice
 
                 return true;
             }
+
+            static ResourceManager* ResolvePrefabResourceManager()
+            {
+                if (g_DefaultResources)
+                    return g_DefaultResources;
+                return ResourceManager::GetPtr();
+            }
+
+            static bool LoadPrefabJsonAuto(const std::filesystem::path& logicalPath, JsonRttr::json& out)
+            {
+                out = JsonRttr::json{};
+
+                ResourceManager* resources = ResolvePrefabResourceManager();
+                if (!resources)
+                {
+                    ALICE_LOG_ERRORF("[Prefab] LoadText failed: ResourceManager is null. logical=\"%s\"",
+                                     logicalPath.generic_string().c_str());
+                    return false;
+                }
+
+                std::string text;
+                if (!resources->LoadText(logicalPath, text) || text.empty())
+                {
+                    ALICE_LOG_ERRORF("[Prefab] LoadText failed: \"%s\"", logicalPath.generic_string().c_str());
+                    return false;
+                }
+
+                try
+                {
+                    out = JsonRttr::json::parse(text);
+                }
+                catch (...)
+                {
+                    ALICE_LOG_ERRORF("[Prefab] JSON parse failed: \"%s\"", logicalPath.generic_string().c_str());
+                    return false;
+                }
+
+                return true;
+            }
+
+            static EntityId InstantiateFromJsonInternal(World& world, const JsonRttr::json& root)
+            {
+                if (!root.is_object())
+                    return InvalidEntityId;
+
+                auto itEntities = root.find("entities");
+                if (itEntities != root.end() && itEntities->is_array())
+                {
+                    std::unordered_map<std::uint64_t, EntityId> guidToEntity;
+                    std::vector<std::pair<EntityId, std::uint64_t>> pendingParents;
+                    std::vector<EntityId> createdEntities;
+
+                    for (const auto& e : *itEntities)
+                    {
+                        if (!e.is_object())
+                            continue;
+
+                        EntityId id = world.CreateEntity();
+                        createdEntities.push_back(id);
+
+                        if (!ApplyEntityFromJson(world, id, e))
+                        {
+                            for (EntityId created : createdEntities)
+                                world.DestroyEntity(created);
+                            return InvalidEntityId;
+                        }
+
+                        std::uint64_t guid = 0;
+                        if (auto itGuid = e.find("guid"); itGuid != e.end())
+                            guid = ParseGuidOrZero(*itGuid);
+                        if (guid != 0)
+                            guidToEntity[guid] = id;
+
+                        if (auto itParent = e.find("_parentGuid"); itParent != e.end())
+                        {
+                            std::uint64_t parentGuid = ParseGuidOrZero(*itParent);
+                            if (parentGuid != 0)
+                                pendingParents.push_back({ id, parentGuid });
+                        }
+                    }
+
+                    for (const auto& [childId, parentGuid] : pendingParents)
+                    {
+                        auto it = guidToEntity.find(parentGuid);
+                        if (it != guidToEntity.end())
+                            world.SetParent(childId, it->second, false);
+                    }
+
+                    EntityId rootEntity = InvalidEntityId;
+                    if (auto itRootGuid = root.find("rootGuid"); itRootGuid != root.end())
+                    {
+                        std::uint64_t rootGuid = ParseGuidOrZero(*itRootGuid);
+                        if (rootGuid != 0)
+                        {
+                            auto it = guidToEntity.find(rootGuid);
+                            if (it != guidToEntity.end())
+                                rootEntity = it->second;
+                        }
+                    }
+
+                    if (rootEntity == InvalidEntityId && !createdEntities.empty())
+                    {
+                        std::unordered_set<EntityId> hasParent;
+                        for (const auto& [childId, parentGuid] : pendingParents)
+                        {
+                            if (guidToEntity.find(parentGuid) != guidToEntity.end())
+                                hasParent.insert(childId);
+                        }
+                        for (EntityId id : createdEntities)
+                        {
+                            if (hasParent.find(id) == hasParent.end())
+                            {
+                                rootEntity = id;
+                                break;
+                            }
+                        }
+                        if (rootEntity == InvalidEntityId)
+                            rootEntity = createdEntities.front();
+                    }
+
+                    return rootEntity;
+                }
+
+                EntityId entity = world.CreateEntity();
+                if (!ApplyEntityFromJson(world, entity, root))
+                {
+                    world.DestroyEntity(entity);
+                    return InvalidEntityId;
+                }
+
+                return entity;
+            }
         }
 
         EntityId InstantiateFromFile(World& world, const std::filesystem::path& path)
@@ -1039,95 +1174,33 @@ namespace Alice
             JsonRttr::json root;
             if (!JsonRttr::LoadJsonFile(path, root))
                 return InvalidEntityId;
-            if (!root.is_object())
-                return InvalidEntityId;
 
-            auto itEntities = root.find("entities");
-            if (itEntities != root.end() && itEntities->is_array())
+            return InstantiateFromJsonInternal(world, root);
+        }
+
+        void SetDefaultWorld(World* world)
+        {
+            g_DefaultWorld = world;
+        }
+
+        void SetDefaultResources(ResourceManager* resources)
+        {
+            g_DefaultResources = resources;
+        }
+
+        EntityId InstantiateFromFileAuto(const std::filesystem::path& logicalPath)
+        {
+            if (!g_DefaultWorld)
             {
-                std::unordered_map<std::uint64_t, EntityId> guidToEntity;
-                std::vector<std::pair<EntityId, std::uint64_t>> pendingParents;
-                std::vector<EntityId> createdEntities;
-
-                for (const auto& e : *itEntities)
-                {
-                    if (!e.is_object())
-                        continue;
-
-                    EntityId id = world.CreateEntity();
-                    createdEntities.push_back(id);
-
-                    if (!ApplyEntityFromJson(world, id, e))
-                    {
-                        for (EntityId created : createdEntities)
-                            world.DestroyEntity(created);
-                        return InvalidEntityId;
-                    }
-
-                    std::uint64_t guid = 0;
-                    if (auto itGuid = e.find("guid"); itGuid != e.end())
-                        guid = ParseGuidOrZero(*itGuid);
-                    if (guid != 0)
-                        guidToEntity[guid] = id;
-
-                    if (auto itParent = e.find("_parentGuid"); itParent != e.end())
-                    {
-                        std::uint64_t parentGuid = ParseGuidOrZero(*itParent);
-                        if (parentGuid != 0)
-                            pendingParents.push_back({ id, parentGuid });
-                    }
-                }
-
-                for (const auto& [childId, parentGuid] : pendingParents)
-                {
-                    auto it = guidToEntity.find(parentGuid);
-                    if (it != guidToEntity.end())
-                        world.SetParent(childId, it->second, false);
-                }
-
-                EntityId rootEntity = InvalidEntityId;
-                if (auto itRootGuid = root.find("rootGuid"); itRootGuid != root.end())
-                {
-                    std::uint64_t rootGuid = ParseGuidOrZero(*itRootGuid);
-                    if (rootGuid != 0)
-                    {
-                        auto it = guidToEntity.find(rootGuid);
-                        if (it != guidToEntity.end())
-                            rootEntity = it->second;
-                    }
-                }
-
-                if (rootEntity == InvalidEntityId && !createdEntities.empty())
-                {
-                    std::unordered_set<EntityId> hasParent;
-                    for (const auto& [childId, parentGuid] : pendingParents)
-                    {
-                        if (guidToEntity.find(parentGuid) != guidToEntity.end())
-                            hasParent.insert(childId);
-                    }
-                    for (EntityId id : createdEntities)
-                    {
-                        if (hasParent.find(id) == hasParent.end())
-                        {
-                            rootEntity = id;
-                            break;
-                        }
-                    }
-                    if (rootEntity == InvalidEntityId)
-                        rootEntity = createdEntities.front();
-                }
-
-                return rootEntity;
-            }
-
-            EntityId entity = world.CreateEntity();
-            if (!ApplyEntityFromJson(world, entity, root))
-            {
-                world.DestroyEntity(entity);
+                ALICE_LOG_ERRORF("[Prefab] InstantiateFromFileAuto failed: default world is null.");
                 return InvalidEntityId;
             }
 
-            return entity;
+            JsonRttr::json root;
+            if (!LoadPrefabJsonAuto(logicalPath, root))
+                return InvalidEntityId;
+
+            return InstantiateFromJsonInternal(*g_DefaultWorld, root);
         }
 
         bool SaveToFile(const World& world,
