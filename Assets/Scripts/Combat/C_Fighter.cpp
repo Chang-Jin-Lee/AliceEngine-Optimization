@@ -53,8 +53,6 @@ namespace Alice::Combat
             const bool parryWindow = driver->parryActive
                 || (driver->parryOverrideRemainingSec > 0.0f && !driver->parryUsedThisPress);
             bool guardWindow = s.guardWindowActive || driver->guardActive || driver->guardInputHeld || guardLock;
-            if (parryWindow)
-                guardWindow = false;
             s.guardWindowActive = guardWindow;
             s.dodgeWindowActive = s.dodgeWindowActive || driver->dodgeActive;
             s.parryWindowActive = parryWindow;
