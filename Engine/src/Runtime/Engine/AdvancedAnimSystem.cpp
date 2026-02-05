@@ -13,6 +13,7 @@
 #include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Physics/Components/Phy_CCTComponent.h"
 #include "Runtime/Gameplay/Sockets/SocketComponent.h"
 #include "Runtime/ECS/World.h"
 #include "Runtime/Rendering/SkinnedMeshRegistry.h"
@@ -621,24 +622,44 @@ namespace Alice
         // Apply root motion to transform (optional)
         // ------------------------------
         const auto rmDelta = rt.animator->ConsumeRootMotionDelta();
+        animComp.rootMotionDeltaValid = false;
+        animComp.rootMotionDeltaWS = { 0.0f, 0.0f, 0.0f };
         if (rmDelta.valid && rmEnabled)
         {
             if (auto* tc = world.GetComponent<TransformComponent>(id))
             {
                 using namespace DirectX;
                 XMMATRIX worldRow = BuildWorldMatrix(*tc);
-                XMMATRIX newWorldRow = worldRow * rmDelta.deltaRow;
+                // Apply root motion in local space (row-vector convention).
+                XMMATRIX newWorldRow = rmDelta.deltaRow * worldRow;
 
                 XMVECTOR s, r, t;
                 if (XMMatrixDecompose(&s, &r, &t, newWorldRow))
                 {
-                    XMFLOAT3 pos;
-                    XMStoreFloat3(&pos, t);
-                    tc->position = pos;
+                    XMFLOAT3 newPos;
+                    XMStoreFloat3(&newPos, t);
+                    animComp.rootMotionDeltaWS = {
+                        newPos.x - tc->position.x,
+                        newPos.y - tc->position.y,
+                        newPos.z - tc->position.z
+                    };
+                    animComp.rootMotionDeltaValid = true;
 
                     XMFLOAT4 q;
                     XMStoreFloat4(&q, r);
-                    tc->SetRotation(q);
+
+                    const bool wantsCctDrive = animComp.rootMotionDriveCct
+                        && (world.GetComponent<Phy_CCTComponent>(id) != nullptr);
+                    if (wantsCctDrive)
+                    {
+                        // Translation will be handled via CCT; apply rotation only.
+                        tc->SetRotation(q);
+                    }
+                    else
+                    {
+                        tc->position = newPos;
+                        tc->SetRotation(q);
+                    }
                 }
             }
         }

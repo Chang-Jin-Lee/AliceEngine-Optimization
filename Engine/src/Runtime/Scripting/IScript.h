@@ -79,6 +79,7 @@ namespace Alice
         IScriptInput* Input() const { return m_services ? m_services->input : nullptr; }
         IScriptScene* Scenes() const { return m_services ? m_services->scene : nullptr; }
         ResourceManager* Resources() const { return m_services ? m_services->resources : nullptr; }
+        SkinnedMeshRegistry* SkinnedRegistry() const { return m_services ? m_services->skinnedRegistry : nullptr; }
 
     private:
         World*   m_world  = nullptr;

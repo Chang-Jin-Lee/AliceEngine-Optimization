@@ -34,11 +34,7 @@
             "Scripts": [
                 {
                     "enabled": true,
-                    "name": "SceneSwitchExample",
-                    "props": {
-                        "targetSceneA": "Assets/Scenes/SceneChange/SceneChange1.scene",
-                        "targetSceneB": ""
-                    }
+                    "name": "SceneSwitchExample"
                 }
             ],
             "SkinnedAnimation": {
@@ -161,22 +157,15 @@
             "Scripts": [
                 {
                     "enabled": false,
-                    "name": "DecalDemoController",
-                    "props": {
-                        "m_opacityMin": 0.6200000047683716,
-                        "m_opacityPulseSpeed": 1.5,
-                        "m_pulseOpacity": true,
-                        "m_spinSpeed": 0.6000000238418579,
-                        "m_uvScrollSpeed": 0.10000000149011612
-                    }
+                    "name": "DecalDemoController"
                 }
             ],
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 10.57841682434082,
-                    "y": 0.2989681661128998,
-                    "z": -9.486967086791992
+                    "x": 4.216024398803711,
+                    "y": 0.29896819591522217,
+                    "z": 1.9937968254089355
                 },
                 "rotation": {
                     "x": 4.71238899230957,
@@ -184,8 +173,8 @@
                     "z": 0.007813897915184498
                 },
                 "scale": {
-                    "x": 4.099999904632568,
-                    "y": 7.699999809265137,
+                    "x": 2.0,
+                    "y": 4.0,
                     "z": 0.5
                 },
                 "visible": true
@@ -301,9 +290,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 6.979743003845215,
-                    "y": 16.77897834777832,
-                    "z": 3.904510498046875
+                    "x": 6.8980817794799805,
+                    "y": 11.307735443115234,
+                    "z": 7.324047088623047
                 },
                 "rotation": {
                     "x": 1.0030138492584229,
