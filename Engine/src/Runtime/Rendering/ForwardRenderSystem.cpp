@@ -108,6 +108,7 @@ namespace Alice
                 if (toonPbrAlphas.x != rhs.toonPbrAlphas.x) return toonPbrAlphas.x < rhs.toonPbrAlphas.x;
                 if (toonPbrAlphas.y != rhs.toonPbrAlphas.y) return toonPbrAlphas.y < rhs.toonPbrAlphas.y;
                 if (toonPbrAlphas.z != rhs.toonPbrAlphas.z) return toonPbrAlphas.z < rhs.toonPbrAlphas.z;
+                if (toonPbrAlphas.w != rhs.toonPbrAlphas.w) return toonPbrAlphas.w < rhs.toonPbrAlphas.w;
                 if (shadingMode != rhs.shadingMode) return shadingMode < rhs.shadingMode;
                 if (useTexture != rhs.useTexture) return useTexture < rhs.useTexture;
                 if (enableNormalMap != rhs.enableNormalMap) return enableNormalMap < rhs.enableNormalMap;
@@ -148,6 +149,7 @@ namespace Alice
             if (a.toonPbrAlphas.x != b.toonPbrAlphas.x) return false;
             if (a.toonPbrAlphas.y != b.toonPbrAlphas.y) return false;
             if (a.toonPbrAlphas.z != b.toonPbrAlphas.z) return false;
+            if (a.toonPbrAlphas.w != b.toonPbrAlphas.w) return false;
             if (a.shadingMode != b.shadingMode) return false;
             if (a.useTexture != b.useTexture) return false;
             if (a.enableNormalMap != b.enableNormalMap) return false;
@@ -167,7 +169,7 @@ namespace Alice
 
         inline DirectX::XMFLOAT4 DefaultToonPbrAlphas()
         {
-            return DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f);
+            return DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
         }
 
         // 인스턴스 월드 행렬(3x4) 생성용 헬퍼
@@ -1048,6 +1050,10 @@ namespace Alice
         data.shadowMapSize = (float)m_shadowSettings.mapSizePx;
         data.shadowPcfRadius = m_shadowSettings.pcfRadius;
         data.shadowEnabled = m_shadowSettings.enabled;
+        data.shadowStrength = m_lightingParameters.shadowStrength;
+        data.toonShadowStrength = m_lightingParameters.toonShadowStrength;
+        data.shadowPad[0] = 0.0f;
+        data.shadowPad[1] = 0.0f;
 
         // GPU 업데이트 및 바인딩 (VS/PS 슬롯 1번)
         m_context->UpdateSubresource(m_cbLighting.Get(), 0, nullptr, &data, 0, 0);
@@ -2024,7 +2030,7 @@ namespace Alice
                 toonCuts = XMFLOAT4(mat->toonPbrCut1, mat->toonPbrCut2, mat->toonPbrCut3, mat->toonPbrStrength);
                 toonLevels = XMFLOAT4(mat->toonPbrLevel1, mat->toonPbrLevel2, mat->toonPbrLevel3,
                     mat->toonPbrBlur ? 1.0f : 0.0f);
-                toonAlphas = XMFLOAT4(mat->toonPbrLevel1Alpha, mat->toonPbrLevel2Alpha, mat->toonPbrLevel3Alpha, 0.0f);
+                toonAlphas = XMFLOAT4(mat->toonPbrLevel1Alpha, mat->toonPbrLevel2Alpha, mat->toonPbrLevel3Alpha, mat->shadowStrength);
                 useTex = !mat->albedoTexturePath.empty();
             }
             const int objectShadingMode = (mat && mat->shadingMode >= 0) ? mat->shadingMode : shadingMode;

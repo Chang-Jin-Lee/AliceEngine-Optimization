@@ -527,7 +527,7 @@ GBufferOut main(VertexOut pIn)
     {
         gOut.ToonParams = float4(saturate(gEnvDiffuseStrength), saturate(gEnvSpecularStrength), 0.0f, 0.0f);
     }
-    gOut.ToonAlphas = float4(saturate(gToonPbrAlphas.xyz), 1.0f);
+    gOut.ToonAlphas = float4(saturate(gToonPbrAlphas.xyz), saturate(gToonPbrAlphas.w));
     // shadingMode + AO를 [0,1] 범위로 인코딩하여 저장
     gOut.BaseColor  = float4(baseColor, saturate(shadingEncoded));
     
@@ -729,7 +729,9 @@ cbuffer ShadowCB : register(b4)
     float    g_ShadowMapSize2;
     float    g_ShadowPCFRadius2;
     int      g_ShadowEnabled2;
-    float3   g_ShadowPad2;
+    float    g_ShadowStrength2;
+    float    g_ToonShadowStrength2;
+    float2   g_ShadowPad2;
 };
 
 // 그림자 계산 함수 (PCF)
@@ -968,7 +970,9 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     float4 metalness_packed = g_Metalness.Sample(g_Sam, pIn.uv);
     float4 baseColor = g_BaseColor.Sample(g_Sam, pIn.uv);
     float4 toonParams = g_ToonParams.Sample(g_Sam, pIn.uv);
-    float3 toonAlphas = g_ToonAlphas.Sample(g_Sam, pIn.uv).rgb;
+    float4 toonAlphasSample = g_ToonAlphas.Sample(g_Sam, pIn.uv);
+    float3 toonAlphas = toonAlphasSample.rgb;
+    float  materialShadowStrength = toonAlphasSample.a;
     float4 decalAlbedo = g_DecalAlbedo.Sample(g_Sam, pIn.uv);
     float depth = g_SceneDepth.Sample(g_Sam, pIn.uv);
     
@@ -1036,6 +1040,12 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     }
 
     float shadowVis = CalcShadowFactorDeferred(posW, g_ShadowMap, g_ShadowSampler);
+    float shadowStrength = saturate(g_ShadowStrength2) * saturate(materialShadowStrength);
+    if (toonEditable)
+    {
+        shadowStrength *= saturate(g_ToonShadowStrength2);
+    }
+    shadowVis = lerp(1.0f, shadowVis, shadowStrength);
 
     if (!usePbr)
     {

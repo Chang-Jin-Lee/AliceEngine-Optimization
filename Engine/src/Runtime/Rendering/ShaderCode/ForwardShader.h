@@ -34,7 +34,7 @@ cbuffer CBPerObject : register(b0)
     // ToonPBREditable 파라미터
     float4   gToonPbrCuts;   // (cut1, cut2, cut3, strength)
     float4   gToonPbrLevels;
-    float4   gToonPbrAlphas; // (level1, level2, level3, unused)
+    float4   gToonPbrAlphas; // (level1, level2, level3, shadowStrength)
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -114,7 +114,7 @@ cbuffer CBPerObject : register(b0)
     // ToonPBREditable 파라미터
     float4   gToonPbrCuts;   // (cut1, cut2, cut3, strength)
     float4   gToonPbrLevels;
-    float4   gToonPbrAlphas; // (level1, level2, level3, unused)
+    float4   gToonPbrAlphas; // (level1, level2, level3, shadowStrength)
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -226,7 +226,7 @@ cbuffer CBPerObject : register(b0)
     // ToonPBREditable 파라미터
     float4   gToonPbrCuts;   // (cut1, cut2, cut3, strength)
     float4   gToonPbrLevels;
-    float4   gToonPbrAlphas; // (level1, level2, level3, unused)
+    float4   gToonPbrAlphas; // (level1, level2, level3, shadowStrength)
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -333,7 +333,7 @@ cbuffer CBPerObject : register(b0)
     // ToonPBREditable 파라미터
     float4   gToonPbrCuts;   // (cut1, cut2, cut3, strength)
     float4   gToonPbrLevels;
-    float4   gToonPbrAlphas; // (level1, level2, level3, unused)
+    float4   gToonPbrAlphas; // (level1, level2, level3, shadowStrength)
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -372,6 +372,9 @@ cbuffer CBLighting : register(b1)
     float  gShadowMapSize;
     float  gShadowPCFRadius;
     int    gShadowEnabled;
+    float  gShadowStrength;
+    float  gToonShadowStrength;
+    float2 gShadowPad;
 };
 
 #define MAX_POINT_LIGHTS 16
@@ -775,6 +778,14 @@ float4 main(PSInput input) : SV_TARGET
         }
         }
     }
+
+    // 전역 + 머티리얼 + ToonPBREditable 보정 강도 적용
+    float shadowStrength = saturate(gShadowStrength) * saturate(gToonPbrAlphas.w);
+    if (gShadingMode == 7)
+    {
+        shadowStrength *= saturate(gToonShadowStrength);
+    }
+    shadow = lerp(1.0f, shadow, shadowStrength);
 
     totalDiffuse  *= shadow;
     totalSpecular *= shadow;

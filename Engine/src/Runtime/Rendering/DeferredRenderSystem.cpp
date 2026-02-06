@@ -118,6 +118,7 @@ namespace Alice
                 if (toonPbrAlphas.x != rhs.toonPbrAlphas.x) return toonPbrAlphas.x < rhs.toonPbrAlphas.x;
                 if (toonPbrAlphas.y != rhs.toonPbrAlphas.y) return toonPbrAlphas.y < rhs.toonPbrAlphas.y;
                 if (toonPbrAlphas.z != rhs.toonPbrAlphas.z) return toonPbrAlphas.z < rhs.toonPbrAlphas.z;
+                if (toonPbrAlphas.w != rhs.toonPbrAlphas.w) return toonPbrAlphas.w < rhs.toonPbrAlphas.w;
                 if (shadingMode != rhs.shadingMode) return shadingMode < rhs.shadingMode;
                 if (useTexture != rhs.useTexture) return useTexture < rhs.useTexture;
                 if (enableNormalMap != rhs.enableNormalMap) return enableNormalMap < rhs.enableNormalMap;
@@ -157,6 +158,7 @@ namespace Alice
             if (a.toonPbrAlphas.x != b.toonPbrAlphas.x) return false;
             if (a.toonPbrAlphas.y != b.toonPbrAlphas.y) return false;
             if (a.toonPbrAlphas.z != b.toonPbrAlphas.z) return false;
+            if (a.toonPbrAlphas.w != b.toonPbrAlphas.w) return false;
             if (a.shadingMode != b.shadingMode) return false;
             if (a.useTexture != b.useTexture) return false;
             if (a.enableNormalMap != b.enableNormalMap) return false;
@@ -175,7 +177,7 @@ namespace Alice
 
         inline DirectX::XMFLOAT4 DefaultToonPbrAlphas()
         {
-            return DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f);
+            return DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
         }
 
         // 인스턴스 월드 행렬(3x4) 생성용 헬퍼
@@ -1342,9 +1344,9 @@ namespace Alice
             return false;
 
         // Shadow CB (register(b4))
-        // float4x4(64) + float3(12) + int(4) + float3 pad(12) = 92 -> 96(16B align)
+        // float4x4(64) + float5(20) + int(4) + float2 pad(8) = 96(16B align)
         {
-            cbDesc.ByteWidth = sizeof(DirectX::XMMATRIX) + sizeof(float) * 3 + sizeof(int) + sizeof(float) * 3;
+            cbDesc.ByteWidth = sizeof(DirectX::XMMATRIX) + sizeof(float) * 7 + sizeof(int);
             cbDesc.ByteWidth = (cbDesc.ByteWidth + 15u) & ~15u;
             if (FAILED(m_device->CreateBuffer(&cbDesc, nullptr, m_cbShadow.ReleaseAndGetAddressOf())))
                 return false;
@@ -2954,7 +2956,7 @@ namespace Alice
                 toonCuts = XMFLOAT4(mat->toonPbrCut1, mat->toonPbrCut2, mat->toonPbrCut3, mat->toonPbrStrength);
                 toonLevels = XMFLOAT4(mat->toonPbrLevel1, mat->toonPbrLevel2, mat->toonPbrLevel3,
                     mat->toonPbrBlur ? 1.0f : 0.0f);
-                toonAlphas = XMFLOAT4(mat->toonPbrLevel1Alpha, mat->toonPbrLevel2Alpha, mat->toonPbrLevel3Alpha, 0.0f);
+                toonAlphas = XMFLOAT4(mat->toonPbrLevel1Alpha, mat->toonPbrLevel2Alpha, mat->toonPbrLevel3Alpha, mat->shadowStrength);
                 if (mat->shadingMode >= 0) objectShadingMode = mat->shadingMode;
                 if (!mat->albedoTexturePath.empty()) {
                     texSRV = GetOrCreateTexture(mat->albedoTexturePath);
@@ -3735,7 +3737,9 @@ namespace Alice
                 float mapSize;
                 float pcfRadius;
                 int   enabled;
-                float pad[3];
+                float shadowStrength;
+                float toonShadowStrength;
+                float pad[2];
             };
 
             ShadowCBData scb{};
@@ -3744,6 +3748,8 @@ namespace Alice
             scb.mapSize = (float)((m_shadowMapSizePxEffective > 0) ? m_shadowMapSizePxEffective : m_shadowSettings.mapSizePx);
             scb.pcfRadius = m_shadowSettings.pcfRadius;
             scb.enabled = m_shadowSettings.enabled ? 1 : 0;
+            scb.shadowStrength = m_lightingParameters.shadowStrength;
+            scb.toonShadowStrength = m_lightingParameters.toonShadowStrength;
 
             D3D11_MAPPED_SUBRESOURCE mapped{};
             if (SUCCEEDED(m_context->Map(m_cbShadow.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))

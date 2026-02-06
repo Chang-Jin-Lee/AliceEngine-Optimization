@@ -24,6 +24,7 @@ namespace Alice {
         float roughness{ 0.5f };                     // 0~1 러프니스 (PBR)
         float metalness{ 0.0f };                     // 0~1 메탈니스 (PBR)
         float ambientOcclusion{ 1.0f };              // 0~1 AO (Ambient Occlusion)
+        float shadowStrength{ 1.0f };                // 0~1 그림자 강도 (0=그림자 없음, 1=기본)
         float envDiffuseStrength{ 1.0f };            // IBL Diffuse 기여도 (0 = 없음)
         float envSpecularStrength{ 1.0f };           // IBL Specular 기여도 (0 = 없음)
         int shadingMode{ -1 };                       // -1: 전역, 0~7: 개별 셰이딩 모드, 6: OnlyTextureWithOutline, 7: ToonPBREditable
@@ -58,6 +59,7 @@ namespace Alice {
         Alice_Get_Set(roughness);
         Alice_Get_Set(metalness);
         Alice_Get_Set(ambientOcclusion);
+        Alice_Get_Set(shadowStrength);
         Alice_Get_Set(envDiffuseStrength);
         Alice_Get_Set(envSpecularStrength);
         Alice_Get_Set(shadingMode);
