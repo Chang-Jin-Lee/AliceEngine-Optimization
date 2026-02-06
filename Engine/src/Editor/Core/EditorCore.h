@@ -168,6 +168,11 @@ namespace Alice
 			ViewportPicker& picker,
 			float& cameraMoveSpeed,
 			bool& useForwardRendering,
+			LightingParameters& lightingParams,
+			int& skyboxChoice,
+			std::string& skyboxCustomDir,
+			std::string& skyboxCustomPrefix,
+			int& skyboxResolution,
 			bool& pvdEnabled,
 			std::string& pvdHost,
 			int& pvdPort,
@@ -384,7 +389,20 @@ namespace Alice
 			DeferredRenderSystem& deferred,
 			int& shadingMode,
 			bool& useFillLight,
-			bool& useForwardRendering);
+			bool& useForwardRendering,
+			LightingParameters& lightingParams,
+			int& skyboxChoice,
+			std::string& skyboxCustomDir,
+			std::string& skyboxCustomPrefix,
+			int& skyboxResolution);
+		void CacheLightingSettings(int shadingMode,
+			bool useFillLight,
+			const LightingParameters& lightingParams,
+			int skyboxChoice,
+			const std::string& skyboxCustomDir,
+			const std::string& skyboxCustomPrefix,
+			int skyboxResolution);
+		bool SaveLightingSettingsForBuild(const std::filesystem::path& projectRoot) const;
 		void DrawMaterialAssetEditorWindow(World& world);
 		void DrawUICurveAssetEditorWindow();
 		void HandleSceneLoadFlow(World& world, SceneManager* sceneManager, bool& isPlaying, EntityId& selectedEntity);
@@ -414,6 +432,16 @@ namespace Alice
 		PostProcessSettings m_defaultPostProcessSettings;
 
 		EngineLogoOverlay m_engineLogo;
+
+		// Build Game용 조명/스카이박스 설정 캐시
+		bool m_hasLightingCache = false;
+		LightingParameters m_cachedLightingParams{};
+		int m_cachedShadingMode = 0;
+		bool m_cachedUseFillLight = false;
+		int m_cachedSkyboxChoice = 3;
+		std::string m_cachedSkyboxCustomDir;
+		std::string m_cachedSkyboxCustomPrefix;
+		int m_cachedSkyboxResolution = 0;
 	};
 }
 

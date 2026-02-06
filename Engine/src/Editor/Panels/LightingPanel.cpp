@@ -5,25 +5,106 @@
 #include "Runtime/Rendering/DeferredRenderSystem.h"
 #include "Runtime/ECS/GameObject.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Resources/ResourceManager.h"
 
 #include "imgui.h"
 
 #include <algorithm>
 #include <cstring>
+#include <filesystem>
 #include <DirectXMath.h>
+#include <ShlObj.h>
 
 namespace Alice
 {
+	namespace
+	{
+		int CALLBACK BrowseSkyboxFolderCallback(HWND hwnd, UINT uMsg, LPARAM /*lParam*/, LPARAM lpData)
+		{
+			if (uMsg == BFFM_INITIALIZED && lpData)
+			{
+				::SendMessage(hwnd, BFFM_SETSELECTIONW, TRUE, lpData);
+			}
+			return 0;
+		}
+
+		bool BrowseForSkyboxFolder(HWND owner, const std::filesystem::path& initialDir, std::filesystem::path& outDir)
+		{
+			BROWSEINFOW bi{};
+			wchar_t displayName[MAX_PATH] = {};
+			bi.hwndOwner = owner;
+			bi.pszDisplayName = displayName;
+			bi.lpszTitle = L"Select Skybox folder (Resource/Skybox/...)";
+			bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
+			const std::wstring initial = initialDir.wstring();
+			bi.lpfn = BrowseSkyboxFolderCallback;
+			bi.lParam = reinterpret_cast<LPARAM>(initial.c_str());
+
+			PIDLIST_ABSOLUTE pidl = SHBrowseForFolderW(&bi);
+			if (!pidl) return false;
+
+			wchar_t pathBuf[MAX_PATH] = {};
+			const bool ok = (SHGetPathFromIDListW(pidl, pathBuf) != FALSE);
+			CoTaskMemFree(pidl);
+			if (!ok) return false;
+
+			outDir = std::filesystem::path(pathBuf);
+			return true;
+		}
+
+		std::string DetectSkyboxPrefixFromDir(const std::filesystem::path& dir)
+		{
+			static const char* kSuffixes[] = {
+				"EnvHDR", "EnvMDR",
+				"DiffuseHDR", "DiffuseMDR",
+				"SpecularHDR", "SpecularMDR",
+				"Brdf"
+			};
+
+			std::error_code ec;
+			if (!std::filesystem::exists(dir, ec) || !std::filesystem::is_directory(dir, ec))
+				return {};
+
+			for (const auto& entry : std::filesystem::directory_iterator(dir, ec))
+			{
+				if (ec) break;
+				if (!entry.is_regular_file(ec)) continue;
+
+				const auto& path = entry.path();
+				if (path.extension() != ".dds") continue;
+
+				std::string stem = path.stem().string();
+				for (const char* suffix : kSuffixes)
+				{
+					const size_t suffixLen = std::strlen(suffix);
+					if (stem.size() >= suffixLen && stem.compare(stem.size() - suffixLen, suffixLen, suffix) == 0)
+					{
+						stem.erase(stem.size() - suffixLen);
+						return stem;
+					}
+				}
+			}
+
+			return {};
+		}
+	}
+
 	void EditorCore::DrawLightingWindow(World& world,
 		ForwardRenderSystem& forward,
 		DeferredRenderSystem& deferred,
 		int& shadingMode,
 		bool& useFillLight,
-		bool& useForwardRendering)
+		bool& useForwardRendering,
+		LightingParameters& lightingParams,
+		int& skyboxChoice,
+		std::string& skyboxCustomDir,
+		std::string& skyboxCustomPrefix,
+		int& skyboxResolution)
 	{
 		// === Lighting ===
 		if (ImGui::Begin("Lighting"))
 		{
+			bool lightingChanged = false;
 			int mode = shadingMode;
 			if (ImGui::RadioButton("Lambert", mode == 0))   mode = 0;
 			ImGui::SameLine();
@@ -40,54 +121,61 @@ namespace Alice
 			if (ImGui::RadioButton("ToonPBREditable", mode == 7)) mode = 7;
 			shadingMode = mode;
 
-			Alice::ImGuiCheckbox(L"Fill Light (보조광)", &useFillLight);
+			lightingChanged |= Alice::ImGuiCheckbox(L"Fill Light (보조광)", &useFillLight);
 
 			// Forward/Deferred 모드에 따라 조명 파라미터를 각 렌더러에 반영합니다.
 			//auto& lighting = useForwardRendering ? forward.GetLightingParameters() : deferred.GetLightingParameters();
 			//auto& lighting = forward.GetLightingParameters();
-			auto& lighting = deferred.GetLightingParameters();
+			auto& lighting = lightingParams;
 
 			// PBR 모드일 때 PBR 파라미터 표시
 			if (mode == 4 || mode == 5 || mode == 7)
 			{
 				ImGui::Separator();
 				ImGui::Text("PBR Material Parameters");
-				ImGui::ColorEdit3("Base Color", &lighting.baseColor.x);
-				ImGui::SliderFloat("Metalness", &lighting.metalness, 0.0f, 1.0f);
-				ImGui::SliderFloat("Roughness", &lighting.roughness, 0.0f, 1.0f);
-				ImGui::SliderFloat("Ambient Occlusion", &lighting.ambientOcclusion, 0.0f, 1.0f);
+				lightingChanged |= ImGui::ColorEdit3("Base Color", &lighting.baseColor.x);
+				lightingChanged |= ImGui::SliderFloat("Metalness", &lighting.metalness, 0.0f, 1.0f);
+				lightingChanged |= ImGui::SliderFloat("Roughness", &lighting.roughness, 0.0f, 1.0f);
+				lightingChanged |= ImGui::SliderFloat("Ambient Occlusion", &lighting.ambientOcclusion, 0.0f, 1.0f);
 				ImGui::Separator();
 			}
 			else
 			{
 				// 레거시 쉐이더 파라미터
-				ImGui::SliderFloat("Shininess", &lighting.shininess, 2.0f, 128.0f);
-				ImGui::ColorEdit3("Diffuse Color", &lighting.diffuseColor.x);
-				ImGui::ColorEdit3("Specular Color", &lighting.specularColor.x);
+				lightingChanged |= ImGui::SliderFloat("Shininess", &lighting.shininess, 2.0f, 128.0f);
+				lightingChanged |= ImGui::ColorEdit3("Diffuse Color", &lighting.diffuseColor.x);
+				lightingChanged |= ImGui::ColorEdit3("Specular Color", &lighting.specularColor.x);
 			}
 
 			// 공통 조명 파라미터
-			Alice::ImGuiSliderFloat(L"Key Intensity (주광)",
+			lightingChanged |= Alice::ImGuiSliderFloat(L"Key Intensity (주광)",
 				&lighting.keyIntensity,
 				0.0f,
 				3.0f);
-			Alice::ImGuiSliderFloat3(L"Key Direction (주광)",
+			lightingChanged |= Alice::ImGuiSliderFloat3(L"Key Direction (주광)",
 				&lighting.keyDirection.x,
 				-1.0f,
 				1.0f);
+
+			if (lightingChanged)
+			{
+				forward.GetLightingParameters() = lighting;
+				deferred.GetLightingParameters() = lighting;
+			}
 
 			// === Skybox ===
 			ImGui::Separator();
 			ImGui::TextUnformatted("Skybox");
 
-			static int  skyboxChoice = 3; // 0 Off, 1 Bridge, 2 Indoor, 3 Baker, 4 darkenv
 			static int  lastSkyboxChoice = -1;
+			static int  lastSkyboxResolution = -1;
 			static bool lastForward = false;
 
-			const char* skyboxItems[] = { "Off", "Bridge", "Indoor", "Baker", "darkenv" };
+			const char* skyboxItems[] = { "Off", "Bridge", "Indoor", "Baker", "darkenv", "Custom" };
 
 			auto ApplySkybox = [&](auto& renderer)
 				{
+					const std::string iblSuffix = (skyboxResolution == 1) ? "MDR" : "HDR";
 					if (skyboxChoice == 0)
 					{
 						renderer.SetSkyboxEnabled(false);
@@ -97,10 +185,16 @@ namespace Alice
 					renderer.SetSkyboxEnabled(true);
 					switch (skyboxChoice)
 					{
-					case 1: renderer.SetIblSet("Bridge", "bridge");       break;
-					case 2: renderer.SetIblSet("Indoor", "indoor");       break;
-					case 3: renderer.SetIblSet("Sample", "BakerSample");  break;
-					case 4: renderer.SetIblSet("darkenv", "darkenvDiffuseHDR");  break;
+					case 1: renderer.SetIblSet("Bridge", "bridge", iblSuffix);       break;
+					case 2: renderer.SetIblSet("Indoor", "indoor", iblSuffix);       break;
+					case 3: renderer.SetIblSet("Sample", "BakerSample", iblSuffix);  break;
+					case 4: renderer.SetIblSet("darkenv", "darkenvDiffuseHDR", iblSuffix);  break;
+					case 5:
+						if (!skyboxCustomDir.empty() && !skyboxCustomPrefix.empty())
+							renderer.SetIblSet(skyboxCustomDir, skyboxCustomPrefix, iblSuffix);
+						else
+							renderer.SetSkyboxEnabled(false);
+						break;
 					default: break;
 					}
 				};
@@ -114,16 +208,62 @@ namespace Alice
 						renderer.SetBackgroundColor(bgColor);
 				};
 
+			if (skyboxChoice < 0 || skyboxChoice > 5) skyboxChoice = 0;
 			bool skyboxChanged = ImGui::Combo("Skybox Choice", &skyboxChoice, skyboxItems, IM_ARRAYSIZE(skyboxItems));
 			bool rendererChanged = (lastForward != useForwardRendering);
 
-			// 선택 변경 or 렌더러 토글 변경 시 반영 (초기 1회 포함)
-			if (skyboxChanged || rendererChanged || lastSkyboxChoice != skyboxChoice)
+			const char* skyboxResItems[] = { "HDR", "MDR" };
+			if (skyboxResolution < 0 || skyboxResolution > 1) skyboxResolution = 0;
+			bool skyboxResChanged = ImGui::Combo("Skybox Resolution", &skyboxResolution, skyboxResItems, IM_ARRAYSIZE(skyboxResItems));
+			bool customChanged = false;
+			if (skyboxChoice == 5)
 			{
-				if (useForwardRendering) ApplySkybox(forward);
-				else                     ApplySkybox(deferred);
+				char dirBuf[256] = {};
+
+				strncpy_s(dirBuf, sizeof(dirBuf), skyboxCustomDir.c_str(), _TRUNCATE);
+
+				ImGui::Text("Custom Dir: %s", dirBuf[0] ? dirBuf : "-");
+				ImGui::SameLine();
+				if (ImGui::Button("Browse...##SkyboxCustom"))
+				{
+					const auto& rm = ResourceManager::Get();
+					std::filesystem::path initial = rm.Resolve("Resource/Skybox");
+					if (!skyboxCustomDir.empty())
+						initial = rm.Resolve(std::filesystem::path("Resource/Skybox") / skyboxCustomDir);
+					if (!std::filesystem::exists(initial))
+						initial = rm.Resolve("Resource/Skybox");
+
+					std::filesystem::path selectedDir;
+					if (BrowseForSkyboxFolder(m_hwnd, initial, selectedDir))
+					{
+						const std::filesystem::path selectedAbs = std::filesystem::absolute(selectedDir);
+						const std::filesystem::path baseAbs = std::filesystem::absolute(rm.Resolve("Resource/Skybox"));
+
+						std::filesystem::path relativeDir;
+						if (selectedAbs.wstring().rfind(baseAbs.wstring(), 0) == 0)
+							relativeDir = selectedAbs.lexically_relative(baseAbs);
+						else
+							relativeDir = selectedAbs;
+
+						skyboxCustomDir = relativeDir.generic_string();
+						skyboxCustomPrefix = DetectSkyboxPrefixFromDir(selectedAbs);
+						if (skyboxCustomPrefix.empty())
+							skyboxCustomPrefix = DetectSkyboxPrefixFromDir(selectedAbs / ".");
+
+						customChanged = true;
+					}
+				}
+			}
+
+			// 선택 변경 or 렌더러 토글 변경 시 반영 (초기 1회 포함)
+			if (skyboxChanged || skyboxResChanged || customChanged || rendererChanged ||
+				lastSkyboxChoice != skyboxChoice || lastSkyboxResolution != skyboxResolution)
+			{
+				ApplySkybox(forward);
+				ApplySkybox(deferred);
 
 				lastSkyboxChoice = skyboxChoice;
+				lastSkyboxResolution = skyboxResolution;
 				lastForward = useForwardRendering;
 			}
 
