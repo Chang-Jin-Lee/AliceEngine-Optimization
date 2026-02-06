@@ -465,13 +465,36 @@ add_executable(AlicePlayer
     ${APP_HEADERS}
 )
 
-# App Icons (embedded)
-target_sources(Launch PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Resource/Icon/EditorIcon.rc
-)
-target_sources(AlicePlayer PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Resource/Icon/GameIcon.rc
-)
+# ==========================================
+# [Windows Icon] Launch / AlicePlayer (SAFE)
+# - .ico만 레포에 두고, .rc는 빌드 폴더에 자동 생성
+# - Windows + (MSVC/Mingw)에서만 적용
+# - 아이콘 파일 누락 시 즉시 에러
+# ==========================================
+if(WIN32 AND (MSVC OR MINGW))
+    set(ALICE_EDITOR_ICON "${CMAKE_SOURCE_DIR}/Resource/Icon/EditorIcon.ico")
+    set(ALICE_GAME_ICON   "${CMAKE_SOURCE_DIR}/Resource/Icon/GameIcon.ico")
+
+    if(NOT EXISTS "${ALICE_EDITOR_ICON}")
+        message(FATAL_ERROR "[Icon] not found: ${ALICE_EDITOR_ICON}")
+    endif()
+    if(NOT EXISTS "${ALICE_GAME_ICON}")
+        message(FATAL_ERROR "[Icon] not found: ${ALICE_GAME_ICON}")
+    endif()
+
+    file(TO_CMAKE_PATH "${ALICE_EDITOR_ICON}" ALICE_EDITOR_ICON_RC_PATH)
+    file(TO_CMAKE_PATH "${ALICE_GAME_ICON}"   ALICE_GAME_ICON_RC_PATH)
+
+    set(ALICE_EDITOR_ICON_RC "${CMAKE_BINARY_DIR}/EditorIcon.rc")
+    set(ALICE_GAME_ICON_RC   "${CMAKE_BINARY_DIR}/GameIcon.rc")
+
+    file(WRITE "${ALICE_EDITOR_ICON_RC}" "IDI_ICON1 ICON \"${ALICE_EDITOR_ICON_RC_PATH}\"\n")
+    file(WRITE "${ALICE_GAME_ICON_RC}"   "IDI_ICON1 ICON \"${ALICE_GAME_ICON_RC_PATH}\"\n")
+
+    target_sources(Launch      PRIVATE "${ALICE_EDITOR_ICON_RC}")
+    target_sources(AlicePlayer PRIVATE "${ALICE_GAME_ICON_RC}")
+endif()
+
 
 source_group(TREE ${ALICE_SRC_DIR} FILES ${LAUNCH_MAIN} ${PLAYER_MAIN} ${APP_COMMON_SOURCES} ${APP_HEADERS})
 
