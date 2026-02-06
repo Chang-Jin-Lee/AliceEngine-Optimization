@@ -62,6 +62,7 @@ namespace Alice
         outMaterial.roughness = std::clamp(outMaterial.roughness, 0.0f, 1.0f);
         outMaterial.metalness = std::clamp(outMaterial.metalness, 0.0f, 1.0f);
         outMaterial.ambientOcclusion = std::clamp(outMaterial.ambientOcclusion, 0.0f, 1.0f);
+        outMaterial.shadowStrength = std::clamp(outMaterial.shadowStrength, 0.0f, 1.0f);
         outMaterial.envDiffuseStrength = std::max(outMaterial.envDiffuseStrength, 0.0f);
         outMaterial.envSpecularStrength = std::max(outMaterial.envSpecularStrength, 0.0f);
         outMaterial.toonPbrLevel1Alpha = std::clamp(outMaterial.toonPbrLevel1Alpha, 0.0f, 1.0f);
@@ -97,6 +98,7 @@ namespace Alice
         copy.roughness = std::clamp(copy.roughness, 0.0f, 1.0f);
         copy.metalness = std::clamp(copy.metalness, 0.0f, 1.0f);
         copy.ambientOcclusion = std::clamp(copy.ambientOcclusion, 0.0f, 1.0f);
+        copy.shadowStrength = std::clamp(copy.shadowStrength, 0.0f, 1.0f);
         copy.envDiffuseStrength = std::max(copy.envDiffuseStrength, 0.0f);
         copy.envSpecularStrength = std::max(copy.envSpecularStrength, 0.0f);
         copy.toonPbrLevel1Alpha = std::clamp(copy.toonPbrLevel1Alpha, 0.0f, 1.0f);

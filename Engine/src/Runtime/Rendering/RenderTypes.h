@@ -103,6 +103,8 @@ namespace Alice
         float             metalness    { 0.0f };                // 0.0 = 비금속, 1.0 = 금속
         float             roughness    { 0.5f };                // 0.0 = 거울, 1.0 = 거친 표면
         float             ambientOcclusion { 1.0f };            // AO (0.0 ~ 1.0)
+        float             shadowStrength { 1.0f };              // 전역 그림자 강도 (0~1)
+        float             toonShadowStrength { 1.0f };          // ToonPBREditable 전용 그림자 강도 (0~1)
 
         // 광원 세기
         float             keyIntensity  { 1.0f };
@@ -193,7 +195,7 @@ namespace Alice
         // ToonPBREditable 파라미터 (shadingMode == 7)
         DirectX::XMFLOAT4 toonPbrCuts   { 0.2f, 0.5f, 0.95f, 1.0f }; // cut1, cut2, cut3, strength
         DirectX::XMFLOAT4 toonPbrLevels { 0.1f, 0.4f, 0.7f, 0.0f };  // level1, level2, level3, blur(0/1)
-        DirectX::XMFLOAT4 toonPbrAlphas { 1.0f, 1.0f, 1.0f, 0.0f };  // level1~3 alpha, w unused
+        DirectX::XMFLOAT4 toonPbrAlphas { 1.0f, 1.0f, 1.0f, 1.0f };  // level1~3 alpha, w: shadowStrength
 
         // 선택적인 알베도 텍스처 경로 (.alice 단일 포맷 또는 원본 이미지 경로)
         std::string       albedoTexturePath;
@@ -396,7 +398,7 @@ namespace Alice
         // ToonPBREditable 파라미터
         DirectX::XMFLOAT4 toonPbrCuts;    // Offset: 256 -> 272
         DirectX::XMFLOAT4 toonPbrLevels;  // Offset: 272 -> 288 (w: blur)
-        DirectX::XMFLOAT4 toonPbrAlphas;  // Offset: 288 -> 304 (alpha1~3)
+        DirectX::XMFLOAT4 toonPbrAlphas;  // Offset: 288 -> 304 (alpha1~3, w: shadowStrength)
         
         // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
         DirectX::XMFLOAT3 outlineColor;  // 아웃라인 색상 (Offset: 304 -> 316)
@@ -434,5 +436,8 @@ namespace Alice
 		float             shadowMapSize;     // 섀도우맵 한 변(px)
 		float             shadowPcfRadius;   // PCF 반경(texel)
 		int               shadowEnabled;     // 0/1
+		float             shadowStrength;    // 전역 그림자 강도 (0~1)
+		float             toonShadowStrength; // ToonPBREditable 전용 그림자 강도 (0~1)
+		float             shadowPad[2];      // 16바이트 정렬
 	};
 }

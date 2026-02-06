@@ -156,6 +156,17 @@ namespace Alice
 				&lighting.keyDirection.x,
 				-1.0f,
 				1.0f);
+			
+			ImGui::Separator();
+			ImGui::TextUnformatted("Shadow");
+			lightingChanged |= Alice::ImGuiSliderFloat(L"Shadow Strength",
+				&lighting.shadowStrength,
+				0.0f,
+				1.0f);
+			lightingChanged |= Alice::ImGuiSliderFloat(L"Toon Shadow Strength (Editable)",
+				&lighting.toonShadowStrength,
+				0.0f,
+				1.0f);
 
 			if (lightingChanged)
 			{

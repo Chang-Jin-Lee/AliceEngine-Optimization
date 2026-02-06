@@ -2,6 +2,7 @@
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Resources/Prefab.h"
 #include <Windows.h>
+#include <algorithm>
 #include <chrono>
 #include <thread>
 
@@ -177,6 +178,12 @@ namespace Alice
 						lighting.roughness = p["roughness"].get<float>();
 					if (p.contains("ambientOcclusion") && p["ambientOcclusion"].is_number())
 						lighting.ambientOcclusion = p["ambientOcclusion"].get<float>();
+					if (p.contains("shadowStrength") && p["shadowStrength"].is_number())
+						lighting.shadowStrength = p["shadowStrength"].get<float>();
+					if (p.contains("toonShadowStrength") && p["toonShadowStrength"].is_number())
+						lighting.toonShadowStrength = p["toonShadowStrength"].get<float>();
+					lighting.shadowStrength = std::clamp(lighting.shadowStrength, 0.0f, 1.0f);
+					lighting.toonShadowStrength = std::clamp(lighting.toonShadowStrength, 0.0f, 1.0f);
 
 					if (p.contains("keyIntensity") && p["keyIntensity"].is_number())
 						lighting.keyIntensity = p["keyIntensity"].get<float>();
@@ -242,6 +249,8 @@ namespace Alice
 			p["metalness"] = lighting.metalness;
 			p["roughness"] = lighting.roughness;
 			p["ambientOcclusion"] = lighting.ambientOcclusion;
+			p["shadowStrength"] = lighting.shadowStrength;
+			p["toonShadowStrength"] = lighting.toonShadowStrength;
 			p["keyIntensity"] = lighting.keyIntensity;
 			p["fillIntensity"] = lighting.fillIntensity;
 			p["keyDirection"] = Vec3ToJson(lighting.keyDirection);
