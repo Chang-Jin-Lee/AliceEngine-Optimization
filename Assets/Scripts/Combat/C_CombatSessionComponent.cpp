@@ -38,6 +38,7 @@
 #include "C_BossBrainComponent.h"
 #include "C_BossCombatSessionComponent.h"
 #include "../Physics/Gimmick.h"
+#include "../Physics/HealEyeGimmick.h"
 
 namespace Alice
 {
@@ -736,6 +737,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		Combat::Intent bossIntentCompat{};
 		C_BossBrainComponent* bossBrain = nullptr;
 		C_BossCombatSessionComponent* bossSession = nullptr;
+		HealEyeGimmick* healGimmick = nullptr;
 		if (auto* script = FindScriptOnEntity(world, bossId, "C_BossBrainComponent"))
 		{
 			if (auto* brain = dynamic_cast<C_BossBrainComponent*>(script))
@@ -745,6 +747,18 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		{
 			if (auto* session = dynamic_cast<C_BossCombatSessionComponent*>(script))
 				bossSession = session;
+		}
+		if (!m_healGimmickEntityName.empty())
+		{
+			const EntityId healGimmickId = ResolveEntityByName(m_healGimmickEntityName);
+			if (healGimmickId != InvalidEntityId)
+			{
+				if (auto* script = FindScriptOnEntity(world, healGimmickId, "HealEyeGimmick"))
+				{
+					if (auto* gimmick = dynamic_cast<HealEyeGimmick*>(script))
+						healGimmick = gimmick;
+				}
+			}
 		}
 
 		const bool playerGuardReleased = playerIntent.guardReleased;
@@ -1208,6 +1222,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			|| m_state->playerChargeActive;
 		m_state->player.canBeHitstunned = m_playerCanBeHitstunned && !playerSuperArmorEarly;
 
+		float healEnterDurationSec = 0.0f;
+		float healExitDurationSec = 0.0f;
 		Combat::Sensors sPlayer = m_state->player.BuildSensors(world, bossId, deltaTime);
 		Combat::Sensors sBoss = m_state->boss.BuildSensors(world, playerId, deltaTime);
 		sPlayer.hitstunDurationSec = m_state->playerHitstunDurationSec;
@@ -1227,6 +1243,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			sPlayer.interactionDurationSec = interactionDuration;
 			sPlayer.healEnterDurationSec = interactionDuration;
 			sPlayer.healExitDurationSec = interactionDuration;
+			healEnterDurationSec = sPlayer.healEnterDurationSec;
+			healExitDurationSec = sPlayer.healExitDurationSec;
 		}
 		if (m_state->player.state != Combat::ActionState::Attack)
 			sPlayer.attackWindowActive = false;
@@ -2130,6 +2148,28 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		const bool playerHealLoop = (outPlayer.state == Combat::ActionState::HealLoop);
 		const bool enteredHealLoop = playerHealLoop
 			&& (m_state->prevPlayerState != Combat::ActionState::HealLoop);
+		if (healGimmick)
+		{
+			const bool playerHealEnter = (outPlayer.state == Combat::ActionState::HealEnter);
+			const bool playerHealExit = (outPlayer.state == Combat::ActionState::HealExit);
+			const bool prevHeal = (m_state->prevPlayerState == Combat::ActionState::HealEnter)
+				|| (m_state->prevPlayerState == Combat::ActionState::HealLoop)
+				|| (m_state->prevPlayerState == Combat::ActionState::HealExit);
+			const bool currHeal = playerHealEnter || playerHealLoop || playerHealExit;
+			const bool enteredHealEnter = playerHealEnter
+				&& (m_state->prevPlayerState != Combat::ActionState::HealEnter);
+			const bool enteredHealExit = playerHealExit
+				&& (m_state->prevPlayerState != Combat::ActionState::HealExit);
+			const bool cancelledHeal = prevHeal && !currHeal
+				&& (m_state->prevPlayerState != Combat::ActionState::HealExit);
+
+			if (enteredHealEnter)
+				healGimmick->BeginHeal(healEnterDurationSec);
+			if (enteredHealLoop)
+				healGimmick->BeginHealLoop();
+			if (enteredHealExit || cancelledHeal)
+				healGimmick->EndHeal(healExitDurationSec);
+		}
 		if (enteredHealLoop)
 		{
 			m_state->playerHealLoopSec = 0.0f;

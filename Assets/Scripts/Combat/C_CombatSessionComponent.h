@@ -45,6 +45,7 @@ namespace Alice
         ALICE_PROPERTY(bool, m_playerCanBeHitstunned, true);
         ALICE_PROPERTY(bool, m_bossCanBeHitstunned, false);
         ALICE_PROPERTY(std::string, m_gimmickEntityName, "W_Target");
+        ALICE_PROPERTY(std::string, m_healGimmickEntityName, "Heal_EYE");
         ALICE_PROPERTY(bool, m_blockPlayerActionsDuringGimmick, true);
         ALICE_PROPERTY(float, m_guardBreakPushbackScale, 0.5f);
         ALICE_PROPERTY(float, m_guardSuccessPushbackScale, 0.1f);
