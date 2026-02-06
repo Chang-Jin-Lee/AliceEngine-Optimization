@@ -2,6 +2,13 @@
 
 namespace Alice
 {
+    class World;
+    class ResourceManager;
+
+    /// 스크립트 DLL에 엔진 서비스(World/ResourceManager)를 전달합니다.
+    /// - DLL이 이미 로드되어 있으면 즉시 바인딩을 시도합니다.
+    void ScriptHotReload_SetServices(World* world, ResourceManager* resources);
+
     /// AliceScripts.dll 을 로드하여 동적 스크립트 함수 포인터를 등록합니다.
     /// - dllName 은 보통 "AliceScripts.dll" 입니다.
     bool ScriptHotReload_Load(const wchar_t* dllName = L"AliceScripts.dll");

@@ -15,6 +15,11 @@ namespace Alice
 {
     class World;
     class GameObject;
+    namespace Prefab
+    {
+        void SetDefaultWorld(World* world);
+        void SetDefaultResources(class ResourceManager* resources);
+    }
 
     /// 모든 스크립트가 상속해야 하는 기본 베이스 클래스입니다.
     /// - Unity 의 MonoBehaviour 와 비슷한 개념
@@ -57,7 +62,16 @@ namespace Alice
 
     protected:
         /// 이 스크립트를 소유한 월드에 접근합니다.
-        World* GetWorld() const { return m_world; }
+        World* GetWorld() const
+        {
+            if (m_world)
+            {
+                Prefab::SetDefaultWorld(m_world);
+                if (m_services && m_services->resources)
+                    Prefab::SetDefaultResources(m_services->resources);
+            }
+            return m_world;
+        }
 
         /// 소유 엔티티 ID (Unity 의 gameObject / this.Entity 느낌)
         EntityId GetOwnerId() const { return m_entity; }

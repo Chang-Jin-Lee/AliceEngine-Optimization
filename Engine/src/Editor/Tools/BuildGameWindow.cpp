@@ -401,6 +401,9 @@ namespace Alice
 				const fs2::path scriptsRoot = args.projectRoot / "ScriptsBuild";
 				const fs2::path scriptsCMake = scriptsRoot / "CMakeLists.txt";
 				const fs2::path scriptsBuildDir = scriptsRoot / "build";
+				const fs2::path releaseDllDir = releaseBinDir / "dll";
+				std::error_code dllEc;
+				fs2::create_directories(releaseDllDir, dllEc);
 				if (fs2::exists(scriptsCMake))
 				{
 					DWORD scExit = 0;
@@ -436,7 +439,7 @@ namespace Alice
 						return;
 					}
 
-					if (!CopyFileOver(builtDll, releaseBinDir / "AliceScripts.dll"))
+					if (!CopyFileOver(builtDll, releaseDllDir / "AliceScripts.dll"))
 					{
 						g_BuildExitCode.store(15);
 						g_BuildInProgress.store(false);
@@ -447,7 +450,7 @@ namespace Alice
 					const fs2::path builtRttr = scriptsBuildDir / "Release" / "rttr_core.dll";
 					if (fs2::exists(builtRttr))
 					{
-						CopyFileOver(builtRttr, releaseBinDir / "rttr_core.dll");
+						CopyFileOver(builtRttr, releaseDllDir / "rttr_core.dll");
 					}
 				}
 
@@ -503,6 +506,15 @@ namespace Alice
 					return;
 				}
 
+				// (4-1) EngineSettings 복사 (Lighting/Skybox)
+				const fs2::path engineSettingsPath = args.projectRoot / "EngineSettings.json";
+				if (!CopyFileOver(engineSettingsPath, releaseBinDir / "EngineSettings.json"))
+				{
+					g_BuildExitCode.store(7);
+					g_BuildInProgress.store(false);
+					return;
+				}
+
 				// (5) Export: Bin 아래로 정리 (exe/dll/buildsettings/cooked/metas)
 				fs2::path exportRoot = args.exportPathStr;
 				if (!exportRoot.is_absolute())
@@ -523,7 +535,12 @@ namespace Alice
 					return;
 				}
 
-				CopyAllDlls(releaseBinDir, exportBin);
+				if (!CopyDirTree(releaseBinDir / "dll", exportBin / "dll"))
+				{
+					g_BuildExitCode.store(9);
+					g_BuildInProgress.store(false);
+					return;
+				}
 
 				if (!CopyDirTree(releaseBinDir / "Cooked", exportBin / "Cooked") ||
 					!CopyDirTree(releaseBinDir / "Metas", exportBin / "Metas"))
@@ -534,6 +551,13 @@ namespace Alice
 				}
 
 				if (!CopyFileOver(releaseBinDir / "BuildSettings.json", exportBin / "BuildSettings.json"))
+				{
+					g_BuildExitCode.store(11);
+					g_BuildInProgress.store(false);
+					return;
+				}
+
+				if (!CopyFileOver(releaseBinDir / "EngineSettings.json", exportBin / "EngineSettings.json"))
 				{
 					g_BuildExitCode.store(11);
 					g_BuildInProgress.store(false);
@@ -608,14 +632,14 @@ namespace Alice
 			ImGui::SameLine();
 			if (ImGui::Button("Select All"))
 			{
-				for (bool&& selected : s_SceneSelected)
-					selected = true;
+				for (std::size_t i = 0; i < s_SceneSelected.size(); ++i)
+					s_SceneSelected[i] = true;
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Deselect All"))
 			{
-				for (bool&& selected : s_SceneSelected)
-					selected = false;
+				for (std::size_t i = 0; i < s_SceneSelected.size(); ++i)
+				s_SceneSelected[i] = false;
 				s_DefaultScene = -1;
 			}
 			ImGui::SameLine();
@@ -783,6 +807,12 @@ namespace Alice
 					}
 
 					ALICE_LOG_INFO("BuildSettings saved to \"%s\"", cfgPath.string().c_str());
+
+					// 1-1) EngineSettings.json 갱신 (Lighting/Skybox 포함)
+					if (!SaveLightingSettingsForBuild(projectRoot))
+					{
+						ALICE_LOG_WARN("Build Game: EngineSettings.json update failed or skipped.");
+					}
 
 					// 2) 별도 스레드에서 CMake 빌드 + 리소스 복사 실행
 					g_BuildInProgress.store(true);
