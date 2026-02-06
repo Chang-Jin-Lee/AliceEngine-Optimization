@@ -11,6 +11,9 @@
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
+#include "Runtime/Resources/ResourceManager.h"
+#include "ThirdParty/json/json.hpp"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
@@ -39,7 +42,7 @@ namespace Alice
             XMFLOAT4 p4; // xyz = color, w = intensity
             XMFLOAT4 p5; // xyz = gravity, w = drag
             XMFLOAT4 p6; // x = lifeMin, y = lifeMax, z = depthBiasMeters, w = depthTest
-            XMFLOAT4 p7; // reserved
+            XMFLOAT4 p7; // x = spawnRate(0..1), yzw = reserved
         };
         static_assert(sizeof(EmitterGPU) == 128, "EmitterGPU must be 128 bytes");
 
@@ -72,6 +75,354 @@ namespace Alice
             XMFLOAT3 out{};
             XMStoreFloat3(&out, vec);
             return out;
+        }
+
+        using Json = nlohmann::json;
+
+        struct UnityEmitterDesc
+        {
+            ComputeEffectComponent effect{};
+            DirectX::XMFLOAT3 localOffset{ 0.0f, 0.0f, 0.0f };
+        };
+
+        struct UnityEffectCache
+        {
+            bool loaded{ false };
+            bool valid{ false };
+            std::string error{};
+            std::vector<UnityEmitterDesc> emitters{};
+        };
+
+        static std::unordered_map<std::string, UnityEffectCache> g_unityVfxCache;
+
+        static std::string ToLower(std::string s)
+        {
+            std::transform(s.begin(), s.end(), s.begin(),
+                [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+            return s;
+        }
+
+        static bool TryGetVec3(const Json& j, DirectX::XMFLOAT3& out)
+        {
+            if (j.is_array() && j.size() >= 3)
+            {
+                out = DirectX::XMFLOAT3(
+                    j[0].get<float>(),
+                    j[1].get<float>(),
+                    j[2].get<float>()
+                );
+                return true;
+            }
+            if (j.is_object() &&
+                j.contains("x") && j.contains("y") && j.contains("z"))
+            {
+                out = DirectX::XMFLOAT3(
+                    j["x"].get<float>(),
+                    j["y"].get<float>(),
+                    j["z"].get<float>()
+                );
+                return true;
+            }
+            return false;
+        }
+
+        static float AverageCurve(const Json& curve)
+        {
+            if (!curve.is_object()) return 0.0f;
+            auto it = curve.find("keys");
+            if (it == curve.end() || !it->is_array() || it->empty())
+                return 0.0f;
+
+            float sum = 0.0f;
+            int count = 0;
+            for (const auto& k : *it)
+            {
+                if (k.is_object() && k.contains("value"))
+                {
+                    sum += k["value"].get<float>();
+                    ++count;
+                }
+            }
+            return (count > 0) ? (sum / static_cast<float>(count)) : 0.0f;
+        }
+
+        static void ParseMinMaxCurveMinMax(const Json& j, float defaultVal, float& outMin, float& outMax)
+        {
+            outMin = defaultVal;
+            outMax = defaultVal;
+
+            if (!j.is_object())
+                return;
+
+            const std::string mode = ToLower(j.value("mode", "Constant"));
+            const float mult = j.value("multiplier", 1.0f);
+
+            if (mode == "constant")
+            {
+                const float v = j.value("constant", defaultVal) * mult;
+                outMin = v;
+                outMax = v;
+            }
+            else if (mode == "twoconstants")
+            {
+                outMin = j.value("min", defaultVal) * mult;
+                outMax = j.value("max", defaultVal) * mult;
+            }
+            else if (mode == "curve")
+            {
+                const float v = AverageCurve(j.value("curve", Json{})) * mult;
+                outMin = v;
+                outMax = v;
+            }
+            else if (mode == "twocurves")
+            {
+                outMin = AverageCurve(j.value("curveMin", Json{})) * mult;
+                outMax = AverageCurve(j.value("curveMax", Json{})) * mult;
+            }
+
+            if (outMin > outMax)
+                std::swap(outMin, outMax);
+        }
+
+        static float ParseMinMaxCurveValue(const Json& j, float defaultVal)
+        {
+            float mn = defaultVal;
+            float mx = defaultVal;
+            ParseMinMaxCurveMinMax(j, defaultVal, mn, mx);
+            return 0.5f * (mn + mx);
+        }
+
+        static DirectX::XMFLOAT3 ParseColorArray(const Json& j, const DirectX::XMFLOAT3& def)
+        {
+            if (j.is_array() && j.size() >= 3)
+            {
+                return DirectX::XMFLOAT3(
+                    j[0].get<float>(),
+                    j[1].get<float>(),
+                    j[2].get<float>()
+                );
+            }
+            if (j.is_object())
+            {
+                if (j.contains("r") && j.contains("g") && j.contains("b"))
+                {
+                    return DirectX::XMFLOAT3(
+                        j["r"].get<float>(),
+                        j["g"].get<float>(),
+                        j["b"].get<float>()
+                    );
+                }
+            }
+            return def;
+        }
+
+        static DirectX::XMFLOAT3 AverageGradientColor(const Json& grad, const DirectX::XMFLOAT3& def)
+        {
+            if (!grad.is_object()) return def;
+            auto it = grad.find("colorKeys");
+            if (it == grad.end() || !it->is_array() || it->empty())
+                return def;
+
+            DirectX::XMFLOAT3 sum{ 0.0f, 0.0f, 0.0f };
+            int count = 0;
+            for (const auto& k : *it)
+            {
+                if (k.is_object() && k.contains("color"))
+                {
+                    const auto& c = k["color"];
+                    DirectX::XMFLOAT3 col = ParseColorArray(c, def);
+                    sum.x += col.x;
+                    sum.y += col.y;
+                    sum.z += col.z;
+                    ++count;
+                }
+            }
+            if (count == 0) return def;
+            return DirectX::XMFLOAT3(sum.x / count, sum.y / count, sum.z / count);
+        }
+
+        static DirectX::XMFLOAT3 ParseMinMaxGradientColor(const Json& j, const DirectX::XMFLOAT3& def)
+        {
+            if (!j.is_object())
+                return def;
+
+            const std::string mode = ToLower(j.value("mode", "Color"));
+            if (mode == "color")
+            {
+                return ParseColorArray(j.value("color", Json{}), def);
+            }
+            if (mode == "twocolors")
+            {
+                DirectX::XMFLOAT3 c0 = ParseColorArray(j.value("colorMin", Json{}), def);
+                DirectX::XMFLOAT3 c1 = ParseColorArray(j.value("colorMax", Json{}), def);
+                return DirectX::XMFLOAT3((c0.x + c1.x) * 0.5f, (c0.y + c1.y) * 0.5f, (c0.z + c1.z) * 0.5f);
+            }
+            if (mode == "gradient")
+            {
+                return AverageGradientColor(j.value("gradient", Json{}), def);
+            }
+            if (mode == "twogradients")
+            {
+                DirectX::XMFLOAT3 g0 = AverageGradientColor(j.value("gradientMin", Json{}), def);
+                DirectX::XMFLOAT3 g1 = AverageGradientColor(j.value("gradientMax", Json{}), def);
+                return DirectX::XMFLOAT3((g0.x + g1.x) * 0.5f, (g0.y + g1.y) * 0.5f, (g0.z + g1.z) * 0.5f);
+            }
+
+            return def;
+        }
+
+        static ParticleSimulationSpace ParseSimulationSpace(const Json& main)
+        {
+            if (!main.is_object()) return ParticleSimulationSpace::World;
+            std::string s = ToLower(main.value("simulationSpace", "World"));
+            return (s == "local") ? ParticleSimulationSpace::Local : ParticleSimulationSpace::World;
+        }
+
+        static float ParseShapeRadius(const Json& shape, float defaultRadius)
+        {
+            if (!shape.is_object()) return defaultRadius;
+            if (!shape.value("enabled", true))
+                return defaultRadius;
+
+            const std::string type = ToLower(shape.value("type", "Sphere"));
+            if (type == "box" && shape.contains("box"))
+            {
+                DirectX::XMFLOAT3 box{};
+                if (TryGetVec3(shape["box"], box))
+                {
+                    const float maxSide = std::max(box.x, std::max(box.y, box.z));
+                    return std::max(0.01f, maxSide * 0.5f);
+                }
+            }
+
+            return shape.value("radius", defaultRadius);
+        }
+
+        static UnityEffectCache BuildUnityEffectCacheFromJson(const Json& root)
+        {
+            UnityEffectCache cache;
+            cache.loaded = true;
+            cache.valid = false;
+
+            auto itNodes = root.find("nodes");
+            if (itNodes == root.end() || !itNodes->is_array())
+            {
+                cache.error = "effect.json missing nodes[]";
+                return cache;
+            }
+
+            for (const auto& node : *itNodes)
+            {
+                if (!node.is_object()) continue;
+                auto itParticle = node.find("particle");
+                if (itParticle == node.end() || !itParticle->is_object())
+                    continue;
+                // Mesh Renderer 노드는 UnityVfxMeshRenderSystem에서 처리
+                if (auto itRenderer = node.find("renderer"); itRenderer != node.end() && itRenderer->is_object())
+                {
+                    const std::string renderMode = ToLower(itRenderer->value("renderMode", ""));
+                    if (renderMode == "mesh")
+                        continue;
+                }
+
+                UnityEmitterDesc emitter{};
+                emitter.effect.shaderName = "Particle";
+
+                // local offset
+                if (auto itT = node.find("transform"); itT != node.end() && itT->is_object())
+                {
+                    auto itPos = itT->find("pos");
+                    if (itPos != itT->end())
+                        TryGetVec3(*itPos, emitter.localOffset);
+                }
+
+                const Json& particle = *itParticle;
+                const Json& main = particle.value("main", Json{});
+                const Json& emission = particle.value("emission", Json{});
+                const Json& shape = particle.value("shape", Json{});
+                const Json& colOver = particle.value("colorOverLifetime", Json{});
+
+                // main
+                emitter.effect.simulationSpace = ParseSimulationSpace(main);
+                emitter.effect.color = ParseMinMaxGradientColor(main.value("startColor", Json{}), emitter.effect.color);
+
+                float lifeMin = emitter.effect.lifeMin;
+                float lifeMax = emitter.effect.lifeMax;
+                ParseMinMaxCurveMinMax(main.value("startLifetime", Json{}), emitter.effect.lifeMin, lifeMin, lifeMax);
+                emitter.effect.lifeMin = lifeMin;
+                emitter.effect.lifeMax = lifeMax;
+
+                emitter.effect.startSpeed = ParseMinMaxCurveValue(main.value("startSpeed", Json{}), emitter.effect.startSpeed);
+                emitter.effect.sizePx = ParseMinMaxCurveValue(main.value("startSize", Json{}), emitter.effect.sizePx);
+
+                const float gravityMod = ParseMinMaxCurveValue(main.value("gravityModifier", Json{}), 0.0f);
+                emitter.effect.gravity = DirectX::XMFLOAT3(0.0f, -9.81f * gravityMod, 0.0f);
+
+                // color over lifetime (override if enabled)
+                if (colOver.is_object() && colOver.value("enabled", false))
+                {
+                    emitter.effect.color = ParseMinMaxGradientColor(colOver.value("color", Json{}), emitter.effect.color);
+                }
+
+                // emission -> spawnRate
+                float spawnRate = emitter.effect.spawnRate;
+                if (emission.is_object())
+                {
+                    if (!emission.value("enabled", true))
+                    {
+                        spawnRate = 0.0f;
+                    }
+                    else
+                    {
+                        const float rate = ParseMinMaxCurveValue(emission.value("rateOverTime", Json{}), 0.0f);
+                        const bool hasBursts = emission.contains("bursts") && emission["bursts"].is_array() && !emission["bursts"].empty();
+                        if (rate > 0.0f)
+                        {
+                            spawnRate = ClampFloat(rate / 50.0f, 0.0f, 1.0f);
+                        }
+                        else if (hasBursts)
+                        {
+                            spawnRate = 1.0f;
+                        }
+                    }
+                }
+                emitter.effect.spawnRate = spawnRate;
+
+                // shape
+                emitter.effect.radius = ParseShapeRadius(shape, emitter.effect.radius);
+
+                cache.emitters.push_back(emitter);
+            }
+
+            cache.valid = !cache.emitters.empty();
+            if (!cache.valid && cache.error.empty())
+                cache.error = "effect.json has no particle nodes";
+            return cache;
+        }
+
+        static const UnityEffectCache* GetUnityEffectCache(const std::string& effectPath)
+        {
+            if (effectPath.empty())
+                return nullptr;
+
+            auto& cache = g_unityVfxCache[effectPath];
+            if (cache.loaded)
+                return &cache;
+
+            cache.loaded = true;
+            auto jsonPtr = ResourceManager::Get().Load<nlohmann::json>(effectPath);
+            if (!jsonPtr)
+            {
+                cache.valid = false;
+                cache.error = "Failed to load effect.json";
+                return &cache;
+            }
+
+            UnityEffectCache parsed = BuildUnityEffectCacheFromJson(*jsonPtr);
+            cache.valid = parsed.valid;
+            cache.error = std::move(parsed.error);
+            cache.emitters = std::move(parsed.emitters);
+            return &cache;
         }
     }
 
@@ -293,8 +644,14 @@ namespace Alice
         m_farPlane = farPlane;
 
         // 여러 이펙트 동시 지원: 프리셋별로 그룹핑
-        std::unordered_map<std::string, std::vector<std::pair<EntityId, const ComputeEffectComponent*>>> emittersByPreset;
-        
+        struct EmitterSource
+        {
+            EntityId id{};
+            ComputeEffectComponent effect{};
+        };
+
+        std::unordered_map<std::string, std::vector<EmitterSource>> emittersByPreset;
+
         for (auto&& [entityId, effect] : world.GetComponents<ComputeEffectComponent>())
         {
             if (!effect.enabled || effect.shaderName.empty())
@@ -306,7 +663,42 @@ namespace Alice
             if (m_presets.find(effect.shaderName) == m_presets.end())
                 continue;
 
-            emittersByPreset[effect.shaderName].push_back({ entityId, &effect });
+            emittersByPreset[effect.shaderName].push_back({ entityId, effect });
+        }
+
+        for (auto&& [entityId, unityFx] : world.GetComponents<UnityVfxComponent>())
+        {
+            if (!unityFx.enabled || unityFx.effectPath.empty())
+                continue;
+            if (!unityFx.useComputeEffect)
+                continue;
+            if (const auto* tr = world.GetComponent<TransformComponent>(entityId); tr && (!tr->enabled || !tr->visible))
+                continue;
+
+            const UnityEffectCache* cache = GetUnityEffectCache(unityFx.effectPath);
+            if (!cache || !cache->valid)
+                continue;
+
+            for (const auto& emitter : cache->emitters)
+            {
+                ComputeEffectComponent mapped = emitter.effect;
+                mapped.localOffset = emitter.localOffset;
+                mapped.sizePx = ClampFloat(mapped.sizePx * std::max(0.01f, unityFx.sizeScale), 0.1f, 100.0f);
+                mapped.startSpeed = ClampFloat(mapped.startSpeed * std::max(0.01f, unityFx.speedScale), 0.0f, 10.0f);
+                mapped.intensity = ClampFloat(mapped.intensity * std::max(0.0f, unityFx.intensityScale), 0.0f, 10.0f);
+                mapped.spawnRate = ClampFloat(mapped.spawnRate * std::max(0.0f, unityFx.spawnRateScale), 0.0f, 1.0f);
+                mapped.color.x = ClampFloat(mapped.color.x * unityFx.colorTint.x * unityFx.colorScale, 0.0f, 10.0f);
+                mapped.color.y = ClampFloat(mapped.color.y * unityFx.colorTint.y * unityFx.colorScale, 0.0f, 10.0f);
+                mapped.color.z = ClampFloat(mapped.color.z * unityFx.colorTint.z * unityFx.colorScale, 0.0f, 10.0f);
+
+                if (mapped.shaderName.empty())
+                    mapped.shaderName = "Particle";
+
+                if (m_presets.find(mapped.shaderName) == m_presets.end())
+                    continue;
+
+                emittersByPreset[mapped.shaderName].push_back({ entityId, mapped });
+            }
         }
 
         if (emittersByPreset.empty())
@@ -363,8 +755,10 @@ namespace Alice
             std::vector<EmitterGPU> emitterData;
             emitterData.reserve(emitters.size());
             
-            for (const auto& [entityId, effect] : emitters)
+            for (const auto& src : emitters)
             {
+                const EntityId entityId = src.id;
+                const ComputeEffectComponent& effect = src.effect;
                 // Transform 기반으로 이미터 좌표계 생성 (Unity-style)
                 XMFLOAT3 emitterPos{ 0.0f, 0.0f, 0.0f };
                 XMFLOAT3 right{ 1.0f, 0.0f, 0.0f };
@@ -382,58 +776,63 @@ namespace Alice
                     forward = SafeNormalize(XMFLOAT3(wm._31, wm._32, wm._33), forward);
 
                     emitterPos = XMFLOAT3(wm._41, wm._42, wm._43);
-                    emitterPos.x += right.x * effect->localOffset.x + up.x * effect->localOffset.y + forward.x * effect->localOffset.z;
-                    emitterPos.y += right.y * effect->localOffset.x + up.y * effect->localOffset.y + forward.y * effect->localOffset.z;
-                    emitterPos.z += right.z * effect->localOffset.x + up.z * effect->localOffset.y + forward.z * effect->localOffset.z;
+                    emitterPos.x += right.x * effect.localOffset.x + up.x * effect.localOffset.y + forward.x * effect.localOffset.z;
+                    emitterPos.y += right.y * effect.localOffset.x + up.y * effect.localOffset.y + forward.y * effect.localOffset.z;
+                    emitterPos.z += right.z * effect.localOffset.x + up.z * effect.localOffset.y + forward.z * effect.localOffset.z;
                 }
                 else
                 {
                     // Transform이 없으면 로컬 오프셋을 월드 좌표로 간주
-                    emitterPos = effect->localOffset;
+                    emitterPos = effect.localOffset;
                 }
 
-                const float lifeMin = ClampFloat(effect->lifeMin, 0.01f, 100.0f);
-                const float lifeMax = ClampFloat(effect->lifeMax, lifeMin, 100.0f);
+                const float lifeMin = ClampFloat(effect.lifeMin, 0.01f, 100.0f);
+                const float lifeMax = ClampFloat(effect.lifeMax, lifeMin, 100.0f);
 
                 EmitterGPU emitter{};
-                emitter.p0 = XMFLOAT4(emitterPos.x, emitterPos.y, emitterPos.z, ClampFloat(effect->radius, 0.01f, 5.0f));
+                emitter.p0 = XMFLOAT4(emitterPos.x, emitterPos.y, emitterPos.z, ClampFloat(effect.radius, 0.01f, 5.0f));
                 emitter.p1 = XMFLOAT4(
                     right.x,
                     right.y,
                     right.z,
-                    ClampFloat(effect->sizePx, 0.1f, 100.0f)
+                    ClampFloat(effect.sizePx, 0.1f, 100.0f)
                 );
                 emitter.p2 = XMFLOAT4(
                     up.x,
                     up.y,
                     up.z,
-                    ClampFloat(effect->startSpeed, 0.0f, 10.0f)
+                    ClampFloat(effect.startSpeed, 0.0f, 10.0f)
                 );
                 emitter.p3 = XMFLOAT4(
                     forward.x,
                     forward.y,
                     forward.z,
-                    (effect->simulationSpace == ParticleSimulationSpace::Local) ? 1.0f : 0.0f
+                    (effect.simulationSpace == ParticleSimulationSpace::Local) ? 1.0f : 0.0f
                 );
                 emitter.p4 = XMFLOAT4(
-                    ClampFloat(effect->color.x, 0.0f, 10.0f),
-                    ClampFloat(effect->color.y, 0.0f, 10.0f),
-                    ClampFloat(effect->color.z, 0.0f, 10.0f),
-                    ClampFloat(effect->intensity, 0.0f, 10.0f)
+                    ClampFloat(effect.color.x, 0.0f, 10.0f),
+                    ClampFloat(effect.color.y, 0.0f, 10.0f),
+                    ClampFloat(effect.color.z, 0.0f, 10.0f),
+                    ClampFloat(effect.intensity, 0.0f, 10.0f)
                 );
                 emitter.p5 = XMFLOAT4(
-                    ClampFloat(effect->gravity.x, -50.0f, 50.0f),
-                    ClampFloat(effect->gravity.y, -50.0f, 50.0f),
-                    ClampFloat(effect->gravity.z, -50.0f, 50.0f),
-                    ClampFloat(effect->drag, 0.0f, 1.0f)
+                    ClampFloat(effect.gravity.x, -50.0f, 50.0f),
+                    ClampFloat(effect.gravity.y, -50.0f, 50.0f),
+                    ClampFloat(effect.gravity.z, -50.0f, 50.0f),
+                    ClampFloat(effect.drag, 0.0f, 1.0f)
                 );
                 emitter.p6 = XMFLOAT4(
                     lifeMin,
                     lifeMax,
-                    ClampFloat(effect->depthBiasMeters, 0.0f, 1.0f),
-                    effect->depthTest ? 1.0f : 0.0f
+                    ClampFloat(effect.depthBiasMeters, 0.0f, 1.0f),
+                    effect.depthTest ? 1.0f : 0.0f
                 );
-                emitter.p7 = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+                emitter.p7 = XMFLOAT4(
+                    ClampFloat(effect.spawnRate, 0.0f, 1.0f),
+                    0.0f,
+                    0.0f,
+                    0.0f
+                );
 
                 emitterData.push_back(emitter);
             }

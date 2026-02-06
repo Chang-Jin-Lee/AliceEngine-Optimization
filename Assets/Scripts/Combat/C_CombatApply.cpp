@@ -100,6 +100,12 @@ namespace Alice::Combat
                 EntityId traceId = ResolveTraceEntity(world, p.weaponOrOwner);
                 if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
                     trace->active = false;
+                if (auto* driver = world.GetComponent<AttackDriverComponent>(p.weaponOrOwner))
+                {
+                    // If we disabled mid-attack window (parry/hit), suppress re-enable until window ends.
+                    if (driver->attackActive)
+                        driver->attackSuppressed = true;
+                }
                 break;
             }
             case CommandType::EnableTrace:
