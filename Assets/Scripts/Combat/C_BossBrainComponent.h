@@ -9,7 +9,7 @@
 #include "Runtime/Scripting/IScript.h"
 #include "Runtime/Scripting/ScriptReflection.h"
 
-#include "C_CombatContracts.h"
+#include "BossCombatTypes.h"
 
 namespace Alice
 {
@@ -94,7 +94,7 @@ namespace Alice
         void Update(float deltaTime) override;
         void OnDisable() override;
 
-        Combat::Intent Think(float deltaTime, EntityId targetId);
+        Combat::BossIntent Think(float deltaTime, EntityId targetId);
 
         const std::string& GetDebugLabel() const { return m_debugLabel; }
         bool WantsFaceTarget() const { return m_wantsFaceTarget; }
@@ -119,6 +119,7 @@ namespace Alice
         void NotifyPlayerParry(bool success);
         void NotifyPlayerGuardOrEvade();
         void NotifyAttackOutcome(bool evaded);
+        void ForceCompleteIntent();
 
         // 공격/패턴 튜닝
         ALICE_PROPERTY(float, m_attackCooldown, 1.0f);
@@ -144,10 +145,13 @@ namespace Alice
         ALICE_PROPERTY(float, m_testIdleMaxSec, 3.0f);
         ALICE_PROPERTY(float, m_patrolDistance, 4.0f);
         ALICE_PROPERTY(float, m_patrolTolerance, 0.8f);
-        ALICE_PROPERTY(float, m_meleeDistance, 2.4f);
+        ALICE_PROPERTY(float, m_meleeDistance, 2.5f);
         ALICE_PROPERTY(float, m_chaseDistance, 7.0f);
         ALICE_PROPERTY(float, m_patrolBlockedCooldownSec, 0.25f);
         ALICE_PROPERTY(float, m_stuckTimeoutSec, 3.0f);
+        ALICE_PROPERTY(float, m_approachCompleteDist, 2.5f);
+        ALICE_PROPERTY(float, m_postAttackRetreatTriggerDist, 1.0f);
+        ALICE_PROPERTY(float, m_postAttackRetreatStepDist, 1.0f);
 
         // 공격 사거리 (단순 디버그용)
         ALICE_PROPERTY(float, m_dashRangeMin, 4.0f);
@@ -272,5 +276,10 @@ namespace Alice
         PatternType m_lastAttackPattern = PatternType::None;
         AttackOutcome m_attackOutcome = AttackOutcome::None;
         bool m_attackOutcomeSet = false;
+        bool m_intentActive = false;
+        bool m_intentCompleted = true;
+        PatternType m_intentRoot = PatternType::None;
+        std::deque<PatternType> m_followupQueue;
+        float m_retreatTargetDist = 0.0f;
     };
 }

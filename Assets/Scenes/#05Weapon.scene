@@ -575,7 +575,7 @@
                         "m_enableGimmickPhase": false,
                         "m_gimmickHpRatio": 0.3499999940395355,
                         "m_kickRange": 2.0,
-                        "m_meleeDistance": 2.4000000953674316,
+                        "m_meleeDistance": 2.5,
                         "m_patrolBlockedCooldownSec": 0.25,
                         "m_patrolDistance": 4.0,
                         "m_patrolTolerance": 0.800000011920929,

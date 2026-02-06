@@ -86,8 +86,7 @@ namespace Alice::Combat
                 auto p = std::get<CmdForceCancelAttack>(cmd.payload);
                 if (auto* driver = world.GetComponent<AttackDriverComponent>(p.target))
                 {
-                    if (driver->attackCancelable)
-                        driver->cancelAttackRequested = true;
+                    driver->cancelAttackRequested = true;
                 }
                 EntityId traceId = ResolveTraceEntity(world, p.target);
                 if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
@@ -168,8 +167,8 @@ namespace Alice::Combat
                             hc->groggy = hc->groggyMax;
                             if (auto* driver = world.GetComponent<AttackDriverComponent>(p.target))
                             {
-                                if (driver->attackCancelable)
-                                    driver->cancelAttackRequested = true;
+                                driver->forceCancelRequested = true;
+                                driver->cancelAttackRequested = true;
                             }
                             EntityId traceId = ResolveTraceEntity(world, p.target);
                             if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
