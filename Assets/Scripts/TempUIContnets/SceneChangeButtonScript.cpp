@@ -3,7 +3,12 @@
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/ECS/World.h"
 #include "Runtime/UI/UIWidgetComponent.h"
+#include "Runtime/UI/UIButtonComponent.h"
+#include "Runtime/UI/UITextComponent.h"
+#include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/BindWidget.h"
+#include "../Tempsound/UISoundScript.h"
+#include "Runtime/ECS/GameObject.h"
 
 namespace Alice
 {
@@ -20,6 +25,24 @@ namespace Alice
                     return id;
             }
             return InvalidEntityId;
+        }
+
+        UISoundScript* FindUISound(World& world, const std::string& name)
+        {
+            if (name.empty())
+                return nullptr;
+            GameObject go = world.FindGameObject(name);
+            if (!go.IsValid())
+                return nullptr;
+            auto* scripts = world.GetScripts(go.id());
+            if (!scripts)
+                return nullptr;
+            for (auto& sc : *scripts)
+            {
+                if (sc.scriptName == "UISoundScript" && sc.instance)
+                    return static_cast<UISoundScript*>(sc.instance.get());
+            }
+            return nullptr;
         }
     }
 
@@ -56,24 +79,27 @@ namespace Alice
             return;
         }
 
+        m_buttonEntityId = buttonEntity;
 
-        const std::string TextName = Get_TextWidgetName();
-        if (TextName.empty())
+        m_uiSound = FindUISound(*w, Get_uiSoundEntityName());
+
+        const std::string textName = Get_TextWidgetName();
+        if (!textName.empty())
+            m_textEntityId = AliceUI::FindWidgetByName(*w, buttonEntity, textName);
+
+        const std::string lineName = Get_UnderLineWidgetName();
+        if (!lineName.empty())
+            m_underLineEntityId = AliceUI::FindWidgetByName(*w, buttonEntity, lineName);
+
+        if (m_textEntityId != InvalidEntityId)
         {
-            ALICE_LOG_WARN("[SceneChangeButtonScript] Text widget name is empty");
-            return;
+            if (auto* textComp = w->GetComponent<UITextComponent>(m_textEntityId))
+                m_textNormalColor = textComp->color;
         }
-
-        const EntityId TextEntity = AliceUI::FindWidgetByName(*w, root, TextName);
-        changeSceneButton = (buttonEntity != InvalidEntityId)
-            ? w->GetComponent<UIButtonComponent>(buttonEntity)
-            : nullptr;
-
-        const std::string LineName = Get_UnderLineWidgetName();
-        if (LineName.empty())
+        if (m_underLineEntityId != InvalidEntityId)
         {
-            ALICE_LOG_WARN("[SceneChangeButtonScript] Line widget name is empty");
-            return;
+            if (auto* imgComp = w->GetComponent<UIImageComponent>(m_underLineEntityId))
+                m_lineNormalColor = imgComp->color;
         }
 
 
@@ -97,8 +123,10 @@ namespace Alice
             return false;
         };
 
-        // 버튼이 눌렸을 때 씬 변경
-        changeSceneButton->AddOnReleasedSafe([this]()
+        ApplyChildColors(AliceUI::UIButtonState::Normal);
+
+		//  Scene 변경 요청 플래그 설정
+        if (isChangeSceneRequested)
         {
             auto* scenes = Scenes();
             if (!scenes)
@@ -116,32 +144,102 @@ namespace Alice
 
             ALICE_LOG_INFO("[SceneChangeButtonScript] Changing scene to: %s", scenePath.c_str());
             scenes->LoadSceneFileRequest(scenePath.c_str());
+        }
+
+
+
+        // 호버 시 사운드
+        changeSceneButton->AddOnHoveredSafe([this]()
+        {
+            if (m_uiSound)
+                m_uiSound->PlayHover();
         }, isValid);
+
+        // 버튼이 눌렸을 때 클릭 사운드 재생 후, 타이머로 지연 씬 전환
+        changeSceneButton->AddOnReleasedSafe([this]()
+        {
+            if (m_uiSound)
+                m_uiSound->PlayClick();
+
+            isChangeSceneRequested = true;
+            m_pendingSceneChange = true;
+            m_sceneChangeTimer = 2.0f;
+        }, isValid);
+    }
+
+    void SceneChangeButtonScript::ApplyChildColors(AliceUI::UIButtonState state)
+    {
+        World* w = GetWorld();
+        if (!w)
+            return;
+
+        const DirectX::XMFLOAT4* textColor = &m_textNormalColor;
+        const DirectX::XMFLOAT4* lineColor = &m_lineNormalColor;
+        switch (state)
+        {
+        case AliceUI::UIButtonState::Hovered:
+            textColor = &m_hoverColor;
+            lineColor = &m_hoverColor;
+            break;
+        case AliceUI::UIButtonState::Pressed:
+            textColor = &m_pressedColor;
+            lineColor = &m_pressedColor;
+            break;
+        default:
+            break;
+        }
+
+        if (m_textEntityId != InvalidEntityId)
+        {
+            if (auto* textComp = w->GetComponent<UITextComponent>(m_textEntityId))
+                textComp->color = *textColor;
+        }
+        if (m_underLineEntityId != InvalidEntityId)
+        {
+            if (auto* imgComp = w->GetComponent<UIImageComponent>(m_underLineEntityId))
+                imgComp->color = *lineColor;
+        }
     }
 
     void SceneChangeButtonScript::Update(float deltaTime)
     {
-        // Update에서도 클릭을 감지할 수 있습니다 (ConsumeClick 방식)
-        if (changeSceneButton && changeSceneButton->ConsumeClick())
+        // 지연 씬 전환: 클릭 소리 재생 후 타이머가 끝나면 전환
+        if (m_pendingSceneChange)
         {
-            auto* scenes = Scenes();
-            if (!scenes)
+            m_sceneChangeTimer -= deltaTime;
+            if (m_sceneChangeTimer <= 0.f)
             {
-                ALICE_LOG_WARN("[SceneChangeButtonScript] SceneManager not available");
-                return;
+                m_pendingSceneChange = false;
+                auto* scenes = Scenes();
+                if (scenes)
+                {
+                    const std::string scenePath = Get_targetScenePath();
+                    if (!scenePath.empty())
+                    {
+                        ALICE_LOG_INFO("[SceneChangeButtonScript] Changing scene to: %s", scenePath.c_str());
+                        scenes->LoadSceneFileRequest(scenePath.c_str());
+                    }
+                }
             }
-
-            const std::string scenePath = Get_targetScenePath();
-            if (scenePath.empty())
-            {
-                ALICE_LOG_WARN("[SceneChangeButtonScript] Target scene path is empty");
-                return;
-            }
-
-            ALICE_LOG_INFO("[SceneChangeButtonScript] Button clicked! Changing scene to: %s", scenePath.c_str());
-            scenes->LoadSceneFileRequest(scenePath.c_str());
         }
 
-        (void)deltaTime;
+        // ConsumeClick: 클릭 시 소리만 재생하고 씬 전환은 타이머로 예약
+        if (changeSceneButton && changeSceneButton->ConsumeClick())
+        {
+            if (m_uiSound)
+                m_uiSound->PlayClick();
+
+            m_pendingSceneChange = true;
+            m_sceneChangeTimer = 1.0f;
+        }
+
+        if (changeSceneButton)
+            ApplyChildColors(changeSceneButton->state);
+    }
+
+    void SceneChangeButtonScript::OnDestroy()
+    {
+        if (changeSceneButton)
+            changeSceneButton->ClearDelegates();
     }
 }

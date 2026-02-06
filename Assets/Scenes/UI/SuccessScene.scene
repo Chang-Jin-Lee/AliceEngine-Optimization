@@ -174,8 +174,8 @@
                 "visible": true
             },
             "UIText": {
-                "alignH": "Left",
-                "alignV": "Top",
+                "alignH": "Center",
+                "alignV": "Center",
                 "color": {
                     "w": 1.0,
                     "x": 1.0,
@@ -186,7 +186,7 @@
                 "fontSize": 120.0,
                 "lineSpacing": 0.0,
                 "maxWidth": 0.0,
-                "text": "Success",
+                "text": "EndingScene",
                 "wrap": false
             },
             "UITransform": {
@@ -231,6 +231,42 @@
             },
             "guid": "2161954309843477546",
             "name": "UI_Text"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "AudioBGMScript",
+                    "props": {
+                        "bgmPath": "Resource/Sound/SFX/BGM/BGM_Ending_01.mp3",
+                        "busEntityName": "",
+                        "playOnStart": true,
+                        "useBus": false,
+                        "volume": 0.5
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "13020149771740126068",
+            "name": "SoundObject"
         }
     ],
     "sceneName": "SuccessScene",

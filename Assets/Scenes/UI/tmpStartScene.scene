@@ -6,11 +6,12 @@
                     "enabled": true,
                     "name": "SceneChangeButtonScript",
                     "props": {
-                        "TextWidgetName": "UI_StartText",
-                        "UnderLineWidgetName": "UI_StartUnderLine",
+                        "TextWidgetName": "UI_Text",
+                        "UnderLineWidgetName": "UI_Image",
                         "buttonWidgetName": "UI_StartButton",
                         "rootWidgetName": "UI_StartButton",
-                        "targetScenePath": "Assets/Scenes/UI/DemoiScene.scene"
+                        "targetScenePath": "Assets/Scenes/TestSound/tmpCombat.scene",
+                        "uiSoundEntityName": "SoundObject"
                     }
                 }
             ],
@@ -241,10 +242,10 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 1.0,
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
+                    "w": 0.9333333373069763,
+                    "x": 0.09803921729326248,
+                    "y": 0.09803921729326248,
+                    "z": 0.09803921729326248
                 },
                 "preserveAspect": false,
                 "texturePath": "",
@@ -323,10 +324,10 @@
                 "alignH": "Center",
                 "alignV": "Top",
                 "color": {
-                    "w": 1.0,
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
+                    "w": 0.929411768913269,
+                    "x": 0.062745101749897,
+                    "y": 0.062745101749897,
+                    "z": 0.062745101749897
                 },
                 "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
                 "fontSize": 100.0,
@@ -413,7 +414,7 @@
                 "phase1Duration": 1.2000000476837158,
                 "phase2End": 2.0,
                 "phase3Duration": 1.2000000476837158,
-                "startTime": -1.0,
+                "startTime": 1.6242026090621948,
                 "totalCycle": 3.200000047683716
             },
             "UIImage": {
@@ -469,7 +470,7 @@
                 "raycastTarget": true,
                 "shaderName": "DieLine",
                 "space": "Screen",
-                "visibility": "Visible",
+                "visibility": "Collapsed",
                 "widgetName": "UI_Die"
             },
             "_parentGuid": "8067992724437108823",
@@ -500,7 +501,7 @@
                 "alignH": "Left",
                 "alignV": "Top",
                 "color": {
-                    "w": 1.0,
+                    "w": 0.0,
                     "x": 0.24324321746826172,
                     "y": 0.0009391644853167236,
                     "z": 0.0009391644853167236
@@ -549,7 +550,7 @@
                 "raycastTarget": true,
                 "shaderName": "Default",
                 "space": "Screen",
-                "visibility": "Visible",
+                "visibility": "Collapsed",
                 "widgetName": "UI_DieText"
             },
             "_parentGuid": "8067992724437108823",
@@ -634,6 +635,60 @@
             },
             "guid": "8067992724437108823",
             "name": "UI_Image"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "AudioBGMScript",
+                    "props": {
+                        "bgmPath": "Resource/Sound/SFX/BGM/BGM_Title.mp3",
+                        "busEntityName": "AudioBus",
+                        "playOnStart": true,
+                        "useBus": true,
+                        "volume": 0.5
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "UISoundScript",
+                    "props": {
+                        "clickSoundPath": "Resource/Sound/SFX/그외 SFX/buttonClick.mp3",
+                        "cooldownSec": 0.07999999821186066,
+                        "hoverSoundPath": "Resource/Sound/SFX/그외 SFX/buttonHover.mp3",
+                        "pitchRandomEnabled": true,
+                        "pitchRandomMax": 1.0499999523162842,
+                        "pitchRandomMin": 0.949999988079071,
+                        "volume": 0.9900000095367432
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "VisibleMouseScript",
+                    "props": {}
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": -6.702143669128418,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "11129808002406255221",
+            "name": "SoundObject"
         }
     ],
     "sceneName": "tmpStartScene",

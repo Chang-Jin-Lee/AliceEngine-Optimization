@@ -64,6 +64,10 @@ namespace Alice
 
     void AudioBGMScript::Update(float)
     {
+        if (auto* audio = Audio())
+        {
+            audio->SetBGMVolume(Get_volume());
+        }
     }
 
     void AudioBGMScript::PlayBgmPath(const std::string& path)

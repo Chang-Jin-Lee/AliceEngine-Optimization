@@ -26,12 +26,12 @@ namespace Alice
     private:
         // 테스트용 이미지 목록
         std::array<std::string, 6> m_imagePaths = {
-            "Resource/Test/Image/Hanako.png",
-            "Resource/Test/Image/Hanako_Normal.png",
-            "Resource/Test/Image/Hanako_Specular.png",
-            "Resource/Test/Image/Yuuka.png",
-            "Resource/Test/Image/Yuuka_Normal.png",
-            "Resource/Test/Image/Yuuka_Specular.png"
+            "Resource/Image/Hanako.png",
+            "Resource/Image/Hanako_Normal.png",
+            "Resource/Image/Hanako_Specular.png",
+            "Resource/Image/Yuuka.png",
+            "Resource/Image/Yuuka_Normal.png",
+            "Resource/Image/Yuuka_Specular.png"
         };
     };
 }
