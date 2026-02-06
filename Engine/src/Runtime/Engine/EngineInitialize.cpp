@@ -1,5 +1,8 @@
 #include "Runtime/Engine/EngineImpl.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Resources/Prefab.h"
+#include <chrono>
+#include <thread>
 
 namespace Alice
 {
@@ -155,6 +158,7 @@ namespace Alice
 		InitializeMainThreadAndRegistry();
 
 		const std::filesystem::path exeDir = InitializeResolveExeDir();
+		ApplyEditorModeFromExeName(exeDir);
 
 		if (!InitializeConfigureResourceManagers(exeDir)) return false;
 		if (!InitializeValidateGameDataIfNeeded()) return false;
@@ -182,6 +186,9 @@ namespace Alice
 		ALICE_LOG_INFO("Engine::Initialize: Success (Entities: %zu)",
 			m_world.GetComponents<TransformComponent>().size());
 
+		if (m_editorMode)
+			m_editorCore.RequestEngineLogoDismiss();
+
 		return true;
 	}
 
@@ -199,6 +206,47 @@ namespace Alice
 		return std::filesystem::path(pathBuf).parent_path();
 	}
 
+	void Engine::Impl::ApplyEditorModeFromExeName(const std::filesystem::path& exeDir)
+	{
+		// 실행 파일 이름에 따라 에디터/게임 모드를 강제합니다.
+		// - Launch.exe / AliceRenderer.exe  : 에디터 모드
+		// - AlicePlayer.exe : 게임 모드
+		wchar_t exePathBuf[MAX_PATH] = {};
+		std::filesystem::path exePath = exeDir;
+		if (GetModuleFileNameW(nullptr, exePathBuf, MAX_PATH) > 0)
+			exePath = std::filesystem::path(exePathBuf);
+
+		const std::wstring exeName = exePath.filename().wstring();
+		auto IsExe = [&](const wchar_t* name)
+		{
+			return _wcsicmp(exeName.c_str(), name) == 0;
+		};
+
+		bool forced = false;
+		if (IsExe(L"Launch.exe") || IsExe(L"AliceRenderer.exe"))
+		{
+			if (!m_editorMode)
+			{
+				m_editorMode = true;
+				forced = true;
+			}
+		}
+		else if (IsExe(L"AlicePlayer.exe"))
+		{
+			if (m_editorMode)
+			{
+				m_editorMode = false;
+				forced = true;
+			}
+		}
+
+		if (forced)
+		{
+			m_scriptSystem.SetEditorMode(m_editorMode);
+			ALICE_LOG_INFO("Engine::Initialize: editorMode forced by exe name (%ls) -> %d", exeName.c_str(), m_editorMode ? 1 : 0);
+		}
+	}
+
 	bool Engine::Impl::InitializeConfigureResourceManagers(const std::filesystem::path& exeDir)
 	{
 		m_resourceManager.Configure(!m_editorMode, exeDir);
@@ -206,6 +254,9 @@ namespace Alice
 		if (m_editorMode)
 			ResourceManager::Get().Configure(false, exeDir);
 
+		Prefab::SetDefaultWorld(&m_world);
+		Prefab::SetDefaultResources(&m_resourceManager);
+		ScriptHotReload_SetServices(&m_world, &m_resourceManager);
 		return true;
 	}
 
@@ -287,6 +338,44 @@ namespace Alice
 		if (!m_editorCore.Initialize(m_hWnd, *m_renderDevice))
 			return false;
 
+		m_editorCore.SetEngineLogoHoldUntilRelease(true);
+		m_editorCore.StartEngineLogoOverlay(m_resourceManager, "Resource/Icon/AliceBanner.png");
+		if (!RenderStartupLogoFrames(0.7f))
+			return false;
+
+		return true;
+	}
+
+	bool Engine::Impl::RenderStartupLogoFrames(float seconds)
+	{
+		if (!m_editorMode || !m_renderDevice || seconds <= 0.0f)
+			return true;
+
+		using namespace std::chrono;
+		const auto endTime = steady_clock::now() + duration<float>(seconds);
+		MSG msg{};
+
+		while (steady_clock::now() < endTime)
+		{
+			while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+			{
+				if (msg.message == WM_QUIT)
+					return false;
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+
+			float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			m_renderDevice->BeginFrame(clearColor);
+
+			m_editorCore.BeginFrame();
+			m_editorCore.DrawEngineLogoOnly();
+			m_editorCore.RenderDrawData();
+
+			m_renderDevice->EndFrame();
+			std::this_thread::sleep_for(16ms);
+		}
+
 		return true;
 	}
 
@@ -344,6 +433,13 @@ namespace Alice
 		m_trailRenderSystem = std::make_unique<TrailEffectRenderSystem>(*m_renderDevice);
 		m_trailRenderSystem->SetResourceManager(&m_resourceManager);
 		if (!m_trailRenderSystem->Initialize()) return false;
+
+		m_unityVfxMeshRenderSystem = std::make_unique<UnityVfxMeshRenderSystem>(*m_renderDevice);
+		if (!m_unityVfxMeshRenderSystem->Initialize())
+		{
+			ALICE_LOG_ERRORF("m_unityVfxMeshRenderSystem->Initialize(): fail...");
+			return false;
+		}
 
 		if (m_deferredRenderSystem && m_trailRenderSystem)
 			m_deferredRenderSystem->SetSwordRenderSystem(m_trailRenderSystem.get());

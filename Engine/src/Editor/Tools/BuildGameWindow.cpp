@@ -606,6 +606,19 @@ namespace Alice
 				s_ScanScenesOnce = true; // 다음 프레임에 다시 스캔
 			}
 			ImGui::SameLine();
+			if (ImGui::Button("Select All"))
+			{
+				for (std::size_t i = 0; i < s_SceneSelected.size(); ++i)
+					s_SceneSelected[i] = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Deselect All"))
+			{
+				for (std::size_t i = 0; i < s_SceneSelected.size(); ++i)
+				s_SceneSelected[i] = false;
+				s_DefaultScene = -1;
+			}
+			ImGui::SameLine();
 			ImGui::TextDisabled("(Click to rescan Assets folder)");
 
 			if (s_ScenePaths.empty())

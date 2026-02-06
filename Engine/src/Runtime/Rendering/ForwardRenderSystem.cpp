@@ -1613,6 +1613,9 @@ namespace Alice
         {
             if (cameraEntities.contains(id)) continue;
             if (!tr.enabled || !tr.visible) continue;
+            const bool hasSkinned = (world.GetComponent<SkinnedMeshComponent>(id) != nullptr);
+            const bool hasMaterial = (world.GetComponent<MaterialComponent>(id) != nullptr);
+            if (!hasSkinned && !hasMaterial) continue;
 
             hasObjects = true;
             minP.x = (std::min)(minP.x, tr.position.x); minP.y = (std::min)(minP.y, tr.position.y); minP.z = (std::min)(minP.z, tr.position.z);
@@ -1696,6 +1699,7 @@ namespace Alice
             {
                 if (cameraEntities.contains(id)) continue;
                 if (world.GetComponent<SkinnedMeshComponent>(id)) continue;
+                if (!world.GetComponent<MaterialComponent>(id)) continue;
                 if (!transform.enabled || !transform.visible) continue;
 
                 XMMATRIX worldM = BuildWorldMatrix(world, id, transform);
@@ -1934,6 +1938,8 @@ namespace Alice
         {
             if (world.GetComponent<SkinnedMeshComponent>(id)) continue; // 스키닝 메시는 제외
             if (!transform.enabled || !transform.visible) continue;
+            const MaterialComponent* mat = world.GetComponent<MaterialComponent>(id);
+            if (!mat) continue;
 
             XMMATRIX worldM = BuildWorldMatrix(world, id, transform);
 
@@ -1947,7 +1953,6 @@ namespace Alice
             XMFLOAT4 toonCuts = DefaultToonPbrCuts();
             XMFLOAT4 toonLevels = DefaultToonPbrLevels();
 
-            const MaterialComponent* mat = world.GetComponent<MaterialComponent>(id);
             if (mat) {
                 color = { mat->color.x, mat->color.y, mat->color.z, mat->alpha };
                 rough = mat->roughness; metal = mat->metalness;

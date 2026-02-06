@@ -57,6 +57,8 @@ namespace Alice
         float m_attackHeldSec = 0.0f;
         bool m_guardHeldPrev = false;
         float m_guardHeldSec = 0.0f;
+        bool m_itemHeldPrev = false;
+        float m_itemHeldSec = 0.0f;
         bool m_chargeActive = false;
         float m_chargeHeldSec = 0.0f;
         int m_chargeLevel = 0;
