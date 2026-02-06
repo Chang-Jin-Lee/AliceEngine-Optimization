@@ -197,8 +197,8 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_clipIdle, "Boss|Boss|Idle");
         ALICE_PROPERTY(std::string, m_clipWalkForward, "Boss|Boss|Walk_Forward");
         ALICE_PROPERTY(std::string, m_clipWalkSide, "Boss|Boss|Walk_Side");
-        ALICE_PROPERTY(std::string, m_clipTurnLeft, "Boss|Boss|Turn_L");
-        ALICE_PROPERTY(std::string, m_clipTurnRight, "Boss|Boss|Turn_R");
+        ALICE_PROPERTY(std::string, m_clipTurnLeft, "");
+        ALICE_PROPERTY(std::string, m_clipTurnRight, "");
         ALICE_PROPERTY(std::string, m_clipHit, "Boss|Boss|Hit");
         ALICE_PROPERTY(std::string, m_clipGroggy, "Boss|Boss|Groggy_Attacked");
         ALICE_PROPERTY(std::string, m_clipGroggyRecover, "Boss|Boss|Groggy_Recovery");
