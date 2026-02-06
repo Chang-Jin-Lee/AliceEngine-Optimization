@@ -584,9 +584,12 @@ namespace Alice
             std::string baseDirStr = baseDir.generic_string();
 
             EffectRuntime& runtime = m_runtimeCache[static_cast<uint64_t>(entityId)];
-            if (runtime.effectPath != vfx.effectPath || runtime.emitters.size() != cache->emitters.size())
+            if (runtime.effectPath != vfx.effectPath ||
+                runtime.emitters.size() != cache->emitters.size() ||
+                runtime.playId != vfx.playId)
             {
                 runtime.effectPath = vfx.effectPath;
+                runtime.playId = vfx.playId;
                 runtime.emitters.clear();
                 runtime.emitters.resize(cache->emitters.size());
                 for (size_t i = 0; i < cache->emitters.size(); ++i)
@@ -603,20 +606,9 @@ namespace Alice
                         br.remaining = b.cycleCount;
                         br.repeatInterval = b.repeatInterval;
                         rt.bursts.push_back(br);
+                    }
+                }
             }
-        }
-
-        if (!m_runtimeCache.empty())
-        {
-            for (auto it = m_runtimeCache.begin(); it != m_runtimeCache.end(); )
-            {
-                if (aliveIds.find(it->first) == aliveIds.end())
-                    it = m_runtimeCache.erase(it);
-                else
-                    ++it;
-            }
-        }
-    }
 
             size_t totalParticles = 0;
             for (const auto& er : runtime.emitters)
@@ -905,6 +897,9 @@ namespace Alice
                         col.z *= over.z;
                         col.w *= over.w;
                     }
+                    col.x *= vfx.colorTint.x;
+                    col.y *= vfx.colorTint.y;
+                    col.z *= vfx.colorTint.z;
                     p.color = col;
 
                     if (def.rotationOverLifetime.enabled)
@@ -1338,6 +1333,17 @@ namespace Alice
                         BindParticlePipeline();
                     }
                 }
+            }
+        }
+
+        if (!m_runtimeCache.empty())
+        {
+            for (auto it = m_runtimeCache.begin(); it != m_runtimeCache.end(); )
+            {
+                if (aliveIds.find(it->first) == aliveIds.end())
+                    it = m_runtimeCache.erase(it);
+                else
+                    ++it;
             }
         }
 

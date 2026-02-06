@@ -1,5 +1,9 @@
 #include "Runtime/Engine/EngineImpl.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Resources/Prefab.h"
+#include <Windows.h>
+#include <chrono>
+#include <thread>
 
 namespace Alice
 {
@@ -103,6 +107,163 @@ namespace Alice
 			ALICE_LOG_INFO("PVD settings saved to EngineSettings.json");
 		}
 
+		void LoadLightingSettings(const std::filesystem::path& exeDir,
+			int& shadingMode,
+			bool& useFillLight,
+			LightingParameters& lighting,
+			int& skyboxChoice,
+			std::string& skyboxCustomDir,
+			std::string& skyboxCustomPrefix,
+			int& skyboxResolution)
+		{
+			namespace fs = std::filesystem;
+			fs::path cfg = GetEngineSettingsPath(exeDir);
+
+			if (!fs::exists(cfg))
+				return;
+
+			std::ifstream ifs(cfg);
+			if (!ifs.is_open())
+				return;
+
+			nlohmann::json j;
+			try
+			{
+				ifs >> j;
+			}
+			catch (...)
+			{
+				ALICE_LOG_WARN("EngineSettings.json parse error (lighting). Using defaults.");
+				return;
+			}
+
+			auto ReadVec3 = [](const nlohmann::json& v, DirectX::XMFLOAT3& out)
+				{
+					if (v.is_array() && v.size() >= 3)
+					{
+						out.x = v[0].get<float>();
+						out.y = v[1].get<float>();
+						out.z = v[2].get<float>();
+						return;
+					}
+					if (v.is_object())
+					{
+						if (v.contains("x")) out.x = v["x"].get<float>();
+						if (v.contains("y")) out.y = v["y"].get<float>();
+						if (v.contains("z")) out.z = v["z"].get<float>();
+					}
+				};
+
+			if (j.contains("lighting"))
+			{
+				const auto& l = j["lighting"];
+				if (l.contains("shadingMode") && l["shadingMode"].is_number_integer())
+					shadingMode = l["shadingMode"].get<int>();
+				if (l.contains("useFillLight") && l["useFillLight"].is_boolean())
+					useFillLight = l["useFillLight"].get<bool>();
+
+				if (l.contains("params"))
+				{
+					const auto& p = l["params"];
+					if (p.contains("diffuseColor")) ReadVec3(p["diffuseColor"], lighting.diffuseColor);
+					if (p.contains("specularColor")) ReadVec3(p["specularColor"], lighting.specularColor);
+					if (p.contains("shininess") && p["shininess"].is_number())
+						lighting.shininess = p["shininess"].get<float>();
+
+					if (p.contains("baseColor")) ReadVec3(p["baseColor"], lighting.baseColor);
+					if (p.contains("metalness") && p["metalness"].is_number())
+						lighting.metalness = p["metalness"].get<float>();
+					if (p.contains("roughness") && p["roughness"].is_number())
+						lighting.roughness = p["roughness"].get<float>();
+					if (p.contains("ambientOcclusion") && p["ambientOcclusion"].is_number())
+						lighting.ambientOcclusion = p["ambientOcclusion"].get<float>();
+
+					if (p.contains("keyIntensity") && p["keyIntensity"].is_number())
+						lighting.keyIntensity = p["keyIntensity"].get<float>();
+					if (p.contains("fillIntensity") && p["fillIntensity"].is_number())
+						lighting.fillIntensity = p["fillIntensity"].get<float>();
+					if (p.contains("keyDirection")) ReadVec3(p["keyDirection"], lighting.keyDirection);
+					if (p.contains("fillDirection")) ReadVec3(p["fillDirection"], lighting.fillDirection);
+				}
+			}
+
+			if (j.contains("skybox"))
+			{
+				const auto& s = j["skybox"];
+				if (s.contains("choice") && s["choice"].is_number_integer())
+					skyboxChoice = s["choice"].get<int>();
+				if (s.contains("customDir") && s["customDir"].is_string())
+					skyboxCustomDir = s["customDir"].get<std::string>();
+				if (s.contains("customPrefix") && s["customPrefix"].is_string())
+					skyboxCustomPrefix = s["customPrefix"].get<std::string>();
+				if (s.contains("resolution") && s["resolution"].is_number_integer())
+					skyboxResolution = s["resolution"].get<int>();
+			}
+		}
+
+		void SaveLightingSettingsFile(const std::filesystem::path& exeDir,
+			int shadingMode,
+			bool useFillLight,
+			const LightingParameters& lighting,
+			int skyboxChoice,
+			const std::string& skyboxCustomDir,
+			const std::string& skyboxCustomPrefix,
+			int skyboxResolution)
+		{
+			namespace fs = std::filesystem;
+			fs::path cfg = GetEngineSettingsPath(exeDir);
+			fs::create_directories(cfg.parent_path());
+
+			nlohmann::json j;
+			if (fs::exists(cfg))
+			{
+				std::ifstream ifs(cfg);
+				if (ifs.is_open())
+				{
+					try { ifs >> j; }
+					catch (...) {}
+				}
+			}
+
+			auto Vec3ToJson = [](const DirectX::XMFLOAT3& v)
+				{
+					return nlohmann::json::array({ v.x, v.y, v.z });
+				};
+
+			j["lighting"] = nlohmann::json::object();
+			j["lighting"]["shadingMode"] = shadingMode;
+			j["lighting"]["useFillLight"] = useFillLight;
+			j["lighting"]["params"] = nlohmann::json::object();
+			auto& p = j["lighting"]["params"];
+			p["diffuseColor"] = Vec3ToJson(lighting.diffuseColor);
+			p["specularColor"] = Vec3ToJson(lighting.specularColor);
+			p["shininess"] = lighting.shininess;
+			p["baseColor"] = Vec3ToJson(lighting.baseColor);
+			p["metalness"] = lighting.metalness;
+			p["roughness"] = lighting.roughness;
+			p["ambientOcclusion"] = lighting.ambientOcclusion;
+			p["keyIntensity"] = lighting.keyIntensity;
+			p["fillIntensity"] = lighting.fillIntensity;
+			p["keyDirection"] = Vec3ToJson(lighting.keyDirection);
+			p["fillDirection"] = Vec3ToJson(lighting.fillDirection);
+
+			j["skybox"] = nlohmann::json::object();
+			j["skybox"]["choice"] = skyboxChoice;
+			j["skybox"]["customDir"] = skyboxCustomDir;
+			j["skybox"]["customPrefix"] = skyboxCustomPrefix;
+			j["skybox"]["resolution"] = skyboxResolution;
+
+			std::ofstream ofs(cfg);
+			if (!ofs.is_open())
+			{
+				ALICE_LOG_ERRORF("Failed to save EngineSettings.json (lighting)");
+				return;
+			}
+
+			ofs << j.dump(4);
+			ALICE_LOG_INFO("Lighting settings saved to EngineSettings.json");
+		}
+
 		// BuildSettings.txt 에서 시작 씬(.scene 파일)을 읽어와 World 에 로드합니다.
 		// - scenes 섹션은 "index: path" 형식으로 저장되어 있다고 가정합니다.
 		bool LoadStartupSceneFromBuildSettings(World& world, const ResourceManager& resources, const std::filesystem::path& exeDir)
@@ -156,11 +317,13 @@ namespace Alice
 
 		const std::filesystem::path exeDir = InitializeResolveExeDir();
 		ApplyEditorModeFromExeName(exeDir);
+		InitializeDllSearchPath(exeDir);
 
 		if (!InitializeConfigureResourceManagers(exeDir)) return false;
 		if (!InitializeValidateGameDataIfNeeded()) return false;
 
 		InitializeLoadPvdSettings(exeDir);
+		InitializeLoadLightingSettings(exeDir);
 		if (!InitializePhysicsContext()) return false;
 
 		if (!InitializeWindowAndInput(owner, nCmdShow)) return false;
@@ -183,6 +346,9 @@ namespace Alice
 		ALICE_LOG_INFO("Engine::Initialize: Success (Entities: %zu)",
 			m_world.GetComponents<TransformComponent>().size());
 
+		if (m_editorMode)
+			m_editorCore.RequestEngineLogoDismiss();
+
 		return true;
 	}
 
@@ -191,6 +357,19 @@ namespace Alice
 		ThreadSafety::SetMainThreadId(std::this_thread::get_id());
 		LinkComponentRegistry();
 		ALICE_LOG_INFO("Engine::Initialize: Begin (EditorMode=%d)", m_editorMode);
+	}
+
+	void Engine::Impl::InitializeDllSearchPath(const std::filesystem::path& exeDir)
+	{
+#if defined(_WIN32)
+		const std::filesystem::path dllDir = exeDir / "dll";
+		if (!std::filesystem::exists(dllDir))
+			return;
+
+		const std::wstring dllDirW = dllDir.wstring();
+		// exe/dll 만 검색하도록 설정 (보안 + 배포 일관성)
+		SetDllDirectoryW(dllDirW.c_str());
+#endif
 	}
 
 	std::filesystem::path Engine::Impl::InitializeResolveExeDir()
@@ -248,6 +427,9 @@ namespace Alice
 		if (m_editorMode)
 			ResourceManager::Get().Configure(false, exeDir);
 
+		Prefab::SetDefaultWorld(&m_world);
+		Prefab::SetDefaultResources(&m_resourceManager);
+		ScriptHotReload_SetServices(&m_world, &m_resourceManager);
 		return true;
 	}
 
@@ -275,6 +457,34 @@ namespace Alice
 			ALICE_LOG_INFO("PVD settings loaded from EngineSettings.json: %s:%d",
 				m_pvdHost.c_str(), m_pvdPort);
 		}
+	}
+
+	void Engine::Impl::InitializeLoadLightingSettings(const std::filesystem::path& exeDir)
+	{
+		int shadingMode = static_cast<int>(m_shadingMode);
+		LoadLightingSettings(
+			exeDir,
+			shadingMode,
+			m_useFillLight,
+			m_savedLightingParameters,
+			m_skyboxChoice,
+			m_skyboxCustomDir,
+			m_skyboxCustomPrefix,
+			m_skyboxResolution);
+		m_shadingMode = static_cast<Engine::Impl::ShadingMode>(shadingMode);
+	}
+
+	void Engine::Impl::SaveLightingSettings(const std::filesystem::path& exeDir)
+	{
+		SaveLightingSettingsFile(
+			exeDir,
+			static_cast<int>(m_shadingMode),
+			m_useFillLight,
+			m_savedLightingParameters,
+			m_skyboxChoice,
+			m_skyboxCustomDir,
+			m_skyboxCustomPrefix,
+			m_skyboxResolution);
 	}
 
 	bool Engine::Impl::InitializePhysicsContext()
@@ -329,6 +539,44 @@ namespace Alice
 		if (!m_editorCore.Initialize(m_hWnd, *m_renderDevice))
 			return false;
 
+		m_editorCore.SetEngineLogoHoldUntilRelease(true);
+		m_editorCore.StartEngineLogoOverlay(m_resourceManager, "Resource/Icon/AliceBanner.png");
+		if (!RenderStartupLogoFrames(0.7f))
+			return false;
+
+		return true;
+	}
+
+	bool Engine::Impl::RenderStartupLogoFrames(float seconds)
+	{
+		if (!m_editorMode || !m_renderDevice || seconds <= 0.0f)
+			return true;
+
+		using namespace std::chrono;
+		const auto endTime = steady_clock::now() + duration<float>(seconds);
+		MSG msg{};
+
+		while (steady_clock::now() < endTime)
+		{
+			while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+			{
+				if (msg.message == WM_QUIT)
+					return false;
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+
+			float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			m_renderDevice->BeginFrame(clearColor);
+
+			m_editorCore.BeginFrame();
+			m_editorCore.DrawEngineLogoOnly();
+			m_editorCore.RenderDrawData();
+
+			m_renderDevice->EndFrame();
+			std::this_thread::sleep_for(16ms);
+		}
+
 		return true;
 	}
 
@@ -361,6 +609,40 @@ namespace Alice
 			ALICE_LOG_ERRORF("m_deferredRenderSystem->Initialize: fail...");
 			return false;
 		}
+
+		// Apply persisted lighting parameters (forward/deferred 동일하게 유지)
+		m_forwardRenderSystem->GetLightingParameters() = m_savedLightingParameters;
+		m_deferredRenderSystem->GetLightingParameters() = m_savedLightingParameters;
+
+		const std::string iblSuffix = (m_skyboxResolution == 1) ? "MDR" : "HDR";
+		auto ApplySkyboxChoice = [&](auto& renderer)
+			{
+				if (m_skyboxChoice == 0)
+				{
+					renderer.SetSkyboxEnabled(false);
+					return;
+				}
+
+				renderer.SetSkyboxEnabled(true);
+				switch (m_skyboxChoice)
+				{
+				case 1: renderer.SetIblSet("Bridge", "bridge", iblSuffix); break;
+				case 2: renderer.SetIblSet("Indoor", "indoor", iblSuffix); break;
+				case 3: renderer.SetIblSet("Sample", "BakerSample", iblSuffix); break;
+				case 4: renderer.SetIblSet("darkenv", "darkenvDiffuseHDR", iblSuffix); break;
+				case 5:
+					if (!m_skyboxCustomDir.empty() && !m_skyboxCustomPrefix.empty())
+						renderer.SetIblSet(m_skyboxCustomDir, m_skyboxCustomPrefix, iblSuffix);
+					else
+						renderer.SetSkyboxEnabled(false);
+					break;
+				default:
+					break;
+				}
+			};
+
+		ApplySkyboxChoice(*m_forwardRenderSystem);
+		ApplySkyboxChoice(*m_deferredRenderSystem);
 
 		m_debugDrawSystem = std::make_unique<DebugDrawSystem>(*m_renderDevice);
 		if (!m_debugDrawSystem->Initialize())

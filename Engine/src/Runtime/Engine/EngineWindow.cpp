@@ -10,12 +10,10 @@ namespace Alice
 	bool Engine::Impl::CreateMainWindow(Engine& owner, int nCmdShow)
 	{
 		// ============================================= 아이콘 로드 =============================================
-		// 파일 로드 실패 시 기본 아이콘 사용
-		// 경로는 한 번만 변환하여 사용
-		const std::wstring iconPath = m_resourceManager.Resolve("Resource/Icon/Alice.ico").wstring();
-
-		auto hIconBig = static_cast<HICON>(LoadImageW(nullptr, iconPath.c_str(), IMAGE_ICON, 32, 32, LR_LOADFROMFILE));
-		auto hIconSmall = static_cast<HICON>(LoadImageW(nullptr, iconPath.c_str(), IMAGE_ICON, 16, 16, LR_LOADFROMFILE));
+		// CMake에서 exe에 임베딩된 아이콘을 사용합니다.
+		constexpr int kAppIconId = 101;
+		HICON hIconBig = LoadIconW(m_hInstance, MAKEINTRESOURCEW(kAppIconId));
+		HICON hIconSmall = LoadIconW(m_hInstance, MAKEINTRESOURCEW(kAppIconId));
 
 		// ============================================= 윈도우 클래스 등록 =============================================
 		// C++ 구조체 제로 초기화({})를 활용하여 불필요한 0 대입 생략
