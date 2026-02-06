@@ -50,12 +50,22 @@ namespace Alice
             }
 
             const auto exeDir = GetExecutableDirectory();
-            const auto dllPath = exeDir / dllName;
+			const auto dllDir = exeDir / "dll";
+			const auto dllPathInDir = dllDir / dllName;
+			const auto dllPathExe = exeDir / dllName;
 
-            HMODULE mod = ::LoadLibraryW(dllPath.c_str());
+			const wchar_t* loadedPath = dllPathInDir.c_str();
+			HMODULE mod = ::LoadLibraryW(loadedPath);
+			if (!mod)
+			{
+				loadedPath = dllPathExe.c_str();
+				mod = ::LoadLibraryW(loadedPath);
+			}
             if (!mod)
             {
-                ALICE_LOG_WARN("ScriptHotReload: failed to load DLL \"%ls\"", dllPath.c_str());
+				ALICE_LOG_WARN("ScriptHotReload: failed to load DLL \"%ls\" (also tried \"%ls\")",
+					dllPathInDir.c_str(),
+					dllPathExe.c_str());
                 SetDynamicScriptFunctions(nullptr, nullptr, nullptr);
                 return false;
             }
@@ -73,7 +83,7 @@ namespace Alice
 
             if (!getCount || !getName || !createFn)
             {
-                ALICE_LOG_WARN("ScriptHotReload: DLL \"%ls\" is missing required world script exports", dllPath.c_str());
+                ALICE_LOG_WARN("ScriptHotReload: DLL \"%ls\" is missing required world script exports", dllPathInDir.c_str());
                 ::FreeLibrary(mod);
                 SetDynamicScriptFunctions(nullptr, nullptr, nullptr);
                 return false;
@@ -86,7 +96,7 @@ namespace Alice
             if (g_BindServices)
                 g_BindServices(g_BindWorld, g_BindResources);
 
-            ALICE_LOG_INFO("ScriptHotReload: loaded \"%ls\"", dllPath.c_str());
+            ALICE_LOG_INFO("ScriptHotReload: loaded \"%ls\"", loadedPath);
             return true;
         }
     }

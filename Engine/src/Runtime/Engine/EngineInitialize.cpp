@@ -1,6 +1,7 @@
 #include "Runtime/Engine/EngineImpl.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Resources/Prefab.h"
+#include <Windows.h>
 #include <chrono>
 #include <thread>
 
@@ -316,6 +317,7 @@ namespace Alice
 
 		const std::filesystem::path exeDir = InitializeResolveExeDir();
 		ApplyEditorModeFromExeName(exeDir);
+		InitializeDllSearchPath(exeDir);
 
 		if (!InitializeConfigureResourceManagers(exeDir)) return false;
 		if (!InitializeValidateGameDataIfNeeded()) return false;
@@ -355,6 +357,19 @@ namespace Alice
 		ThreadSafety::SetMainThreadId(std::this_thread::get_id());
 		LinkComponentRegistry();
 		ALICE_LOG_INFO("Engine::Initialize: Begin (EditorMode=%d)", m_editorMode);
+	}
+
+	void Engine::Impl::InitializeDllSearchPath(const std::filesystem::path& exeDir)
+	{
+#if defined(_WIN32)
+		const std::filesystem::path dllDir = exeDir / "dll";
+		if (!std::filesystem::exists(dllDir))
+			return;
+
+		const std::wstring dllDirW = dllDir.wstring();
+		// exe/dll 만 검색하도록 설정 (보안 + 배포 일관성)
+		SetDllDirectoryW(dllDirW.c_str());
+#endif
 	}
 
 	std::filesystem::path Engine::Impl::InitializeResolveExeDir()

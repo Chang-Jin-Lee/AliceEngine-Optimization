@@ -431,6 +431,7 @@ endif()
 # 공통 게임 코드
 set(APP_COMMON_SOURCES
     ${ALICE_SRC_DIR}/Samples/Scenes/SampleScene.cpp
+    ${ALICE_SRC_DIR}/Samples/Sandbox/DelayLoadHook.cpp
     ${ALICE_SRC_DIR}/Runtime/Importing/FbxImporter.cpp
     ${ALICE_SRC_DIR}/Runtime/Importing/FbxAsset.cpp
 )
@@ -466,6 +467,37 @@ add_executable(AlicePlayer
     ${APP_COMMON_SOURCES}
     ${APP_HEADERS}
 )
+
+# ==========================================
+# [Windows Icon] Launch / AlicePlayer (SAFE)
+# - .ico만 레포에 두고, .rc는 빌드 폴더에 자동 생성
+# - Windows + (MSVC/Mingw)에서만 적용
+# - 아이콘 파일 누락 시 즉시 에러
+# ==========================================
+if(WIN32 AND (MSVC OR MINGW))
+    set(ALICE_EDITOR_ICON "${CMAKE_SOURCE_DIR}/Resource/Icon/EditorIcon.ico")
+    set(ALICE_GAME_ICON   "${CMAKE_SOURCE_DIR}/Resource/Icon/GameIcon.ico")
+
+    if(NOT EXISTS "${ALICE_EDITOR_ICON}")
+        message(FATAL_ERROR "[Icon] not found: ${ALICE_EDITOR_ICON}")
+    endif()
+    if(NOT EXISTS "${ALICE_GAME_ICON}")
+        message(FATAL_ERROR "[Icon] not found: ${ALICE_GAME_ICON}")
+    endif()
+
+    file(TO_CMAKE_PATH "${ALICE_EDITOR_ICON}" ALICE_EDITOR_ICON_RC_PATH)
+    file(TO_CMAKE_PATH "${ALICE_GAME_ICON}"   ALICE_GAME_ICON_RC_PATH)
+
+    set(ALICE_EDITOR_ICON_RC "${CMAKE_BINARY_DIR}/EditorIcon.rc")
+    set(ALICE_GAME_ICON_RC   "${CMAKE_BINARY_DIR}/GameIcon.rc")
+
+    file(WRITE "${ALICE_EDITOR_ICON_RC}" "IDI_ICON1 ICON \"${ALICE_EDITOR_ICON_RC_PATH}\"\n")
+    file(WRITE "${ALICE_GAME_ICON_RC}"   "IDI_ICON1 ICON \"${ALICE_GAME_ICON_RC_PATH}\"\n")
+
+    target_sources(Launch      PRIVATE "${ALICE_EDITOR_ICON_RC}")
+    target_sources(AlicePlayer PRIVATE "${ALICE_GAME_ICON_RC}")
+endif()
+
 
 source_group(TREE ${ALICE_SRC_DIR} FILES ${LAUNCH_MAIN} ${PLAYER_MAIN} ${APP_COMMON_SOURCES} ${APP_HEADERS})
 
@@ -630,6 +662,31 @@ foreach(target Launch AlicePlayer)
     )
 endforeach()
 
+if(MSVC)
+    foreach(target Launch AlicePlayer)
+        target_link_libraries(${target} PRIVATE delayimp)
+        target_link_options(${target} PRIVATE
+            "$<$<CONFIG:Debug>:/DELAYLOAD:assimp-vc143-mtd.dll>"
+            "$<$<NOT:$<CONFIG:Debug>>:/DELAYLOAD:assimp-vc143-mt.dll>"
+            "$<$<CONFIG:Debug>:/DELAYLOAD:fmodL.dll>"
+            "$<$<NOT:$<CONFIG:Debug>>:/DELAYLOAD:fmod.dll>"
+            "$<$<CONFIG:Debug>:/DELAYLOAD:rttr_core_d.dll>"
+            "$<$<NOT:$<CONFIG:Debug>>:/DELAYLOAD:rttr_core.dll>"
+            "/DELAYLOAD:PhysXFoundation_64.dll"
+            "/DELAYLOAD:PhysXCommon_64.dll"
+            "/DELAYLOAD:PhysX_64.dll"
+            "/DELAYLOAD:PhysXCooking_64.dll"
+            "/DELAYLOAD:zlib1.dll"
+            "/DELAYLOAD:zlibd1.dll"
+            "/DELAYLOAD:quazip.dll"
+            "/DELAYLOAD:pugixml.dll"
+            "/DELAYLOAD:poly2tri.dll"
+            "/DELAYLOAD:kubazip.dll"
+            "/DELAYLOAD:minizip.dll"
+        )
+    endforeach()
+endif()
+
 # ==========================================
 # [Post-Build] DLL 복사
 # ==========================================
@@ -637,32 +694,34 @@ endforeach()
 # Launch와 AlicePlayer 타겟 모두에 DLL 복사 수행
 foreach(target Launch AlicePlayer)
     add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            "$<TARGET_FILE_DIR:${target}>/dll"
         # RTTR shared 스크립트 DLL과 registry 공유
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "$<TARGET_FILE:rttr_core>" "$<TARGET_FILE_DIR:${target}>/$<TARGET_FILE_NAME:rttr_core>"
+            "$<TARGET_FILE:rttr_core>" "$<TARGET_FILE_DIR:${target}>/dll/$<TARGET_FILE_NAME:rttr_core>"
 
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/zlib1.dll"       "$<TARGET_FILE_DIR:${target}>/zlib1.dll"
+            "${THIRDPARTY_3DMODEL_DIR}/zlib1.dll"       "$<TARGET_FILE_DIR:${target}>/dll/zlib1.dll"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/zlibd1.dll"      "$<TARGET_FILE_DIR:${target}>/zlibd1.dll"
+            "${THIRDPARTY_3DMODEL_DIR}/zlibd1.dll"      "$<TARGET_FILE_DIR:${target}>/dll/zlibd1.dll"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/quazip.dll"      "$<TARGET_FILE_DIR:${target}>/quazip.dll"
+            "${THIRDPARTY_3DMODEL_DIR}/quazip.dll"      "$<TARGET_FILE_DIR:${target}>/dll/quazip.dll"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/pugixml.dll"     "$<TARGET_FILE_DIR:${target}>/pugixml.dll"
+            "${THIRDPARTY_3DMODEL_DIR}/pugixml.dll"     "$<TARGET_FILE_DIR:${target}>/dll/pugixml.dll"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/poly2tri.dll"    "$<TARGET_FILE_DIR:${target}>/poly2tri.dll"
+            "${THIRDPARTY_3DMODEL_DIR}/poly2tri.dll"    "$<TARGET_FILE_DIR:${target}>/dll/poly2tri.dll"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/kubazip.dll"      "$<TARGET_FILE_DIR:${target}>/kubazip.dll"
+            "${THIRDPARTY_3DMODEL_DIR}/kubazip.dll"      "$<TARGET_FILE_DIR:${target}>/dll/kubazip.dll"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/minizip.dll"      "$<TARGET_FILE_DIR:${target}>/minizip.dll"
+            "${THIRDPARTY_3DMODEL_DIR}/minizip.dll"      "$<TARGET_FILE_DIR:${target}>/dll/minizip.dll"
 
         # vcpkg Assimp DLL 복사
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/debug/bin/assimp-vc143-mtd.dll"
-            "$<TARGET_FILE_DIR:${target}>/assimp-vc143-mtd.dll"
+            "$<TARGET_FILE_DIR:${target}>/dll/assimp-vc143-mtd.dll"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/bin/assimp-vc143-mt.dll"
-            "$<TARGET_FILE_DIR:${target}>/assimp-vc143-mt.dll"
+            "$<TARGET_FILE_DIR:${target}>/dll/assimp-vc143-mt.dll"
     )
 endforeach()
 
@@ -699,18 +758,20 @@ if(MSVC)
 
     foreach(target Launch AlicePlayer)
         add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+                "$<TARGET_FILE_DIR:${target}>/dll"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "$<$<CONFIG:Debug>:${PHYSX_BINDIR_DEBUG}/PhysXFoundation_64.dll>$<$<NOT:$<CONFIG:Debug>>:${PHYSX_BINDIR_REL}/PhysXFoundation_64.dll>"
-                "$<TARGET_FILE_DIR:${target}>/PhysXFoundation_64.dll"
+                "$<TARGET_FILE_DIR:${target}>/dll/PhysXFoundation_64.dll"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "$<$<CONFIG:Debug>:${PHYSX_BINDIR_DEBUG}/PhysXCommon_64.dll>$<$<NOT:$<CONFIG:Debug>>:${PHYSX_BINDIR_REL}/PhysXCommon_64.dll>"
-                "$<TARGET_FILE_DIR:${target}>/PhysXCommon_64.dll"
+                "$<TARGET_FILE_DIR:${target}>/dll/PhysXCommon_64.dll"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "$<$<CONFIG:Debug>:${PHYSX_BINDIR_DEBUG}/PhysX_64.dll>$<$<NOT:$<CONFIG:Debug>>:${PHYSX_BINDIR_REL}/PhysX_64.dll>"
-                "$<TARGET_FILE_DIR:${target}>/PhysX_64.dll"
+                "$<TARGET_FILE_DIR:${target}>/dll/PhysX_64.dll"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "$<$<CONFIG:Debug>:${PHYSX_BINDIR_DEBUG}/PhysXCooking_64.dll>$<$<NOT:$<CONFIG:Debug>>:${PHYSX_BINDIR_REL}/PhysXCooking_64.dll>"
-                "$<TARGET_FILE_DIR:${target}>/PhysXCooking_64.dll"
+                "$<TARGET_FILE_DIR:${target}>/dll/PhysXCooking_64.dll"
         )
     endforeach()
 endif()
@@ -729,12 +790,14 @@ if(WIN32)
     # Launch와 AlicePlayer 타겟에 DLL 복사
     foreach(t Launch AlicePlayer)
         add_custom_command(TARGET ${t} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+                "$<TARGET_FILE_DIR:${t}>/dll"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${FMOD_LIB_DIR}/fmod.dll"
-                "$<TARGET_FILE_DIR:${t}>/fmod.dll"
+                "$<TARGET_FILE_DIR:${t}>/dll/fmod.dll"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${FMOD_LIB_DIR}/fmodL.dll"
-                "$<TARGET_FILE_DIR:${t}>/fmodL.dll"
+                "$<TARGET_FILE_DIR:${t}>/dll/fmodL.dll"
             VERBATIM
         )
     endforeach()
