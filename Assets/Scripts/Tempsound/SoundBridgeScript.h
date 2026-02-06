@@ -30,8 +30,8 @@ namespace Alice
         ALICE_PROPERTY(bool, combo2ExtraEnabled, true);
 
     private:
-        C_CombatSessionComponent* FindSession();
-        AudioEventBusScript* FindBus();
+        //C_CombatSessionComponent* FindSession();
+        //AudioEventBusScript* FindBus();
         void OnCombatStateEntered(EntityId entityId, std::uint8_t actionState, const void* flagsPtr);
         void OnCombatResolve(EntityId victimId, EntityId attackerId, std::uint8_t resolveResult, float damage);
 
