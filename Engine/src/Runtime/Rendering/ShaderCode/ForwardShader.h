@@ -33,7 +33,8 @@ cbuffer CBPerObject : register(b0)
 
     // ToonPBREditable 파라미터
     float4   gToonPbrCuts;   // (cut1, cut2, cut3, strength)
-    float4   gToonPbrLevels; // (level1, level2, level3, unused)
+    float4   gToonPbrLevels;
+    float4   gToonPbrAlphas; // (level1, level2, level3, unused)
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -112,7 +113,8 @@ cbuffer CBPerObject : register(b0)
 
     // ToonPBREditable 파라미터
     float4   gToonPbrCuts;   // (cut1, cut2, cut3, strength)
-    float4   gToonPbrLevels; // (level1, level2, level3, unused)
+    float4   gToonPbrLevels;
+    float4   gToonPbrAlphas; // (level1, level2, level3, unused)
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -223,7 +225,8 @@ cbuffer CBPerObject : register(b0)
 
     // ToonPBREditable 파라미터
     float4   gToonPbrCuts;   // (cut1, cut2, cut3, strength)
-    float4   gToonPbrLevels; // (level1, level2, level3, unused)
+    float4   gToonPbrLevels;
+    float4   gToonPbrAlphas; // (level1, level2, level3, unused)
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -329,7 +332,8 @@ cbuffer CBPerObject : register(b0)
 
     // ToonPBREditable 파라미터
     float4   gToonPbrCuts;   // (cut1, cut2, cut3, strength)
-    float4   gToonPbrLevels; // (level1, level2, level3, unused)
+    float4   gToonPbrLevels;
+    float4   gToonPbrAlphas; // (level1, level2, level3, unused)
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -515,7 +519,7 @@ float ToonLevel(float n)
     return 0.1f;
 }
 
-float ToonStepEditable(float n, float3 cuts, float3 levels, float strength, float blur)
+float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float strength, float blur)
 {
     float c1 = saturate(cuts.x);
     float c2 = saturate(cuts.y);
@@ -528,6 +532,11 @@ float ToonStepEditable(float n, float3 cuts, float3 levels, float strength, floa
     float l2 = saturate(levels.z);
     float l3 = 1.0f;
 
+    float a0 = saturate(alphas.x);
+    float a1 = saturate(alphas.y);
+    float a2 = saturate(alphas.z);
+    float a3 = 1.0f;
+
     float t = saturate(strength);
     if (blur > 0.5f)
     {
@@ -539,21 +548,28 @@ float ToonStepEditable(float n, float3 cuts, float3 levels, float strength, floa
         float level = lerp(l0, l1, s1);
         level = lerp(level, l2, s2);
         level = lerp(level, l3, s3);
-        return lerp(n, level, t);
+        float alpha = lerp(a0, a1, s1);
+        alpha = lerp(alpha, a2, s2);
+        alpha = lerp(alpha, a3, s3);
+        return lerp(n, level, t * alpha);
     }
 
     float level = (n > c3) ? l3 :
                   (n > c2) ? l2 :
                   (n > c1) ? l1 :
                              l0;
-    return lerp(n, level, t);
+    float alpha = (n > c3) ? a3 :
+                  (n > c2) ? a2 :
+                  (n > c1) ? a1 :
+                             a0;
+    return lerp(n, level, t * alpha);
 }
 
 float ToonPbrNdotL(float n)
 {
     if (gShadingMode == 7)
     {
-         return ToonStepEditable(n, gToonPbrCuts.xyz, gToonPbrLevels.xyz, gToonPbrCuts.w, gToonPbrLevels.w);
+         return ToonStepEditable(n, gToonPbrCuts.xyz, gToonPbrLevels.xyz, gToonPbrAlphas.xyz, gToonPbrCuts.w, gToonPbrLevels.w);
     }
     return ToonLevel(n);
 }
@@ -1049,3 +1065,4 @@ float4 main(PSInput input) : SV_Target
 )";
     };
 }
+

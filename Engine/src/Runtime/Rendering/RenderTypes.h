@@ -193,6 +193,7 @@ namespace Alice
         // ToonPBREditable 파라미터 (shadingMode == 7)
         DirectX::XMFLOAT4 toonPbrCuts   { 0.2f, 0.5f, 0.95f, 1.0f }; // cut1, cut2, cut3, strength
         DirectX::XMFLOAT4 toonPbrLevels { 0.1f, 0.4f, 0.7f, 0.0f };  // level1, level2, level3, blur(0/1)
+        DirectX::XMFLOAT4 toonPbrAlphas { 1.0f, 1.0f, 1.0f, 0.0f };  // level1~3 alpha, w unused
 
         // 선택적인 알베도 텍스처 경로 (.alice 단일 포맷 또는 원본 이미지 경로)
         std::string       albedoTexturePath;
@@ -395,10 +396,11 @@ namespace Alice
         // ToonPBREditable 파라미터
         DirectX::XMFLOAT4 toonPbrCuts;    // Offset: 256 -> 272
         DirectX::XMFLOAT4 toonPbrLevels;  // Offset: 272 -> 288 (w: blur)
+        DirectX::XMFLOAT4 toonPbrAlphas;  // Offset: 288 -> 304 (alpha1~3)
         
         // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
-        DirectX::XMFLOAT3 outlineColor;  // 아웃라인 색상 (Offset: 288 -> 300)
-        float             outlineWidth;  // 아웃라인 두께 (월드 단위) (Offset: 300 -> 304)
+        DirectX::XMFLOAT3 outlineColor;  // 아웃라인 색상 (Offset: 304 -> 316)
+        float             outlineWidth;  // 아웃라인 두께 (월드 단위) (Offset: 316 -> 320)
 	};
 
 	/// 단순 Directional Light 2개와 재질 파라미터를 담는 구조체입니다.

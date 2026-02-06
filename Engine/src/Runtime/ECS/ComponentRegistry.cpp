@@ -176,6 +176,9 @@ namespace Alice
             .property("toonPbrLevel1", &MaterialComponent::toonPbrLevel1)
             .property("toonPbrLevel2", &MaterialComponent::toonPbrLevel2)
             .property("toonPbrLevel3", &MaterialComponent::toonPbrLevel3)
+            .property("toonPbrLevel1Alpha", &MaterialComponent::toonPbrLevel1Alpha)
+            .property("toonPbrLevel2Alpha", &MaterialComponent::toonPbrLevel2Alpha)
+            .property("toonPbrLevel3Alpha", &MaterialComponent::toonPbrLevel3Alpha)
             .property("toonPbrStrength", &MaterialComponent::toonPbrStrength)
             .property("toonPbrBlur", &MaterialComponent::toonPbrBlur);
 
