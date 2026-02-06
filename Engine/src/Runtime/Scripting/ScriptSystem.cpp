@@ -215,6 +215,18 @@ namespace Alice
         return m_input->GetMouseScrollDelta();
     }
 
+    void ScriptSystem::SetCursorVisible(bool visible)
+    {
+        if (m_input)
+            m_input->SetCursorVisible(visible);
+    }
+
+    void ScriptSystem::SetCursorLocked(bool locked)
+    {
+        if (m_input)
+            m_input->SetCursorLocked(locked);
+    }
+
     std::string ScriptSystem::GetResolvedPath(const char* filename) const
     {
         if (!filename || !filename[0])

@@ -105,7 +105,6 @@ namespace Alice
 	{
 		// Stop any playing audio before tearing down/loading scenes.
 		Sound::StopBGM();
-		Sound::StopAllSFX();
 
 		// pending ?�이??추출
 		std::unique_ptr<IScene> pendingScene = std::move(m_pendingScene);
