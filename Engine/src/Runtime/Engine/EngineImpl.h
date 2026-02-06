@@ -194,6 +194,7 @@ namespace Alice
 		// Initialize helpers
 		bool InitializeAll(Engine& owner, HINSTANCE hInstance, int nCmdShow);
 		void InitializeMainThreadAndRegistry();
+		void InitializeDllSearchPath(const std::filesystem::path& exeDir);
 		std::filesystem::path InitializeResolveExeDir();
 		void ApplyEditorModeFromExeName(const std::filesystem::path& exeDir);
 		bool InitializeConfigureResourceManagers(const std::filesystem::path& exeDir);

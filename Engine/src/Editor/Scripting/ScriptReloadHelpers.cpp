@@ -248,13 +248,17 @@ namespace Alice
 
 		// RTTR shared DLL도 같이 복사해 둡니다. (스크립트 RTTR 등록이 엔진에서 보이려면 필수)
 		// - ScriptsBuild는 자체적으로 rttr_core.dll을 빌드합니다.
-		// - 실행 파일 폴더에 하나만 존재하면, EXE/DLL이 같은 registry를 공유합니다.
+		// - dll 폴더에 하나만 존재하면, EXE/DLL이 같은 registry를 공유합니다.
 		{
+			std::error_code ecMk;
+			const path dllDir = exeDir / "dll";
+			create_directories(dllDir, ecMk);
+
 			path builtRttr = scriptsBuildDir / path(kConfig) / "rttr_core.dll";
 			if (exists(builtRttr))
 			{
 				std::error_code ecRttr;
-				copy_file(builtRttr, exeDir / "rttr_core.dll",
+				copy_file(builtRttr, dllDir / "rttr_core.dll",
 					copy_options::overwrite_existing,
 					ecRttr);
 				if (ecRttr)
@@ -272,7 +276,11 @@ namespace Alice
 
 		ScriptHotReload_Unload();
 
-		path targetDll = exeDir / "AliceScripts.dll";
+		std::error_code ecMk;
+		const path dllDir = exeDir / "dll";
+		create_directories(dllDir, ecMk);
+
+		path targetDll = dllDir / "AliceScripts.dll";
 		std::error_code ecCopy;
 		copy_file(builtDll, targetDll,
 			copy_options::overwrite_existing,
