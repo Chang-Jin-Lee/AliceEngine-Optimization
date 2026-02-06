@@ -117,6 +117,8 @@ namespace Alice
         m_attackHeldSec = 0.0f;
         m_guardHeldPrev = false;
         m_guardHeldSec = 0.0f;
+        m_itemHeldPrev = false;
+        m_itemHeldSec = 0.0f;
         m_chargeActive = false;
         m_chargeHeldSec = 0.0f;
         m_chargeLevel = 0;
@@ -191,8 +193,16 @@ namespace Alice
             }
             else if (attackReleased)
             {
-                intent.heavyAttackPressed = true;
-                intent.chargeLevel = level;
+                if (level >= 1)
+                {
+                    intent.heavyAttackPressed = true;
+                    intent.chargeLevel = level;
+                }
+                else
+                {
+                    intent.lightAttackPressed = true;
+                    intent.chargeLevel = 0;
+                }
                 m_chargeActive = false;
                 m_chargeHeldSec = 0.0f;
                 m_chargeLevel = 0;
@@ -240,7 +250,19 @@ namespace Alice
         intent.parryTapWindowSec = m_parryWindowSec;
 
         intent.dodgePressed = input->GetKeyDown(toKey(m_keyDodge));
-        intent.itemPressed = input->GetKeyDown(toKey(m_keyItem));
+        const bool itemPressed = input->GetKeyDown(toKey(m_keyItem));
+        const bool itemHeld = input->GetKey(toKey(m_keyItem));
+        const bool itemReleased = (!itemHeld && m_itemHeldPrev);
+        if (itemPressed)
+            m_itemHeldSec = 0.0f;
+        if (itemHeld)
+            m_itemHeldSec += deltaTime;
+        else
+            m_itemHeldSec = 0.0f;
+        intent.itemPressed = itemPressed;
+        intent.itemHeld = itemHeld;
+        intent.itemReleased = itemReleased;
+        intent.itemHeldSec = itemHeld ? m_itemHeldSec : 0.0f;
         intent.interactPressed = input->GetKeyDown(toKey(m_keyInteract));
         intent.ragePressed = input->GetKeyDown(toKey(m_keyRage));
 
@@ -249,6 +271,7 @@ namespace Alice
 
         m_attackHeldPrev = attackHeld;
         m_guardHeldPrev = guardHeld;
+        m_itemHeldPrev = itemHeld;
 
         if (m_enableLogs)
         {

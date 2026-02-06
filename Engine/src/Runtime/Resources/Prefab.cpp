@@ -10,9 +10,12 @@
 #include "Runtime/ECS/World.h"
 #include "Runtime/Scripting/Components/ScriptComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/DecalComponent.h"
 #include "Runtime/Rendering/Components/PointLightComponent.h"
 #include "Runtime/Rendering/Components/SpotLightComponent.h"
 #include "Runtime/Rendering/Components/RectLightComponent.h"
+#include "Runtime/Rendering/Components/ComputeEffectComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/Rendering/Components/CameraComponent.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
 #include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
@@ -52,6 +55,11 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <DirectXMath.h>
+#include <algorithm>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+#include "Runtime/ECS/Components/IDComponent.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 
 namespace Alice
@@ -67,6 +75,9 @@ namespace Alice
                 0, 1, 0, 0,
                 0, 0, 1, 0,
                 0, 0, 0, 1);
+
+            static World* g_DefaultWorld = nullptr;
+            static ResourceManager* g_DefaultResources = nullptr;
 
             // 프로젝트 루트 경로를 구하는 헬퍼 함수
             static std::filesystem::path GetProjectRoot()
@@ -297,256 +308,240 @@ namespace Alice
                 
                 return true;
             }
-        }
 
-        EntityId InstantiateFromFile(World& world, const std::filesystem::path& path)
-        {
-            if (!std::filesystem::exists(path))
-                return InvalidEntityId;
-
-            JsonRttr::json root;
-            if (!JsonRttr::LoadJsonFile(path, root))
-                return InvalidEntityId;
-            if (!root.is_object())
-                return InvalidEntityId;
-
-            // 엔티티 생성
-            EntityId entity = world.CreateEntity();
-
-            const std::string name = root.value("name", std::string{});
-            if (!name.empty())
-                world.SetEntityName(entity, name);
-
-            // Transform
-            TransformComponent& t = world.AddComponent<TransformComponent>(entity);
-            auto itT = root.find("Transform");
-            if (itT != root.end() && itT->is_object())
+            static void CollectEntityTree(const World& world, EntityId root, std::vector<EntityId>& out)
             {
-                rttr::instance inst = t;
-                if (!JsonRttr::FromJsonObject(inst, *itT))
-                    return InvalidEntityId;
-                if (itT->find("visible") == itT->end())
+                out.push_back(root);
+                std::vector<EntityId> children = world.GetChildren(root);
+                std::sort(children.begin(), children.end());
+                for (EntityId child : children)
+                    CollectEntityTree(world, child, out);
+            }
+
+            static bool WriteEntityJson(const World& world, EntityId entity, JsonRttr::json& outEntity);
+            static bool ApplyEntityFromJson(World& world, EntityId entity, const JsonRttr::json& root);
+
+            static bool WriteEntityJson(const World& world, EntityId entity, JsonRttr::json& outEntity)
+            {
+                if (entity == InvalidEntityId)
+                    return false;
+
+                const TransformComponent* t = world.GetComponent<TransformComponent>(entity);
+                if (!t)
+                    return false;
+
+                outEntity = JsonRttr::json::object();
+                const std::string name = world.GetEntityName(entity);
+                if (!name.empty())
+                    outEntity["name"] = name;
+
+                // Transform
                 {
-                    auto itLegacy = itT->find("renderEnabled");
-                    if (itLegacy != itT->end())
+                    rttr::instance inst = const_cast<TransformComponent&>(*t);
+                    outEntity["Transform"] = JsonRttr::ToJsonObject(inst);
+                }
+
+                // Scripts
+                if (const auto* scripts = world.GetScripts(entity); scripts && !scripts->empty())
+                {
+                    JsonRttr::json arr = JsonRttr::json::array();
+                    for (const auto& sc : *scripts)
                     {
-                        if (itLegacy->is_boolean())
-                            t.visible = itLegacy->get<bool>();
-                        else if (itLegacy->is_number())
-                            t.visible = (itLegacy->get<double>() != 0.0);
+                        JsonRttr::json s = JsonRttr::json::object();
+                        s["name"] = sc.scriptName;
+                        s["enabled"] = sc.enabled;
+
+                        if (sc.instance)
+                        {
+                            rttr::instance inst = *sc.instance;
+                            const rttr::type t = rttr::type::get_by_name(sc.scriptName);
+                            s["props"] = JsonRttr::ToJsonObject(inst, t);
+                        }
+
+                        arr.push_back(s);
                     }
+                    outEntity["Scripts"] = arr;
                 }
-            }
 
-            // Scripts (여러 개)
-            auto itS = root.find("Scripts");
-            if (itS != root.end() && itS->is_array())
-            {
-                for (const auto& s : *itS)
+                // Material
+                if (const auto* mat = world.GetComponent<MaterialComponent>(entity); mat)
                 {
-                    if (!s.is_object()) continue;
-                    const std::string sn = s.value("name", std::string{});
-                    if (sn.empty()) continue;
+                    MaterialComponent matCopy = *mat;
+                    matCopy.assetPath = NormalizePathToRelative(matCopy.assetPath);
+                    matCopy.albedoTexturePath = NormalizePathToRelative(matCopy.albedoTexturePath);
 
-                    ScriptComponent& sc = world.AddScript(entity, sn);
-                    sc.enabled = s.value("enabled", true);
-
-                    auto itP = s.find("props");
-                    if (itP != s.end() && itP->is_object() && sc.instance)
-                    {
-                        rttr::instance inst = *sc.instance;
-                        const rttr::type t = rttr::type::get_by_name(sc.scriptName);
-                        if (!JsonRttr::FromJsonObject(inst, *itP, t))
-                            return InvalidEntityId;
-                        sc.defaultsApplied = true; // 프리팹이 값 주입 완료
-                    }
+                    rttr::instance inst = matCopy;
+                    outEntity["Material"] = JsonRttr::ToJsonObject(inst);
                 }
-            }
 
-            // Material
-            auto itM = root.find("Material");
-            if (itM != root.end() && itM->is_object())
-            {
-                MaterialComponent& mc = world.AddComponent<MaterialComponent>(entity, DirectX::XMFLOAT3(0.7f, 0.7f, 0.7f));
-                rttr::instance inst = mc;
-                if (!JsonRttr::FromJsonObject(inst, *itM))
-                    return InvalidEntityId;
-            }
-
-            // SkinnedMesh
-            auto itSM = root.find("SkinnedMesh");
-            if (itSM != root.end() && itSM->is_object())
-            {
-                SkinnedMeshComponent tmp;
-                rttr::instance instTmp = tmp;
-                if (!JsonRttr::FromJsonObject(instTmp, *itSM))
-                    return InvalidEntityId;
-
-                if (!tmp.meshAssetPath.empty())
+                if (const auto* decal = world.GetComponent<DecalComponent>(entity); decal)
                 {
-                    SkinnedMeshComponent& sm = world.AddComponent<SkinnedMeshComponent>(entity, tmp.meshAssetPath);
-                    sm.instanceAssetPath = tmp.instanceAssetPath;
-                    sm.boneMatrices = &g_IdentityBone;
-                    sm.boneCount = 1;
+                    DecalComponent decalCopy = *decal;
+                    decalCopy.albedoTexturePath = NormalizePathToRelative(decalCopy.albedoTexturePath);
+                    rttr::instance inst = decalCopy;
+                    outEntity["Decal"] = JsonRttr::ToJsonObject(inst);
                 }
-            }
 
-            // SkinnedAnimation
-            auto itSA = root.find("SkinnedAnimation");
-            if (itSA != root.end() && itSA->is_object())
-            {
-                SkinnedAnimationComponent& sa = world.AddComponent<SkinnedAnimationComponent>(entity);
-                rttr::instance inst = sa;
-                if (!JsonRttr::FromJsonObject(inst, *itSA))
-                    return InvalidEntityId;
-            }
+                // SkinnedMesh
+                if (const auto* skinned = world.GetComponent<SkinnedMeshComponent>(entity); skinned)
+                {
+                    SkinnedMeshComponent skinnedCopy = *skinned;
+                    skinnedCopy.instanceAssetPath = NormalizePathToRelative(skinnedCopy.instanceAssetPath);
+                    skinnedCopy.meshAssetPath = NormalizePathToRelative(skinnedCopy.meshAssetPath);
 
-            // AdvancedAnimation
-            auto itAA = root.find("AdvancedAnimation");
-            if (itAA != root.end() && itAA->is_object())
-            {
-                AdvancedAnimationComponent& aa = world.AddComponent<AdvancedAnimationComponent>(entity);
-                rttr::instance inst = aa;
-                if (!JsonRttr::FromJsonObject(inst, *itAA))
-                    return InvalidEntityId;
-            }
+                    rttr::instance inst = skinnedCopy;
+                    outEntity["SkinnedMesh"] = JsonRttr::ToJsonObject(inst);
+                }
 
-            // Camera
-            auto itC = root.find("Camera");
-            if (itC != root.end() && itC->is_object())
-            {
-                CameraComponent& cc = world.AddComponent<CameraComponent>(entity);
-                rttr::instance inst = cc;
-                if (!JsonRttr::FromJsonObject(inst, *itC))
-                    return InvalidEntityId;
-            }
+                // SkinnedAnimation
+                if (const auto* anim = world.GetComponent<SkinnedAnimationComponent>(entity); anim)
+                {
+                    rttr::instance inst = const_cast<SkinnedAnimationComponent&>(*anim);
+                    outEntity["SkinnedAnimation"] = JsonRttr::ToJsonObject(inst);
+                }
 
-            // CameraFollow
-            auto itCF = root.find("CameraFollow");
-            if (itCF != root.end() && itCF->is_object())
-            {
-                CameraFollowComponent& cf = world.AddComponent<CameraFollowComponent>(entity);
-                rttr::instance inst = cf;
-                if (!JsonRttr::FromJsonObject(inst, *itCF))
-                    return InvalidEntityId;
-            }
+                // AdvancedAnimation
+                if (const auto* advAnim = world.GetComponent<AdvancedAnimationComponent>(entity); advAnim)
+                {
+                    rttr::instance inst = const_cast<AdvancedAnimationComponent&>(*advAnim);
+                    outEntity["AdvancedAnimation"] = JsonRttr::ToJsonObject(inst);
+                }
 
-            // CameraSpringArm
-            auto itSpring = root.find("CameraSpringArm");
-            if (itSpring != root.end() && itSpring->is_object())
-            {
-                CameraSpringArmComponent& sa = world.AddComponent<CameraSpringArmComponent>(entity);
-                rttr::instance inst = sa;
-                if (!JsonRttr::FromJsonObject(inst, *itSpring))
-                    return InvalidEntityId;
-            }
+                // Camera
+                if (const auto* cam = world.GetComponent<CameraComponent>(entity); cam)
+                {
+                    rttr::instance inst = const_cast<CameraComponent&>(*cam);
+                    outEntity["Camera"] = JsonRttr::ToJsonObject(inst);
+                }
 
-            // CameraLookAt
-            auto itLA = root.find("CameraLookAt");
-            if (itLA != root.end() && itLA->is_object())
-            {
-                CameraLookAtComponent& la = world.AddComponent<CameraLookAtComponent>(entity);
-                rttr::instance inst = la;
-                if (!JsonRttr::FromJsonObject(inst, *itLA))
-                    return InvalidEntityId;
-            }
+                // CameraFollow
+                if (const auto* follow = world.GetComponent<CameraFollowComponent>(entity); follow)
+                {
+                    rttr::instance inst = const_cast<CameraFollowComponent&>(*follow);
+                    outEntity["CameraFollow"] = JsonRttr::ToJsonObject(inst);
+                }
 
-            // CameraShake
-            auto itCS = root.find("CameraShake");
-            if (itCS != root.end() && itCS->is_object())
-            {
-                CameraShakeComponent& cs = world.AddComponent<CameraShakeComponent>(entity);
-                rttr::instance inst = cs;
-                if (!JsonRttr::FromJsonObject(inst, *itCS))
-                    return InvalidEntityId;
-            }
+                // CameraSpringArm
+                if (const auto* spring = world.GetComponent<CameraSpringArmComponent>(entity); spring)
+                {
+                    rttr::instance inst = const_cast<CameraSpringArmComponent&>(*spring);
+                    outEntity["CameraSpringArm"] = JsonRttr::ToJsonObject(inst);
+                }
 
-            // CameraBlend
-            auto itCB = root.find("CameraBlend");
-            if (itCB != root.end() && itCB->is_object())
-            {
-                CameraBlendComponent& cb = world.AddComponent<CameraBlendComponent>(entity);
-                rttr::instance inst = cb;
-                if (!JsonRttr::FromJsonObject(inst, *itCB))
-                    return InvalidEntityId;
-            }
+                // CameraLookAt
+                if (const auto* lookAt = world.GetComponent<CameraLookAtComponent>(entity); lookAt)
+                {
+                    rttr::instance inst = const_cast<CameraLookAtComponent&>(*lookAt);
+                    outEntity["CameraLookAt"] = JsonRttr::ToJsonObject(inst);
+                }
 
-            // CameraInput
-            auto itCI = root.find("CameraInput");
-            if (itCI != root.end() && itCI->is_object())
-            {
-                CameraInputComponent& ci = world.AddComponent<CameraInputComponent>(entity);
-                rttr::instance inst = ci;
-                if (!JsonRttr::FromJsonObject(inst, *itCI))
-                    return InvalidEntityId;
-            }
+                // CameraShake
+                if (const auto* shake = world.GetComponent<CameraShakeComponent>(entity); shake)
+                {
+                    rttr::instance inst = const_cast<CameraShakeComponent&>(*shake);
+                    outEntity["CameraShake"] = JsonRttr::ToJsonObject(inst);
+                }
 
-            // Socket (소켓 정의 목록)
-            auto itSocket = root.find("Socket");
-            if (itSocket != root.end() && itSocket->is_object())
-            {
-                SocketComponent& sc = world.AddComponent<SocketComponent>(entity);
-                if (!SocketSerialization::JsonToSocketComponent(*itSocket, sc))
-                    return InvalidEntityId;
-            }
+                // CameraBlend
+                if (const auto* blend = world.GetComponent<CameraBlendComponent>(entity); blend)
+                {
+                    rttr::instance inst = const_cast<CameraBlendComponent&>(*blend);
+                    outEntity["CameraBlend"] = JsonRttr::ToJsonObject(inst);
+                }
 
-            // SocketAttachment
-            auto itSAc = root.find("SocketAttachment");
-            if (itSAc != root.end() && itSAc->is_object())
-            {
-                SocketAttachmentComponent& sa = world.AddComponent<SocketAttachmentComponent>(entity);
-                if (auto itGuid = itSAc->find("ownerGuid"); itGuid != itSAc->end())
-                    sa.ownerGuid = ParseGuidOrZero(*itGuid);
+                // CameraInput
+                if (const auto* input = world.GetComponent<CameraInputComponent>(entity); input)
+                {
+                    rttr::instance inst = const_cast<CameraInputComponent&>(*input);
+                    outEntity["CameraInput"] = JsonRttr::ToJsonObject(inst);
+                }
 
-                JsonRttr::json copy = *itSAc;
-                copy.erase("ownerGuid");
-                rttr::instance inst = sa;
-                if (!JsonRttr::FromJsonObject(inst, copy))
-                    return InvalidEntityId;
-            }
+                // Socket
+                if (const auto* socketComp = world.GetComponent<SocketComponent>(entity); socketComp)
+                {
+                    outEntity["Socket"] = SocketSerialization::SocketComponentToJson(*socketComp);
+                }
 
-            // Hurtbox
-            auto itHB = root.find("Hurtbox");
-            if (itHB != root.end() && itHB->is_object())
-            {
-                HurtboxComponent& hb = world.AddComponent<HurtboxComponent>(entity);
-                if (auto itGuid = itHB->find("ownerGuid"); itGuid != itHB->end())
-                    hb.ownerGuid = ParseGuidOrZero(*itGuid);
+                // SocketAttachment
+                if (const auto* socketAttach = world.GetComponent<SocketAttachmentComponent>(entity); socketAttach)
+                {
+                    rttr::instance inst = const_cast<SocketAttachmentComponent&>(*socketAttach);
+                    JsonRttr::json obj = JsonRttr::ToJsonObject(inst);
+                    obj["ownerGuid"] = std::to_string(socketAttach->ownerGuid);
+                    outEntity["SocketAttachment"] = obj;
+                }
 
-                JsonRttr::json copy = *itHB;
-                copy.erase("ownerGuid");
-                rttr::instance inst = hb;
-                if (!JsonRttr::FromJsonObject(inst, copy))
-                    return InvalidEntityId;
-            }
+                // Hurtbox
+                if (const auto* hurtbox = world.GetComponent<HurtboxComponent>(entity); hurtbox)
+                {
+                    rttr::instance inst = const_cast<HurtboxComponent&>(*hurtbox);
+                    JsonRttr::json obj = JsonRttr::ToJsonObject(inst);
+                    obj["ownerGuid"] = std::to_string(hurtbox->ownerGuid);
+                    outEntity["Hurtbox"] = obj;
+                }
 
-            // WeaponTrace
-            auto itWT = root.find("WeaponTrace");
-            if (itWT != root.end() && itWT->is_object())
-            {
-                WeaponTraceComponent& wt = world.AddComponent<WeaponTraceComponent>(entity);
-                if (!WeaponTraceSerialization::JsonToWeaponTraceComponent(*itWT, wt))
-                    return InvalidEntityId;
-            }
+                // WeaponTrace
+                if (const auto* weaponTrace = world.GetComponent<WeaponTraceComponent>(entity); weaponTrace)
+                {
+                    outEntity["WeaponTrace"] = WeaponTraceSerialization::WeaponTraceComponentToJson(*weaponTrace);
+                }
 
-            // Health
-            auto itHealth = root.find("Health");
-            if (itHealth != root.end() && itHealth->is_object())
-            {
-                HealthComponent& hc = world.AddComponent<HealthComponent>(entity);
-                rttr::instance inst = hc;
-                if (!JsonRttr::FromJsonObject(inst, *itHealth))
-                    return InvalidEntityId;
-            }
+                // Health
+                if (const auto* health = world.GetComponent<HealthComponent>(entity); health)
+                {
+                    rttr::instance inst = const_cast<HealthComponent&>(*health);
+                    outEntity["Health"] = JsonRttr::ToJsonObject(inst);
+                }
 
-            // AttackDriver
-            auto itAttackDriver = root.find("AttackDriver");
-            if (itAttackDriver != root.end() && itAttackDriver->is_object())
-            {
-                AttackDriverComponent& ad = world.AddComponent<AttackDriverComponent>(entity);
-                if (!AttackDriverSerialization::JsonToAttackDriverComponent(*itAttackDriver, ad))
-                    return InvalidEntityId;
-            }
+                // AttackDriver
+                if (const auto* attackDriver = world.GetComponent<AttackDriverComponent>(entity); attackDriver)
+                {
+                    outEntity["AttackDriver"] = AttackDriverSerialization::AttackDriverComponentToJson(*attackDriver);
+                }
+
+                // AliceUI Components
+                if (const auto* uiWidget = world.GetComponent<UIWidgetComponent>(entity); uiWidget)
+                {
+                    rttr::instance inst = const_cast<UIWidgetComponent&>(*uiWidget);
+                    outEntity["UIWidget"] = JsonRttr::ToJsonObject(inst);
+                }
+                if (const auto* uiTransform = world.GetComponent<UITransformComponent>(entity); uiTransform)
+                {
+                    rttr::instance inst = const_cast<UITransformComponent&>(*uiTransform);
+                    outEntity["UITransform"] = JsonRttr::ToJsonObject(inst);
+                }
+                if (const auto* uiImage = world.GetComponent<UIImageComponent>(entity); uiImage)
+                {
+                    UIImageComponent copy = *uiImage;
+                    copy.texturePath = NormalizePathToRelative(copy.texturePath);
+                    rttr::instance inst = copy;
+                    outEntity["UIImage"] = JsonRttr::ToJsonObject(inst);
+                }
+                if (const auto* uiText = world.GetComponent<UITextComponent>(entity); uiText)
+                {
+                    UITextComponent copy = *uiText;
+                    copy.fontPath = NormalizePathToRelative(copy.fontPath);
+                    rttr::instance inst = copy;
+                    outEntity["UIText"] = JsonRttr::ToJsonObject(inst);
+                }
+                if (const auto* uiButton = world.GetComponent<UIButtonComponent>(entity); uiButton)
+                {
+                    UIButtonComponent copy = *uiButton;
+                    copy.normalTexture = NormalizePathToRelative(copy.normalTexture);
+                    copy.hoveredTexture = NormalizePathToRelative(copy.hoveredTexture);
+                    copy.pressedTexture = NormalizePathToRelative(copy.pressedTexture);
+                    copy.disabledTexture = NormalizePathToRelative(copy.disabledTexture);
+                    rttr::instance inst = copy;
+                    outEntity["UIButton"] = JsonRttr::ToJsonObject(inst);
+                }
+                if (const auto* uiGauge = world.GetComponent<UIGaugeComponent>(entity); uiGauge)
+                {
+                    UIGaugeComponent copy = *uiGauge;
+                    copy.fillTexture = NormalizePathToRelative(copy.fillTexture);
+                    copy.backgroundTexture = NormalizePathToRelative(copy.backgroundTexture);
+                    rttr::instance inst = copy;
+                    outEntity["UIGauge"] = JsonRttr::ToJsonObject(inst);
+                }
 
             // AliceUI Components
             auto itUIWidget = root.find("UIWidget");
@@ -605,278 +600,402 @@ namespace Alice
                 if (!JsonRttr::FromJsonObject(inst, *itUIGauge))
                     return InvalidEntityId;
             }
-
-            // Point Light
-            auto itPL = root.find("PointLight");
-            if (itPL != root.end() && itPL->is_object())
-            {
-                PointLightComponent& pl = world.AddComponent<PointLightComponent>(entity);
-                rttr::instance inst = pl;
-                if (!JsonRttr::FromJsonObject(inst, *itPL))
-                    return InvalidEntityId;
-            }
-
-            // Spot Light
-            auto itSL = root.find("SpotLight");
-            if (itSL != root.end() && itSL->is_object())
-            {
-                SpotLightComponent& sl = world.AddComponent<SpotLightComponent>(entity);
-                rttr::instance inst = sl;
-                if (!JsonRttr::FromJsonObject(inst, *itSL))
-                    return InvalidEntityId;
-            }
-
-            // Rect Light
-            auto itRL = root.find("RectLight");
-            if (itRL != root.end() && itRL->is_object())
-            {
-                RectLightComponent& rl = world.AddComponent<RectLightComponent>(entity);
-                rttr::instance inst = rl;
-                if (!JsonRttr::FromJsonObject(inst, *itRL))
-                    return InvalidEntityId;
-            }
-
-            // PhysX Components
-            auto itRB = root.find("RigidBody");
-            if (itRB != root.end() && itRB->is_object())
-            {
-                Phy_RigidBodyComponent& rb = world.AddComponent<Phy_RigidBodyComponent>(entity);
-                rttr::instance inst = rb;
-                if (!JsonRttr::FromJsonObject(inst, *itRB))
-                    return InvalidEntityId;
-            }
-
-            auto itCollider = root.find("Collider");
-            if (itCollider != root.end() && itCollider->is_object())
-            {
-                Phy_ColliderComponent& col = world.AddComponent<Phy_ColliderComponent>(entity);
-                rttr::instance inst = col;
-                if (!JsonRttr::FromJsonObject(inst, *itCollider))
-                    return InvalidEntityId;
-            }
-
-            auto itMeshCollider = root.find("MeshCollider");
-            if (itMeshCollider != root.end() && itMeshCollider->is_object())
-            {
-                Phy_MeshColliderComponent& mc = world.AddComponent<Phy_MeshColliderComponent>(entity);
-                rttr::instance inst = mc;
-                if (!JsonRttr::FromJsonObject(inst, *itMeshCollider))
-                    return InvalidEntityId;
-            }
-
-            auto itCCT = root.find("CharacterController");
-            if (itCCT != root.end() && itCCT->is_object())
-            {
-                Phy_CCTComponent& cct = world.AddComponent<Phy_CCTComponent>(entity);
-                rttr::instance inst = cct;
-                if (!JsonRttr::FromJsonObject(inst, *itCCT))
-                    return InvalidEntityId;
-            }
-
-            auto itTerrain = root.find("TerrainHeightField");
-            if (itTerrain != root.end() && itTerrain->is_object())
-            {
-                Phy_TerrainHeightFieldComponent& terrain = world.AddComponent<Phy_TerrainHeightFieldComponent>(entity);
-                rttr::instance inst = terrain;
-                if (!JsonRttr::FromJsonObject(inst, *itTerrain))
-                    return InvalidEntityId;
-            }
-
-            auto itJoint = root.find("Joint");
-            if (itJoint != root.end() && itJoint->is_object())
-            {
-                Phy_JointComponent& joint = world.AddComponent<Phy_JointComponent>(entity);
-                rttr::instance inst = joint;
-                if (!JsonRttr::FromJsonObject(inst, *itJoint))
-                    return InvalidEntityId;
-            }
-
-            auto itPhysicsSettings = root.find("PhysicsSceneSettings");
-            if (itPhysicsSettings != root.end() && itPhysicsSettings->is_object())
-            {
-                Phy_SettingsComponent& ps = world.AddComponent<Phy_SettingsComponent>(entity);
-                // 수동 역직렬화 사용 (중첩 배열 보장)
-                if (!LoadPhysicsSceneSettings(ps, *itPhysicsSettings))
-                    return InvalidEntityId;
-            }
-
-            return entity;
-        }
-
-        bool SaveToFile(const World& world,
-                        EntityId entity,
-                        const std::filesystem::path& path)
-        {
-            if (entity == InvalidEntityId) return false;
-
-            const TransformComponent* t = world.GetComponent<TransformComponent>(entity);
-            if (!t)
-                return false;
-
-            JsonRttr::json root = JsonRttr::json::object();
-            root["version"] = 1;
-
-            const std::string name = world.GetEntityName(entity);
-            if (!name.empty())
-                root["name"] = name;
-
-            // Transform
-            {
-                rttr::instance inst = const_cast<TransformComponent&>(*t);
-                root["Transform"] = JsonRttr::ToJsonObject(inst);
-            }
-
-            // Scripts
-            if (const auto* scripts = world.GetScripts(entity); scripts && !scripts->empty())
-            {
-                JsonRttr::json arr = JsonRttr::json::array();
-                for (const auto& sc : *scripts)
+                // Point Light
+                if (const auto* point = world.GetComponent<PointLightComponent>(entity); point)
                 {
-                    JsonRttr::json s = JsonRttr::json::object();
-                    s["name"] = sc.scriptName;
-                    s["enabled"] = sc.enabled;
-
-                    if (sc.instance)
-                    {
-                        rttr::instance inst = *sc.instance;
-                        const rttr::type t = rttr::type::get_by_name(sc.scriptName);
-                        s["props"] = JsonRttr::ToJsonObject(inst, t);
-                    }
-
-                    arr.push_back(s);
+                    rttr::instance inst = const_cast<PointLightComponent&>(*point);
+                    outEntity["PointLight"] = JsonRttr::ToJsonObject(inst);
                 }
-                root["Scripts"] = arr;
+
+                // Spot Light
+                if (const auto* spot = world.GetComponent<SpotLightComponent>(entity); spot)
+                {
+                    rttr::instance inst = const_cast<SpotLightComponent&>(*spot);
+                    outEntity["SpotLight"] = JsonRttr::ToJsonObject(inst);
+                }
+
+                // Rect Light
+                if (const auto* rect = world.GetComponent<RectLightComponent>(entity); rect)
+                {
+                    rttr::instance inst = const_cast<RectLightComponent&>(*rect);
+                    outEntity["RectLight"] = JsonRttr::ToJsonObject(inst);
+                }
+
+                if (const auto* computeEffect = world.GetComponent<ComputeEffectComponent>(entity); computeEffect)
+                {
+                    rttr::instance inst = const_cast<ComputeEffectComponent&>(*computeEffect);
+                    outEntity["ComputeEffect"] = JsonRttr::ToJsonObject(inst);
+                }
+
+                if (const auto* unityVfx = world.GetComponent<UnityVfxComponent>(entity); unityVfx)
+                {
+                    rttr::instance inst = const_cast<UnityVfxComponent&>(*unityVfx);
+                    outEntity["UnityVfx"] = JsonRttr::ToJsonObject(inst);
+                }
+
+                // PhysX Components
+                if (const auto* rigidBody = world.GetComponent<Phy_RigidBodyComponent>(entity); rigidBody)
+                {
+                    rttr::instance inst = const_cast<Phy_RigidBodyComponent&>(*rigidBody);
+                    outEntity["RigidBody"] = JsonRttr::ToJsonObject(inst);
+                }
+
+                if (const auto* collider = world.GetComponent<Phy_ColliderComponent>(entity); collider)
+                {
+                    rttr::instance inst = const_cast<Phy_ColliderComponent&>(*collider);
+                    outEntity["Collider"] = JsonRttr::ToJsonObject(inst);
+                }
+
+                if (const auto* meshCollider = world.GetComponent<Phy_MeshColliderComponent>(entity); meshCollider)
+                {
+                    rttr::instance inst = const_cast<Phy_MeshColliderComponent&>(*meshCollider);
+                    outEntity["MeshCollider"] = JsonRttr::ToJsonObject(inst);
+                }
+
+                if (const auto* cct = world.GetComponent<Phy_CCTComponent>(entity); cct)
+                {
+                    rttr::instance inst = const_cast<Phy_CCTComponent&>(*cct);
+                    outEntity["CharacterController"] = JsonRttr::ToJsonObject(inst);
+                }
+
+                if (const auto* terrain = world.GetComponent<Phy_TerrainHeightFieldComponent>(entity); terrain)
+                {
+                    rttr::instance inst = const_cast<Phy_TerrainHeightFieldComponent&>(*terrain);
+                    outEntity["TerrainHeightField"] = JsonRttr::ToJsonObject(inst);
+                }
+
+                if (const auto* physicsSettings = world.GetComponent<Phy_SettingsComponent>(entity); physicsSettings)
+                {
+                    outEntity["PhysicsSceneSettings"] = WritePhysicsSceneSettings(*physicsSettings);
+                }
+
+                if (const auto* joint = world.GetComponent<Phy_JointComponent>(entity); joint)
+                {
+                    rttr::instance inst = const_cast<Phy_JointComponent&>(*joint);
+                    outEntity["Joint"] = JsonRttr::ToJsonObject(inst);
+                }
+
+                return true;
             }
 
-            // Material
-            if (const auto* mat = world.GetComponent<MaterialComponent>(entity); mat)
+            static bool ApplyEntityFromJson(World& world, EntityId entity, const JsonRttr::json& root)
             {
-                // 경로를 상대 경로로 변환하기 위해 복사본 생성
-                MaterialComponent matCopy = *mat;
-                matCopy.assetPath = NormalizePathToRelative(matCopy.assetPath);
-                matCopy.albedoTexturePath = NormalizePathToRelative(matCopy.albedoTexturePath);
-                
-                rttr::instance inst = matCopy;
-                root["Material"] = JsonRttr::ToJsonObject(inst);
-            }
+                if (entity == InvalidEntityId)
+                    return false;
 
-            // SkinnedMesh
-            if (const auto* skinned = world.GetComponent<SkinnedMeshComponent>(entity); skinned)
-            {
-                // 경로를 상대 경로로 변환하기 위해 복사본 생성
-                SkinnedMeshComponent skinnedCopy = *skinned;
-                skinnedCopy.instanceAssetPath = NormalizePathToRelative(skinnedCopy.instanceAssetPath);
-                skinnedCopy.meshAssetPath = NormalizePathToRelative(skinnedCopy.meshAssetPath);
-                
-                rttr::instance inst = skinnedCopy;
-                root["SkinnedMesh"] = JsonRttr::ToJsonObject(inst);
-            }
+                const std::string name = root.value("name", std::string{});
+                if (!name.empty())
+                    world.SetEntityName(entity, name);
 
-            // SkinnedAnimation
-            if (const auto* anim = world.GetComponent<SkinnedAnimationComponent>(entity); anim)
-            {
-                rttr::instance inst = const_cast<SkinnedAnimationComponent&>(*anim);
-                root["SkinnedAnimation"] = JsonRttr::ToJsonObject(inst);
-            }
+                // Transform
+                TransformComponent& t = world.AddComponent<TransformComponent>(entity);
+                auto itT = root.find("Transform");
+                if (itT != root.end() && itT->is_object())
+                {
+                    rttr::instance inst = t;
+                    if (!JsonRttr::FromJsonObject(inst, *itT))
+                        return false;
+                    if (itT->find("visible") == itT->end())
+                    {
+                        auto itLegacy = itT->find("renderEnabled");
+                        if (itLegacy != itT->end())
+                        {
+                            if (itLegacy->is_boolean())
+                                t.visible = itLegacy->get<bool>();
+                            else if (itLegacy->is_number())
+                                t.visible = (itLegacy->get<double>() != 0.0);
+                        }
+                    }
+                }
 
-            // AdvancedAnimation
-            if (const auto* advAnim = world.GetComponent<AdvancedAnimationComponent>(entity); advAnim)
-            {
-                rttr::instance inst = const_cast<AdvancedAnimationComponent&>(*advAnim);
-                root["AdvancedAnimation"] = JsonRttr::ToJsonObject(inst);
-            }
+                // Scripts (여러 개)
+                auto itS = root.find("Scripts");
+                if (itS != root.end() && itS->is_array())
+                {
+                    for (const auto& s : *itS)
+                    {
+                        if (!s.is_object()) continue;
+                        const std::string sn = s.value("name", std::string{});
+                        if (sn.empty()) continue;
 
-            // Camera
-            if (const auto* cam = world.GetComponent<CameraComponent>(entity); cam)
-            {
-                rttr::instance inst = const_cast<CameraComponent&>(*cam);
-                root["Camera"] = JsonRttr::ToJsonObject(inst);
-            }
+                        ScriptComponent& sc = world.AddScript(entity, sn);
+                        sc.enabled = s.value("enabled", true);
 
-            // CameraFollow
-            if (const auto* follow = world.GetComponent<CameraFollowComponent>(entity); follow)
-            {
-                rttr::instance inst = const_cast<CameraFollowComponent&>(*follow);
-                root["CameraFollow"] = JsonRttr::ToJsonObject(inst);
-            }
+                        auto itP = s.find("props");
+                        if (itP != s.end() && itP->is_object() && sc.instance)
+                        {
+                            rttr::instance inst = *sc.instance;
+                            const rttr::type t = rttr::type::get_by_name(sc.scriptName);
+                            if (!JsonRttr::FromJsonObject(inst, *itP, t))
+                                return false;
+                            sc.defaultsApplied = true;
+                        }
+                    }
+                }
 
-            // CameraSpringArm
-            if (const auto* spring = world.GetComponent<CameraSpringArmComponent>(entity); spring)
-            {
-                rttr::instance inst = const_cast<CameraSpringArmComponent&>(*spring);
-                root["CameraSpringArm"] = JsonRttr::ToJsonObject(inst);
-            }
+                // Material
+                auto itM = root.find("Material");
+                if (itM != root.end() && itM->is_object())
+                {
+                    MaterialComponent& mc = world.AddComponent<MaterialComponent>(entity, DirectX::XMFLOAT3(0.7f, 0.7f, 0.7f));
+                    rttr::instance inst = mc;
+                    if (!JsonRttr::FromJsonObject(inst, *itM))
+                        return false;
+                }
 
-            // CameraLookAt
-            if (const auto* lookAt = world.GetComponent<CameraLookAtComponent>(entity); lookAt)
-            {
-                rttr::instance inst = const_cast<CameraLookAtComponent&>(*lookAt);
-                root["CameraLookAt"] = JsonRttr::ToJsonObject(inst);
-            }
+                auto itD = root.find("Decal");
+                if (itD != root.end() && itD->is_object())
+                {
+                    DecalComponent& dc = world.AddComponent<DecalComponent>(entity);
+                    rttr::instance inst = dc;
+                    if (!JsonRttr::FromJsonObject(inst, *itD))
+                        return false;
+                }
 
-            // CameraShake
-            if (const auto* shake = world.GetComponent<CameraShakeComponent>(entity); shake)
-            {
-                rttr::instance inst = const_cast<CameraShakeComponent&>(*shake);
-                root["CameraShake"] = JsonRttr::ToJsonObject(inst);
-            }
+                // SkinnedMesh
+                auto itSM = root.find("SkinnedMesh");
+                if (itSM != root.end() && itSM->is_object())
+                {
+                    SkinnedMeshComponent tmp;
+                    rttr::instance instTmp = tmp;
+                    if (!JsonRttr::FromJsonObject(instTmp, *itSM))
+                        return false;
 
-            // CameraBlend
-            if (const auto* blend = world.GetComponent<CameraBlendComponent>(entity); blend)
-            {
-                rttr::instance inst = const_cast<CameraBlendComponent&>(*blend);
-                root["CameraBlend"] = JsonRttr::ToJsonObject(inst);
-            }
+                    if (!tmp.meshAssetPath.empty())
+                    {
+                        SkinnedMeshComponent& sm = world.AddComponent<SkinnedMeshComponent>(entity, tmp.meshAssetPath);
+                        sm.instanceAssetPath = tmp.instanceAssetPath;
+                        sm.boneMatrices = &g_IdentityBone;
+                        sm.boneCount = 1;
+                    }
+                }
 
-            // CameraInput
-            if (const auto* input = world.GetComponent<CameraInputComponent>(entity); input)
-            {
-                rttr::instance inst = const_cast<CameraInputComponent&>(*input);
-                root["CameraInput"] = JsonRttr::ToJsonObject(inst);
-            }
+                // SkinnedAnimation
+                auto itSA = root.find("SkinnedAnimation");
+                if (itSA != root.end() && itSA->is_object())
+                {
+                    SkinnedAnimationComponent& sa = world.AddComponent<SkinnedAnimationComponent>(entity);
+                    rttr::instance inst = sa;
+                    if (!JsonRttr::FromJsonObject(inst, *itSA))
+                        return false;
+                }
 
-            // Socket
-            if (const auto* socketComp = world.GetComponent<SocketComponent>(entity); socketComp)
-            {
-                root["Socket"] = SocketSerialization::SocketComponentToJson(*socketComp);
-            }
+                // AdvancedAnimation
+                auto itAA = root.find("AdvancedAnimation");
+                if (itAA != root.end() && itAA->is_object())
+                {
+                    AdvancedAnimationComponent& aa = world.AddComponent<AdvancedAnimationComponent>(entity);
+                    rttr::instance inst = aa;
+                    if (!JsonRttr::FromJsonObject(inst, *itAA))
+                        return false;
+                }
 
-            // SocketAttachment
-            if (const auto* socketAttach = world.GetComponent<SocketAttachmentComponent>(entity); socketAttach)
-            {
-                rttr::instance inst = const_cast<SocketAttachmentComponent&>(*socketAttach);
-                JsonRttr::json obj = JsonRttr::ToJsonObject(inst);
-                obj["ownerGuid"] = std::to_string(socketAttach->ownerGuid);
-                root["SocketAttachment"] = obj;
-            }
+                // Camera
+                auto itC = root.find("Camera");
+                if (itC != root.end() && itC->is_object())
+                {
+                    CameraComponent& cc = world.AddComponent<CameraComponent>(entity);
+                    rttr::instance inst = cc;
+                    if (!JsonRttr::FromJsonObject(inst, *itC))
+                        return false;
+                }
 
-            // Hurtbox
-            if (const auto* hurtbox = world.GetComponent<HurtboxComponent>(entity); hurtbox)
-            {
-                rttr::instance inst = const_cast<HurtboxComponent&>(*hurtbox);
-                JsonRttr::json obj = JsonRttr::ToJsonObject(inst);
-                obj["ownerGuid"] = std::to_string(hurtbox->ownerGuid);
-                root["Hurtbox"] = obj;
-            }
+                // CameraFollow
+                auto itCF = root.find("CameraFollow");
+                if (itCF != root.end() && itCF->is_object())
+                {
+                    CameraFollowComponent& cf = world.AddComponent<CameraFollowComponent>(entity);
+                    rttr::instance inst = cf;
+                    if (!JsonRttr::FromJsonObject(inst, *itCF))
+                        return false;
+                }
 
-            // WeaponTrace
-            if (const auto* weaponTrace = world.GetComponent<WeaponTraceComponent>(entity); weaponTrace)
-            {
-                root["WeaponTrace"] = WeaponTraceSerialization::WeaponTraceComponentToJson(*weaponTrace);
-            }
+                // CameraSpringArm
+                auto itSpring = root.find("CameraSpringArm");
+                if (itSpring != root.end() && itSpring->is_object())
+                {
+                    CameraSpringArmComponent& sa = world.AddComponent<CameraSpringArmComponent>(entity);
+                    rttr::instance inst = sa;
+                    if (!JsonRttr::FromJsonObject(inst, *itSpring))
+                        return false;
+                }
 
-            // Health
-            if (const auto* health = world.GetComponent<HealthComponent>(entity); health)
-            {
-                rttr::instance inst = const_cast<HealthComponent&>(*health);
-                root["Health"] = JsonRttr::ToJsonObject(inst);
-            }
+                // CameraLookAt
+                auto itLA = root.find("CameraLookAt");
+                if (itLA != root.end() && itLA->is_object())
+                {
+                    CameraLookAtComponent& la = world.AddComponent<CameraLookAtComponent>(entity);
+                    rttr::instance inst = la;
+                    if (!JsonRttr::FromJsonObject(inst, *itLA))
+                        return false;
+                }
 
-            // AttackDriver
-            if (const auto* attackDriver = world.GetComponent<AttackDriverComponent>(entity); attackDriver)
-            {
-                root["AttackDriver"] = AttackDriverSerialization::AttackDriverComponentToJson(*attackDriver);
-            }
+                // CameraShake
+                auto itCS = root.find("CameraShake");
+                if (itCS != root.end() && itCS->is_object())
+                {
+                    CameraShakeComponent& cs = world.AddComponent<CameraShakeComponent>(entity);
+                    rttr::instance inst = cs;
+                    if (!JsonRttr::FromJsonObject(inst, *itCS))
+                        return false;
+                }
+
+                // CameraBlend
+                auto itCB = root.find("CameraBlend");
+                if (itCB != root.end() && itCB->is_object())
+                {
+                    CameraBlendComponent& cb = world.AddComponent<CameraBlendComponent>(entity);
+                    rttr::instance inst = cb;
+                    if (!JsonRttr::FromJsonObject(inst, *itCB))
+                        return false;
+                }
+
+                // CameraInput
+                auto itCI = root.find("CameraInput");
+                if (itCI != root.end() && itCI->is_object())
+                {
+                    CameraInputComponent& ci = world.AddComponent<CameraInputComponent>(entity);
+                    rttr::instance inst = ci;
+                    if (!JsonRttr::FromJsonObject(inst, *itCI))
+                        return false;
+                }
+
+                // Socket (소켓 정의 목록)
+                auto itSocket = root.find("Socket");
+                if (itSocket != root.end() && itSocket->is_object())
+                {
+                    SocketComponent& sc = world.AddComponent<SocketComponent>(entity);
+                    if (!SocketSerialization::JsonToSocketComponent(*itSocket, sc))
+                        return false;
+                }
+
+                // SocketAttachment
+                auto itSAc = root.find("SocketAttachment");
+                if (itSAc != root.end() && itSAc->is_object())
+                {
+                    SocketAttachmentComponent& sa = world.AddComponent<SocketAttachmentComponent>(entity);
+                    if (auto itGuid = itSAc->find("ownerGuid"); itGuid != itSAc->end())
+                        sa.ownerGuid = ParseGuidOrZero(*itGuid);
+
+                    JsonRttr::json copy = *itSAc;
+                    copy.erase("ownerGuid");
+                    rttr::instance inst = sa;
+                    if (!JsonRttr::FromJsonObject(inst, copy))
+                        return false;
+                }
+
+                // Hurtbox
+                auto itHB = root.find("Hurtbox");
+                if (itHB != root.end() && itHB->is_object())
+                {
+                    HurtboxComponent& hb = world.AddComponent<HurtboxComponent>(entity);
+                    if (auto itGuid = itHB->find("ownerGuid"); itGuid != itHB->end())
+                        hb.ownerGuid = ParseGuidOrZero(*itGuid);
+
+                    JsonRttr::json copy = *itHB;
+                    copy.erase("ownerGuid");
+                    rttr::instance inst = hb;
+                    if (!JsonRttr::FromJsonObject(inst, copy))
+                        return false;
+                }
+
+                // WeaponTrace
+                auto itWT = root.find("WeaponTrace");
+                if (itWT != root.end() && itWT->is_object())
+                {
+                    WeaponTraceComponent& wt = world.AddComponent<WeaponTraceComponent>(entity);
+                    if (!WeaponTraceSerialization::JsonToWeaponTraceComponent(*itWT, wt))
+                        return false;
+                }
+
+                // Health
+                auto itHealth = root.find("Health");
+                if (itHealth != root.end() && itHealth->is_object())
+                {
+                    HealthComponent& hc = world.AddComponent<HealthComponent>(entity);
+                    rttr::instance inst = hc;
+                    if (!JsonRttr::FromJsonObject(inst, *itHealth))
+                        return false;
+                }
+
+                // AttackDriver
+                auto itAttackDriver = root.find("AttackDriver");
+                if (itAttackDriver != root.end() && itAttackDriver->is_object())
+                {
+                    AttackDriverComponent& ad = world.AddComponent<AttackDriverComponent>(entity);
+                    if (!AttackDriverSerialization::JsonToAttackDriverComponent(*itAttackDriver, ad))
+                        return false;
+                }
+
+                // AliceUI Components
+                auto itUIWidget = root.find("UIWidget");
+                if (itUIWidget != root.end() && itUIWidget->is_object())
+                {
+                    UIWidgetComponent& comp = world.AddComponent<UIWidgetComponent>(entity);
+                    rttr::instance inst = comp;
+                    if (!JsonRttr::FromJsonObject(inst, *itUIWidget))
+                        return false;
+                }
+                auto itUITransform = root.find("UITransform");
+                if (itUITransform != root.end() && itUITransform->is_object())
+                {
+                    UITransformComponent& comp = world.AddComponent<UITransformComponent>(entity);
+                    rttr::instance inst = comp;
+                    if (!JsonRttr::FromJsonObject(inst, *itUITransform))
+                        return false;
+                }
+                auto itUIImage = root.find("UIImage");
+                if (itUIImage != root.end() && itUIImage->is_object())
+                {
+                    UIImageComponent& comp = world.AddComponent<UIImageComponent>(entity);
+                    rttr::instance inst = comp;
+                    if (!JsonRttr::FromJsonObject(inst, *itUIImage))
+                        return false;
+                }
+                auto itUIText = root.find("UIText");
+                if (itUIText != root.end() && itUIText->is_object())
+                {
+                    UITextComponent& comp = world.AddComponent<UITextComponent>(entity);
+                    rttr::instance inst = comp;
+                    if (!JsonRttr::FromJsonObject(inst, *itUIText))
+                        return false;
+                }
+                auto itUIButton = root.find("UIButton");
+                if (itUIButton != root.end() && itUIButton->is_object())
+                {
+                    UIButtonComponent& comp = world.AddComponent<UIButtonComponent>(entity);
+                    rttr::instance inst = comp;
+                    if (!JsonRttr::FromJsonObject(inst, *itUIButton))
+                        return false;
+                }
+                auto itUIGauge = root.find("UIGauge");
+                if (itUIGauge != root.end() && itUIGauge->is_object())
+                {
+                    UIGaugeComponent& comp = world.AddComponent<UIGaugeComponent>(entity);
+                    rttr::instance inst = comp;
+                    if (!JsonRttr::FromJsonObject(inst, *itUIGauge))
+                        return false;
+                }
+
+                // Point Light
+                auto itPL = root.find("PointLight");
+                if (itPL != root.end() && itPL->is_object())
+                {
+                    PointLightComponent& pl = world.AddComponent<PointLightComponent>(entity);
+                    rttr::instance inst = pl;
+                    if (!JsonRttr::FromJsonObject(inst, *itPL))
+                        return false;
+                }
+
+                // Spot Light
+                auto itSL = root.find("SpotLight");
+                if (itSL != root.end() && itSL->is_object())
+                {
+                    SpotLightComponent& sl = world.AddComponent<SpotLightComponent>(entity);
+                    rttr::instance inst = sl;
+                    if (!JsonRttr::FromJsonObject(inst, *itSL))
+                        return false;
+                }
 
             // AliceUI Components
             if (const auto* uiWidget = world.GetComponent<UIWidgetComponent>(entity); uiWidget)
@@ -931,71 +1050,327 @@ namespace Alice
                 rttr::instance inst = copy;
                 root["UIGauge"] = JsonRttr::ToJsonObject(inst);
             }
+                // Rect Light
+                auto itRL = root.find("RectLight");
+                if (itRL != root.end() && itRL->is_object())
+                {
+                    RectLightComponent& rl = world.AddComponent<RectLightComponent>(entity);
+                    rttr::instance inst = rl;
+                    if (!JsonRttr::FromJsonObject(inst, *itRL))
+                        return false;
+                }
 
-            // Point Light
-            if (const auto* point = world.GetComponent<PointLightComponent>(entity); point)
-            {
-                rttr::instance inst = const_cast<PointLightComponent&>(*point);
-                root["PointLight"] = JsonRttr::ToJsonObject(inst);
+                auto itComputeEffect = root.find("ComputeEffect");
+                if (itComputeEffect != root.end() && itComputeEffect->is_object())
+                {
+                    ComputeEffectComponent& ce = world.AddComponent<ComputeEffectComponent>(entity);
+                    rttr::instance inst = ce;
+                    if (!JsonRttr::FromJsonObject(inst, *itComputeEffect))
+                        return false;
+                }
+
+                auto itUnityVfx = root.find("UnityVfx");
+                if (itUnityVfx != root.end() && itUnityVfx->is_object())
+                {
+                    UnityVfxComponent& uv = world.AddComponent<UnityVfxComponent>(entity);
+                    rttr::instance inst = uv;
+                    if (!JsonRttr::FromJsonObject(inst, *itUnityVfx))
+                        return false;
+                }
+
+                // PhysX Components
+                auto itRB = root.find("RigidBody");
+                if (itRB != root.end() && itRB->is_object())
+                {
+                    Phy_RigidBodyComponent& rb = world.AddComponent<Phy_RigidBodyComponent>(entity);
+                    rttr::instance inst = rb;
+                    if (!JsonRttr::FromJsonObject(inst, *itRB))
+                        return false;
+                }
+
+                auto itCollider = root.find("Collider");
+                if (itCollider != root.end() && itCollider->is_object())
+                {
+                    Phy_ColliderComponent& col = world.AddComponent<Phy_ColliderComponent>(entity);
+                    rttr::instance inst = col;
+                    if (!JsonRttr::FromJsonObject(inst, *itCollider))
+                        return false;
+                }
+
+                auto itMeshCollider = root.find("MeshCollider");
+                if (itMeshCollider != root.end() && itMeshCollider->is_object())
+                {
+                    Phy_MeshColliderComponent& mc = world.AddComponent<Phy_MeshColliderComponent>(entity);
+                    rttr::instance inst = mc;
+                    if (!JsonRttr::FromJsonObject(inst, *itMeshCollider))
+                        return false;
+                }
+
+                auto itCCT = root.find("CharacterController");
+                if (itCCT != root.end() && itCCT->is_object())
+                {
+                    Phy_CCTComponent& cct = world.AddComponent<Phy_CCTComponent>(entity);
+                    rttr::instance inst = cct;
+                    if (!JsonRttr::FromJsonObject(inst, *itCCT))
+                        return false;
+                }
+
+                auto itTerrain = root.find("TerrainHeightField");
+                if (itTerrain != root.end() && itTerrain->is_object())
+                {
+                    Phy_TerrainHeightFieldComponent& terrain = world.AddComponent<Phy_TerrainHeightFieldComponent>(entity);
+                    rttr::instance inst = terrain;
+                    if (!JsonRttr::FromJsonObject(inst, *itTerrain))
+                        return false;
+                }
+
+                auto itJoint = root.find("Joint");
+                if (itJoint != root.end() && itJoint->is_object())
+                {
+                    Phy_JointComponent& joint = world.AddComponent<Phy_JointComponent>(entity);
+                    rttr::instance inst = joint;
+                    if (!JsonRttr::FromJsonObject(inst, *itJoint))
+                        return false;
+                }
+
+                auto itPhysicsSettings = root.find("PhysicsSceneSettings");
+                if (itPhysicsSettings != root.end() && itPhysicsSettings->is_object())
+                {
+                    Phy_SettingsComponent& ps = world.AddComponent<Phy_SettingsComponent>(entity);
+                    if (!LoadPhysicsSceneSettings(ps, *itPhysicsSettings))
+                        return false;
+                }
+
+                return true;
             }
 
-            // Spot Light
-            if (const auto* spot = world.GetComponent<SpotLightComponent>(entity); spot)
+            static ResourceManager* ResolvePrefabResourceManager()
             {
-                rttr::instance inst = const_cast<SpotLightComponent&>(*spot);
-                root["SpotLight"] = JsonRttr::ToJsonObject(inst);
+                if (g_DefaultResources)
+                    return g_DefaultResources;
+                return ResourceManager::GetPtr();
             }
 
-            // Rect Light
-            if (const auto* rect = world.GetComponent<RectLightComponent>(entity); rect)
+            static bool LoadPrefabJsonAuto(const std::filesystem::path& logicalPath, JsonRttr::json& out)
             {
-                rttr::instance inst = const_cast<RectLightComponent&>(*rect);
-                root["RectLight"] = JsonRttr::ToJsonObject(inst);
+                out = JsonRttr::json{};
+
+                ResourceManager* resources = ResolvePrefabResourceManager();
+                if (!resources)
+                {
+                    ALICE_LOG_ERRORF("[Prefab] LoadText failed: ResourceManager is null. logical=\"%s\"",
+                                     logicalPath.generic_string().c_str());
+                    return false;
+                }
+
+                std::string text;
+                if (!resources->LoadText(logicalPath, text) || text.empty())
+                {
+                    ALICE_LOG_ERRORF("[Prefab] LoadText failed: \"%s\"", logicalPath.generic_string().c_str());
+                    return false;
+                }
+
+                try
+                {
+                    out = JsonRttr::json::parse(text);
+                }
+                catch (...)
+                {
+                    ALICE_LOG_ERRORF("[Prefab] JSON parse failed: \"%s\"", logicalPath.generic_string().c_str());
+                    return false;
+                }
+
+                return true;
             }
 
-            // PhysX Components
-            if (const auto* rigidBody = world.GetComponent<Phy_RigidBodyComponent>(entity); rigidBody)
+            static EntityId InstantiateFromJsonInternal(World& world, const JsonRttr::json& root)
             {
-                rttr::instance inst = const_cast<Phy_RigidBodyComponent&>(*rigidBody);
-                root["RigidBody"] = JsonRttr::ToJsonObject(inst);
+                if (!root.is_object())
+                    return InvalidEntityId;
+
+                auto itEntities = root.find("entities");
+                if (itEntities != root.end() && itEntities->is_array())
+                {
+                    std::unordered_map<std::uint64_t, EntityId> guidToEntity;
+                    std::vector<std::pair<EntityId, std::uint64_t>> pendingParents;
+                    std::vector<EntityId> createdEntities;
+
+                    for (const auto& e : *itEntities)
+                    {
+                        if (!e.is_object())
+                            continue;
+
+                        EntityId id = world.CreateEntity();
+                        createdEntities.push_back(id);
+
+                        if (!ApplyEntityFromJson(world, id, e))
+                        {
+                            for (EntityId created : createdEntities)
+                                world.DestroyEntity(created);
+                            return InvalidEntityId;
+                        }
+
+                        std::uint64_t guid = 0;
+                        if (auto itGuid = e.find("guid"); itGuid != e.end())
+                            guid = ParseGuidOrZero(*itGuid);
+                        if (guid != 0)
+                            guidToEntity[guid] = id;
+
+                        if (auto itParent = e.find("_parentGuid"); itParent != e.end())
+                        {
+                            std::uint64_t parentGuid = ParseGuidOrZero(*itParent);
+                            if (parentGuid != 0)
+                                pendingParents.push_back({ id, parentGuid });
+                        }
+                    }
+
+                    for (const auto& [childId, parentGuid] : pendingParents)
+                    {
+                        auto it = guidToEntity.find(parentGuid);
+                        if (it != guidToEntity.end())
+                            world.SetParent(childId, it->second, false);
+                    }
+
+                    EntityId rootEntity = InvalidEntityId;
+                    if (auto itRootGuid = root.find("rootGuid"); itRootGuid != root.end())
+                    {
+                        std::uint64_t rootGuid = ParseGuidOrZero(*itRootGuid);
+                        if (rootGuid != 0)
+                        {
+                            auto it = guidToEntity.find(rootGuid);
+                            if (it != guidToEntity.end())
+                                rootEntity = it->second;
+                        }
+                    }
+
+                    if (rootEntity == InvalidEntityId && !createdEntities.empty())
+                    {
+                        std::unordered_set<EntityId> hasParent;
+                        for (const auto& [childId, parentGuid] : pendingParents)
+                        {
+                            if (guidToEntity.find(parentGuid) != guidToEntity.end())
+                                hasParent.insert(childId);
+                        }
+                        for (EntityId id : createdEntities)
+                        {
+                            if (hasParent.find(id) == hasParent.end())
+                            {
+                                rootEntity = id;
+                                break;
+                            }
+                        }
+                        if (rootEntity == InvalidEntityId)
+                            rootEntity = createdEntities.front();
+                    }
+
+                    return rootEntity;
+                }
+
+                EntityId entity = world.CreateEntity();
+                if (!ApplyEntityFromJson(world, entity, root))
+                {
+                    world.DestroyEntity(entity);
+                    return InvalidEntityId;
+                }
+
+                return entity;
+            }
+        }
+
+        EntityId InstantiateFromFile(World& world, const std::filesystem::path& path)
+        {
+            if (!std::filesystem::exists(path))
+                return InvalidEntityId;
+
+            JsonRttr::json root;
+            if (!JsonRttr::LoadJsonFile(path, root))
+                return InvalidEntityId;
+
+            return InstantiateFromJsonInternal(world, root);
+        }
+
+        void SetDefaultWorld(World* world)
+        {
+            g_DefaultWorld = world;
+        }
+
+        void SetDefaultResources(ResourceManager* resources)
+        {
+            g_DefaultResources = resources;
+        }
+
+        EntityId InstantiateFromFileAuto(const std::filesystem::path& logicalPath)
+        {
+            if (!g_DefaultWorld)
+            {
+                ALICE_LOG_ERRORF("[Prefab] InstantiateFromFileAuto failed: default world is null.");
+                return InvalidEntityId;
             }
 
-            if (const auto* collider = world.GetComponent<Phy_ColliderComponent>(entity); collider)
+            JsonRttr::json root;
+            if (!LoadPrefabJsonAuto(logicalPath, root))
+                return InvalidEntityId;
+
+            return InstantiateFromJsonInternal(*g_DefaultWorld, root);
+        }
+
+        bool SaveToFile(const World& world,
+                        EntityId entity,
+                        const std::filesystem::path& path)
+        {
+            if (entity == InvalidEntityId)
+                return false;
+
+            std::vector<EntityId> tree;
+            CollectEntityTree(world, entity, tree);
+            if (tree.empty())
+                return false;
+
+            JsonRttr::json root = JsonRttr::json::object();
+
+            if (tree.size() == 1)
             {
-                rttr::instance inst = const_cast<Phy_ColliderComponent&>(*collider);
-                root["Collider"] = JsonRttr::ToJsonObject(inst);
+                if (!WriteEntityJson(world, entity, root))
+                    return false;
+                root["version"] = 1;
+                return JsonRttr::SaveJsonFile(path, root, 4);
             }
 
-            if (const auto* meshCollider = world.GetComponent<Phy_MeshColliderComponent>(entity); meshCollider)
+            root["version"] = 2;
+            if (const auto* idComp = world.GetComponent<IDComponent>(entity); idComp)
+                root["rootGuid"] = std::to_string(idComp->guid);
+
+            std::unordered_map<EntityId, std::uint64_t> guidByEntity;
+            guidByEntity.reserve(tree.size());
+            for (EntityId id : tree)
             {
-                rttr::instance inst = const_cast<Phy_MeshColliderComponent&>(*meshCollider);
-                root["MeshCollider"] = JsonRttr::ToJsonObject(inst);
+                if (const auto* idComp = world.GetComponent<IDComponent>(id); idComp)
+                    guidByEntity[id] = idComp->guid;
             }
 
-            if (const auto* cct = world.GetComponent<Phy_CCTComponent>(entity); cct)
+            JsonRttr::json entities = JsonRttr::json::array();
+            for (EntityId id : tree)
             {
-                rttr::instance inst = const_cast<Phy_CCTComponent&>(*cct);
-                root["CharacterController"] = JsonRttr::ToJsonObject(inst);
+                JsonRttr::json e;
+                if (!WriteEntityJson(world, id, e))
+                    return false;
+
+                auto itGuid = guidByEntity.find(id);
+                if (itGuid != guidByEntity.end() && itGuid->second != 0)
+                    e["guid"] = std::to_string(itGuid->second);
+
+                EntityId parentId = world.GetParent(id);
+                if (parentId != InvalidEntityId)
+                {
+                    auto itParent = guidByEntity.find(parentId);
+                    if (itParent != guidByEntity.end() && itParent->second != 0)
+                        e["_parentGuid"] = std::to_string(itParent->second);
+                }
+
+                entities.push_back(e);
             }
 
-            if (const auto* terrain = world.GetComponent<Phy_TerrainHeightFieldComponent>(entity); terrain)
-            {
-                rttr::instance inst = const_cast<Phy_TerrainHeightFieldComponent&>(*terrain);
-                root["TerrainHeightField"] = JsonRttr::ToJsonObject(inst);
-            }
-
-            if (const auto* physicsSettings = world.GetComponent<Phy_SettingsComponent>(entity); physicsSettings)
-            {
-                // 수동 직렬화 사용 (중첩 배열 보장)
-                root["PhysicsSceneSettings"] = WritePhysicsSceneSettings(*physicsSettings);
-            }
-
-            if (const auto* joint = world.GetComponent<Phy_JointComponent>(entity); joint)
-            {
-                rttr::instance inst = const_cast<Phy_JointComponent&>(*joint);
-                root["Joint"] = JsonRttr::ToJsonObject(inst);
-            }
-
+            root["entities"] = entities;
             return JsonRttr::SaveJsonFile(path, root, 4);
         }
     }

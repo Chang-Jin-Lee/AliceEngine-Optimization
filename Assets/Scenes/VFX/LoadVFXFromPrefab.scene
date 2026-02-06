@@ -1,0 +1,170 @@
+{
+    "entities": [
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "17000000000000000002",
+            "name": "Parent"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "LoadVFXFromPrefab",
+                    "props": {
+                        "m_lifeTime": 2.0,
+                        "m_loop": false,
+                        "m_loopInterval": 1.0,
+                        "m_parentTargetName": "Parent",
+                        "m_poolSize": 3,
+                        "m_prefabPath1": "Assets/Prefabs/Combo_slash_fx_01.prefab",
+                        "m_prefabPath2": "",
+                        "m_prefabPath3": "",
+                        "m_prefabPath4": "",
+                        "m_prefabPath5": "",
+                        "m_prefabPath6": "",
+                        "m_prefabPath7": "",
+                        "m_prefabPath8": "",
+                        "m_prefabPath9": "",
+                        "m_prewarm": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "17000000000000000003",
+            "name": "VfxSpawner"
+        },
+        {
+            "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 100.0,
+                "Near Plane": 0.10000000149011612,
+                "aspectOverride": 0.0,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -0.10792995989322662,
+                    "y": 2.1531012058258057,
+                    "z": -8.05366325378418
+                },
+                "rotation": {
+                    "x": 0.2674998939037323,
+                    "y": -0.0025001296307891607,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "14895983574193790510",
+            "name": "Camera2"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/IcoSphere_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/IcoSphere.fbxasset",
+                "meshAssetPath": "IcoSphere"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -1.1129238605499268,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.3500000238418579,
+                    "y": 0.3500000238418579,
+                    "z": 0.3500000238418579
+                },
+                "visible": true
+            },
+            "guid": "15125458246079484085",
+            "name": "IcoSphere"
+        }
+    ],
+    "sceneName": "LoadVFXFromPrefab",
+    "version": 1
+}

@@ -507,15 +507,24 @@ namespace Alice
             {
                 outGlobals.assign(nodeCount, XMMatrixIdentity());
                 std::vector<std::uint8_t> done(nodeCount, 0);
+                std::vector<std::uint8_t> visiting(nodeCount, 0);
                 auto computeNode = [&](auto&& self, int idx) -> void
                 {
                     if (idx < 0 || (size_t)idx >= nodeCount) return;
                     if (done[(size_t)idx]) return;
+                    if (visiting[(size_t)idx])
+                    {
+                        // Cycle detected in parent chain; stop recursion to avoid stack overflow.
+                        done[(size_t)idx] = 1;
+                        return;
+                    }
+                    visiting[(size_t)idx] = 1;
                     const int pi = m_NodeParents[(size_t)idx];
                     if (pi >= 0) self(self, pi);
                     const XMMATRIX parent = (pi >= 0 && (size_t)pi < nodeCount) ? outGlobals[(size_t)pi] : XMMatrixIdentity();
                     outGlobals[(size_t)idx] = parent * locals[(size_t)idx];
                     done[(size_t)idx] = 1;
+                    visiting[(size_t)idx] = 0;
                 };
                 for (int i = 0; i < (int)nodeCount; ++i)
                     computeNode(computeNode, i);

@@ -24,7 +24,9 @@
 #include "Runtime/ECS/World.h"
 #include "Runtime/Scripting/Components/ScriptComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/DecalComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/Rendering/Components/EffectComponent.h"
 #include "Runtime/Rendering/Components/TrailEffectComponent.h"
 #include "Runtime/Rendering/Components/DebugDrawBoxComponent.h"
@@ -619,6 +621,14 @@ namespace Alice
                 outEntity["Material"] = JsonRttr::ToJsonObject(inst);
             }
 
+            if (const auto* decal = world.GetComponent<DecalComponent>(id); decal)
+            {
+                DecalComponent decalCopy = *decal;
+                decalCopy.albedoTexturePath = NormalizePathToRelative(decalCopy.albedoTexturePath);
+                rttr::instance inst = decalCopy;
+                outEntity["Decal"] = JsonRttr::ToJsonObject(inst);
+            }
+
             
             if (const auto* skinned = world.GetComponent<SkinnedMeshComponent>(id); skinned)
             {
@@ -889,6 +899,12 @@ namespace Alice
                 outEntity["ComputeEffect"] = JsonRttr::ToJsonObject(inst);
             }
 
+            if (const auto* unityVfx = world.GetComponent<UnityVfxComponent>(id); unityVfx)
+            {
+                rttr::instance inst = const_cast<UnityVfxComponent&>(*unityVfx);
+                outEntity["UnityVfx"] = JsonRttr::ToJsonObject(inst);
+            }
+
             if (const auto* postProcessVolume = world.GetComponent<PostProcessVolumeComponent>(id); postProcessVolume)
             {
                 rttr::instance inst = const_cast<PostProcessVolumeComponent&>(*postProcessVolume);
@@ -1068,6 +1084,14 @@ namespace Alice
                 MaterialComponent& mc = world.AddComponent<MaterialComponent>(id, DirectX::XMFLOAT3(0.7f, 0.7f, 0.7f));
                 rttr::instance inst = mc;
                 if (!JsonRttr::FromJsonObject(inst, *itM)) return false;
+            }
+
+            auto itD = e.find("Decal");
+            if (itD != e.end() && itD->is_object())
+            {
+                DecalComponent& dc = world.AddComponent<DecalComponent>(id);
+                rttr::instance inst = dc;
+                if (!JsonRttr::FromJsonObject(inst, *itD)) return false;
             }
 
             // SkinnedMesh
@@ -1270,6 +1294,15 @@ namespace Alice
                         }
                     }
                 }
+            }
+
+            // UnityVfx 선택
+            auto itUnityVfx = e.find("UnityVfx");
+            if (itUnityVfx != e.end() && itUnityVfx->is_object())
+            {
+                UnityVfxComponent& uv = world.AddComponent<UnityVfxComponent>(id);
+                rttr::instance inst = uv;
+                if (!JsonRttr::FromJsonObject(inst, *itUnityVfx)) return false;
             }
 
             // PostProcessVolume 선택

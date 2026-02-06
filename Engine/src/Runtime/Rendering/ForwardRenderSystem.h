@@ -301,6 +301,8 @@ namespace Alice
 
         /// Game 창에서 사용할 씬 컬러 텍스처 SRV
         ID3D11ShaderResourceView* GetSceneColorSRV() const { return m_sceneSRV.Get(); }
+        ID3D11RenderTargetView* GetSceneRTV() const { return m_sceneRTV.Get(); }
+        ID3D11DepthStencilView* GetSceneDSV() const { return m_sceneDSV.Get(); }
         std::uint32_t GetSceneWidth()  const { return m_sceneWidth; }
         std::uint32_t GetSceneHeight() const { return m_sceneHeight; }
 
@@ -308,6 +310,7 @@ namespace Alice
 
         /// 에디터 뷰포트 표시용(톤매핑 완료) SRV
         ID3D11ShaderResourceView* GetViewportSRV() const { return m_viewportSRV.Get(); }
+        ID3D11RenderTargetView* GetViewportRTV() const { return m_viewportRTV.Get(); }
         
         /// Scene Depth SRV (depth test용)
         ID3D11ShaderResourceView* GetSceneDepthSRV() const { return m_sceneDepthSRV.Get(); }
