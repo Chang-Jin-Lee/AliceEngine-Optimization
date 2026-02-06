@@ -10,6 +10,7 @@
 #include "Runtime/ECS/Components/IDComponent.h"
 #include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
 #include "Runtime/Gameplay/Combat/HurtboxComponent.h"
+#include "Runtime/Gameplay/Combat/HealthComponent.h"
 #include "Runtime/Gameplay/Combat/CombatPhysicsLayers.h"
 #include "Runtime/Gameplay/Combat/CombatHitEvent.h"
 #include "Runtime/Physics/IPhysicsWorld.h"
@@ -277,17 +278,24 @@ namespace Alice
 								? hurt->ownerGuid
 								: static_cast<std::uint64_t>(hitEntity);
 
-                        if (trace.hitVictims.find(victimGuid) != trace.hitVictims.end())
-                            return;
+                        const EntityId victimOwner = (hurt->ownerGuid != 0)
+                            ? world.FindEntityByGuid(hurt->ownerGuid)
+                            : (hurt->ownerCached != InvalidEntityId ? hurt->ownerCached : hitEntity);
+
+                        auto hitIt = trace.hitVictims.find(victimGuid);
+                        if (hitIt != trace.hitVictims.end())
+                        {
+                            // Allow re-hits after victim invulnerability expires.
+                            auto* hc = world.GetComponent<HealthComponent>(victimOwner);
+                            if (!hc || hc->invulnRemaining > 0.0f)
+                                return;
+                            trace.hitVictims.erase(hitIt);
+                        }
 
 							trace.hitVictims.insert(victimGuid);
 
                         if (outHits)
                         {
-                            const EntityId victimOwner = (hurt->ownerGuid != 0)
-                                ? world.FindEntityByGuid(hurt->ownerGuid)
-                                : (hurt->ownerCached != InvalidEntityId ? hurt->ownerCached : hitEntity);
-
                             // SFX/VFX hook (raw hit detection):
                             // This is the earliest point with hitPosWS/hitNormalWS.
                             // Prefer spawning impact effects in CombatSession after resolve
