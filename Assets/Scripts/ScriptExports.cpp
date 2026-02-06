@@ -1,6 +1,7 @@
 ﻿#include "Runtime/Scripting/IScript.h"
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/Foundation/Logger.h"
+#include "Runtime/Resources/Prefab.h"
 
 // 동적 스크립트 DLL이 내보내는 간단한 C API 입니다.
 // - 엔진 쪽에서 GetProcAddress 로 이 함수들을 찾아서
@@ -39,6 +40,18 @@ extern "C"
 
         auto ptr = Alice::ScriptFactory::Create(name);
         return ptr.release();
+    }
+
+    __declspec(dllexport) void Alice_BindEngineServices(Alice::World* world, Alice::ResourceManager* resources)
+    {
+        Alice::Prefab::SetDefaultWorld(world);
+        Alice::Prefab::SetDefaultResources(resources);
+    }
+
+    __declspec(dllexport) void Alice_UnbindEngineServices()
+    {
+        Alice::Prefab::SetDefaultWorld(nullptr);
+        Alice::Prefab::SetDefaultResources(nullptr);
     }
 }
 

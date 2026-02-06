@@ -43,8 +43,14 @@ namespace Alice
 			ImGui::DockBuilderDockWindow("Game", dockCenterTop);
 			ImGui::DockBuilderDockWindow("Camera", dockCenterBottom);
 			// Inspector와 Lighting을 같은 도크에 배치해 탭으로 표시
-			ImGui::DockBuilderDockWindow("Inspector", dockRightCol);
 			ImGui::DockBuilderDockWindow("Lighting", dockRightCol);
+			ImGui::DockBuilderDockWindow("Inspector", dockRightCol);
+
+			// 기본 포커스는 Inspector 탭
+			if (ImGuiDockNode* rightNode = ImGui::DockBuilderGetNode(dockRightCol))
+			{
+				rightNode->SelectedTabId = ImGui::GetID("Inspector");
+			}
 
 			ImGui::DockBuilderFinish(dockspaceId);
 		}

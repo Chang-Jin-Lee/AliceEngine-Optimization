@@ -157,6 +157,8 @@ namespace Alice
 		m_advancedAnimSystem.Update(m_world, static_cast<double>(dt));
 		m_skinnedAnimSystem.Update(m_world, static_cast<double>(dt));
 		m_attackDriverSystem.PostUpdate(m_world);
+		if (m_physicsSystem)
+			m_physicsSystem->ApplyRootMotionDeltas(dt);
 		m_socketWorldUpdateSystem.Update(m_world);
 		m_socketAttachmentSystem.Update(m_world);
 		m_animUpdatedThisFrame = true;

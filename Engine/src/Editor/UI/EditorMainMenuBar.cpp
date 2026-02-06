@@ -337,6 +337,17 @@ namespace Alice
 		// FBX 임포트 버튼
 		if (ImGui::Button("Load FBX"))
 		{
+			wchar_t exePathW[MAX_PATH] = {};
+			GetModuleFileNameW(nullptr, exePathW, MAX_PATH);
+			std::filesystem::path exePath = exePathW;
+			std::filesystem::path exeDir = exePath.parent_path();
+			std::filesystem::path projectRoot = exeDir.parent_path().parent_path().parent_path(); // build/bin/Debug → 프로젝트 루트
+			std::filesystem::path resourceDir = projectRoot / "Resource";
+			if (!std::filesystem::exists(resourceDir))
+				resourceDir = projectRoot;
+
+			std::wstring initialDirW = resourceDir.wstring();
+
 			wchar_t fileBuffer[MAX_PATH] = {};
 			OPENFILENAMEW ofn{};
 			ofn.lStructSize = sizeof(ofn);
@@ -344,6 +355,7 @@ namespace Alice
 			ofn.lpstrFilter = L"FBX Files\0*.fbx\0All Files\0*.*\0";
 			ofn.lpstrFile = fileBuffer;
 			ofn.nMaxFile = MAX_PATH;
+			ofn.lpstrInitialDir = initialDirW.c_str();
 			ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
 
 			if (GetOpenFileNameW(&ofn))
@@ -351,12 +363,6 @@ namespace Alice
 				if (m_renderDevice)
 				{
 					std::filesystem::path fbxPath = fileBuffer;
-
-					wchar_t exePathW[MAX_PATH] = {};
-					GetModuleFileNameW(nullptr, exePathW, MAX_PATH);
-					std::filesystem::path exePath = exePathW;
-					std::filesystem::path exeDir = exePath.parent_path();
-					std::filesystem::path projectRoot = exeDir.parent_path().parent_path().parent_path(); // build/bin/Debug → 프로젝트 루트
 
 					fbxPath = std::filesystem::relative(fbxPath, projectRoot);
 

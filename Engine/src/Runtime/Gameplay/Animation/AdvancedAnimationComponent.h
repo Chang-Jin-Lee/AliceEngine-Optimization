@@ -107,6 +107,11 @@ namespace Alice
 		// Character-level root motion defaults (optional)
 		std::string rootBoneName = "root";
 		bool rootMotionUnlock = false;
+		// Runtime-only: when true, root motion translation is driven via CCT.
+		bool rootMotionDriveCct = false;
+		// Runtime-only: last root motion delta in world space (row convention).
+		DirectX::XMFLOAT3 rootMotionDeltaWS = { 0.0f, 0.0f, 0.0f };
+		bool rootMotionDeltaValid = false;
 
 		AdvancedAnimLayer base;
 		AdvancedAnimLayer upper;
@@ -156,6 +161,8 @@ namespace Alice
 		NotifyMap notifies;
 
 		// 노티파이 등록 (어떤 클립의, 몇 초에, 무슨 함수를 실행할지)
+		// SFX/VFX hook: footsteps, swing whoosh, cloth rustle 등은
+		// clip/time 기반으로 여기 등록한 callback에서 재생하도록 연결.
 		void AddNotify(const std::string& clipName, float time, std::function<void()> func, std::uint64_t ownerTag = 0)
 		{
 			notifies[clipName].push_back({ time, func, ownerTag });
