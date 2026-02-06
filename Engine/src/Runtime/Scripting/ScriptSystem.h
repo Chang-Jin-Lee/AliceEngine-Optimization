@@ -48,6 +48,8 @@ namespace Alice
         float GetMouseDeltaX() const override;
         float GetMouseDeltaY() const override;
         float GetMouseScrollDelta() const override;
+        void SetCursorVisible(bool visible) override;
+        void SetCursorLocked(bool locked) override;
 
         std::string GetResolvedPath(const char* originalPath) const;
 

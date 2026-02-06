@@ -131,6 +131,7 @@ namespace Alice
         std::string text;
         bool matched = false;
 
+
         text = Get_value3Text();
         matched = !text.empty();
 
@@ -154,7 +155,6 @@ namespace Alice
             text = oss.str();
         }
 
-        // 
         TargetText->text = text;
         holdElapsed = 0.0f;
         fadeElapsed = 0.0f;

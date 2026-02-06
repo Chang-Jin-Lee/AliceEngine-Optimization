@@ -6,9 +6,9 @@
 namespace Alice
 {
     // 간단한 예제 스크립트입니다. 필요에 맞게 수정해서 사용하세요.
-    class tmpNumToAniScript : public IScript
+    class visableMouseScript : public IScript
     {
-        ALICE_BODY(tmpNumToAniScript);
+        ALICE_BODY(visableMouseScript);
 
     public:
         void Start() override;
