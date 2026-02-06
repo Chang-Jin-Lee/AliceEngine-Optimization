@@ -503,6 +503,15 @@ namespace Alice
 					return;
 				}
 
+				// (4-1) EngineSettings 복사 (Lighting/Skybox)
+				const fs2::path engineSettingsPath = args.projectRoot / "EngineSettings.json";
+				if (!CopyFileOver(engineSettingsPath, releaseBinDir / "EngineSettings.json"))
+				{
+					g_BuildExitCode.store(7);
+					g_BuildInProgress.store(false);
+					return;
+				}
+
 				// (5) Export: Bin 아래로 정리 (exe/dll/buildsettings/cooked/metas)
 				fs2::path exportRoot = args.exportPathStr;
 				if (!exportRoot.is_absolute())
@@ -534,6 +543,13 @@ namespace Alice
 				}
 
 				if (!CopyFileOver(releaseBinDir / "BuildSettings.json", exportBin / "BuildSettings.json"))
+				{
+					g_BuildExitCode.store(11);
+					g_BuildInProgress.store(false);
+					return;
+				}
+
+				if (!CopyFileOver(releaseBinDir / "EngineSettings.json", exportBin / "EngineSettings.json"))
 				{
 					g_BuildExitCode.store(11);
 					g_BuildInProgress.store(false);
@@ -783,6 +799,12 @@ namespace Alice
 					}
 
 					ALICE_LOG_INFO("BuildSettings saved to \"%s\"", cfgPath.string().c_str());
+
+					// 1-1) EngineSettings.json 갱신 (Lighting/Skybox 포함)
+					if (!SaveLightingSettingsForBuild(projectRoot))
+					{
+						ALICE_LOG_WARN("Build Game: EngineSettings.json update failed or skipped.");
+					}
 
 					// 2) 별도 스레드에서 CMake 빌드 + 리소스 복사 실행
 					g_BuildInProgress.store(true);
