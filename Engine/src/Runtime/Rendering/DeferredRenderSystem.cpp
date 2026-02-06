@@ -438,7 +438,7 @@ namespace Alice
             DXGI_FORMAT_R16G16B16A16_FLOAT,  // 0: NormalWS(encode) + Roughness(A)
             DXGI_FORMAT_R8G8B8A8_UNORM,      // 1: Metalness(R) + ToonCuts(GBA)
             DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, // 2: BaseColor + ShadingMode(A)
-            DXGI_FORMAT_R8G8B8A8_UNORM,      // 3: ToonParams (Strength/Levels)
+            DXGI_FORMAT_R16G16B16A16_UNORM,  // 3: ToonParams (Strength/Levels/Env 2x8 packed)
         };
 
         // 각 G-Buffer 텍스처 생성
@@ -530,7 +530,7 @@ namespace Alice
             DXGI_FORMAT_R16G16B16A16_FLOAT,  // 0: NormalWS + Roughness
             DXGI_FORMAT_R8G8B8A8_UNORM,      // 1: Metalness + ToonCuts
             DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, // 2: BaseColor + ShadingMode
-            DXGI_FORMAT_R8G8B8A8_UNORM,      // 3: ToonParams
+            DXGI_FORMAT_R16G16B16A16_UNORM,  // 3: ToonParams (Strength/Levels/Env 2x8 packed)
         };
 
         for (int i = 0; i < GBufferCount; ++i)
