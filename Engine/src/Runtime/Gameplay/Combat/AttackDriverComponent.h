@@ -75,6 +75,7 @@ namespace Alice
 		bool parryActive = false;
 		bool attackCancelable = true;
 		bool cancelAttackRequested = false;
+		bool forceCancelRequested = false;
 		float attackStateDurationAutoSec = 0.0f;
 		bool guardInputHeld = false;
 		bool guardInputPressed = false;

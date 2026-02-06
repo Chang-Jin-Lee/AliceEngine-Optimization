@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iomanip>
 #include <sstream>
 
 #include "Runtime/Scripting/ScriptFactory.h"
@@ -13,6 +14,11 @@
 #include "Runtime/UI/BindWidget.h"
 #include "Runtime/UI/UITransformComponent.h"
 #include "Runtime/Gameplay/Combat/HealthComponent.h"
+#include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
+#include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
+#include "Runtime/Physics/Components/Phy_CCTComponent.h"
+#include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
+#include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
 #include "C_CombatSessionComponent.h"
 #include "C_BossBrainComponent.h"
 
@@ -23,6 +29,202 @@ namespace Alice
 
     namespace
     {
+        const char* Yn(bool value)
+        {
+            return value ? "Y" : "N";
+        }
+
+        const char* ActionStateLabel(Combat::ActionState state)
+        {
+            switch (state)
+            {
+            case Combat::ActionState::Idle: return "Idle";
+            case Combat::ActionState::Move: return "Move";
+            case Combat::ActionState::Attack: return "Attack";
+            case Combat::ActionState::Dodge: return "Dodge";
+            case Combat::ActionState::Guard: return "Guard";
+            case Combat::ActionState::JustGuardSuccess: return "JustGuard";
+            case Combat::ActionState::GuardBreakWeak: return "GuardBreak";
+            case Combat::ActionState::Hitstun: return "Hitstun";
+            case Combat::ActionState::Groggy: return "Groggy";
+            case Combat::ActionState::Dead: return "Dead";
+            case Combat::ActionState::Interaction: return "Interact";
+            case Combat::ActionState::HealEnter: return "HealEnter";
+            case Combat::ActionState::HealLoop: return "HealLoop";
+            case Combat::ActionState::HealExit: return "HealExit";
+            default: return "Unknown";
+            }
+        }
+
+        void AppendVec3(std::ostringstream& oss, const DirectX::XMFLOAT3& v)
+        {
+            oss << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+        }
+
+        std::string BuildActorDebug(World& world,
+                                    EntityId actorId,
+                                    const char* header,
+                                    Combat::ActionState state,
+                                    const Combat::ActionFlags& flags,
+                                    const std::string& extraLabel)
+        {
+            std::ostringstream oss;
+            oss.setf(std::ios::fixed);
+            oss << std::setprecision(2);
+
+            if (header && header[0] != '\0')
+                oss << header << " ";
+
+            if (actorId == InvalidEntityId)
+            {
+                oss << "None";
+                return oss.str();
+            }
+
+            std::string name = world.GetEntityName(actorId);
+            if (name.empty())
+                name = "Entity";
+            oss << name << " (#" << actorId << ")\n";
+            oss << "State: " << ActionStateLabel(state)
+                << " | Flags: atk=" << Yn(flags.hitActive)
+                << " guard=" << Yn(flags.guardActive)
+                << " parry=" << Yn(flags.parryWindowActive)
+                << " inv=" << Yn(flags.invulnActive)
+                << " charge=" << Yn(flags.chargeActive)
+                << "(" << flags.chargeLevel << ")"
+                << " combo=" << flags.attackComboIndex
+                << " interrupt=" << Yn(flags.canBeInterrupted)
+                << "\n";
+
+            if (auto* health = world.GetComponent<HealthComponent>(actorId))
+            {
+                oss << "HP: " << health->currentHealth << "/" << health->maxHealth
+                    << " Groggy: " << health->groggy << "/" << health->groggyMax
+                    << " Weapon: " << health->weaponDurability << "/" << health->weaponDurabilityMax
+                    << " Alive: " << Yn(health->alive)
+                    << " Team: " << health->teamId
+                    << "\n";
+                oss << "Invuln: " << health->invulnRemaining << "/" << health->invulnDuration
+                    << " Weak: " << health->weakRemainingSec
+                    << " Pushback: " << health->pushbackRemainingSec << "@"
+                    << health->pushbackSpeed << " ";
+                AppendVec3(oss, health->pushbackDir);
+                oss << "\n";
+                oss << "Hit: hit=" << Yn(health->hitThisFrame)
+                    << " guardHit=" << Yn(health->guardHitThisFrame)
+                    << " dodgeAvoid=" << Yn(health->dodgeAvoidedThisFrame)
+                    << " lastDmg=" << health->lastHitDamage
+                    << " part=" << health->lastHitPart;
+                if (health->lastHitAttacker != InvalidEntityId)
+                {
+                    std::string attackerName = world.GetEntityName(health->lastHitAttacker);
+                    if (attackerName.empty())
+                        attackerName = "Entity";
+                    oss << " attacker=" << attackerName;
+                }
+                oss << "\n";
+            }
+            else
+            {
+                oss << "Health: None\n";
+            }
+
+            if (auto* transform = world.GetComponent<TransformComponent>(actorId))
+            {
+                const float yawDeg = transform->rotation.y * 57.2957795f;
+                oss << "Pos ";
+                AppendVec3(oss, transform->position);
+                oss << " RotY " << yawDeg << "deg"
+                    << " Scale ";
+                AppendVec3(oss, transform->scale);
+                oss << " Visible=" << Yn(transform->visible) << "\n";
+            }
+            else
+            {
+                oss << "Transform: None\n";
+            }
+
+            if (auto* cct = world.GetComponent<Phy_CCTComponent>(actorId))
+            {
+                oss << "CCT: ground=" << Yn(cct->onGround)
+                    << " dist=" << cct->groundDistance
+                    << " vVel=" << cct->verticalVelocity
+                    << " desired=";
+                AppendVec3(oss, cct->desiredVelocity);
+                oss << " jump=" << Yn(cct->jumpRequested)
+                    << " teleport=" << Yn(cct->teleport)
+                    << " flags=" << static_cast<int>(cct->collisionFlags)
+                    << "\n";
+            }
+
+            if (auto* driver = world.GetComponent<AttackDriverComponent>(actorId))
+            {
+                oss << "Driver: atk=" << Yn(driver->attackActive)
+                    << " pause=" << Yn(driver->attackPaused)
+                    << " cancelable=" << Yn(driver->attackCancelable)
+                    << " cancelReq=" << Yn(driver->cancelAttackRequested)
+                    << " suppressed=" << Yn(driver->attackSuppressed)
+                    << " guard=" << Yn(driver->guardActive)
+                    << " dodge=" << Yn(driver->dodgeActive)
+                    << " parry=" << Yn(driver->parryActive)
+                    << " guardLock=" << Yn(driver->guardLockActive)
+                    << "(" << driver->guardLockRemainingSec << ")"
+                    << " parryOverride=" << driver->parryOverrideRemainingSec
+                    << " dur=" << driver->attackStateDurationSec
+                    << " auto=" << driver->attackStateDurationAutoSec
+                    << "\n";
+                oss << "DriverInput: guardHeld=" << Yn(driver->guardInputHeld)
+                    << " pressed=" << Yn(driver->guardInputPressed)
+                    << " released=" << Yn(driver->guardInputReleased)
+                    << " parryTap=" << static_cast<int>(driver->parryTapCredit)
+                    << " guardSession=" << Yn(driver->guardSessionActive)
+                    << "\n";
+                if (driver->prevSkinned.valid)
+                {
+                    oss << "LastAnim: " << driver->prevSkinned.clipName
+                        << " t=" << driver->prevSkinned.prevTimeSec
+                        << "\n";
+                }
+
+                EntityId traceId = driver->traceCached;
+                if (traceId == InvalidEntityId && driver->traceGuid != 0)
+                    traceId = world.FindEntityByGuid(driver->traceGuid);
+                if (traceId == InvalidEntityId)
+                    traceId = actorId;
+                if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
+                {
+                    std::string traceName = world.GetEntityName(traceId);
+                    if (traceName.empty())
+                        traceName = "Entity";
+                    oss << "Trace(" << traceName << "): active=" << Yn(trace->active)
+                        << " dmg=" << trace->baseDamage
+                        << " atkId=" << trace->attackInstanceId
+                        << " shapes=" << trace->shapes.size()
+                        << "\n";
+                }
+            }
+
+            if (auto* anim = world.GetComponent<SkinnedAnimationComponent>(actorId))
+            {
+                oss << "Anim: clip=" << anim->clipIndex
+                    << " t=" << anim->timeSec
+                    << " speed=" << anim->speed
+                    << " playing=" << Yn(anim->playing)
+                    << "\n";
+            }
+            if (auto* mesh = world.GetComponent<SkinnedMeshComponent>(actorId))
+            {
+                oss << "Mesh: " << mesh->meshAssetPath
+                    << " bones=" << mesh->boneCount
+                    << "\n";
+            }
+
+            if (!extraLabel.empty())
+                oss << "Brain: " << extraLabel;
+
+            return oss.str();
+        }
+
         EntityId FindWidgetByName(World& world, const std::string& name)
         {
             if (name.empty())
@@ -134,27 +336,44 @@ namespace Alice
         UpdateStateTexts(m_bossStateTexts.data(), bossStates, bossStateCount, bossState, bossStateInactive, bossStateActive);
         UpdateWindowText(m_playerWindowText, playerFlags, playerWindowInactive, playerWindowActive);
         UpdateWindowText(m_bossWindowText, bossFlags, bossWindowInactive, bossWindowActive);
-        if (m_bossBrainText)
+
+        std::string bossBrainLabel;
+        if (m_bossId != InvalidEntityId)
         {
-            std::string label = "None";
-            if (m_bossId != InvalidEntityId)
+            if (auto* scripts = world->GetScripts(m_bossId))
             {
-                if (auto* scripts = world->GetScripts(m_bossId))
+                for (auto& sc : *scripts)
                 {
-                    for (auto& sc : *scripts)
+                    if (sc.scriptName == "C_BossBrainComponent" && sc.instance)
                     {
-                        if (sc.scriptName == "C_BossBrainComponent" && sc.instance)
-                        {
-                            auto* brain = static_cast<C_BossBrainComponent*>(sc.instance.get());
-                            label = brain->GetDebugLabel();
-                            break;
-                        }
+                        auto* brain = static_cast<C_BossBrainComponent*>(sc.instance.get());
+                        bossBrainLabel = brain->GetDebugLabel();
+                        break;
                     }
                 }
             }
-            if (label.empty())
-                label = "None";
-            m_bossBrainText->text = label;
+        }
+        if (bossBrainLabel.empty())
+            bossBrainLabel = "None";
+        if (m_bossBrainText)
+            m_bossBrainText->text = bossBrainLabel;
+        if (m_playerDebugText)
+        {
+            m_playerDebugText->text = BuildActorDebug(*world, m_playerId, "PLAYER", playerState, playerFlags, "");
+            const float size = Get_playerDebugFontSize();
+            if (size > 0.0f)
+                m_playerDebugText->fontSize = size;
+            if (Get_debugLineSpacing() != 0.0f)
+                m_playerDebugText->lineSpacing = Get_debugLineSpacing();
+        }
+        if (m_bossDebugText)
+        {
+            m_bossDebugText->text = BuildActorDebug(*world, m_bossId, "BOSS", bossState, bossFlags, bossBrainLabel);
+            const float size = Get_bossDebugFontSize();
+            if (size > 0.0f)
+                m_bossDebugText->fontSize = size;
+            if (Get_debugLineSpacing() != 0.0f)
+                m_bossDebugText->lineSpacing = Get_debugLineSpacing();
         }
 
         if (Get_useWorldSpace())
@@ -208,9 +427,13 @@ namespace Alice
         m_playerWindowTextId = FindWidgetByName(*world, Get_playerWindowTextName());
         m_bossWindowTextId = FindWidgetByName(*world, Get_bossWindowTextName());
         m_bossBrainTextId = FindWidgetByName(*world, Get_bossBrainTextName());
+        m_playerDebugTextId = FindWidgetByName(*world, Get_playerDebugTextName());
+        m_bossDebugTextId = FindWidgetByName(*world, Get_bossDebugTextName());
         m_playerWindowText = (m_playerWindowTextId != InvalidEntityId) ? world->GetComponent<UITextComponent>(m_playerWindowTextId) : nullptr;
         m_bossWindowText = (m_bossWindowTextId != InvalidEntityId) ? world->GetComponent<UITextComponent>(m_bossWindowTextId) : nullptr;
         m_bossBrainText = (m_bossBrainTextId != InvalidEntityId) ? world->GetComponent<UITextComponent>(m_bossBrainTextId) : nullptr;
+        m_playerDebugText = (m_playerDebugTextId != InvalidEntityId) ? world->GetComponent<UITextComponent>(m_playerDebugTextId) : nullptr;
+        m_bossDebugText = (m_bossDebugTextId != InvalidEntityId) ? world->GetComponent<UITextComponent>(m_bossDebugTextId) : nullptr;
 
         m_playerStateTextIds = {
             FindWidgetByName(*world, Get_playerStateIdleTextName()),
@@ -412,6 +635,9 @@ namespace Alice
             {
                 if (!Get_bossUseWorldSpace())
                 {
+                    const float baseX = Get_bossScreenPosX();
+                    const float baseY = Get_bossScreenPosY();
+                    const float line = std::max(1.0f, Get_bossScreenLineSpacing());
                     const EntityId bossWidgets[] = {
                         m_bossHpGaugeId,
                         m_bossGroggyGaugeId,
@@ -424,8 +650,13 @@ namespace Alice
                         m_bossStateTextIds[4],
                         m_bossStateTextIds[5]
                     };
-                    for (EntityId id : bossWidgets)
-                        ApplyScreenCommon(id);
+                    for (size_t i = 0; i < std::size(bossWidgets); ++i)
+                    {
+                        ApplyScreenLayout(
+                            bossWidgets[i],
+                            { baseX, baseY + static_cast<float>(i) * line }
+                        );
+                    }
                 }
                 else
                 {
@@ -475,6 +706,9 @@ namespace Alice
                 }
             }
         }
+
+        ApplyScreenLayout(m_playerDebugTextId, { Get_playerDebugScreenPosX(), Get_playerDebugScreenPosY() });
+        ApplyScreenLayout(m_bossDebugTextId, { Get_bossDebugScreenPosX(), Get_bossDebugScreenPosY() });
     }
 
     void CombatHudScript::UpdateGauge(UIGaugeComponent* gauge, float value, float maxValue)

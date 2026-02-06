@@ -135,13 +135,16 @@ namespace Alice
         m_rng = std::mt19937(std::random_device{}());
         FindEntities();
 
-        m_initialized = (m_weaponCombined != InvalidEntityId && m_core != InvalidEntityId && m_eye != InvalidEntityId);
+        m_initialized = (m_weaponCombined != InvalidEntityId && m_eye != InvalidEntityId);
         if (!m_initialized)
         {
-            ALICE_LOG_WARN("[Gimmick] Missing required entities. WeaponCombined=%llu Core=%llu Eye=%llu",
+            ALICE_LOG_WARN("[Gimmick] Missing required entities. WeaponCombined=%llu Eye=%llu",
                 static_cast<unsigned long long>(m_weaponCombined),
-                static_cast<unsigned long long>(m_core),
                 static_cast<unsigned long long>(m_eye));
+        }
+        else if (m_core == InvalidEntityId && !m_coreName.empty())
+        {
+            ALICE_LOG_INFO("[Gimmick] Core not found (optional): %s", m_coreName.c_str());
         }
 
         EnterPhase(Phase::Normal);
@@ -486,11 +489,8 @@ namespace Alice
         {
             SetOwnerWeaponDurability(true);
             SetEnabled(m_weaponCombined, true);
-            SetVisible(m_core, false);
-            SetVisible(m_tendon, true);
-            SetEnabled(m_tendon, false);
-            SetMaterialTransparent(m_tendon, false);
-           // SetMaterialAlpha(m_tendon, 1.0f);
+            SetVisible(m_weaponCombined, true);
+            SetMaterialAlpha(m_weaponCombined, 1.0f);
             prewarmHiddenPart(m_eye);
 
             for (auto& shard : m_shards)
@@ -509,11 +509,8 @@ namespace Alice
         {
             SetOwnerWeaponDurability(true);
             SetEnabled(m_weaponCombined, true);
-            SetVisible(m_core, false);
-            SetVisible(m_tendon, true);
-            SetEnabled(m_tendon, false);
-            SetMaterialTransparent(m_tendon, false);
-           // SetMaterialAlpha(m_tendon, 1.0f);
+            SetVisible(m_weaponCombined, true);
+            SetMaterialAlpha(m_weaponCombined, 1.0f);
             prewarmHiddenPart(m_eye);
 
             for (auto& shard : m_shards)
@@ -530,13 +527,9 @@ namespace Alice
         if (phase == Phase::Break)
         {
             SetOwnerWeaponDurability(false);
-            SetEnabled(m_tendon, true);
-            SetVisible(m_tendon, false);            
-            SetVisible(m_core, true);
             SetVisible(m_eye, true);
+            SetMaterialAlpha(m_weaponCombined, 0.0f);
             SetEnabled(m_weaponCombined, false);
-            SetMaterialTransparent(m_tendon, false);
-            //SetMaterialAlpha(m_tendon, 1.0f);
 
             for (auto& shard : m_shards)
             {
@@ -670,7 +663,7 @@ namespace Alice
     void Gimmick::UpdateMagnetize(float dt)
     {
         auto* world = GetWorld();
-        if (!world || m_eye == InvalidEntityId || m_core == InvalidEntityId)
+        if (!world || m_eye == InvalidEntityId)
             return;
 
         UpdateEyeFloat(dt);
@@ -766,7 +759,7 @@ namespace Alice
     void Gimmick::UpdateAssembleShards(float dt)
     {
         auto* world = GetWorld();
-        if (!world || m_core == InvalidEntityId)
+        if (!world)
             return;
 
         UpdateEyeFloat(dt);
@@ -885,18 +878,19 @@ namespace Alice
             {
                 m_tendonFading = true;
                 m_tendonTimer = 0.0f;
-                SetVisible(m_tendon, true);
-                SetMaterialAlpha(m_tendon, 0.0f);
+                SetEnabled(m_weaponCombined, true);
+                SetVisible(m_weaponCombined, true);
+                SetMaterialAlpha(m_weaponCombined, 0.0f);
             }
 
             m_tendonTimer += dt;
             float duration = std::max(0.001f, m_tendonVisibleDelay);
             float t = Clamp(m_tendonTimer / duration, 0.0f, 1.0f);
             float alpha = SmoothStep(t);
-            SetMaterialAlpha(m_tendon, alpha);
+            SetMaterialAlpha(m_weaponCombined, alpha);
             if (t >= 1.0f)
             {
-                SetMaterialAlpha(m_tendon, 1.0f);
+                SetMaterialAlpha(m_weaponCombined, 1.0f);
             }
         }
     }
@@ -1317,7 +1311,9 @@ namespace Alice
         if (!world)
             return false;
 
-        const EntityId basis = (m_bindTarget != InvalidEntityId) ? m_bindTarget : m_core;
+        const EntityId basis = (m_bindTarget != InvalidEntityId)
+            ? m_bindTarget
+            : ((m_core != InvalidEntityId) ? m_core : m_weaponCombined);
         if (basis == InvalidEntityId)
             return false;
 
