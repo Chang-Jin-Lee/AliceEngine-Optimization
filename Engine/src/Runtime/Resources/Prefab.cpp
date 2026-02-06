@@ -543,63 +543,7 @@ namespace Alice
                     outEntity["UIGauge"] = JsonRttr::ToJsonObject(inst);
                 }
 
-            // AliceUI Components
-            auto itUIWidget = root.find("UIWidget");
-            if (itUIWidget != root.end() && itUIWidget->is_object())
-            {
-                UIWidgetComponent& comp = world.AddComponent<UIWidgetComponent>(entity);
-                rttr::instance inst = comp;
-                if (!JsonRttr::FromJsonObject(inst, *itUIWidget))
-                    return InvalidEntityId;
-            }
-            auto itUITransform = root.find("UITransform");
-            if (itUITransform != root.end() && itUITransform->is_object())
-            {
-                UITransformComponent& comp = world.AddComponent<UITransformComponent>(entity);
-                rttr::instance inst = comp;
-                if (!JsonRttr::FromJsonObject(inst, *itUITransform))
-                    return InvalidEntityId;
-            }
-            auto itUIImage = root.find("UIImage");
-            if (itUIImage != root.end() && itUIImage->is_object())
-            {
-                UIImageComponent& comp = world.AddComponent<UIImageComponent>(entity);
-                rttr::instance inst = comp;
-                if (!JsonRttr::FromJsonObject(inst, *itUIImage))
-                    return InvalidEntityId;
-            }
-            auto itUIText = root.find("UIText");
-            if (itUIText != root.end() && itUIText->is_object())
-            {
-                UITextComponent& comp = world.AddComponent<UITextComponent>(entity);
-                rttr::instance inst = comp;
-                if (!JsonRttr::FromJsonObject(inst, *itUIText))
-                    return InvalidEntityId;
-            }
-            auto itUIButton = root.find("UIButton");
-            if (itUIButton != root.end() && itUIButton->is_object())
-            {
-                UIButtonComponent& comp = world.AddComponent<UIButtonComponent>(entity);
-                rttr::instance inst = comp;
-                if (!JsonRttr::FromJsonObject(inst, *itUIButton))
-                    return InvalidEntityId;
-            }
-            auto itUICheckBox = root.find("UICheckBox");
-            if (itUICheckBox != root.end() && itUICheckBox->is_object())
-            {
-                UICheckBoxComponent& comp = world.AddComponent<UICheckBoxComponent>(entity);
-                rttr::instance inst = comp;
-                if (!JsonRttr::FromJsonObject(inst, *itUICheckBox))
-                    return InvalidEntityId;
-            }
-            auto itUIGauge = root.find("UIGauge");
-            if (itUIGauge != root.end() && itUIGauge->is_object())
-            {
-                UIGaugeComponent& comp = world.AddComponent<UIGaugeComponent>(entity);
-                rttr::instance inst = comp;
-                if (!JsonRttr::FromJsonObject(inst, *itUIGauge))
-                    return InvalidEntityId;
-            }
+            
                 // Point Light
                 if (const auto* point = world.GetComponent<PointLightComponent>(entity); point)
                 {
@@ -936,6 +880,8 @@ namespace Alice
                     if (!JsonRttr::FromJsonObject(inst, *itUIWidget))
                         return false;
                 }
+
+
                 auto itUITransform = root.find("UITransform");
                 if (itUITransform != root.end() && itUITransform->is_object())
                 {
@@ -996,60 +942,6 @@ namespace Alice
                     if (!JsonRttr::FromJsonObject(inst, *itSL))
                         return false;
                 }
-
-            // AliceUI Components
-            if (const auto* uiWidget = world.GetComponent<UIWidgetComponent>(entity); uiWidget)
-            {
-                rttr::instance inst = const_cast<UIWidgetComponent&>(*uiWidget);
-                root["UIWidget"] = JsonRttr::ToJsonObject(inst);
-            }
-            if (const auto* uiTransform = world.GetComponent<UITransformComponent>(entity); uiTransform)
-            {
-                rttr::instance inst = const_cast<UITransformComponent&>(*uiTransform);
-                root["UITransform"] = JsonRttr::ToJsonObject(inst);
-            }
-            if (const auto* uiImage = world.GetComponent<UIImageComponent>(entity); uiImage)
-            {
-                UIImageComponent copy = *uiImage;
-                copy.texturePath = NormalizePathToRelative(copy.texturePath);
-                rttr::instance inst = copy;
-                root["UIImage"] = JsonRttr::ToJsonObject(inst);
-            }
-            if (const auto* uiText = world.GetComponent<UITextComponent>(entity); uiText)
-            {
-                UITextComponent copy = *uiText;
-                copy.fontPath = NormalizePathToRelative(copy.fontPath);
-                rttr::instance inst = copy;
-                root["UIText"] = JsonRttr::ToJsonObject(inst);
-            }
-            if (const auto* uiButton = world.GetComponent<UIButtonComponent>(entity); uiButton)
-            {
-                UIButtonComponent copy = *uiButton;
-                copy.normalTexture = NormalizePathToRelative(copy.normalTexture);
-                copy.hoveredTexture = NormalizePathToRelative(copy.hoveredTexture);
-                copy.pressedTexture = NormalizePathToRelative(copy.pressedTexture);
-                copy.disabledTexture = NormalizePathToRelative(copy.disabledTexture);
-                rttr::instance inst = copy;
-                root["UIButton"] = JsonRttr::ToJsonObject(inst);
-            }
-            if (const auto* uiCheckBox = world.GetComponent<UICheckBoxComponent>(entity); uiCheckBox)
-            {
-                UICheckBoxComponent copy = *uiCheckBox;
-                copy.normalTexture = NormalizePathToRelative(copy.normalTexture);
-                copy.hoveredTexture = NormalizePathToRelative(copy.hoveredTexture);
-                copy.pressedTexture = NormalizePathToRelative(copy.pressedTexture);
-                copy.disabledTexture = NormalizePathToRelative(copy.disabledTexture);
-                rttr::instance inst = copy;
-                root["UICheckBox"] = JsonRttr::ToJsonObject(inst);
-            }
-            if (const auto* uiGauge = world.GetComponent<UIGaugeComponent>(entity); uiGauge)
-            {
-                UIGaugeComponent copy = *uiGauge;
-                copy.fillTexture = NormalizePathToRelative(copy.fillTexture);
-                copy.backgroundTexture = NormalizePathToRelative(copy.backgroundTexture);
-                rttr::instance inst = copy;
-                root["UIGauge"] = JsonRttr::ToJsonObject(inst);
-            }
                 // Rect Light
                 auto itRL = root.find("RectLight");
                 if (itRL != root.end() && itRL->is_object())
