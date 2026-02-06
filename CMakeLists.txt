@@ -98,6 +98,7 @@ set(ENGINE_SOURCES
     ${ALICE_SRC_DIR}/Editor/Core/EditorUndoRedo.cpp
     ${ALICE_SRC_DIR}/Editor/UI/EditorDocking.cpp
     ${ALICE_SRC_DIR}/Editor/UI/EditorMainMenuBar.cpp
+    ${ALICE_SRC_DIR}/Editor/UI/EngineLogoOverlay.cpp
     ${ALICE_SRC_DIR}/Editor/UI/EditorSceneLoadFlow.cpp
     ${ALICE_SRC_DIR}/Editor/Panels/HierarchyPanel.cpp
     ${ALICE_SRC_DIR}/Editor/Panels/InspectorPanel.cpp
