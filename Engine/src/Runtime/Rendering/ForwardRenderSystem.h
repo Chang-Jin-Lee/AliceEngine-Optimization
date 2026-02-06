@@ -107,6 +107,7 @@ namespace Alice
                                float normalStrength,
                                const DirectX::XMFLOAT4& toonPbrCuts,
                                const DirectX::XMFLOAT4& toonPbrLevels,
+                               const DirectX::XMFLOAT4& toonPbrAlphas,
                                float envDiffuseStrength = 1.0f,
                                float envSpecularStrength = 1.0f,
                                const DirectX::XMFLOAT3& outlineColor = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),

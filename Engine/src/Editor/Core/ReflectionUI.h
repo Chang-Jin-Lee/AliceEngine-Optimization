@@ -509,7 +509,8 @@ namespace Alice
 					event = Detail::RenderPropertyWithRange(prop, inst, 0.0f, 5.0f, "", world);
 				}
 				else if (propName == "toonPbrCut1" || propName == "toonPbrCut2" || propName == "toonPbrCut3" ||
-					propName == "toonPbrLevel1" || propName == "toonPbrLevel2" || propName == "toonPbrLevel3")
+					propName == "toonPbrLevel1" || propName == "toonPbrLevel2" || propName == "toonPbrLevel3" ||
+					propName == "toonPbrLevel1Alpha" || propName == "toonPbrLevel2Alpha" || propName == "toonPbrLevel3Alpha")
 				{
 					event = Detail::RenderPropertyWithRange(prop, inst, 0.0f, 1.0f, "", world);
 				}
@@ -584,7 +585,8 @@ namespace Alice
 					event = Detail::RenderPropertyWithRange(prop, inst, 0.0f, 5.0f, displayLabel, world);
 				}
 				else if (propName == "toonPbrCut1" || propName == "toonPbrCut2" || propName == "toonPbrCut3" ||
-					propName == "toonPbrLevel1" || propName == "toonPbrLevel2" || propName == "toonPbrLevel3")
+					propName == "toonPbrLevel1" || propName == "toonPbrLevel2" || propName == "toonPbrLevel3" ||
+					propName == "toonPbrLevel1Alpha" || propName == "toonPbrLevel2Alpha" || propName == "toonPbrLevel3Alpha")
 				{
 					event = Detail::RenderPropertyWithRange(prop, inst, 0.0f, 1.0f, displayLabel, world);
 				}

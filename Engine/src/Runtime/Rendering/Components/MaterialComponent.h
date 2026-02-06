@@ -47,6 +47,9 @@ namespace Alice {
         float toonPbrLevel1{ 0.1f };
         float toonPbrLevel2{ 0.4f };
         float toonPbrLevel3{ 0.7f };
+        float toonPbrLevel1Alpha{ 1.0f };
+        float toonPbrLevel2Alpha{ 1.0f };
+        float toonPbrLevel3Alpha{ 1.0f };
         float toonPbrStrength{ 1.0f }; // 0: 부드러운 PBR, 1: 완전 Toon
         bool  toonPbrBlur{ false };    // 계단 사이를 부드럽게 블러 처리
 
@@ -70,6 +73,9 @@ namespace Alice {
         Alice_Get_Set(toonPbrLevel1);
         Alice_Get_Set(toonPbrLevel2);
         Alice_Get_Set(toonPbrLevel3);
+        Alice_Get_Set(toonPbrLevel1Alpha);
+        Alice_Get_Set(toonPbrLevel2Alpha);
+        Alice_Get_Set(toonPbrLevel3Alpha);
         Alice_Get_Set(toonPbrStrength);
         Alice_Get_Set(toonPbrBlur);
     };

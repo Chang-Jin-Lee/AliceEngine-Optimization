@@ -11,6 +11,8 @@
                     "y": 0.75,
                     "z": 0.7799999713897705
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 1.0,
                 "outlineColor": {
@@ -81,6 +83,8 @@
                     "y": 0.25999999046325684,
                     "z": 0.30000001192092896
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 1.0,
                 "outlineColor": {
@@ -226,6 +230,8 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 1.0,
                 "outlineColor": {
@@ -291,13 +297,13 @@
                 "enabled": true,
                 "position": {
                     "x": 6.8980817794799805,
-                    "y": 11.307735443115234,
+                    "y": 1.2260907888412476,
                     "z": 7.324047088623047
                 },
                 "rotation": {
-                    "x": 1.0030138492584229,
-                    "y": -3.137382984161377,
-                    "z": 0.0035502624232321978
+                    "x": -0.0,
+                    "y": -2.369899034500122,
+                    "z": 0.0
                 },
                 "scale": {
                     "x": 1.0,
@@ -308,6 +314,71 @@
             },
             "guid": "9736660331388967133",
             "name": "MainCamera"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "envDiffuseStrength": 0.5799999833106995,
+                "envSpecularStrength": 0.8700000047683716,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": 7,
+                "toonPbrBlur": true,
+                "toonPbrCut1": 0.11900000274181366,
+                "toonPbrCut2": 0.257999986410141,
+                "toonPbrCut3": 0.40700000524520874,
+                "toonPbrLevel1": 0.0,
+                "toonPbrLevel2": 0.6800000071525574,
+                "toonPbrLevel3": 0.9480000138282776,
+                "toonPbrStrength": 0.968999981880188,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 5,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 422.83480867091566
+            },
+            "SkinnedMesh": {
+                "boneCount": 345,
+                "instanceAssetPath": "Assets/Fbx/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack.fbxasset",
+                "meshAssetPath": "Tia_Animaition_Run,Rolling,IDLE,Turn,Attack"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 2.1910400390625,
+                    "y": 0.03142665699124336,
+                    "z": 1.9531701803207397
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": -3.007750988006592,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 2.0,
+                    "y": 2.0,
+                    "z": 2.0
+                },
+                "visible": true
+            },
+            "guid": "16486367339125333052"
         }
     ],
     "sceneName": "DecalDemo",

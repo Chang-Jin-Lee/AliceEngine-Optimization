@@ -213,8 +213,8 @@ namespace Alice
 
         /// 백버퍼로 렌더 타겟을 복귀시킵니다 (ImGui 등 후처리를 위해).
         void RestoreBackBuffer();
-        // G-Buffer 개수 (Normal+Roughness, Metalness+ToonCuts, BaseColor, ToonParams)
-        static constexpr int GBufferCount = 4;
+        // G-Buffer 개수 (Normal+Roughness, Metalness+ToonCuts, BaseColor, ToonParams, ToonAlphas)
+        static constexpr int GBufferCount = 5;
         // D-Buffer 개수 (Decal Albedo)
         static constexpr int DBufferCount = 1;
 
@@ -287,6 +287,7 @@ namespace Alice
                                float normalStrength,
                                const DirectX::XMFLOAT4& toonPbrCuts,
                                const DirectX::XMFLOAT4& toonPbrLevels,
+                               const DirectX::XMFLOAT4& toonPbrAlphas,
                                float envDiffuseStrength = 1.0f,
                                float envSpecularStrength = 1.0f,
                                const DirectX::XMFLOAT3& outlineColor = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),
