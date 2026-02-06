@@ -38,6 +38,7 @@
 #include "Runtime/UI/UITransformComponent.h"
 #include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/UITextComponent.h"
+#include "ThirdParty/json/json.hpp"
 #include "Runtime/UI/UIButtonComponent.h"
 #include "Runtime/UI/UIGaugeComponent.h"
 #include "Runtime/UI/UIRenderer.h"
@@ -340,6 +341,11 @@ namespace Alice
 		ViewportPicker& picker,
 		float& cameraMoveSpeed,
 		bool& useForwardRendering,
+		LightingParameters& lightingParams,
+		int& skyboxChoice,
+		std::string& skyboxCustomDir,
+		std::string& skyboxCustomPrefix,
+		int& skyboxResolution,
 		bool& pvdEnabled,
 		std::string& pvdHost,
 		int& pvdPort,
@@ -365,6 +371,9 @@ namespace Alice
 		SetupDockSpaceAndDefaultLayout();
 		DrawMainMenuBar(world, deltaTime, fps, isPlaying, selectedEntity, useForwardRendering, isDebugDraw);
 
+		CacheLightingSettings(shadingMode, useFillLight, lightingParams,
+			skyboxChoice, skyboxCustomDir, skyboxCustomPrefix, skyboxResolution);
+
 		DrawPvdSettingsWindow(pvdEnabled, pvdHost, pvdPort);
 		DrawBuildGameWindow();
 
@@ -373,7 +382,8 @@ namespace Alice
 		DrawProjectWindow(world, selectedEntity);
 		DrawGameViewportWindow(world, camera, forward, deferred, selectedEntity, picker, cameraMoveSpeed, useForwardRendering, isPlaying, shadingMode, useFillLight);
 		DrawCameraWindow(world, camera, forward, deferred, cameraMoveSpeed, selectedEntity, useForwardRendering);
-		DrawLightingWindow(world, forward, deferred, shadingMode, useFillLight, useForwardRendering);
+		DrawLightingWindow(world, forward, deferred, shadingMode, useFillLight, useForwardRendering,
+			lightingParams, skyboxChoice, skyboxCustomDir, skyboxCustomPrefix, skyboxResolution);
 
 		// 첫 프레임 기본 포커스를 Inspector 탭으로 강제
 		static bool s_focusInspector = false;
@@ -389,6 +399,86 @@ namespace Alice
 		DrawEngineLogo();
 
 		HandleSceneLoadFlow(world, sceneManager, isPlaying, selectedEntity);
+	}
+
+	void EditorCore::CacheLightingSettings(int shadingMode,
+		bool useFillLight,
+		const LightingParameters& lightingParams,
+		int skyboxChoice,
+		const std::string& skyboxCustomDir,
+		const std::string& skyboxCustomPrefix,
+		int skyboxResolution)
+	{
+		m_cachedShadingMode = shadingMode;
+		m_cachedUseFillLight = useFillLight;
+		m_cachedLightingParams = lightingParams;
+		m_cachedSkyboxChoice = skyboxChoice;
+		m_cachedSkyboxCustomDir = skyboxCustomDir;
+		m_cachedSkyboxCustomPrefix = skyboxCustomPrefix;
+		m_cachedSkyboxResolution = skyboxResolution;
+		m_hasLightingCache = true;
+	}
+
+	bool EditorCore::SaveLightingSettingsForBuild(const std::filesystem::path& projectRoot) const
+	{
+		if (!m_hasLightingCache)
+		{
+			ALICE_LOG_WARN("Build Game: lighting cache is empty. EngineSettings.json not updated.");
+			return false;
+		}
+
+		namespace fs = std::filesystem;
+		const fs::path cfg = projectRoot / "EngineSettings.json";
+
+		nlohmann::json j;
+		if (fs::exists(cfg))
+		{
+			std::ifstream ifs(cfg);
+			if (ifs.is_open())
+			{
+				try { ifs >> j; }
+				catch (...) {}
+			}
+		}
+
+		auto Vec3ToJson = [](const DirectX::XMFLOAT3& v)
+			{
+				return nlohmann::json::array({ v.x, v.y, v.z });
+			};
+
+		j["lighting"] = nlohmann::json::object();
+		j["lighting"]["shadingMode"] = m_cachedShadingMode;
+		j["lighting"]["useFillLight"] = m_cachedUseFillLight;
+		j["lighting"]["params"] = nlohmann::json::object();
+		auto& p = j["lighting"]["params"];
+		p["diffuseColor"] = Vec3ToJson(m_cachedLightingParams.diffuseColor);
+		p["specularColor"] = Vec3ToJson(m_cachedLightingParams.specularColor);
+		p["shininess"] = m_cachedLightingParams.shininess;
+		p["baseColor"] = Vec3ToJson(m_cachedLightingParams.baseColor);
+		p["metalness"] = m_cachedLightingParams.metalness;
+		p["roughness"] = m_cachedLightingParams.roughness;
+		p["ambientOcclusion"] = m_cachedLightingParams.ambientOcclusion;
+		p["keyIntensity"] = m_cachedLightingParams.keyIntensity;
+		p["fillIntensity"] = m_cachedLightingParams.fillIntensity;
+		p["keyDirection"] = Vec3ToJson(m_cachedLightingParams.keyDirection);
+		p["fillDirection"] = Vec3ToJson(m_cachedLightingParams.fillDirection);
+
+		j["skybox"] = nlohmann::json::object();
+		j["skybox"]["choice"] = m_cachedSkyboxChoice;
+		j["skybox"]["customDir"] = m_cachedSkyboxCustomDir;
+		j["skybox"]["customPrefix"] = m_cachedSkyboxCustomPrefix;
+		j["skybox"]["resolution"] = m_cachedSkyboxResolution;
+
+		std::ofstream ofs(cfg);
+		if (!ofs.is_open())
+		{
+			ALICE_LOG_ERRORF("Build Game: failed to write EngineSettings.json: \"%s\"", cfg.string().c_str());
+			return false;
+		}
+
+		ofs << j.dump(4);
+		ALICE_LOG_INFO("Build Game: EngineSettings.json updated: \"%s\"", cfg.string().c_str());
+		return true;
 	}
 
 	// ComponentEditCommandRTTR 구현
