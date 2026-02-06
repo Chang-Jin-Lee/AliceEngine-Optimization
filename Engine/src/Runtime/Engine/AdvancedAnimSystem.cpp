@@ -507,7 +507,8 @@ namespace Alice
         // Root motion reset detection
         // ------------------------------
         bool rmReset = false;
-        const bool rmEnabled = animComp.rootMotionUnlock;
+        const bool rmEnabled = animComp.rootMotionUnlock || animComp.rootBoneLock;
+        const bool rmApply = animComp.rootMotionUnlock;
         if (rmEnabled)
         {
             if (!rt.rmPrevEnabled)
@@ -624,7 +625,7 @@ namespace Alice
         const auto rmDelta = rt.animator->ConsumeRootMotionDelta();
         animComp.rootMotionDeltaValid = false;
         animComp.rootMotionDeltaWS = { 0.0f, 0.0f, 0.0f };
-        if (rmDelta.valid && rmEnabled)
+        if (rmDelta.valid && rmApply)
         {
             if (auto* tc = world.GetComponent<TransformComponent>(id))
             {
@@ -660,6 +661,7 @@ namespace Alice
                         tc->position = newPos;
                         tc->SetRotation(q);
                     }
+                    world.MarkTransformDirty(id);
                 }
             }
         }
@@ -730,10 +732,9 @@ namespace Alice
         // ------------------------------
         // Socket world outputs (엔진 로우 컨벤션)
         // ------------------------------
-        DirectX::XMMATRIX charWorld = DirectX::XMMatrixIdentity();
+        DirectX::XMMATRIX charWorldRow = DirectX::XMMatrixIdentity();
 		if (const auto* t = world.GetComponent<TransformComponent>(id))
-			charWorld = BuildWorldMatrix(*t);
-        DirectX::XMMATRIX charWorldRow = charWorld;
+			charWorldRow = world.ComputeWorldMatrix(id);
 
         for (auto& s : animComp.sockets)
         {

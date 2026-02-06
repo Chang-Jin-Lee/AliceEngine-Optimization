@@ -63,12 +63,15 @@ namespace Alice::Combat
         {
             Enter(ActionState::GuardBreakWeak);
         }
-        const bool gotHit = HasEvent(events, CombatEventType::OnHit) && m_state != ActionState::Dead;
-
-        if (HasEvent(events, CombatEventType::OnGroggy) && m_state != ActionState::Dead)
+        const bool groggyEvent = HasEvent(events, CombatEventType::OnGroggy) && m_state != ActionState::Dead;
+        if (groggyEvent)
         {
             Enter(ActionState::Groggy);
         }
+        const bool gotHit = HasEvent(events, CombatEventType::OnHit)
+            && m_state != ActionState::Dead
+            && !groggyEvent
+            && m_state != ActionState::Groggy;
 
         if (gotHit)
         {

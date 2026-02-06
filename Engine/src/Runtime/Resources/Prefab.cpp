@@ -404,7 +404,9 @@ namespace Alice
                 if (const auto* advAnim = world.GetComponent<AdvancedAnimationComponent>(entity); advAnim)
                 {
                     rttr::instance inst = const_cast<AdvancedAnimationComponent&>(*advAnim);
-                    outEntity["AdvancedAnimation"] = JsonRttr::ToJsonObject(inst);
+                    JsonRttr::json obj = JsonRttr::ToJsonObject(inst);
+                    obj["rootBoneLock"] = advAnim->rootBoneLock;
+                    outEntity["AdvancedAnimation"] = obj;
                 }
 
                 // Camera
@@ -732,6 +734,13 @@ namespace Alice
                     rttr::instance inst = aa;
                     if (!JsonRttr::FromJsonObject(inst, *itAA))
                         return false;
+                    if (auto it = itAA->find("rootBoneLock"); it != itAA->end())
+                    {
+                        if (it->is_boolean())
+                            aa.rootBoneLock = it->get<bool>();
+                        else if (it->is_number())
+                            aa.rootBoneLock = (it->get<double>() != 0.0);
+                    }
                 }
 
                 // Camera

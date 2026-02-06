@@ -382,6 +382,7 @@ namespace Alice
             driver.guardActive = false;
             driver.parryActive = false;
             driver.attackCancelable = true;
+            driver.forceCancelRequested = false;
         }
 
         void ApplyHealthState(World& world, EntityId entityId, const AttackDriverComponent& driver)
@@ -818,17 +819,22 @@ namespace Alice
 
                 CommitPrevTimeSec(driver.prevSkinned, currentClipName, currTimeSec);
 
-                if (driver.cancelAttackRequested)
+                const bool cancelRequested = driver.cancelAttackRequested || driver.forceCancelRequested;
+                if (cancelRequested)
                 {
-                    if (driver.attackCancelable)
+                    if (driver.attackCancelable || driver.forceCancelRequested)
                     {
                         driver.attackActive = false;
                         if (!attackWindowActiveThisFrame && !attackPausedThisFrame)
+                        {
                             driver.cancelAttackRequested = false;
+                            driver.forceCancelRequested = false;
+                        }
                     }
                     else
                     {
                         driver.cancelAttackRequested = false;
+                        driver.forceCancelRequested = false;
                     }
                 }
                 ApplyInputOverrides(driver);
@@ -938,17 +944,22 @@ namespace Alice
             CommitPrevTimeSec(driver.prevUpperB, upperB.clipName, upperB.currTime);
             CommitPrevTimeSec(driver.prevAdditive, additive.clipName, additive.currTime);
 
-            if (driver.cancelAttackRequested)
+            const bool cancelRequested = driver.cancelAttackRequested || driver.forceCancelRequested;
+            if (cancelRequested)
             {
-                if (driver.attackCancelable)
+                if (driver.attackCancelable || driver.forceCancelRequested)
                 {
                     driver.attackActive = false;
                     if (!attackWindowActiveThisFrame && !attackPausedThisFrame)
+                    {
                         driver.cancelAttackRequested = false;
+                        driver.forceCancelRequested = false;
+                    }
                 }
                 else
                 {
                     driver.cancelAttackRequested = false;
+                    driver.forceCancelRequested = false;
                 }
             }
             ApplyInputOverrides(driver);

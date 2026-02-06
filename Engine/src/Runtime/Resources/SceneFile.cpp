@@ -652,7 +652,9 @@ namespace Alice
             if (const auto* advAnim = world.GetComponent<AdvancedAnimationComponent>(id); advAnim)
             {
                 rttr::instance inst = const_cast<AdvancedAnimationComponent&>(*advAnim);
-                outEntity["AdvancedAnimation"] = JsonRttr::ToJsonObject(inst);
+                JsonRttr::json obj = JsonRttr::ToJsonObject(inst);
+                obj["rootBoneLock"] = advAnim->rootBoneLock;
+                outEntity["AdvancedAnimation"] = obj;
             }
 
             if (const auto* animBp = world.GetComponent<AnimBlueprintComponent>(id); animBp)
@@ -1126,6 +1128,21 @@ namespace Alice
             {
                 AdvancedAnimationComponent& aa = world.AddComponent<AdvancedAnimationComponent>(id);
                 JsonRttr::json copy = *itAA;
+                bool hasRootBoneLock = false;
+                bool rootBoneLockValue = aa.rootBoneLock;
+                if (auto itRootLock = copy.find("rootBoneLock"); itRootLock != copy.end())
+                {
+                    if (itRootLock->is_boolean())
+                    {
+                        rootBoneLockValue = itRootLock->get<bool>();
+                        hasRootBoneLock = true;
+                    }
+                    else if (itRootLock->is_number())
+                    {
+                        rootBoneLockValue = (itRootLock->get<double>() != 0.0);
+                        hasRootBoneLock = true;
+                    }
+                }
 
                 if (auto itChains = copy.find("ikChains"); itChains != copy.end())
                 {
@@ -1141,6 +1158,8 @@ namespace Alice
 
                 rttr::instance inst = aa;
                 if (!JsonRttr::FromJsonObject(inst, copy)) return false;
+                if (hasRootBoneLock)
+                    aa.rootBoneLock = rootBoneLockValue;
             }
 
             // AnimBlueprint (선택)
