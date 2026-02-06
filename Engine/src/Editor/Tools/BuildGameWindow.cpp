@@ -401,6 +401,9 @@ namespace Alice
 				const fs2::path scriptsRoot = args.projectRoot / "ScriptsBuild";
 				const fs2::path scriptsCMake = scriptsRoot / "CMakeLists.txt";
 				const fs2::path scriptsBuildDir = scriptsRoot / "build";
+				const fs2::path releaseDllDir = releaseBinDir / "dll";
+				std::error_code dllEc;
+				fs2::create_directories(releaseDllDir, dllEc);
 				if (fs2::exists(scriptsCMake))
 				{
 					DWORD scExit = 0;
@@ -436,7 +439,7 @@ namespace Alice
 						return;
 					}
 
-					if (!CopyFileOver(builtDll, releaseBinDir / "AliceScripts.dll"))
+					if (!CopyFileOver(builtDll, releaseDllDir / "AliceScripts.dll"))
 					{
 						g_BuildExitCode.store(15);
 						g_BuildInProgress.store(false);
@@ -447,7 +450,7 @@ namespace Alice
 					const fs2::path builtRttr = scriptsBuildDir / "Release" / "rttr_core.dll";
 					if (fs2::exists(builtRttr))
 					{
-						CopyFileOver(builtRttr, releaseBinDir / "rttr_core.dll");
+						CopyFileOver(builtRttr, releaseDllDir / "rttr_core.dll");
 					}
 				}
 
@@ -532,7 +535,12 @@ namespace Alice
 					return;
 				}
 
-				CopyAllDlls(releaseBinDir, exportBin);
+				if (!CopyDirTree(releaseBinDir / "dll", exportBin / "dll"))
+				{
+					g_BuildExitCode.store(9);
+					g_BuildInProgress.store(false);
+					return;
+				}
 
 				if (!CopyDirTree(releaseBinDir / "Cooked", exportBin / "Cooked") ||
 					!CopyDirTree(releaseBinDir / "Metas", exportBin / "Metas"))
