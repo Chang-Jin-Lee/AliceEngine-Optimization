@@ -76,19 +76,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.3918044567108154,
-                    "y": 1.1357232332229614,
-                    "z": -6.968361854553223
+                    "x": -3.8149778842926025,
+                    "y": 1.1707242727279663,
+                    "z": -9.782859802246094
                 },
                 "rotation": {
-                    "x": -0.03031410463154316,
-                    "y": 0.3842226564884186,
-                    "z": -0.02474309131503105
+                    "x": -0.06269490718841553,
+                    "y": 0.5460857152938843,
+                    "z": -0.012154201045632362
                 },
                 "scale": {
-                    "x": 1.0,
-                    "y": 0.9999997019767761,
-                    "z": 0.9999997615814209
+                    "x": 0.9999998211860657,
+                    "y": 0.9999996423721313,
+                    "z": 0.9999995231628418
                 },
                 "visible": false
             },
@@ -171,19 +171,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.391958475112915,
-                    "y": 0.8934313654899597,
-                    "z": -6.966102600097656
+                    "x": -3.806865930557251,
+                    "y": 0.9286266565322876,
+                    "z": -9.773331642150879
                 },
                 "rotation": {
-                    "x": 0.013541140593588352,
-                    "y": 0.4371129870414734,
-                    "z": 0.008357414044439793
+                    "x": -0.031260572373867035,
+                    "y": 0.6781889796257019,
+                    "z": 0.0013553290627896786
                 },
                 "scale": {
-                    "x": 1.0,
-                    "y": 0.999999463558197,
-                    "z": 0.9999995827674866
+                    "x": 0.9999997019767761,
+                    "y": 0.9999992847442627,
+                    "z": 0.9999994039535522
                 },
                 "visible": false
             },
@@ -266,18 +266,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.552152156829834,
-                    "y": 0.24508404731750488,
-                    "z": -7.017762184143066
+                    "x": -3.9644439220428467,
+                    "y": 0.24956682324409485,
+                    "z": -9.753921508789063
                 },
                 "rotation": {
-                    "x": 0.07359352707862854,
-                    "y": 1.623773455619812,
-                    "z": 2.7419018745422363
+                    "x": 0.09303956478834152,
+                    "y": 1.929595708847046,
+                    "z": 2.8683924674987793
                 },
                 "scale": {
-                    "x": 0.9999994039535522,
-                    "y": 0.9999999403953552,
+                    "x": 0.9999992251396179,
+                    "y": 0.9999998807907104,
                     "z": 0.9999997615814209
                 },
                 "visible": false
@@ -361,19 +361,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.277590036392212,
-                    "y": 0.23555468022823334,
-                    "z": -6.990035533905029
+                    "x": -3.6871917247772217,
+                    "y": 0.25062185525894165,
+                    "z": -9.813676834106445
                 },
                 "rotation": {
-                    "x": 0.03120196983218193,
-                    "y": -1.1340893507003784,
-                    "z": -2.5925705432891846
+                    "x": 0.03033754602074623,
+                    "y": -0.8078256845474243,
+                    "z": -2.7323780059814453
                 },
                 "scale": {
-                    "x": 0.999999463558197,
-                    "y": 0.9999995827674866,
-                    "z": 0.9999998807907104
+                    "x": 0.9999993443489075,
+                    "y": 0.9999995231628418,
+                    "z": 0.9999997019767761
                 },
                 "visible": false
             },
@@ -456,19 +456,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -2.8426339626312256,
-                    "y": 2.3582839965820313,
-                    "z": -19.89419937133789
+                    "x": -9.107318878173828,
+                    "y": 2.384007692337036,
+                    "z": -7.397879600524902
                 },
                 "rotation": {
-                    "x": -0.1669406145811081,
-                    "y": -3.061159372329712,
-                    "z": 0.04358363896608353
+                    "x": -0.14858540892601013,
+                    "y": -1.105663776397705,
+                    "z": 0.026525313034653664
                 },
                 "scale": {
-                    "x": 0.009999999776482582,
-                    "y": 0.009999992325901985,
-                    "z": 0.009999998845160007
+                    "x": 0.00999999139457941,
+                    "y": 0.00999999325722456,
+                    "z": 0.009999996051192284
                 },
                 "visible": false
             },
@@ -551,19 +551,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -2.939573049545288,
-                    "y": 1.9749698638916016,
-                    "z": -19.967086791992188
+                    "x": -9.151958465576172,
+                    "y": 2.0011422634124756,
+                    "z": -7.291254043579102
                 },
                 "rotation": {
-                    "x": -0.440606951713562,
-                    "y": -2.6536147594451904,
-                    "z": 0.159639373421669
+                    "x": -0.45335111021995544,
+                    "y": -0.6811038255691528,
+                    "z": 0.10581699013710022
                 },
                 "scale": {
-                    "x": 0.009999997913837433,
+                    "x": 0.00999999325722456,
                     "y": 0.00999999325722456,
-                    "z": 0.009999997913837433
+                    "z": 0.009999996051192284
                 },
                 "visible": false
             },
@@ -646,19 +646,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -2.5002474784851074,
-                    "y": 2.100172996520996,
-                    "z": -19.95018768310547
+                    "x": -9.298514366149902,
+                    "y": 2.1410253047943115,
+                    "z": -7.700254917144775
                 },
                 "rotation": {
-                    "x": -0.16827018558979034,
-                    "y": 1.3166453838348389,
-                    "z": 2.9659862518310547
+                    "x": -0.18717116117477417,
+                    "y": -3.036262273788452,
+                    "z": 2.9263386726379395
                 },
                 "scale": {
-                    "x": 0.010000001639127731,
+                    "x": 0.009999999776482582,
                     "y": 0.009999997913837433,
-                    "z": 0.010000000707805157
+                    "z": 0.009999998845160007
                 },
                 "visible": false
             },
@@ -741,19 +741,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.1498942375183105,
-                    "y": 2.157057285308838,
-                    "z": -19.66313934326172
+                    "x": -8.78508186340332,
+                    "y": 2.1651360988616943,
+                    "z": -7.202182769775391
                 },
                 "rotation": {
-                    "x": -0.112777940928936,
-                    "y": -0.6135945320129395,
-                    "z": 2.992051362991333
+                    "x": -0.14548106491565704,
+                    "y": 1.3112608194351196,
+                    "z": 2.9492616653442383
                 },
                 "scale": {
-                    "x": 0.009999998845160007,
-                    "y": 0.009999997913837433,
-                    "z": 0.010000001639127731
+                    "x": 0.009999995119869709,
+                    "y": 0.009999996982514858,
+                    "z": 0.009999995119869709
                 },
                 "visible": false
             },
@@ -836,17 +836,17 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -2.727954864501953,
-                    "y": 0.6339668035507202,
-                    "z": -20.341142654418945
+                    "x": -9.192084312438965,
+                    "y": 0.7074209451675415,
+                    "z": -7.499330520629883
                 },
                 "rotation": {
-                    "x": -0.7884380221366882,
-                    "y": -1.7761094570159912,
-                    "z": 2.169138193130493
+                    "x": -0.4245162010192871,
+                    "y": -0.6291714906692505,
+                    "z": -3.104998826980591
                 },
                 "scale": {
-                    "x": 0.01000003982335329,
+                    "x": 0.010000035166740417,
                     "y": 0.010000038892030716,
                     "z": 0.010000037029385567
                 },
@@ -931,19 +931,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.247321605682373,
-                    "y": 0.7690379023551941,
-                    "z": -19.56450653076172
+                    "x": -8.876957893371582,
+                    "y": 0.666020393371582,
+                    "z": -6.999249458312988
                 },
                 "rotation": {
-                    "x": -0.10512331128120422,
-                    "y": -2.8773624897003174,
-                    "z": -2.8586015701293945
+                    "x": -1.1997764110565186,
+                    "y": -1.3284629583358765,
+                    "z": -2.7992777824401855
                 },
                 "scale": {
-                    "x": 0.01000002771615982,
-                    "y": 0.010000026784837246,
-                    "z": 0.01000002957880497
+                    "x": 0.010000025853514671,
+                    "y": 0.010000023059546947,
+                    "z": 0.01000003982335329
                 },
                 "visible": false
             },
@@ -3450,7 +3450,7 @@
         },
         {
             "Camera": {
-                "FOV": 59.99998474121094,
+                "FOV": 59.99999237060547,
                 "Far Plane": 1000.0,
                 "Near Plane": 0.10000000149011612,
                 "aspectOverride": 0.0,
@@ -3497,7 +3497,7 @@
                 "maxDistance": 8.079999923706055,
                 "minDistance": 0.0,
                 "mode": 0,
-                "pitchDeg": 11.961655616760254,
+                "pitchDeg": 11.782060623168945,
                 "pitchMaxDeg": 80.0,
                 "pitchMinDeg": -45.0,
                 "positionDamping": 8.0,
@@ -3506,7 +3506,7 @@
                 "shoulderOffset": 0.0,
                 "shoulderSide": 1.0,
                 "targetName": "Player(Tia)",
-                "yawDeg": -168.00120544433594
+                "yawDeg": -149.2974395751953
             },
             "CameraInput": {
                 "blendTimeKey3": 0.6000000238418579,
@@ -3537,7 +3537,7 @@
                 "frequency": 20.0
             },
             "CameraSpringArm": {
-                "distance": 1.0,
+                "distance": 4.399995803833008,
                 "distanceDamping": 6.0,
                 "enableCollision": false,
                 "enableZoom": true,
@@ -3589,14 +3589,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.2146642208099365,
-                    "y": 1.3982584476470947,
-                    "z": -6.072829723358154
+                    "x": -1.3967686891555786,
+                    "y": 2.089442491531372,
+                    "z": -5.475666522979736
                 },
                 "rotation": {
-                    "x": 0.208770290017128,
-                    "y": -2.9321744441986084,
-                    "z": 2.2351741790771484e-08
+                    "x": 0.20563575625419617,
+                    "y": -2.605731964111328,
+                    "z": 7.4505797087454084e-09
                 },
                 "scale": {
                     "x": 1.0,
@@ -3631,14 +3631,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": 7,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "MeshCollider": {
@@ -3734,14 +3740,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": 7,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "MeshCollider": {
@@ -3837,14 +3849,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": 7,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "MeshCollider": {
@@ -3940,14 +3958,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": 7,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "MeshCollider": {
@@ -4043,14 +4067,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": 7,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "MeshCollider": {
@@ -4146,14 +4176,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": 7,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "MeshCollider": {
@@ -4249,14 +4285,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": 7,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "MeshCollider": {
@@ -4352,14 +4394,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": true
             },
             "Scripts": [
@@ -4481,19 +4529,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.2436702251434326,
-                    "y": 1.0771034955978394,
-                    "z": -6.356166362762451
+                    "x": -3.486698865890503,
+                    "y": 1.0851668119430542,
+                    "z": -9.293811798095703
                 },
                 "rotation": {
-                    "x": 0.8446682691574097,
-                    "y": 1.268926978111267,
-                    "z": 0.6250981688499451
+                    "x": 0.6354681849479675,
+                    "y": 1.8505672216415405,
+                    "z": 0.6981731057167053
                 },
                 "scale": {
-                    "x": 0.9999999403953552,
-                    "y": 0.9999998807907104,
-                    "z": 1.0000001192092896
+                    "x": 0.9999997615814209,
+                    "y": 0.9999997019767761,
+                    "z": 1.000000238418579
                 },
                 "visible": true
             },
@@ -4718,7 +4766,7 @@
                 "minValue": 0.0,
                 "normalized": true,
                 "smoothing": 0.0,
-                "value": 0.30000001192092896
+                "value": 1.0
             },
             "UITransform": {
                 "alignH": "Center",
@@ -5983,14 +6031,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "SkinnedAnimation": {
@@ -6028,19 +6082,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.370738983154297,
-                    "y": 0.8627581596374512,
-                    "z": -6.921281814575195
+                    "x": -3.7748920917510986,
+                    "y": 0.9002041220664978,
+                    "z": -9.733710289001465
                 },
                 "rotation": {
-                    "x": 0.013541140593588352,
-                    "y": 0.4371129870414734,
-                    "z": 0.008357414044439793
+                    "x": -0.031260572373867035,
+                    "y": 0.6781889796257019,
+                    "z": 0.0013553290627896786
                 },
                 "scale": {
-                    "x": 1.0,
-                    "y": 0.999999463558197,
-                    "z": 0.9999995827674866
+                    "x": 0.9999997019767761,
+                    "y": 0.9999992847442627,
+                    "z": 0.9999994039535522
                 },
                 "visible": true
             },
@@ -6061,12 +6115,13 @@
                 },
                 "aim": {
                     "enabled": false,
+                    "pitchRad": 0.0,
                     "weight": 1.0,
                     "yawRad": 0.0
                 },
                 "base": {
                     "autoAdvance": true,
-                    "blend01": 0.6079808473587036,
+                    "blend01": 0.5119016766548157,
                     "clipA": "rig|Tia_IDLE",
                     "clipB": "rig|Tia_Normal_Attack_1",
                     "enabled": true,
@@ -6075,8 +6130,8 @@
                     "loopB": false,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.3301351070404053,
-                    "timeB": 0.07295770198106766
+                    "timeA": 0.12826520204544067,
+                    "timeB": 1.7916666269302368
                 },
                 "enabled": true,
                 "ik": {
@@ -6195,7 +6250,7 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.0035000001080334187,
                 "teleport": false,
-                "verticalVelocity": 0.0
+                "verticalVelocity": -0.07260773330926895
             },
             "Health": {
                 "alive": true,
@@ -6235,7 +6290,7 @@
                 "pushbackSpeed": 0.07500000298023224,
                 "teamId": 0,
                 "weakRemainingSec": 0.0,
-                "weaponDurability": 30.0,
+                "weaponDurability": 100.0,
                 "weaponDurabilityMax": 100.0
             },
             "Material": {
@@ -6260,14 +6315,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "Scripts": [
@@ -6453,13 +6514,13 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.4180362224578857,
+                    "x": -3.500882387161255,
                     "y": 0.0010002851486206055,
-                    "z": -7.029805660247803
+                    "z": -9.235690116882324
                 },
                 "rotation": {
                     "x": -0.0,
-                    "y": 0.20941853523254395,
+                    "y": 0.5358608365058899,
                     "z": -0.0
                 },
                 "scale": {
@@ -6486,12 +6547,13 @@
                 },
                 "aim": {
                     "enabled": false,
+                    "pitchRad": 0.0,
                     "weight": 1.0,
                     "yawRad": 0.0
                 },
                 "base": {
                     "autoAdvance": true,
-                    "blend01": 0.6079808473587036,
+                    "blend01": 0.5119016766548157,
                     "clipA": "Armature|Tia_IDLE",
                     "clipB": "Armature|Tia_Normal_Attack_1",
                     "enabled": true,
@@ -6500,8 +6562,8 @@
                     "loopB": false,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.3301351070404053,
-                    "timeB": 0.07295770198106766
+                    "timeA": 0.12826520204544067,
+                    "timeB": 1.7916666269302368
                 },
                 "enabled": true,
                 "ik": {
@@ -6564,14 +6626,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "Scripts": [
@@ -6668,14 +6736,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "SkinnedAnimation": {
@@ -6713,25 +6787,25 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.2436702251434326,
-                    "y": 1.0771034955978394,
-                    "z": -6.356166362762451
+                    "x": -3.486698865890503,
+                    "y": 1.0851668119430542,
+                    "z": -9.293811798095703
                 },
                 "rotation": {
-                    "x": 0.8446682691574097,
-                    "y": 1.268926978111267,
-                    "z": 0.6250981688499451
+                    "x": 0.6354681849479675,
+                    "y": 1.8505672216415405,
+                    "z": 0.6981731057167053
                 },
                 "scale": {
-                    "x": 0.9999999403953552,
-                    "y": 0.9999998807907104,
-                    "z": 1.0000001192092896
+                    "x": 0.9999997615814209,
+                    "y": 0.9999997019767761,
+                    "z": 1.000000238418579
                 },
                 "visible": true
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 716,
+                "attackInstanceId": 720,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -6966,12 +7040,13 @@
                 },
                 "aim": {
                     "enabled": false,
+                    "pitchRad": 0.0,
                     "weight": 1.0,
                     "yawRad": 0.0
                 },
                 "base": {
                     "autoAdvance": true,
-                    "blend01": 0.9999997019767761,
+                    "blend01": 0.9999996423721313,
                     "clipA": "Boss|Boss|Idle",
                     "clipB": "Boss|Boss|Walk_Forward",
                     "enabled": true,
@@ -6980,8 +7055,8 @@
                     "loopB": true,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 1.7887204885482788,
-                    "timeB": 0.42205414175987244
+                    "timeA": 0.2623576819896698,
+                    "timeB": 1.295690894126892
                 },
                 "enabled": true,
                 "ik": {
@@ -7116,9 +7191,9 @@
                 "contactOffset": 0.0010000000474974513,
                 "density": 10.0,
                 "desiredVelocity": {
-                    "x": -0.062495626509189606,
+                    "x": 2.3449392318725586,
                     "y": 0.0,
-                    "z": 2.499218702316284
+                    "z": -0.8667527437210083
                 },
                 "enableQueries": true,
                 "gravity": -9.8100004196167,
@@ -7133,7 +7208,7 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.0010000000474974513,
                 "teleport": false,
-                "verticalVelocity": 0.0
+                "verticalVelocity": -0.07260773330926895
             },
             "Health": {
                 "alive": true,
@@ -7198,14 +7273,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "Scripts": [
@@ -7465,13 +7546,13 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.091062545776367,
-                    "y": 0.09999978542327881,
-                    "z": -20.105579376220703
+                    "x": -9.252999305725098,
+                    "y": 0.10000038146972656,
+                    "z": -7.109552383422852
                 },
                 "rotation": {
                     "x": 0.0,
-                    "y": 3.1165919303894043,
+                    "y": 5.066440582275391,
                     "z": 0.0
                 },
                 "scale": {
@@ -7507,14 +7588,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "SkinnedAnimation": {
@@ -7552,25 +7639,25 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -2.5786290168762207,
-                    "y": 1.148590087890625,
-                    "z": -19.785629272460938
+                    "x": -9.109625816345215,
+                    "y": 1.2029973268508911,
+                    "z": -7.693986892700195
                 },
                 "rotation": {
-                    "x": -0.051539838314056396,
-                    "y": -1.6306517124176025,
-                    "z": -0.5157335996627808
+                    "x": -0.0599227137863636,
+                    "y": 0.3123623728752136,
+                    "z": -0.5282524228096008
                 },
                 "scale": {
-                    "x": 1.5000003576278687,
-                    "y": 1.5000001192092896,
-                    "z": 1.5
+                    "x": 1.4999998807907104,
+                    "y": 1.5,
+                    "z": 1.4999991655349731
                 },
                 "visible": true
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 199,
+                "attackInstanceId": 203,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -7945,19 +8032,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.5051443576812744,
-                    "y": 0.7020214200019836,
-                    "z": -6.849620342254639
+                    "x": -3.8781843185424805,
+                    "y": 0.6717697978019714,
+                    "z": -9.601232528686523
                 },
                 "rotation": {
-                    "x": -1.3260526657104492,
-                    "y": 1.6383928060531616,
-                    "z": -1.884387493133545
+                    "x": -1.197389841079712,
+                    "y": 2.336827278137207,
+                    "z": 3.113910436630249
                 },
                 "scale": {
-                    "x": 0.9999997019767761,
-                    "y": 0.9999990463256836,
-                    "z": 0.9999998807907104
+                    "x": 1.0,
+                    "y": 0.9999998211860657,
+                    "z": 0.9999998211860657
                 },
                 "visible": true
             },
@@ -8040,19 +8127,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.312612533569336,
-                    "y": 0.6957505345344543,
-                    "z": -7.085505485534668
+                    "x": -3.6917052268981934,
+                    "y": 0.6658868193626404,
+                    "z": -9.896775245666504
                 },
                 "rotation": {
-                    "x": -1.2574104070663452,
-                    "y": 0.6209298372268677,
-                    "z": 2.435425281524658
+                    "x": -1.5296109914779663,
+                    "y": -1.0606379508972168,
+                    "z": -2.038789987564087
                 },
                 "scale": {
-                    "x": 1.0,
-                    "y": 0.9999995231628418,
-                    "z": 0.999999463558197
+                    "x": 1.000000238418579,
+                    "y": 0.9999997019767761,
+                    "z": 0.9999998807907104
                 },
                 "visible": true
             },
@@ -8082,14 +8169,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "SkinnedAnimation": {
@@ -8539,14 +8632,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "SkinnedAnimation": {
@@ -8626,21 +8725,27 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "SkinnedAnimation": {
                 "clipIndex": 0,
                 "playing": true,
                 "speed": 1.0,
-                "timeSec": 434.89474469353445
+                "timeSec": 471.3488098056987
             },
             "SkinnedMesh": {
                 "boneCount": 137,
@@ -8692,14 +8797,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "SkinnedAnimation": {
