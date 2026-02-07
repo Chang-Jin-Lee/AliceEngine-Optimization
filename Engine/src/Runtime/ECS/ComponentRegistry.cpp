@@ -591,6 +591,7 @@ namespace Alice
             .constructor<>()
             .property("enabled", &CameraLookAtComponent::enabled)
             .property("targetName", &CameraLookAtComponent::targetName)
+            .property("targetYOffset", &CameraLookAtComponent::targetYOffset)
             .property("rotationDamping", &CameraLookAtComponent::rotationDamping);
 
         // === CameraShakeComponent 등록 ===

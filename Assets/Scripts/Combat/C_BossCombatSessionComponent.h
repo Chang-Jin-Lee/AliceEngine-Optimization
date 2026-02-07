@@ -31,6 +31,7 @@ namespace Alice
                                 bool hitstopActive,
                                 const Combat::BossSignals& signals);
 
+        ALICE_PROPERTY(bool, m_hitReactUseFullClipDuration, true);
         ALICE_PROPERTY(float, m_hitReactDurationSec, 0.25f);
 
     private:
@@ -41,5 +42,9 @@ namespace Alice
         float m_hitReactTimer = 0.0f;
         float m_groggyTimer = 0.0f;
         float m_groggyDurationSec = 0.0f;
+        bool m_groggyRecovering = false;
+        float m_groggyRecoverTimer = 0.0f;
+        float m_groggyRecoverDurationSec = 0.0f;
+        bool m_prevGroggyHold = false;
     };
 }
