@@ -107,7 +107,8 @@ namespace Alice
         float targetSideDot = 0.0f;
         if (hasDir)
         {
-            const float yaw = selfTr->rotation.y;
+            constexpr float kDegToRad = 0.01745329252f;
+            const float yaw = selfTr->rotation.y - (m_rotationOffsetDeg * kDegToRad);
             const float fx = std::sin(yaw);
             const float fz = std::cos(yaw);
             targetDot = fx * toTarget.x + fz * toTarget.y;

@@ -29,6 +29,8 @@ namespace Alice
         Combat::ActionState GetBossState() const;
         Combat::ActionFlags GetPlayerFlags() const;
         Combat::ActionFlags GetBossFlags() const;
+        bool IsPlayerRageActive() const;
+        float GetPlayerRageRemainingSec() const;
 
         // Entity resolution (GUID preferred, name fallback when enabled)
         ALICE_PROPERTY(uint64_t, m_playerGuid, 0);
@@ -72,6 +74,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_chargeScale3, 1.8f);
         ALICE_PROPERTY(float, m_lightComboWindowSec, 0.5f);
         ALICE_PROPERTY(float, m_chargeCombo2Speed, 0.7f);
+        ALICE_PROPERTY(float, m_rageDurationSec, 30.0f);
 
         // Animation blending
         ALICE_PROPERTY(float, m_animBlendSec, 0.12f);
@@ -107,6 +110,7 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_playerLightAttackClip1, "rig|Tia_Normal_Attack_1");
         ALICE_PROPERTY(std::string, m_playerLightAttackClip2, "rig|Tia_Normal_Attack_2");
         ALICE_PROPERTY(std::string, m_playerLightAttackClip3, "rig|Tia_Normal_Attack_3");
+        ALICE_PROPERTY(std::string, m_playerRageAttackClip, "rig|Tia_Normal_Attack_1,2,3");
         ALICE_PROPERTY(std::string, m_playerHeavyAttackClipA, "");
         ALICE_PROPERTY(std::string, m_playerHeavyAttackClipB, "");
         ALICE_PROPERTY(std::string, m_playerDodgeClip, "rig|Tia_Rolling");
@@ -181,6 +185,7 @@ namespace Alice
             std::string lightAttackClip1;
             std::string lightAttackClip2;
             std::string lightAttackClip3;
+            std::string rageAttackClip;
             std::string heavyAttackClipA;
             std::string heavyAttackClipB;
             std::string dodgeClip;
