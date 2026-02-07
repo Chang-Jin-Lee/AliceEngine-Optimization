@@ -458,20 +458,8 @@ namespace Alice
             outTimeSec = 0.0f;
             outDurationSec = 0.0f;
 
-            // Prefer SkinnedAnimation in editor preview because users often scrub timeSec there.
-            if (const auto* skinnedAnim = world.GetComponent<SkinnedAnimationComponent>(entityId))
-            {
-                std::string clipName;
-                float duration = 0.0f;
-                if (ResolveClipNameAndDurationByIndex(registry, world, entityId, skinnedAnim->clipIndex, clipName, duration))
-                {
-                    outClipName = std::move(clipName);
-                    outTimeSec = static_cast<float>(skinnedAnim->timeSec);
-                    outDurationSec = duration;
-                    return true;
-                }
-            }
-
+            // AdvancedAnimation drives real gameplay timing in combat scenes.
+            // Use it first when present, then fall back to SkinnedAnimation-only preview.
             if (const auto* adv = world.GetComponent<AdvancedAnimationComponent>(entityId))
             {
                 struct AdvCandidate
@@ -495,6 +483,19 @@ namespace Alice
                         continue;
                     outClipName = *candidate.clip;
                     outTimeSec = candidate.timeSec;
+                    outDurationSec = duration;
+                    return true;
+                }
+            }
+
+            if (const auto* skinnedAnim = world.GetComponent<SkinnedAnimationComponent>(entityId))
+            {
+                std::string clipName;
+                float duration = 0.0f;
+                if (ResolveClipNameAndDurationByIndex(registry, world, entityId, skinnedAnim->clipIndex, clipName, duration))
+                {
+                    outClipName = std::move(clipName);
+                    outTimeSec = static_cast<float>(skinnedAnim->timeSec);
                     outDurationSec = duration;
                     return true;
                 }
@@ -1036,7 +1037,7 @@ namespace Alice
                     continue;
 
                 const bool shapeActiveNow = useEditorPreview
-                    ? (hasAttackDriverPreviewWindow ? attackDriverPreviewActive : true)
+                    ? (hasAttackDriverPreviewWindow ? attackDriverPreviewActive : trace.active)
                     : trace.active;
                 const XMFLOAT4 shapeColor = hasHit ? hitColor : (shapeActiveNow ? activeColor : inactiveColor);
 
