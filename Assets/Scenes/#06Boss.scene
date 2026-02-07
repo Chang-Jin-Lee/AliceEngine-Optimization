@@ -76,19 +76,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 70.9151382446289,
-                    "y": 1.1493754386901855,
-                    "z": -5.1406049728393555
+                    "x": 29.423044204711914,
+                    "y": 1.1714413166046143,
+                    "z": 0.1377684623003006
                 },
                 "rotation": {
-                    "x": -0.03745574876666069,
-                    "y": 0.20375220477581024,
-                    "z": -0.02097625471651554
+                    "x": -0.059331487864255905,
+                    "y": -0.33382681012153625,
+                    "z": -0.01220021490007639
                 },
                 "scale": {
-                    "x": 0.9999999403953552,
-                    "y": 0.9999996423721313,
-                    "z": 0.9999995827674866
+                    "x": 1.0,
+                    "y": 0.9999998807907104,
+                    "z": 0.9999999403953552
                 },
                 "visible": false
             },
@@ -171,19 +171,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 70.91638946533203,
-                    "y": 0.9071073532104492,
-                    "z": -5.134791374206543
+                    "x": 29.420944213867188,
+                    "y": 0.9291746020317078,
+                    "z": 0.15010225772857666
                 },
                 "rotation": {
-                    "x": -0.003270326880738139,
-                    "y": 0.29695767164230347,
-                    "z": 0.005837953183799982
+                    "x": -0.03126056492328644,
+                    "y": -0.1949792504310608,
+                    "z": 0.001355335465632379
                 },
                 "scale": {
-                    "x": 1.0,
-                    "y": 0.9999993443489075,
-                    "z": 0.9999995827674866
+                    "x": 0.9999999403953552,
+                    "y": 0.9999995827674866,
+                    "z": 0.9999996423721313
                 },
                 "visible": false
             },
@@ -266,19 +266,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 70.7643051147461,
-                    "y": 0.24664375185966492,
-                    "z": -5.1995625495910645
+                    "x": 29.30671501159668,
+                    "y": 0.25011229515075684,
+                    "z": 0.03805648535490036
                 },
                 "rotation": {
-                    "x": 0.08180071413516998,
-                    "y": 1.4931044578552246,
-                    "z": 2.7939302921295166
+                    "x": 0.0947326198220253,
+                    "y": 1.047838807106018,
+                    "z": 2.878237724304199
                 },
                 "scale": {
-                    "x": 0.9999992847442627,
-                    "y": 1.0000001192092896,
-                    "z": 0.9999999403953552
+                    "x": 0.9999997019767761,
+                    "y": 1.000000238418579,
+                    "z": 1.0
                 },
                 "visible": false
             },
@@ -361,19 +361,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 71.03668212890625,
-                    "y": 0.2409885823726654,
-                    "z": -5.132006645202637
+                    "x": 29.525497436523438,
+                    "y": 0.2505195438861847,
+                    "z": 0.22434201836585999
                 },
                 "rotation": {
-                    "x": 0.027731426060199738,
-                    "y": -1.2560343742370605,
-                    "z": -2.6428580284118652
+                    "x": 0.02831561677157879,
+                    "y": -1.689767599105835,
+                    "z": -2.7297098636627197
                 },
                 "scale": {
-                    "x": 0.999999463558197,
-                    "y": 0.9999995827674866,
-                    "z": 0.9999999403953552
+                    "x": 0.9999997019767761,
+                    "y": 0.9999997019767761,
+                    "z": 0.9999998211860657
                 },
                 "visible": false
             },
@@ -456,19 +456,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 71.45162200927734,
-                    "y": 2.4091458320617676,
-                    "z": -3.935756206512451
+                    "x": 65.4456558227539,
+                    "y": 2.3585739135742188,
+                    "z": -24.950510025024414
                 },
                 "rotation": {
-                    "x": -0.07479125261306763,
-                    "y": 1.3487552404403687,
-                    "z": -0.06244588643312454
+                    "x": -0.17530743777751923,
+                    "y": 0.502111554145813,
+                    "z": 0.03806731477379799
                 },
                 "scale": {
-                    "x": 0.009999997913837433,
-                    "y": 0.009999997913837433,
-                    "z": 0.009999996051192284
+                    "x": 0.009999998845160007,
+                    "y": 0.009999998845160007,
+                    "z": 0.009999997913837433
                 },
                 "visible": false
             },
@@ -551,19 +551,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 71.479248046875,
-                    "y": 2.036318778991699,
-                    "z": -4.064696788787842
+                    "x": 65.51556396484375,
+                    "y": 1.9519882202148438,
+                    "z": -24.929903030395508
                 },
                 "rotation": {
-                    "x": -0.469987154006958,
-                    "y": 2.3058547973632813,
-                    "z": 0.16322061419487
+                    "x": -0.271267294883728,
+                    "y": 1.0966246128082275,
+                    "z": 0.02243288792669773
                 },
                 "scale": {
-                    "x": 0.009999995119869709,
-                    "y": 0.009999998845160007,
-                    "z": 0.009999997913837433
+                    "x": 0.009999998845160007,
+                    "y": 0.009999999776482582,
+                    "z": 0.009999999776482582
                 },
                 "visible": false
             },
@@ -646,19 +646,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 71.66055297851563,
-                    "y": 2.275202751159668,
-                    "z": -3.654592752456665
+                    "x": 65.38047790527344,
+                    "y": 2.1078033447265625,
+                    "z": -24.60065269470215
                 },
                 "rotation": {
-                    "x": -0.9755381345748901,
-                    "y": -0.2141556292772293,
-                    "z": 3.0187594890594482
+                    "x": -0.6309789419174194,
+                    "y": -0.3375118374824524,
+                    "z": -2.8530285358428955
                 },
                 "scale": {
                     "x": 0.009999998845160007,
                     "y": 0.009999999776482582,
-                    "z": 0.01000000350177288
+                    "z": 0.010000000707805157
                 },
                 "visible": false
             },
@@ -741,19 +741,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 71.0946273803711,
-                    "y": 2.1878275871276855,
-                    "z": -3.9887900352478027
+                    "x": 65.60823059082031,
+                    "y": 2.0950143337249756,
+                    "z": -25.281557083129883
                 },
                 "rotation": {
-                    "x": -1.1562294960021973,
-                    "y": -1.4297711849212646,
-                    "z": -2.5544545650482178
+                    "x": -0.6050850749015808,
+                    "y": -3.088508129119873,
+                    "z": 2.957451343536377
                 },
                 "scale": {
-                    "x": 0.009999996051192284,
-                    "y": 0.01000000536441803,
-                    "z": 0.009999998845160007
+                    "x": 0.009999998845160007,
+                    "y": 0.010000000707805157,
+                    "z": 0.01000000350177288
                 },
                 "visible": false
             },
@@ -836,19 +836,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 71.51893615722656,
-                    "y": 0.6914677619934082,
-                    "z": -3.658862352371216
+                    "x": 65.4518814086914,
+                    "y": 0.6479200124740601,
+                    "z": -24.333528518676758
                 },
                 "rotation": {
-                    "x": -0.459389328956604,
-                    "y": 1.4885417222976685,
-                    "z": 2.721428871154785
+                    "x": -0.3312233090400696,
+                    "y": 1.9524388313293457,
+                    "z": 2.4819910526275635
                 },
                 "scale": {
-                    "x": 0.010000031441450119,
-                    "y": 0.010000034235417843,
-                    "z": 0.010000048205256462
+                    "x": 0.010000000707805157,
+                    "y": 0.010000049136579037,
+                    "z": 0.010000056587159634
                 },
                 "visible": false
             },
@@ -931,19 +931,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 71.4389419555664,
-                    "y": 0.8040156364440918,
-                    "z": -4.771116733551025
+                    "x": 65.65499877929688,
+                    "y": 0.7455195188522339,
+                    "z": -25.474761962890625
                 },
                 "rotation": {
-                    "x": -0.007746654562652111,
-                    "y": 0.8484740257263184,
-                    "z": -2.939915895462036
+                    "x": -0.03893483430147171,
+                    "y": 0.6316295862197876,
+                    "z": -2.920590400695801
                 },
                 "scale": {
-                    "x": 0.010000028647482395,
-                    "y": 0.010000026784837246,
-                    "z": 0.010000025853514671
+                    "x": 0.010000008158385754,
+                    "y": 0.010000048205256462,
+                    "z": 0.010000048205256462
                 },
                 "visible": false
             },
@@ -3199,7 +3199,7 @@
                         "m_bossDodgeClip": "",
                         "m_bossGroggyGainHeavy": 16.0,
                         "m_bossGroggyGainLight": 8.0,
-                        "m_bossGroggyLoopClip": "Boss|Boss|Dash_Attack",
+                        "m_bossGroggyLoopClip": "Boss|Boss|Groggy_Loop",
                         "m_bossGuardBreakClip": "",
                         "m_bossGuardEnterClip": "",
                         "m_bossGuardEnterDurationSec": 0.0,
@@ -3233,7 +3233,7 @@
                         "m_fatalApproachSec": 0.25,
                         "m_fatalAttackClip": "rig|Tia_Grogi Attack",
                         "m_fatalDamageScale": 1.5,
-                        "m_fatalDistance": 1.100000023841858,
+                        "m_fatalDistance": 3.0,
                         "m_fatalFrontAngleDeg": 90.0,
                         "m_fatalHoldSec": 0.0,
                         "m_gimmickEntityName": "W_Target",
@@ -3253,7 +3253,7 @@
                         "m_healTickIntervalSec": 1.0,
                         "m_healTransferRatio": 0.10000000149011612,
                         "m_healWeaponMinRatio": 0.10000000149011612,
-                        "m_heavyAttackClipA": "rig|Tia_Normal_Attack_3",
+                        "m_heavyAttackClipA": "rig|Tia_Normal_Attack_hard",
                         "m_heavyAttackClipB": "",
                         "m_heavyAttackMoveDistance": 2.200000047683716,
                         "m_heavyAttackMoveDurationSec": 0.20000000298023224,
@@ -3289,7 +3289,7 @@
                         "m_playerGuardLoopClip": "rig|Tia_Guarding",
                         "m_playerGuid": 0,
                         "m_playerHealLoopClip": "rig|Tia_Hill",
-                        "m_playerHeavyAttackClipA": "rig|Tia_Normal_Attack_3",
+                        "m_playerHeavyAttackClipA": "rig|Tia_Normal_Attack_hard",
                         "m_playerHeavyAttackClipB": "",
                         "m_playerHitClip": "rig|Tia_Hit",
                         "m_playerIdleClip": "rig|Tia_IDLE",
@@ -3301,6 +3301,8 @@
                         "m_playerLightAttackClip3": "rig|Tia_Normal_Attack_3",
                         "m_playerMoveClip": "rig|Tia_Run",
                         "m_playerName": "Player(Tia)",
+                        "m_playerRageAttackClip": "rig|Tia_Normal_Attack_1,2,3",
+                        "m_rageDurationSec": 30.0,
                         "m_rotationOffsetDeg": 180.0
                     }
                 },
@@ -3484,7 +3486,7 @@
                 "maxDistance": 8.079999923706055,
                 "minDistance": 0.0,
                 "mode": 0,
-                "pitchDeg": 26.630571365356445,
+                "pitchDeg": 49.95452117919922,
                 "pitchMaxDeg": 80.0,
                 "pitchMinDeg": -45.0,
                 "positionDamping": 8.0,
@@ -3493,7 +3495,7 @@
                 "shoulderOffset": 0.0,
                 "shoulderSide": 1.0,
                 "targetName": "Player(Tia)",
-                "yawDeg": -174.92544555664063
+                "yawDeg": 160.18968200683594
             },
             "CameraInput": {
                 "blendTimeKey3": 0.6000000238418579,
@@ -3523,7 +3525,7 @@
                 "frequency": 20.0
             },
             "CameraSpringArm": {
-                "distance": 6.561083793640137,
+                "distance": 10.399988174438477,
                 "distanceDamping": 6.0,
                 "enableCollision": false,
                 "enableZoom": true,
@@ -3575,14 +3577,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 71.54878997802734,
-                    "y": 4.8768534660339355,
-                    "z": 2.1232893466949463
+                    "x": 27.187068939208984,
+                    "y": 9.152532577514648,
+                    "z": 6.317285060882568
                 },
                 "rotation": {
-                    "x": 0.4647911787033081,
-                    "y": -3.053025007247925,
-                    "z": 1.1175872671742582e-08
+                    "x": 0.8718709349632263,
+                    "y": 2.795837640762329,
+                    "z": -7.450579886381092e-08
                 },
                 "scale": {
                     "x": 1.0,
@@ -4467,18 +4469,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 70.99876403808594,
-                    "y": 1.078775405883789,
-                    "z": -4.533192157745361
+                    "x": 29.256481170654297,
+                    "y": 1.0828337669372559,
+                    "z": 0.6889559030532837
                 },
                 "rotation": {
-                    "x": 0.7810580134391785,
-                    "y": 1.2121880054473877,
-                    "z": 0.6358475685119629
+                    "x": 0.6770187616348267,
+                    "y": 0.8738099932670593,
+                    "z": 0.6360161304473877
                 },
                 "scale": {
                     "x": 1.0,
-                    "y": 0.9999998807907104,
+                    "y": 0.9999998211860657,
                     "z": 1.000000238418579
                 },
                 "visible": true
@@ -4789,7 +4791,7 @@
                 "minValue": 0.0,
                 "normalized": true,
                 "smoothing": 0.0,
-                "value": 0.8999999761581421
+                "value": 0.0
             },
             "UITransform": {
                 "alignH": "Center",
@@ -5022,16 +5024,16 @@
                 "alignH": "Left",
                 "alignV": "Top",
                 "color": {
-                    "w": 1.0,
-                    "x": 0.20000000298023224,
-                    "y": 1.0,
-                    "z": 0.4000000059604645
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
+                    "y": 0.8999999761581421,
+                    "z": 0.8999999761581421
                 },
                 "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
-                "fontSize": 32.0,
+                "fontSize": 26.0,
                 "lineSpacing": 0.0,
                 "maxWidth": 0.0,
-                "text": "Attack",
+                "text": "None",
                 "wrap": false
             },
             "UITransform": {
@@ -5654,13 +5656,13 @@
                 "alignH": "Left",
                 "alignV": "Top",
                 "color": {
-                    "w": 1.0,
-                    "x": 1.0,
+                    "w": 0.3499999940395355,
+                    "x": 0.8999999761581421,
                     "y": 0.8999999761581421,
-                    "z": 0.20000000298023224
+                    "z": 0.8999999761581421
                 },
                 "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
-                "fontSize": 34.0,
+                "fontSize": 26.0,
                 "lineSpacing": 0.0,
                 "maxWidth": 0.0,
                 "text": "Attack",
@@ -6014,19 +6016,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 70.93122100830078,
-                    "y": 0.8772715330123901,
-                    "z": -5.086937427520752
+                    "x": 29.411121368408203,
+                    "y": 0.900752067565918,
+                    "z": 0.20005863904953003
                 },
                 "rotation": {
-                    "x": -0.003270326880738139,
-                    "y": 0.29695767164230347,
-                    "z": 0.005837953183799982
+                    "x": -0.03126056492328644,
+                    "y": -0.1949792504310608,
+                    "z": 0.001355335465632379
                 },
                 "scale": {
-                    "x": 1.0,
-                    "y": 0.9999993443489075,
-                    "z": 0.9999995827674866
+                    "x": 0.9999999403953552,
+                    "y": 0.9999995827674866,
+                    "z": 0.9999996423721313
                 },
                 "visible": true
             },
@@ -6052,17 +6054,17 @@
                 },
                 "base": {
                     "autoAdvance": true,
-                    "blend01": 0.5066583752632141,
-                    "clipA": "rig|Tia_IDLE",
-                    "clipB": "rig|Tia_Normal_Attack_1",
+                    "blend01": 0.0,
+                    "clipA": "rig|Tia_Normal_Attack_1,2,3",
+                    "clipB": "rig|Tia_Normal_Attack_1,2,3",
                     "enabled": true,
                     "layerAlpha": 1.0,
-                    "loopA": true,
+                    "loopA": false,
                     "loopB": false,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.9455050230026245,
-                    "timeB": 0.0607990026473999
+                    "timeA": 3.2916667461395264,
+                    "timeB": 3.2916667461395264
                 },
                 "enabled": true,
                 "ik": {
@@ -6085,6 +6087,7 @@
                 },
                 "rootBoneLock": false,
                 "rootBoneName": "c_pos",
+                "rootMotionDriveCct": true,
                 "rootMotionUnlock": true,
                 "sockets": [],
                 "upper": {
@@ -6175,7 +6178,7 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.0035000001080334187,
                 "teleport": false,
-                "verticalVelocity": -0.0615449994802475
+                "verticalVelocity": 0.0
             },
             "Health": {
                 "alive": true,
@@ -6268,9 +6271,9 @@
                         "m_keyForward": 32,
                         "m_keyGuard": 20,
                         "m_keyInteract": 15,
-                        "m_keyItem": 35,
+                        "m_keyItem": 27,
                         "m_keyLeft": 10,
-                        "m_keyRage": 14,
+                        "m_keyRage": 26,
                         "m_keyRight": 13,
                         "m_mouseAttackButton": 0,
                         "m_mouseGuardButton": 1,
@@ -6433,14 +6436,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 70.89860534667969,
-                    "y": 0.0009914040565490723,
-                    "z": -5.1986002922058105
+                    "x": 29.430757522583008,
+                    "y": 0.0009962916374206543,
+                    "z": 0.08872483670711517
                 },
                 "rotation": {
                     "x": -0.0,
-                    "y": 0.08856774121522903,
-                    "z": -0.0
+                    "y": -0.3457549512386322,
+                    "z": 0.0
                 },
                 "scale": {
                     "x": 1.0,
@@ -6471,17 +6474,17 @@
                 },
                 "base": {
                     "autoAdvance": true,
-                    "blend01": 0.5066583752632141,
-                    "clipA": "Armature|Tia_IDLE",
-                    "clipB": "Armature|Tia_Normal_Attack_1",
+                    "blend01": 0.0,
+                    "clipA": "Armature|Tia_Normal_Attack_1,2,3",
+                    "clipB": "Armature|Tia_Normal_Attack_1,2,3",
                     "enabled": true,
                     "layerAlpha": 1.0,
-                    "loopA": true,
+                    "loopA": false,
                     "loopB": false,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.9455050230026245,
-                    "timeB": 0.0607990026473999
+                    "timeA": 3.2916667461395264,
+                    "timeB": 3.2916667461395264
                 },
                 "enabled": true,
                 "ik": {
@@ -6504,6 +6507,7 @@
                 },
                 "rootBoneLock": true,
                 "rootBoneName": "root_weapon",
+                "rootMotionDriveCct": false,
                 "rootMotionUnlock": false,
                 "sockets": [],
                 "upper": {
@@ -6574,7 +6578,7 @@
                 "timeSec": 28.917165206512436
             },
             "SkinnedMesh": {
-                "boneCount": 4,
+                "boneCount": 5,
                 "instanceAssetPath": "Assets/Fbx/EgoWeapon_Animaition.fbxasset",
                 "meshAssetPath": "EgoWeapon_Animaition"
             },
@@ -6692,25 +6696,25 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 70.99876403808594,
-                    "y": 1.078775405883789,
-                    "z": -4.533192157745361
+                    "x": 29.256481170654297,
+                    "y": 1.0828337669372559,
+                    "z": 0.6889559030532837
                 },
                 "rotation": {
-                    "x": 0.7810580134391785,
-                    "y": 1.2121880054473877,
-                    "z": 0.6358475685119629
+                    "x": 0.6770187616348267,
+                    "y": 0.8738099932670593,
+                    "z": 0.6360161304473877
                 },
                 "scale": {
                     "x": 1.0,
-                    "y": 0.9999998807907104,
+                    "y": 0.9999998211860657,
                     "z": 1.000000238418579
                 },
                 "visible": true
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 674,
+                "attackInstanceId": 697,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "guardBreakPushbackDuration": 0.25,
@@ -6863,16 +6867,16 @@
                 "base": {
                     "autoAdvance": true,
                     "blend01": 0.0,
-                    "clipA": "Boss|Boss|Attack_ABC",
-                    "clipB": "Boss|Boss|Attack_ABC",
+                    "clipA": "Boss|Boss|Die",
+                    "clipB": "Boss|Boss|Die",
                     "enabled": true,
                     "layerAlpha": 1.0,
                     "loopA": false,
                     "loopB": false,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.4965435862541199,
-                    "timeB": 0.4965435862541199
+                    "timeA": 3.9000000953674316,
+                    "timeB": 3.9000000953674316
                 },
                 "enabled": true,
                 "ik": {
@@ -6895,6 +6899,7 @@
                 },
                 "rootBoneLock": false,
                 "rootBoneName": "",
+                "rootMotionDriveCct": false,
                 "rootMotionUnlock": false,
                 "sockets": [],
                 "upper": {
@@ -6913,7 +6918,6 @@
                 }
             },
             "AttackDriver": {
-                "attackStateDurationSec": 3.433333396911621,
                 "clips": [
                     {
                         "canBeInterrupted": true,
@@ -7013,15 +7017,15 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.0010000000474974513,
                 "teleport": false,
-                "verticalVelocity": -0.0615449994802475
+                "verticalVelocity": 0.0
             },
             "Health": {
                 "alive": true,
-                "currentHealth": 90.0,
+                "currentHealth": 100.0,
                 "dodgeActive": false,
                 "dodgeAvoidedThisFrame": false,
                 "groggy": 98.0,
-                "groggyDuration": 1.5,
+                "groggyDuration": 6.0,
                 "groggyGainScale": 1.0,
                 "groggyMax": 100.0,
                 "guardActive": false,
@@ -7122,8 +7126,8 @@
                         "m_clipPhaseHowling": "Boss|Boss|Phase_Howling",
                         "m_clipSide": "Boss|Boss|Side_Attack",
                         "m_clipSoul": "Boss|Boss|Soul_Attack",
-                        "m_clipTurnLeft": "Boss|Boss|Turn_L",
-                        "m_clipTurnRight": "Boss|Boss|Turn_R",
+                        "m_clipTurnLeft": "",
+                        "m_clipTurnRight": "",
                         "m_clipWalkForward": "Boss|Boss|Walk_Forward",
                         "m_clipWalkSide": "Boss|Boss|Walk_Side",
                         "m_damageWindowSec": 0.0,
@@ -7152,6 +7156,7 @@
                         "m_rangedCooldownSec": 10.0,
                         "m_rangedRangeMin": 6.0,
                         "m_rangedRepeatCount": 3,
+                        "m_rotationOffsetDeg": 180.0,
                         "m_sectorAngleDeg": 90.0,
                         "m_specialIntervalSec": 60.0,
                         "m_specialPatternHoldSec": 1.2000000476837158,
@@ -7344,13 +7349,13 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 71.568359375,
-                    "y": 0.09999096393585205,
-                    "z": -4.16696834564209
+                    "x": 65.64917755126953,
+                    "y": 0.09596621990203857,
+                    "z": -24.858154296875
                 },
                 "rotation": {
                     "x": 0.0,
-                    "y": 0.5758254528045654,
+                    "y": 0.25541090965270996,
                     "z": 0.0
                 },
                 "scale": {
@@ -7431,25 +7436,25 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 70.8659439086914,
-                    "y": 2.2466981410980225,
-                    "z": -3.4610345363616943
+                    "x": 65.30619812011719,
+                    "y": 1.2165346145629883,
+                    "z": -23.96705436706543
                 },
                 "rotation": {
-                    "x": -0.7090229988098145,
-                    "y": 2.8521506786346436,
-                    "z": 1.2461564540863037
+                    "x": 0.7837702631950378,
+                    "y": 2.9550275802612305,
+                    "z": -0.5626794695854187
                 },
                 "scale": {
-                    "x": 1.5000003576278687,
-                    "y": 1.4999996423721313,
-                    "z": 1.4999998807907104
+                    "x": 1.4999998807907104,
+                    "y": 1.5000001192092896,
+                    "z": 1.5
                 },
                 "visible": true
             },
             "WeaponTrace": {
-                "active": true,
-                "attackInstanceId": 145,
+                "active": false,
+                "attackInstanceId": 148,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "guardBreakPushbackDuration": 0.25,
@@ -7702,19 +7707,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 70.79199981689453,
-                    "y": 0.6857513785362244,
-                    "z": -5.023303985595703
+                    "x": 29.244840621948242,
+                    "y": 0.668022871017456,
+                    "z": 0.20202693343162537
                 },
                 "rotation": {
-                    "x": -1.3202705383300781,
-                    "y": 1.8797281980514526,
-                    "z": -2.5842111110687256
+                    "x": -1.1973901987075806,
+                    "y": 1.4552125930786133,
+                    "z": 3.113910436630249
                 },
                 "scale": {
-                    "x": 0.9999999403953552,
-                    "y": 0.9999992251396179,
-                    "z": 0.9999998211860657
+                    "x": 0.9999998807907104,
+                    "y": 0.9999996423721313,
+                    "z": 0.9999999403953552
                 },
                 "visible": true
             },
@@ -7797,19 +7802,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 71.0364990234375,
-                    "y": 0.6807956695556641,
-                    "z": -5.2291083335876465
+                    "x": 29.590795516967773,
+                    "y": 0.6647207140922546,
+                    "z": 0.15938672423362732
                 },
                 "rotation": {
-                    "x": -1.3784024715423584,
-                    "y": 0.3710128366947174,
-                    "z": 2.489072799682617
+                    "x": -1.529613971710205,
+                    "y": -1.9422518014907837,
+                    "z": -2.0387957096099854
                 },
                 "scale": {
-                    "x": 1.000000238418579,
-                    "y": 0.9999996423721313,
-                    "z": 0.9999995231628418
+                    "x": 1.0000001192092896,
+                    "y": 0.9999995827674866,
+                    "z": 0.9999997615814209
                 },
                 "visible": true
             },
@@ -7849,7 +7854,7 @@
                 "fontSize": 28.0,
                 "lineSpacing": 2.0,
                 "maxWidth": 0.0,
-                "text": "PLAYER Player(Tia) (#44)\nState: Attack | Flags: atk=N guard=N parry=N inv=N charge=N(0) combo=1 interrupt=Y\nHP: 90.00/100.00 Groggy: 0.00/100.00 Weapon: 100.00/100.00 Alive: Y Team: 0\nInvuln: 0.00/0.00 Weak: 0.00 Pushback: 0.00@0.15 (0.94, 0.00, -0.35)\nHit: hit=N guardHit=N dodgeAvoid=N lastDmg=10.00 part=10 attacker=Boss\nPos (70.90, 0.00, -5.20) RotY 5.07deg Scale (1.00, 1.00, 1.00) Visible=Y\nCCT: ground=Y dist=0.00 vVel=0.00 desired=(0.00, 0.00, 0.00) jump=N teleport=N flags=0\nDriver: atk=N pause=N cancelable=Y cancelReq=N suppressed=N guard=N dodge=N parry=N guardLock=N(0.00) parryOverride=0.00 dur=0.00 auto=1.79\nDriverInput: guardHeld=N pressed=N released=N parryTap=0 guardSession=N\nTrace(EGO_Blade(combined)): active=N dmg=10.00 atkId=674 shapes=5\nAnim: clip=4 t=0.00 speed=1.00 playing=Y\nMesh: Tia_Animaition bones=137\n",
+                "text": "PLAYER Player(Tia) (#44)\nState: Attack | Flags: atk=N guard=N parry=N inv=N charge=N(0) combo=2 interrupt=Y\nHP: 90.00/100.00 Groggy: 0.00/100.00 Weapon: 100.00/100.00 Alive: Y Team: 0\nInvuln: 0.00/0.00 Weak: 0.00 Pushback: 0.00@0.15 (0.94, 0.00, -0.35)\nHit: hit=N guardHit=N dodgeAvoid=N lastDmg=10.00 part=10 attacker=Boss\nPos (29.43, 0.00, 0.09) RotY 340.19deg Scale (1.00, 1.00, 1.00) Visible=Y\nCCT: ground=Y dist=0.00 vVel=-0.06 desired=(0.00, 0.00, 0.00) jump=N teleport=N flags=0\nDriver: atk=N pause=N cancelable=Y cancelReq=N suppressed=N guard=N dodge=N parry=N guardLock=N(0.00) parryOverride=0.00 dur=0.00 auto=1.79\nDriverInput: guardHeld=N pressed=N released=N parryTap=0 guardSession=N\nTrace(EGO_Blade(combined)): active=N dmg=10.00 atkId=697 shapes=5\nAnim: clip=4 t=0.00 speed=1.00 playing=Y\nMesh: Tia_Animaition bones=137\n",
                 "wrap": false
             },
             "UITransform": {
@@ -7928,7 +7933,7 @@
                 "fontSize": 28.0,
                 "lineSpacing": 2.0,
                 "maxWidth": 0.0,
-                "text": "BOSS Boss (#47)\nState: Attack | Flags: atk=Y guard=N parry=N inv=N charge=N(0) combo=0 interrupt=N\nHP: 90.00/100.00 Groggy: 98.00/100.00 Weapon: 100.00/100.00 Alive: Y Team: 1\nInvuln: 0.00/0.00 Weak: 0.00 Pushback: 0.00@0.15 (-0.09, 0.00, 1.00)\nHit: hit=N guardHit=N dodgeAvoid=N lastDmg=10.00 part=31 attacker=Player(Tia)\nPos (71.57, 0.10, -4.17) RotY 32.99deg Scale (100.00, 100.00, 100.00) Visible=Y\nCCT: ground=Y dist=0.10 vVel=0.00 desired=(0.00, 0.00, 0.00) jump=N teleport=N flags=0\nDriver: atk=Y pause=N cancelable=Y cancelReq=N suppressed=N guard=N dodge=N parry=N guardLock=N(0.00) parryOverride=0.00 dur=3.43 auto=3.43\nDriverInput: guardHeld=N pressed=N released=N parryTap=0 guardSession=N\nTrace(BossWeapon): active=Y dmg=10.00 atkId=145 shapes=7\nAnim: clip=3 t=2.72 speed=1.00 playing=N\nMesh: Boss_Animaition bones=65\nBrain: Attack | Phase1 | Active: Attack C | Intent: Attack C (Active) | Follow: None",
+                "text": "BOSS Boss (#47)\nState: Dead | Flags: atk=N guard=N parry=N inv=N charge=N(0) combo=0 interrupt=N\nHP: 0.00/100.00 Groggy: 98.00/100.00 Weapon: 100.00/100.00 Alive: N Team: 1\nInvuln: 0.00/0.00 Weak: 0.00 Pushback: 0.00@0.15 (-0.09, 0.00, 1.00)\nHit: hit=N guardHit=N dodgeAvoid=N lastDmg=10.00 part=31 attacker=Player(Tia)\nPos (65.65, 0.10, -24.86) RotY 14.63deg Scale (100.00, 100.00, 100.00) Visible=Y\nCCT: ground=Y dist=0.10 vVel=-0.06 desired=(0.00, 0.00, 0.00) jump=N teleport=N flags=4\nDriver: atk=N pause=N cancelable=Y cancelReq=N suppressed=N guard=N dodge=N parry=N guardLock=N(0.00) parryOverride=0.00 dur=0.00 auto=1.43\nDriverInput: guardHeld=N pressed=N released=N parryTap=0 guardSession=N\nTrace(BossWeapon): active=N dmg=10.00 atkId=148 shapes=7\nAnim: clip=3 t=2.72 speed=1.00 playing=N\nMesh: Boss_Animaition bones=65\nBrain: Idle",
                 "wrap": false
             },
             "UITransform": {
