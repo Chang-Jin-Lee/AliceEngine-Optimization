@@ -34,7 +34,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
-
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -113,7 +113,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
-
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -200,7 +200,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
-
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -304,7 +304,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
-
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -403,7 +403,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
-
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -538,7 +538,8 @@ GBufferOut main(VertexOut pIn)
     {
         gOut.ToonParams = float4(saturate(gEnvDiffuseStrength), saturate(gEnvSpecularStrength), 0.0f, 0.0f);
     }
-    gOut.ToonAlphas = float4(saturate(gToonPbrAlphas.xyz), saturate(gToonPbrAlphas.w));
+    float packedShadowSelf = Pack2x8(gToonPbrAlphas.w, gToonSelfShadowStrength);
+    gOut.ToonAlphas = float4(saturate(gToonPbrAlphas.xyz), packedShadowSelf);
     // shadingMode + AO를 [0,1] 범위로 인코딩하여 저장
     gOut.BaseColor  = float4(baseColor, saturate(shadingEncoded));
     
@@ -988,7 +989,9 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     float4 toonParams = g_ToonParams.Sample(g_Sam, pIn.uv);
     float4 toonAlphasSample = g_ToonAlphas.Sample(g_Sam, pIn.uv);
     float3 toonAlphas = toonAlphasSample.rgb;
-    float  materialShadowStrength = toonAlphasSample.a;
+    float2 shadowSelfPacked = Unpack2x8(toonAlphasSample.a);
+    float  materialShadowStrength = shadowSelfPacked.x;
+    float  toonSelfShadowStrength = shadowSelfPacked.y;
     float4 decalAlbedo = g_DecalAlbedo.Sample(g_Sam, pIn.uv);
     float depth = g_SceneDepth.Sample(g_Sam, pIn.uv);
     
@@ -1066,6 +1069,8 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     if (toonEditable)
     {
         shadowStrength *= saturate(g_ToonShadowStrength2);
+        const float kToonPbrShadowAtten = 0.35f;
+        shadowStrength *= kToonPbrShadowAtten;
     }
     shadowVis = saturate(lerp(1.0f, shadowVis, shadowStrength));
 
@@ -1138,6 +1143,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         if (toonPbr && ndotl > 0.0f)
         {
             float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
+            if (toonEditable) toonNdotL = lerp(ndotl, toonNdotL, saturate(toonSelfShadowStrength));
             lit *= toonNdotL / max(ndotl, 1e-4f);
         }
         directLighting += lit * shadowVis * ao;
@@ -1158,6 +1164,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         if (toonPbr && ndotl > 0.0f)
         {
             float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
+            if (toonEditable) toonNdotL = lerp(ndotl, toonNdotL, saturate(toonSelfShadowStrength));
             lit *= toonNdotL / max(ndotl, 1e-4f);
         }
         extraLighting += lit * ao;
@@ -1177,6 +1184,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         if (toonPbr && ndotl > 0.0f)
         {
             float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
+            if (toonEditable) toonNdotL = lerp(ndotl, toonNdotL, saturate(toonSelfShadowStrength));
             lit *= toonNdotL / max(ndotl, 1e-4f);
         }
         extraLighting += lit * ao;
@@ -1197,6 +1205,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         if (toonPbr && ndotl > 0.0f)
         {
             float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
+            if (toonEditable) toonNdotL = lerp(ndotl, toonNdotL, saturate(toonSelfShadowStrength));
             lit *= toonNdotL / max(ndotl, 1e-4f);
         }
         extraLighting += lit * ao;
@@ -1251,7 +1260,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
-
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1355,7 +1364,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
-
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1563,7 +1572,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
-
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1690,6 +1699,7 @@ float4 main(PSIn pIn) : SV_Target
         float toonNdotL = toonEditable
             ? ToonStepEditable(NdotL, gToonPbrCuts.xyz, gToonPbrLevels.xyz, gToonPbrAlphas.xyz, gToonPbrCuts.w, gToonPbrLevels.w, gToonPbrRampIntensity)
             : ToonLevel(NdotL);
+        if (toonEditable) toonNdotL = lerp(NdotL, toonNdotL, saturate(gToonSelfShadowStrength));
         direct *= toonNdotL / max(NdotL, 1e-4f);
     }
 
@@ -1738,7 +1748,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
-
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1792,7 +1802,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
-
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1856,7 +1866,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
-
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1940,7 +1950,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
-
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;

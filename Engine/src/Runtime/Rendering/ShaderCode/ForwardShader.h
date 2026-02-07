@@ -36,6 +36,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas; // (level1, level2, level3, shadowStrength)
     float    gToonPbrRampIntensity;
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -117,6 +118,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas; // (level1, level2, level3, shadowStrength)
     float    gToonPbrRampIntensity;
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -230,6 +232,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas; // (level1, level2, level3, shadowStrength)
     float    gToonPbrRampIntensity;
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -338,6 +341,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas; // (level1, level2, level3, shadowStrength)
     float    gToonPbrRampIntensity;
+    float    gToonSelfShadowStrength;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -581,7 +585,8 @@ float ToonPbrNdotL(float n)
 {
     if (gShadingMode == 7)
     {
-         return ToonStepEditable(n, gToonPbrCuts.xyz, gToonPbrLevels.xyz, gToonPbrAlphas.xyz, gToonPbrCuts.w, gToonPbrLevels.w, gToonPbrRampIntensity);
+         float toon = ToonStepEditable(n, gToonPbrCuts.xyz, gToonPbrLevels.xyz, gToonPbrAlphas.xyz, gToonPbrCuts.w, gToonPbrLevels.w, gToonPbrRampIntensity);
+         return lerp(n, toon, saturate(gToonSelfShadowStrength));
     }
     return ToonLevel(n);
 }
@@ -795,6 +800,8 @@ float4 main(PSInput input) : SV_TARGET
     if (gShadingMode == 7)
     {
         shadowStrength *= saturate(gToonShadowStrength);
+        const float kToonPbrShadowAtten = 0.35f;
+        shadowStrength *= kToonPbrShadowAtten;
     }
     shadow = saturate(lerp(1.0f, shadow, shadowStrength));
 
