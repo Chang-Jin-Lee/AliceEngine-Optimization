@@ -120,6 +120,7 @@ namespace Alice
         void NotifyPlayerGuardOrEvade();
         void NotifyAttackOutcome(bool evaded);
         void ForceCompleteIntent();
+        bool ConsumePhase2HowlingStarted();
 
         // 공격/패턴 튜닝
         ALICE_PROPERTY(float, m_attackCooldown, 1.0f);
@@ -264,6 +265,8 @@ namespace Alice
         bool m_backAttackPending = false;
         bool m_gimmickActive = false;
         bool m_phase2Active = false;
+        bool m_phase2HowlingPending = false;
+        bool m_phase2HowlingStartedPulse = false;
         bool m_chargePending = false;
         bool m_forceWalkAfterAttack = false;
         bool m_rerollAfterAttack = false;

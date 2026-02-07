@@ -246,9 +246,12 @@ namespace Alice
             if (brain)
                 intent = brain->Think(dt, targetId);
         }
+        const bool phaseHowlingActive = brain
+            && (brain->GetActivePattern() == C_BossBrainComponent::PatternType::Special);
 
         if (signals.hitThisFrame && !signals.wasAttacking
-            && !isDead && m_state != Combat::ActionState::Groggy)
+            && !isDead && m_state != Combat::ActionState::Groggy
+            && !phaseHowlingActive)
         {
             float duration = std::max(0.0f, m_hitReactDurationSec);
             if (m_hitReactUseFullClipDuration)
@@ -286,6 +289,10 @@ namespace Alice
                     nextState = Combat::ActionState::Move;
                     break;
                 case C_BossBrainComponent::BrainState::Gimmick:
+                    nextState = phaseHowlingActive
+                        ? Combat::ActionState::Attack
+                        : Combat::ActionState::Idle;
+                    break;
                 default:
                     nextState = Combat::ActionState::Idle;
                     break;
@@ -322,6 +329,8 @@ namespace Alice
 
         Combat::ActionFlags flags{};
         flags.hitActive = (m_state == Combat::ActionState::Attack) && sensors.attackWindowActive;
+        if (phaseHowlingActive)
+            flags.hitActive = false;
         flags.guardActive = false;
         flags.parryWindowActive = false;
         flags.invulnActive = sensors.invulnActive;

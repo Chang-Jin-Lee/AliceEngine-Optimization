@@ -2243,18 +2243,15 @@
                         "m_animBlendSec": 0.11999999731779099,
                         "m_autoResolveByName": true,
                         "m_blockPlayerActionsDuringGimmick": true,
-                        "m_bossAnimBlendSec": 0.11999999731779099,
                         "m_bossCanBeHitstunned": true,
                         "m_bossChargeEnterClip": "",
                         "m_bossChargeFacingTrackSec": 2.200000047683716,
                         "m_bossChargeLoopClip": "",
                         "m_bossDashMoveStartSec": 0.6000000238418579,
                         "m_bossDodgeClip": "",
-                        "m_bossGroggyEnterBlendSec": 1.5,
                         "m_bossGroggyGainHeavy": 16.0,
                         "m_bossGroggyGainLight": 8.0,
                         "m_bossGroggyLoopClip": "Boss|Boss|Groggy_Loop",
-                        "m_bossGroggyRecoverBlendSec": 1.0,
                         "m_bossGuardBreakClip": "",
                         "m_bossGuardEnterClip": "",
                         "m_bossGuardEnterDurationSec": 0.0,
@@ -2293,7 +2290,6 @@
                         "m_fatalFrontAngleDeg": 90.0,
                         "m_fatalHoldSec": 0.0,
                         "m_gimmickEntityName": "W_Target",
-                        "m_groggyAttackStartDelaySec": 2.799999952316284,
                         "m_guardBreakClip": "",
                         "m_guardBreakPushbackDurationSec": 1.0,
                         "m_guardBreakPushbackScale": 0.02500000223517418,
@@ -2370,8 +2366,7 @@
                     "enabled": true,
                     "name": "C_BossCombatSessionComponent",
                     "props": {
-                        "m_hitReactDurationSec": 0.25,
-                        "m_hitReactUseFullClipDuration": true
+                        "m_hitReactDurationSec": 0.25
                     }
                 },
                 {
@@ -2547,7 +2542,7 @@
                 "maxDistance": 8.079999923706055,
                 "minDistance": 0.0,
                 "mode": 0,
-                "pitchDeg": 8.36556339263916,
+                "pitchDeg": 21.72439956665039,
                 "pitchMaxDeg": 80.0,
                 "pitchMinDeg": -45.0,
                 "positionDamping": 8.0,
@@ -2556,7 +2551,7 @@
                 "shoulderOffset": 0.0,
                 "shoulderSide": 1.0,
                 "targetName": "Player(Tia)",
-                "yawDeg": -2.123020887374878
+                "yawDeg": -110.72705078125
             },
             "CameraInput": {
                 "blendTimeKey3": 0.6000000238418579,
@@ -2587,7 +2582,7 @@
                 "frequency": 20.0
             },
             "CameraSpringArm": {
-                "distance": 4.400005340576172,
+                "distance": 2.0,
                 "distanceDamping": 6.0,
                 "enableCollision": false,
                 "enableZoom": true,
@@ -2639,14 +2634,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -1.83877432346344,
-                    "y": 1.8301526308059692,
-                    "z": -4.350193023681641
+                    "x": -0.26230108737945557,
+                    "y": 1.930283784866333,
+                    "z": 0.6575578451156616
                 },
                 "rotation": {
-                    "x": 0.14600662887096405,
-                    "y": -0.037053707987070084,
-                    "z": -9.313225746154785e-10
+                    "x": 0.3791623115539551,
+                    "y": -1.9325517416000366,
+                    "z": 6.70552182668871e-08
                 },
                 "scale": {
                     "x": 1.0,
@@ -4125,25 +4120,15 @@
                         "canBeInterrupted": true,
                         "clipName": "Boss|Boss|Attack_A",
                         "enabled": true,
-                        "endTimeSec": 0.5,
+                        "endTimeSec": 0.800000011920929,
                         "source": "Explicit",
-                        "startTimeSec": 0.10000000149011612,
-                        "traceSlotMask": 0,
+                        "startTimeSec": 0.20000000298023224,
+                        "traceSlotMask": 8,
                         "type": "Attack"
                     },
                     {
                         "canBeInterrupted": true,
                         "clipName": "Boss|Boss|Attack_BC",
-                        "enabled": true,
-                        "endTimeSec": 999.0,
-                        "source": "Explicit",
-                        "startTimeSec": 0.10000000149011612,
-                        "traceSlotMask": 0,
-                        "type": "Attack"
-                    },
-                    {
-                        "canBeInterrupted": true,
-                        "clipName": "Boss|Boss|Attack_ABC",
                         "enabled": true,
                         "endTimeSec": 999.0,
                         "source": "Explicit",
@@ -4173,39 +4158,62 @@
                     },
                     {
                         "canBeInterrupted": true,
-                        "clipName": "Boss|Boss|Kick_Attack",
-                        "enabled": true,
-                        "endTimeSec": 0.5,
-                        "source": "Explicit",
-                        "startTimeSec": 0.0,
-                        "traceSlotMask": 0,
-                        "type": "Attack"
-                    },
-                    {
-                        "canBeInterrupted": true,
                         "clipName": "Boss|Boss|Side_Attack",
                         "enabled": true,
-                        "endTimeSec": 999.0,
+                        "endTimeSec": 1.0230000019073486,
                         "source": "Explicit",
-                        "startTimeSec": 0.10000000149011612,
-                        "traceSlotMask": 0,
+                        "startTimeSec": 0.7319999933242798,
+                        "traceSlotMask": 9,
                         "type": "Attack"
                     },
                     {
                         "canBeInterrupted": true,
-                        "clipName": "Boss|Boss|Soul_Attack",
+                        "clipName": "Boss|Boss|Kick_Attack",
                         "enabled": true,
-                        "endTimeSec": 999.0,
+                        "endTimeSec": 0.800000011920929,
+                        "source": "Explicit",
+                        "startTimeSec": 0.5,
+                        "traceSlotMask": 4,
+                        "type": "Attack"
+                    },
+                    {
+                        "canBeInterrupted": true,
+                        "clipName": "Boss|Boss|Attack_ABC",
+                        "enabled": true,
+                        "endTimeSec": 0.20000000298023224,
                         "source": "Explicit",
                         "startTimeSec": 0.10000000149011612,
-                        "traceSlotMask": 0,
+                        "traceSlotMask": 8,
+                        "type": "Attack"
+                    },
+                    {
+                        "canBeInterrupted": true,
+                        "clipName": "Boss|Boss|Attack_ABC",
+                        "enabled": true,
+                        "endTimeSec": 0.30000001192092896,
+                        "source": "Explicit",
+                        "startTimeSec": 0.20000000298023224,
+                        "traceSlotMask": 16,
+                        "type": "Attack"
+                    },
+                    {
+                        "canBeInterrupted": true,
+                        "clipName": "Boss|Boss|Attack_ABC",
+                        "enabled": true,
+                        "endTimeSec": 0.4000000059604645,
+                        "source": "Explicit",
+                        "startTimeSec": 0.30000001192092896,
+                        "traceSlotMask": 32,
                         "type": "Attack"
                     }
                 ],
                 "traceGuid": "114063308901302750",
                 "traceGuids": [
-                    "11831490326238347819",
-                    "16405204166734133664"
+                    "16405204166734133664",
+                    "2174643288750600930",
+                    "2174643288750600930",
+                    "2563689005812286452",
+                    "6863112690193983802"
                 ]
             },
             "Material": {
@@ -4241,10 +4249,10 @@
                 "transparent": false
             },
             "SkinnedAnimation": {
-                "clipIndex": 11,
-                "playing": true,
+                "clipIndex": 13,
+                "playing": false,
                 "speed": 1.0,
-                "timeSec": 78.01188222365454
+                "timeSec": 0.7649999856948853
             },
             "SkinnedMesh": {
                 "boneCount": 65,
@@ -4410,9 +4418,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -2.0,
+                    "x": -2.8524720668792725,
                     "y": 0.0,
-                    "z": 0.0
+                    "z": 0.47897911071777344
                 },
                 "rotation": {
                     "x": 0.0,
@@ -4497,25 +4505,25 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -2.2157247066497803,
-                    "y": 1.2328214645385742,
-                    "z": -0.21807369589805603
+                    "x": -3.1361751556396484,
+                    "y": 1.112289547920227,
+                    "z": -0.22254739701747894
                 },
                 "rotation": {
-                    "x": 0.15362846851348877,
-                    "y": 1.1752976179122925,
-                    "z": -0.30628469586372375
+                    "x": 1.4651603698730469,
+                    "y": 2.786891222000122,
+                    "z": 0.037217557430267334
                 },
                 "scale": {
-                    "x": 1.499998927116394,
-                    "y": 1.4999984502792358,
-                    "z": 1.4999990463256836
+                    "x": 1.4999998807907104,
+                    "y": 1.4999992847442627,
+                    "z": 1.4999996423721313
                 },
                 "visible": true
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 911,
+                "attackInstanceId": 1017,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -4533,8 +4541,6 @@
                 "queryLayerBits": 0,
                 "shapes": [
                     {
-                        "activeEndNorm": 1.0,
-                        "activeStartNorm": 0.0,
                         "boxHalfExtents": {
                             "x": 0.05000000074505806,
                             "y": 0.05000000074505806,
@@ -4574,8 +4580,6 @@
                         "type": "Sphere"
                     },
                     {
-                        "activeEndNorm": 1.0,
-                        "activeStartNorm": 0.0,
                         "boxHalfExtents": {
                             "x": 0.05000000074505806,
                             "y": 0.05000000074505806,
@@ -4615,8 +4619,6 @@
                         "type": "Sphere"
                     },
                     {
-                        "activeEndNorm": 1.0,
-                        "activeStartNorm": 0.0,
                         "boxHalfExtents": {
                             "x": 0.05000000074505806,
                             "y": 0.05000000074505806,
@@ -4656,8 +4658,6 @@
                         "type": "Sphere"
                     },
                     {
-                        "activeEndNorm": 1.0,
-                        "activeStartNorm": 0.0,
                         "boxHalfExtents": {
                             "x": 0.05000000074505806,
                             "y": 0.05000000074505806,
@@ -4697,8 +4697,6 @@
                         "type": "Sphere"
                     },
                     {
-                        "activeEndNorm": 1.0,
-                        "activeStartNorm": 0.0,
                         "boxHalfExtents": {
                             "x": 0.05000000074505806,
                             "y": 0.05000000074505806,
@@ -4738,8 +4736,6 @@
                         "type": "Sphere"
                     },
                     {
-                        "activeEndNorm": 1.0,
-                        "activeStartNorm": 0.0,
                         "boxHalfExtents": {
                             "x": 0.05000000074505806,
                             "y": 0.05000000074505806,
@@ -4779,8 +4775,6 @@
                         "type": "Sphere"
                     },
                     {
-                        "activeEndNorm": 1.0,
-                        "activeStartNorm": 0.0,
                         "boxHalfExtents": {
                             "x": 0.05000000074505806,
                             "y": 0.05000000074505806,
@@ -4850,7 +4844,7 @@
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 411,
+                "attackInstanceId": 501,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -4868,8 +4862,6 @@
                 "queryLayerBits": 0,
                 "shapes": [
                     {
-                        "activeEndNorm": 1.0,
-                        "activeStartNorm": 0.5,
                         "boxHalfExtents": {
                             "x": 0.05000000074505806,
                             "y": 0.05000000074505806,
@@ -4879,7 +4871,7 @@
                         "enabled": true,
                         "localPos": {
                             "x": 0.0,
-                            "y": 0.0,
+                            "y": 1.149999976158142,
                             "z": 0.0
                         },
                         "localRotDeg": {
@@ -4889,23 +4881,23 @@
                         },
                         "name": "Shape",
                         "pathControlLocalPos": {
-                            "x": -1.9199999570846558,
-                            "y": 1.2899999618530273,
-                            "z": -0.6700000166893005
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
                         },
-                        "pathEnabled": true,
+                        "pathEnabled": false,
                         "pathEndLocalPos": {
-                            "x": -0.1599999964237213,
-                            "y": 1.0199999809265137,
-                            "z": -1.2300000190734863
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
                         },
                         "pathMode": "Linear",
                         "pathStartLocalPos": {
                             "x": 0.0,
-                            "y": 1.1299999952316284,
+                            "y": 0.0,
                             "z": 0.0
                         },
-                        "radius": 0.4000000059604645,
+                        "radius": 2.059999942779541,
                         "type": "Sphere"
                     }
                 ],
@@ -4940,7 +4932,7 @@
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 0,
+                "attackInstanceId": 12,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -4958,8 +4950,6 @@
                 "queryLayerBits": 0,
                 "shapes": [
                     {
-                        "activeEndNorm": 1.0,
-                        "activeStartNorm": 0.0,
                         "boxHalfExtents": {
                             "x": 0.05000000074505806,
                             "y": 0.05000000074505806,
@@ -4979,23 +4969,23 @@
                         },
                         "name": "Shape",
                         "pathControlLocalPos": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "x": -1.190000057220459,
+                            "y": 0.8600000143051147,
+                            "z": -2.559999942779541
                         },
-                        "pathEnabled": false,
+                        "pathEnabled": true,
                         "pathEndLocalPos": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "x": 2.940000057220459,
+                            "y": 0.550000011920929,
+                            "z": -2.700000047683716
                         },
-                        "pathMode": "Linear",
+                        "pathMode": "QuadraticBezier",
                         "pathStartLocalPos": {
-                            "x": -2.069999933242798,
-                            "y": 0.0,
-                            "z": 0.0
+                            "x": -0.20999999344348907,
+                            "y": 0.8500000238418579,
+                            "z": 0.10999999940395355
                         },
-                        "radius": 5.079999923706055,
+                        "radius": 0.3100000023841858,
                         "type": "Sphere"
                     }
                 ],
@@ -5046,7 +5036,47 @@
                 "parryGroggyGain": 10.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
-                "shapes": [],
+                "shapes": [
+                    {
+                        "boxHalfExtents": {
+                            "x": 0.05000000074505806,
+                            "y": 0.05000000074505806,
+                            "z": 0.20000000298023224
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "Shape",
+                        "pathControlLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathEnabled": false,
+                        "pathEndLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathMode": "Linear",
+                        "pathStartLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "radius": 0.05000000074505806,
+                        "type": "Sphere"
+                    }
+                ],
                 "subSteps": 1,
                 "targetLayerBits": 0,
                 "teamId": 1,
@@ -5054,7 +5084,7 @@
             },
             "_parentGuid": "11831490326238347819",
             "guid": "2563689005812286452",
-            "name": "Attack_BC"
+            "name": "Attack_B"
         },
         {
             "Transform": {
@@ -5094,7 +5124,86 @@
                 "parryGroggyGain": 10.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
-                "shapes": [],
+                "shapes": [
+                    {
+                        "boxHalfExtents": {
+                            "x": 0.05000000074505806,
+                            "y": 0.05000000074505806,
+                            "z": 0.20000000298023224
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "Shape",
+                        "pathControlLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathEnabled": false,
+                        "pathEndLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathMode": "Linear",
+                        "pathStartLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "radius": 0.05000000074505806,
+                        "type": "Sphere"
+                    },
+                    {
+                        "boxHalfExtents": {
+                            "x": 0.05000000074505806,
+                            "y": 0.05000000074505806,
+                            "z": 0.20000000298023224
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "Shape",
+                        "pathControlLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathEnabled": false,
+                        "pathEndLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathMode": "Linear",
+                        "pathStartLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "radius": 0.05000000074505806,
+                        "type": "Sphere"
+                    }
+                ],
                 "subSteps": 1,
                 "targetLayerBits": 0,
                 "teamId": 1,
@@ -5102,7 +5211,7 @@
             },
             "_parentGuid": "11831490326238347819",
             "guid": "6863112690193983802",
-            "name": "Attack_ABC"
+            "name": "Attack_C"
         },
         {
             "Transform": {
@@ -5237,7 +5346,7 @@
                 "clipIndex": 8,
                 "playing": true,
                 "speed": 1.0,
-                "timeSec": 627.6666137285065
+                "timeSec": 2588.61441344535
             },
             "SkinnedMesh": {
                 "boneCount": 137,
@@ -5247,9 +5356,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -2.0,
-                    "y": 0.0,
-                    "z": -3.0
+                    "x": -3.8395445346832275,
+                    "y": 0.07580709457397461,
+                    "z": -0.39069855213165283
                 },
                 "rotation": {
                     "x": 0.0,
