@@ -654,6 +654,7 @@ namespace Alice
                 rttr::instance inst = const_cast<AdvancedAnimationComponent&>(*advAnim);
                 JsonRttr::json obj = JsonRttr::ToJsonObject(inst);
                 obj["rootBoneLock"] = advAnim->rootBoneLock;
+                obj["rootMotionDriveCct"] = advAnim->rootMotionDriveCct;
                 outEntity["AdvancedAnimation"] = obj;
             }
 
@@ -1130,6 +1131,8 @@ namespace Alice
                 JsonRttr::json copy = *itAA;
                 bool hasRootBoneLock = false;
                 bool rootBoneLockValue = aa.rootBoneLock;
+                bool hasRootMotionDriveCct = false;
+                bool rootMotionDriveCctValue = aa.rootMotionDriveCct;
                 if (auto itRootLock = copy.find("rootBoneLock"); itRootLock != copy.end())
                 {
                     if (itRootLock->is_boolean())
@@ -1141,6 +1144,19 @@ namespace Alice
                     {
                         rootBoneLockValue = (itRootLock->get<double>() != 0.0);
                         hasRootBoneLock = true;
+                    }
+                }
+                if (auto itDrive = copy.find("rootMotionDriveCct"); itDrive != copy.end())
+                {
+                    if (itDrive->is_boolean())
+                    {
+                        rootMotionDriveCctValue = itDrive->get<bool>();
+                        hasRootMotionDriveCct = true;
+                    }
+                    else if (itDrive->is_number())
+                    {
+                        rootMotionDriveCctValue = (itDrive->get<double>() != 0.0);
+                        hasRootMotionDriveCct = true;
                     }
                 }
 
@@ -1160,6 +1176,8 @@ namespace Alice
                 if (!JsonRttr::FromJsonObject(inst, copy)) return false;
                 if (hasRootBoneLock)
                     aa.rootBoneLock = rootBoneLockValue;
+                if (hasRootMotionDriveCct)
+                    aa.rootMotionDriveCct = rootMotionDriveCctValue;
             }
 
             // AnimBlueprint (선택)

@@ -1,0 +1,8 @@
+{
+    "materials": [
+        "Assets/Materials/Tia_Animaition_Final_017_RootMotion_Tia_Weapon_0.mat",
+        "Assets/Materials/Tia_Animaition_Final_017_RootMotion_Tia_Weapon_1.mat"
+    ],
+    "mesh": "Tia_Animaition_Final_017_RootMotion_Tia_Weapon",
+    "source_fbx": "Resource/Test/Tia_Animaition_Final_017_RootMotion_Tia_Weapon.fbx"
+}

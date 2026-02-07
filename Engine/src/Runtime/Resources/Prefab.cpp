@@ -406,6 +406,7 @@ namespace Alice
                     rttr::instance inst = const_cast<AdvancedAnimationComponent&>(*advAnim);
                     JsonRttr::json obj = JsonRttr::ToJsonObject(inst);
                     obj["rootBoneLock"] = advAnim->rootBoneLock;
+                    obj["rootMotionDriveCct"] = advAnim->rootMotionDriveCct;
                     outEntity["AdvancedAnimation"] = obj;
                 }
 
@@ -740,6 +741,13 @@ namespace Alice
                             aa.rootBoneLock = it->get<bool>();
                         else if (it->is_number())
                             aa.rootBoneLock = (it->get<double>() != 0.0);
+                    }
+                    if (auto it = itAA->find("rootMotionDriveCct"); it != itAA->end())
+                    {
+                        if (it->is_boolean())
+                            aa.rootMotionDriveCct = it->get<bool>();
+                        else if (it->is_number())
+                            aa.rootMotionDriveCct = (it->get<double>() != 0.0);
                     }
                 }
 

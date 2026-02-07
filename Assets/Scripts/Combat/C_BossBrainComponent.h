@@ -120,6 +120,7 @@ namespace Alice
         void NotifyPlayerGuardOrEvade();
         void NotifyAttackOutcome(bool evaded);
         void ForceCompleteIntent();
+        bool ConsumePhase2HowlingStarted();
 
         // 공격/패턴 튜닝
         ALICE_PROPERTY(float, m_attackCooldown, 1.0f);
@@ -186,6 +187,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_attackSectorHoldSec, 0.6f);
         ALICE_PROPERTY(float, m_traceDelaySec, 0.5f);
         ALICE_PROPERTY(float, m_actionDelaySec, 0.3f);
+        ALICE_PROPERTY(float, m_rotationOffsetDeg, 180.0f);
         ALICE_PROPERTY(float, m_dashCooldownSec, 10.0f);
         ALICE_PROPERTY(float, m_rangedCooldownSec, 10.0f);
         ALICE_PROPERTY(int, m_rangedRepeatCount, 3);
@@ -263,6 +265,8 @@ namespace Alice
         bool m_backAttackPending = false;
         bool m_gimmickActive = false;
         bool m_phase2Active = false;
+        bool m_phase2HowlingPending = false;
+        bool m_phase2HowlingStartedPulse = false;
         bool m_chargePending = false;
         bool m_forceWalkAfterAttack = false;
         bool m_rerollAfterAttack = false;

@@ -9,6 +9,8 @@
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <filesystem>
+#include <cstdint>
+#include <vector>
 
 using Microsoft::WRL::ComPtr;
 
@@ -81,6 +83,110 @@ static void AddCache(std::unordered_map<std::wstring, ID3D11ShaderResourceView*>
 	if (v) { cache[key] = v; v->AddRef(); }
 }
 
+static bool IsColorTextureType(aiTextureType texType)
+{
+	return texType == aiTextureType_DIFFUSE ||
+		   texType == aiTextureType_BASE_COLOR ||
+		   texType == aiTextureType_EMISSIVE;
+}
+
+static DirectX::WIC_LOADER_FLAGS GetWicFlagsForTextureType(aiTextureType texType)
+{
+	return IsColorTextureType(texType)
+		? DirectX::WIC_LOADER_FORCE_SRGB
+		: DirectX::WIC_LOADER_IGNORE_SRGB;
+}
+
+static bool IsDDSBytes(const std::vector<std::uint8_t>& data)
+{
+	return data.size() >= 4 &&
+		   data[0] == 'D' &&
+		   data[1] == 'D' &&
+		   data[2] == 'S' &&
+		   data[3] == ' ';
+}
+
+static ID3D11ShaderResourceView* CreateSRVFromMemoryWithType(
+	ID3D11Device* device,
+	const std::uint8_t* bytes,
+	std::size_t byteSize,
+	aiTextureType texType)
+{
+	if (!device || !bytes || byteSize == 0)
+		return nullptr;
+
+	const bool forceSrgb = IsColorTextureType(texType);
+	const std::vector<std::uint8_t> data(bytes, bytes + byteSize);
+	ComPtr<ID3D11ShaderResourceView> srv;
+	HRESULT hr = E_FAIL;
+
+	if (IsDDSBytes(data))
+	{
+		const auto ddsFlags = forceSrgb
+			? DirectX::DDS_LOADER_FORCE_SRGB
+			: DirectX::DDS_LOADER_DEFAULT;
+		hr = DirectX::CreateDDSTextureFromMemoryEx(
+			device,
+			data.data(),
+			data.size(),
+			0,
+			D3D11_USAGE_DEFAULT,
+			D3D11_BIND_SHADER_RESOURCE,
+			0,
+			0,
+			ddsFlags,
+			nullptr,
+			srv.ReleaseAndGetAddressOf());
+	}
+	else
+	{
+		ComPtr<ID3D11DeviceContext> ctx;
+		device->GetImmediateContext(ctx.GetAddressOf());
+		ComPtr<ID3D11Resource> res;
+
+		hr = DirectX::CreateWICTextureFromMemoryEx(
+			device,
+			ctx.Get(),
+			data.data(),
+			data.size(),
+			0,
+			D3D11_USAGE_DEFAULT,
+			D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET,
+			0,
+			D3D11_RESOURCE_MISC_GENERATE_MIPS,
+			GetWicFlagsForTextureType(texType),
+			res.GetAddressOf(),
+			srv.ReleaseAndGetAddressOf());
+
+		if (SUCCEEDED(hr) && ctx && srv)
+		{
+			ctx->GenerateMips(srv.Get());
+		}
+		else if (FAILED(hr))
+		{
+			hr = DirectX::CreateWICTextureFromMemoryEx(
+				device,
+				ctx.Get(),
+				data.data(),
+				data.size(),
+				0,
+				D3D11_USAGE_DEFAULT,
+				D3D11_BIND_SHADER_RESOURCE,
+				0,
+				0,
+				GetWicFlagsForTextureType(texType),
+				nullptr,
+				srv.ReleaseAndGetAddressOf());
+		}
+	}
+
+	if (FAILED(hr) || !srv)
+		return nullptr;
+
+	srv->AddRef();
+	return srv.Get();
+}
+
 // 단색(1x1) 텍스처 SRV 생성 헬퍼
 static void CreateSolidColorSRV(ID3D11Device* device, UINT rgba, ID3D11ShaderResourceView** outSRV)
 {
@@ -114,33 +220,30 @@ static void CreateSolidColorSRV(ID3D11Device* device, UINT rgba, ID3D11ShaderRes
 // aiTexture(임베디드 텍스처)로부터 SRV 생성
 static ID3D11ShaderResourceView* CreateSRVFromEmbedded(
 	ID3D11Device* device,
-	const aiTexture* at)
+	const aiTexture* at,
+	aiTextureType texType)
 {
 	if (!device || !at) return nullptr;
 
-	ComPtr<ID3D11Resource> res;
-	ID3D11ShaderResourceView* srv = nullptr;
-
 	if (at->mHeight == 0)
 	{
-		if (SUCCEEDED(DirectX::CreateWICTextureFromMemory(
+		return CreateSRVFromMemoryWithType(
 			device,
-			reinterpret_cast<const uint8_t*>(at->pcData),
-			at->mWidth,
-			res.GetAddressOf(),
-			&srv)))
-		{
-			return srv;
-		}
+			reinterpret_cast<const std::uint8_t*>(at->pcData),
+			static_cast<std::size_t>(at->mWidth),
+			texType);
 	}
 	else
 	{
+		ID3D11ShaderResourceView* srv = nullptr;
 		D3D11_TEXTURE2D_DESC td{};
 		td.Width = at->mWidth;
 		td.Height = at->mHeight;
 		td.MipLevels = 1;
 		td.ArraySize = 1;
-		td.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+		td.Format = IsColorTextureType(texType)
+			? DXGI_FORMAT_B8G8R8A8_UNORM_SRGB
+			: DXGI_FORMAT_B8G8R8A8_UNORM;
 		td.SampleDesc.Count = 1;
 		td.Usage = D3D11_USAGE_IMMUTABLE;
 		td.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -167,7 +270,7 @@ static ID3D11ShaderResourceView* CreateSRVFromEmbedded(
 }
 
 
-static HRESULT CreateTextureFromTgaFile(ID3D11Device* device, const wchar_t* path, ID3D11ShaderResourceView** outSRV)
+static HRESULT CreateTextureFromTgaFile(ID3D11Device* device, const wchar_t* path, aiTextureType texType, ID3D11ShaderResourceView** outSRV)
 {
 	if (!device || !path || !outSRV) return E_INVALIDARG;
 	*outSRV = nullptr;
@@ -178,6 +281,11 @@ static HRESULT CreateTextureFromTgaFile(ID3D11Device* device, const wchar_t* pat
 	ScratchImage image;
 	HRESULT hr = LoadFromTGAFile(path, &metadata, image);
 	if (FAILED(hr)) return hr;
+
+	if (IsColorTextureType(texType))
+	{
+		metadata.format = MakeSRGB(metadata.format);
+	}
 
 	hr = CreateShaderResourceView(
 		device,
@@ -192,6 +300,7 @@ static HRESULT CreateTextureFromTgaFile(ID3D11Device* device, const wchar_t* pat
 static HRESULT CreateTextureFromFileWithTga(
 	ID3D11Device* device,
 	const std::wstring& path,
+	aiTextureType texType,
 	ID3D11Resource** outRes,
 	ID3D11ShaderResourceView** outSRV)
 {
@@ -201,7 +310,17 @@ static HRESULT CreateTextureFromFileWithTga(
 	ID3D11Resource** resPtr = outRes ? outRes : dummyRes.GetAddressOf();
 
 	ID3D11ShaderResourceView* srv = nullptr;
-	HRESULT hr = DirectX::CreateWICTextureFromFile(device, path.c_str(), resPtr, &srv);
+	HRESULT hr = DirectX::CreateWICTextureFromFileEx(
+		device,
+		path.c_str(),
+		0,
+		D3D11_USAGE_DEFAULT,
+		D3D11_BIND_SHADER_RESOURCE,
+		0,
+		0,
+		GetWicFlagsForTextureType(texType),
+		resPtr,
+		&srv);
 	if (FAILED(hr))
 	{
 		// 확장자가 .tga 이면 직접 파싱 시도
@@ -210,7 +329,7 @@ static HRESULT CreateTextureFromFileWithTga(
 			std::wstring ext = path.substr(path.size() - 4);
 			if (ext == L".tga" || ext == L".TGA")
 			{
-				hr = CreateTextureFromTgaFile(device, path.c_str(), &srv);
+				hr = CreateTextureFromTgaFile(device, path.c_str(), texType, &srv);
 			}
 		}
 	}
@@ -254,8 +373,8 @@ static ID3D11ShaderResourceView* LoadTextureFromMaterial(
 			const aiTexture* at = scene->GetEmbeddedTexture(texPathStr.c_str());
 			if (at)
 			{
-				// (Embedded 텍스처를 SRV로 변환하는 함수 호출)
-				result = CreateSRVFromEmbedded(device, at);
+				// (Embedded 텍처를 SRV로 변환하는 함수 호출)
+				result = CreateSRVFromEmbedded(device, at, texType);
 			}
 		}
 
@@ -304,7 +423,7 @@ static ID3D11ShaderResourceView* LoadTextureFromMaterial(
 					result = cached;
 					result->AddRef();
 				}
-				else if (SUCCEEDED(CreateTextureFromFileWithTga(device, fullPathW,
+				else if (SUCCEEDED(CreateTextureFromFileWithTga(device, fullPathW, texType,
 					(ID3D11Resource**)nullptr, &result)))
 				{
 					AddCache(cache, fullPathW, result);
@@ -371,7 +490,7 @@ static ID3D11ShaderResourceView* LoadTextureFromMaterialRM(
 			const aiTexture* at = scene->GetEmbeddedTexture(texPathStr.c_str());
 			if (at)
 			{
-				result = CreateSRVFromEmbedded(device, at);
+				result = CreateSRVFromEmbedded(device, at, texType);
 			}
 		}
 
@@ -383,6 +502,8 @@ static ID3D11ShaderResourceView* LoadTextureFromMaterialRM(
 			{
 				// 캐시 키는 논리 경로 문자열
 				std::string cacheKey = logicalTex.generic_string();
+				cacheKey += "|";
+				cacheKey += std::to_string(static_cast<int>(texType));
 				auto it = cache.find(cacheKey);
 				if (it != cache.end())
 				{
@@ -391,12 +512,30 @@ static ID3D11ShaderResourceView* LoadTextureFromMaterialRM(
 				}
 				else
 				{
-					// ResourceManager를 통해 로드
-					auto srv = rm.Load<ID3D11ShaderResourceView>(logicalTex, device);
-					if (srv)
+					// ResourceManager에서 원본 바이트를 읽고 텍스처 타입에 맞는 색공간으로 SRV 생성
+					std::vector<std::uint8_t> data;
+					if (rm.LoadBinaryAuto(logicalTex, data) && !data.empty())
 					{
-						result = srv.Get();
-						result->AddRef();
+						result = CreateSRVFromMemoryWithType(
+							device,
+							data.data(),
+							data.size(),
+							texType);
+					}
+
+					// 바이트 경로 실패 시 기존 로더로 폴백
+					if (!result)
+					{
+						auto srv = rm.Load<ID3D11ShaderResourceView>(logicalTex, device);
+						if (srv)
+						{
+							result = srv.Get();
+							result->AddRef();
+						}
+					}
+
+					if (result)
+					{
 						cache[cacheKey] = result;
 					}
 				}
@@ -437,14 +576,25 @@ bool FbxMaterialLoader::Load(ID3D11Device* device, const aiScene* scene, const s
 	{
 		aiMaterial* mat = scene->mMaterials[m];
 
-		// BaseColor / Diffuse
-		m_->baseColorSRVs[m] = LoadTextureFromMaterialRM(
+		// BaseColor / Diffuse (우선순위: BASE_COLOR > DIFFUSE)
+		ID3D11ShaderResourceView* baseColor = LoadTextureFromMaterialRM(
 			device, scene, mat,
-			aiTextureType_DIFFUSE,          // BaseColor
+			aiTextureType_BASE_COLOR,
 			fbxLogicalPath,
 			rm,
 			logicalCache,
-			m_->white);
+			nullptr);
+		if (!baseColor)
+		{
+			baseColor = LoadTextureFromMaterialRM(
+				device, scene, mat,
+				aiTextureType_DIFFUSE,
+				fbxLogicalPath,
+				rm,
+				logicalCache,
+				m_->white);
+		}
+		m_->baseColorSRVs[m] = baseColor;
 
 		// Normal map
 		m_->normalSRVs[m] = LoadTextureFromMaterialRM(
@@ -498,13 +648,23 @@ bool FbxMaterialLoader::Load(ID3D11Device* device, const aiScene* scene, const s
 	{
 		aiMaterial* mat = scene->mMaterials[m];
 
-		// BaseColor / Diffuse
-		m_->baseColorSRVs[m] = LoadTextureFromMaterial(
+		// BaseColor / Diffuse (우선순위: BASE_COLOR > DIFFUSE)
+		ID3D11ShaderResourceView* baseColor = LoadTextureFromMaterial(
 			device, scene, mat,
-			aiTextureType_DIFFUSE,          // BaseColor
+			aiTextureType_BASE_COLOR,
 			baseDir,
 			m_->cache,
-			m_->white);
+			nullptr);
+		if (!baseColor)
+		{
+			baseColor = LoadTextureFromMaterial(
+				device, scene, mat,
+				aiTextureType_DIFFUSE,
+				baseDir,
+				m_->cache,
+				m_->white);
+		}
+		m_->baseColorSRVs[m] = baseColor;
 
 		// Normal map
 		m_->normalSRVs[m] = LoadTextureFromMaterial(

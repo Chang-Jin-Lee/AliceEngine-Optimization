@@ -179,7 +179,12 @@ namespace Alice::Combat
     struct CmdEnterHitstun { EntityId target = InvalidEntityId; float durationSec = 0.0f; };
     struct CmdForceCancelAttack { EntityId target = InvalidEntityId; };
     struct CmdDisableTrace { EntityId weaponOrOwner = InvalidEntityId; };
-    struct CmdEnableTrace { EntityId weaponOrOwner = InvalidEntityId; };
+    struct CmdEnableTrace
+    {
+        EntityId weaponOrOwner = InvalidEntityId;
+        std::uint32_t traceSlotMask = 0u; // 0 = all slots
+        float activeWindowDurationSec = 0.0f;
+    };
     struct CmdPlayAnim
     {
         EntityId target = InvalidEntityId;
