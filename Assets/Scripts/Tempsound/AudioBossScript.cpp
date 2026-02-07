@@ -52,6 +52,7 @@ namespace Alice
             {
                 bus->OnBossSfxRequest.BindObject(this, &AudioBossScript::PlaySfxPath);
                 bus->OnBossAttackSfxRequest.BindObject(this, &AudioBossScript::PlayAttackState);
+                bus->OnBossAttackSfxDelayedRequest.BindObject(this, &AudioBossScript::PlayAttackStateDelayed);
                 bus->OnBossMovementSfxRequest.BindObject(this, &AudioBossScript::PlayMovementState);
                 bus->OnBossOtherSfxRequest.BindObject(this, &AudioBossScript::PlayOtherState);
             }
@@ -106,16 +107,33 @@ namespace Alice
     {
         switch (state)
         {
-        case BossAttackState::AttackAlarm:     return "Resource/Sound/SFX/보스/공격_전조_알림/Boss_Attack_Alarm_01.mp3";
-        case BossAttackState::Attack1:        return "Resource/Sound/SFX/보스/공격_1/Boss_Attack_01.mp3";
-        case BossAttackState::Attack2:        return "Resource/Sound/SFX/보스/공격_2/Boss_Attack_02.wav";
-        case BossAttackState::Attack3:        return "Resource/Sound/SFX/보스/공격_3/Boss_Attack_03.wav";
-        case BossAttackState::SoulSwordCharge: return "Resource/Sound/SFX/보스/영혼대검_차지/Boss_SoulAttack_Charging_01.mp3";
-        case BossAttackState::SoulSwordAttack: return "Resource/Sound/SFX/보스/영혼대검_공격/Boss_SoulAttack_Attack_01.wav";
-        case BossAttackState::SideAttack:      return "Resource/Sound/SFX/보스/옆,견제_공격/Boss_Attack_Side_01.mp3";
-        case BossAttackState::DashAttack:      return "Resource/Sound/SFX/보스/대쉬공격/Boss_DashAttack_01.mp3";
+        case BossAttackState::AttackAlarm:     return Get_pathAttackAlarm();
+        case BossAttackState::Attack1:         return Get_pathAttack1();
+        case BossAttackState::Attack2:         return Get_pathAttack2();
+        case BossAttackState::Attack3:         return Get_pathAttack3();
+        case BossAttackState::SoulSwordCharge: return Get_pathSoulSwordCharge();
+        case BossAttackState::SoulSwordAttack: return Get_pathSoulSwordAttack();
+        case BossAttackState::SideAttack:      return Get_pathSideAttack();
+        case BossAttackState::DashAttack:      return Get_pathDashAttack();
         default:
             return "";
+        }
+    }
+
+    float AudioBossScript::GetDelayForAttackState(BossAttackState state) const
+    {
+        switch (state)
+        {
+        case BossAttackState::AttackAlarm:     return Get_delayAttackAlarm();
+        case BossAttackState::Attack1:         return Get_delayAttack1();
+        case BossAttackState::Attack2:         return Get_delayAttack2();
+        case BossAttackState::Attack3:         return Get_delayAttack3();
+        case BossAttackState::SoulSwordCharge: return Get_delaySoulSwordCharge();
+        case BossAttackState::SoulSwordAttack: return Get_delaySoulSwordAttack();
+        case BossAttackState::SideAttack:      return Get_delaySideAttack();
+        case BossAttackState::DashAttack:      return Get_delayDashAttack();
+        default:
+            return 0.0f;
         }
     }
 
@@ -124,15 +142,28 @@ namespace Alice
         switch (state)
         {
         case BossMovementState::DashAttack:
-            return "Resource/Sound/SFX/보스/대쉬공격/Boss_DashAttack_01.mp3";
+            return Get_pathDashAttack();  // DashAttack은 공격 상태와 동일
         case BossMovementState::Walk:
         {
-            char buf[128];
-            snprintf(buf, sizeof(buf), "Resource/Sound/SFX/보스/걷기/Boss_Footstep_%02d.mp3", (m_footstepIndex % 4) + 1);
-            return std::string(buf);
+            // Walk는 여러 파일 중 인덱스로 선택 (경로 패턴 사용)
+            const std::string basePath = Get_pathWalk();
+            if (basePath.empty())
+                return "";
+            // 경로에서 숫자 부분을 찾아서 교체
+            size_t lastUnderscore = basePath.find_last_of('_');
+            size_t lastDot = basePath.find_last_of('.');
+            if (lastUnderscore != std::string::npos && lastDot != std::string::npos && lastUnderscore < lastDot)
+            {
+                std::string prefix = basePath.substr(0, lastUnderscore + 1);
+                std::string suffix = basePath.substr(lastDot);
+                char buf[256];
+                snprintf(buf, sizeof(buf), "%s%02d%s", prefix.c_str(), (m_footstepIndex % 4) + 1, suffix.c_str());
+                return std::string(buf);
+            }
+            return basePath;
         }
         case BossMovementState::Rotate:
-            return "Resource/Sound/SFX/보스/몸_돌리기/Boss_Rotate_01.wav";
+            return Get_pathRotate();
         default:
             return "";
         }
@@ -142,12 +173,11 @@ namespace Alice
     {
         switch (state)
         {
-        case BossOtherState::GroggyEnter: return "Resource/Sound/SFX/보스/그로기_진입/Boss_Groggy_Alarm_01.wav";
-        case BossOtherState::Roar:        return "Resource/Sound/SFX/보스/포효/Boss_Roaring_01.mp3";
+        case BossOtherState::GroggyEnter: return Get_pathGroggyEnter();
+        case BossOtherState::Roar:        return Get_pathRoar();
         case BossOtherState::Hit:
-            return (std::rand() % 2 == 0)
-                ? "Resource/Sound/SFX/보스/피격/Boss_Hit_01.wav"
-                : "Resource/Sound/SFX/보스/피격/Boss_Hit_02.wav";
+            return Get_pathHit();
+        case BossOtherState::Death:       return Get_pathDeath();
         default:
             return "";
         }
@@ -215,6 +245,69 @@ namespace Alice
         std::string path = GetPathForAttackState(state);
         if (!path.empty())
             PlayPathInternal(path, false);
+    }
+
+    void AudioBossScript::PlayAttackStateDelayed(BossAttackState state, float delaySeconds)
+    {
+        ALICE_LOG_INFO("[AudioBoss] PlayAttackStateDelayed: state=%d, delay=%.2f", static_cast<int>(state), delaySeconds);
+        
+        if (state == BossAttackState::None)
+        {
+            ALICE_LOG_WARN("[AudioBoss] PlayAttackStateDelayed: state is None");
+            return;
+        }
+        
+        // delaySeconds가 0 이하이면 상태별 딜레이 사용
+        if (delaySeconds <= 0.0f)
+        {
+            delaySeconds = GetDelayForAttackState(state);
+            ALICE_LOG_INFO("[AudioBoss] PlayAttackStateDelayed: using state-specific delay=%.2f", delaySeconds);
+        }
+        
+        // 딜레이가 여전히 0이면 즉시 재생
+        if (delaySeconds <= 0.0f)
+        {
+            PlayAttackState(state);
+            return;
+        }
+        
+        std::string path = GetPathForAttackState(state);
+        if (path.empty())
+        {
+            ALICE_LOG_WARN("[AudioBoss] PlayAttackStateDelayed: path is empty for state=%d", static_cast<int>(state));
+            return;
+        }
+        
+        const std::string resolvedPath = TempSound::ResolveTempSoundPath(path, "Boss");
+        ALICE_LOG_INFO("[AudioBoss] PlayAttackStateDelayed: resolvedPath=%s", resolvedPath.c_str());
+        
+        auto* audio = Audio();
+        if (!audio)
+        {
+            ALICE_LOG_WARN("[AudioBoss] PlayAttackStateDelayed: Audio() is null");
+            return;
+        }
+        auto* resources = Resources();
+        if (!resources)
+        {
+            ALICE_LOG_WARN("[AudioBoss] PlayAttackStateDelayed: Resources() is null");
+            return;
+        }
+        
+        const std::filesystem::path logicalPath = std::filesystem::u8path(resolvedPath);
+        std::wstring key = WStringFromUtf8(resolvedPath);
+        if (!audio->LoadAuto(*resources, key, logicalPath, Sound::Type::SFX))
+        {
+            ALICE_LOG_WARN("[AudioBoss] PlayAttackStateDelayed: Load failed: %s", resolvedPath.c_str());
+            return;
+        }
+        
+        const float volume = Get_volume();
+        const float pitch = Get_pitch();
+        
+        ALICE_LOG_INFO("[AudioBoss] PlayAttackStateDelayed: calling Sound::PlaySFXDelayed, key=%ls, delay=%.2f", key.c_str(), delaySeconds);
+        // SoundManager의 PlaySFXDelayed 직접 호출
+        Sound::PlaySFXDelayed(key, delaySeconds, volume, pitch, false);
     }
 
     void AudioBossScript::PlayMovementState(BossMovementState state)

@@ -84,11 +84,11 @@
                 "alignH": "Center",
                 "alignV": "Center",
                 "anchorMax": {
-                    "x": 0.5,
+                    "x": 0.75,
                     "y": 0.5
                 },
                 "anchorMin": {
-                    "x": 0.5,
+                    "x": 0.25,
                     "y": 0.5
                 },
                 "pivot": {
@@ -277,16 +277,16 @@
                     "y": 0.5
                 },
                 "anchorMin": {
-                    "x": 0.5,
-                    "y": 0.5
+                    "x": -0.20000000298023224,
+                    "y": 1.5
                 },
                 "pivot": {
                     "x": 0.5,
                     "y": 0.5
                 },
                 "position": {
-                    "x": -570.0999755859375,
-                    "y": -387.5
+                    "x": 0.0,
+                    "y": 0.0
                 },
                 "rotationRad": 0.0,
                 "scale": {
@@ -653,7 +653,7 @@
                 "alignV": "Center",
                 "anchorMax": {
                     "x": 0.5,
-                    "y": 0.5
+                    "y": -0.30000001192092896
                 },
                 "anchorMin": {
                     "x": 0.5,
@@ -665,7 +665,7 @@
                 },
                 "position": {
                     "x": 0.0,
-                    "y": 350.0
+                    "y": 0.0
                 },
                 "rotationRad": 0.0,
                 "scale": {
@@ -673,8 +673,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1.0,
-                    "y": 1.0
+                    "x": 0.0,
+                    "y": 0.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false

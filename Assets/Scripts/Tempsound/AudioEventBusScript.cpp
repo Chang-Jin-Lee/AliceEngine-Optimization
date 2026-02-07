@@ -39,6 +39,11 @@ namespace Alice
         OnBossAttackSfxRequest.Execute(state);
     }
 
+    void AudioEventBusScript::RequestBossAttackSfxDelayed(BossAttackState state, float delaySeconds)
+    {
+        OnBossAttackSfxDelayedRequest.Execute(state, delaySeconds);
+    }
+
     void AudioEventBusScript::RequestBossMovementSfx(BossMovementState state)
     {
         OnBossMovementSfxRequest.Execute(state);
@@ -57,6 +62,11 @@ namespace Alice
     void AudioEventBusScript::RequestPlayerAttackSfxOneShot(PlayerAttackState state)
     {
         OnPlayerAttackSfxOneShotRequest.Execute(state);
+    }
+
+    void AudioEventBusScript::RequestPlayerAttackSfxOneShotAtPosition(PlayerAttackState state, const DirectX::XMFLOAT3& position)
+    {
+        OnPlayerAttackSfxOneShotAtPositionRequest.Execute(state, position);
     }
 
     void AudioEventBusScript::RequestPlayerMovementSfx(PlayerMovementState state, bool playStopSfx)

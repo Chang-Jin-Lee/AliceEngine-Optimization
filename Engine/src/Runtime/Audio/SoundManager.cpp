@@ -754,6 +754,152 @@ namespace Alice::Sound
         return false;
     }
 
+    FMOD::Channel* PlaySFXDelayed(const std::wstring& key, float delaySeconds, float volume, float pitch, bool loop)
+    {
+        ALICE_LOG_INFO("[SoundManager] PlaySFXDelayed: key=%ls, delay=%.2f, volume=%.2f, pitch=%.2f", 
+            key.c_str(), delaySeconds, volume, pitch);
+        
+        if (!g_System) 
+        {
+            ALICE_LOG_WARN("[SoundManager] PlaySFXDelayed: g_System is null");
+            return nullptr;
+        }
+        
+        if (!g_SoundBank.contains(key)) 
+        {
+            ALICE_LOG_WARN("[SoundManager] PlaySFXDelayed: key not found in bank: %ls", key.c_str());
+            return nullptr;
+        }
+        
+        FMOD::Sound* sound = g_SoundBank[key].fmodSound;
+        if (!sound) 
+        {
+            ALICE_LOG_WARN("[SoundManager] PlaySFXDelayed: sound is null for key: %ls", key.c_str());
+            return nullptr;
+        }
+        
+        volume = std::clamp(volume, 0.f, 1.f);
+        pitch = std::clamp(pitch, 0.5f, 2.f);
+        
+        // 재생 전에 Sound 자체의 Mode를 변경
+        FMOD_MODE mode;
+        if (sound->getMode(&mode) == FMOD_OK)
+        {
+            if (loop) { mode |= FMOD_LOOP_NORMAL; mode &= ~FMOD_LOOP_OFF; }
+            else      { mode |= FMOD_LOOP_OFF;    mode &= ~FMOD_LOOP_NORMAL; }
+            sound->setMode(mode);
+        }
+        
+        // 샘플레이트 가져오기
+        int sampleRate = 0;
+        FMOD_RESULT formatResult = g_System->getSoftwareFormat(&sampleRate, nullptr, nullptr);
+        if (formatResult != FMOD_OK || sampleRate == 0)
+        {
+            ALICE_LOG_WARN("[SoundManager] PlaySFXDelayed: getSoftwareFormat failed or sampleRate is 0: %s", 
+                FMOD_ErrorString(formatResult));
+            return nullptr;
+        }
+        
+        // ✅ 1. Master ChannelGroup의 DSP 클럭 가져오기 (가장 안전한 방법)
+        unsigned long long masterDspClock = 0;
+        unsigned long long masterParentClock = 0;
+        if (!g_MasterGroup)
+        {
+            ALICE_LOG_WARN("[SoundManager] PlaySFXDelayed: g_MasterGroup is null");
+            return nullptr;
+        }
+        
+        FMOD_RESULT clockResult = g_MasterGroup->getDSPClock(&masterParentClock, &masterDspClock);
+        if (clockResult != FMOD_OK)
+        {
+            ALICE_LOG_WARN("[SoundManager] PlaySFXDelayed: getDSPClock failed: %s", FMOD_ErrorString(clockResult));
+            return nullptr;
+        }
+        
+        // ✅ 2. 안전 버퍼 계산 (DSP buffer size의 2배 정도)
+        // FMOD 기본 DSP buffer size는 보통 512~2048 samples
+        // 안전하게 2 * 2048 = 4096 samples 추가 (약 85ms @ 48kHz)
+        const unsigned long long safetyBufferSamples = 4096ULL;
+        
+        // 지연 시간을 샘플 단위로 변환 + 안전 버퍼
+        unsigned long long delaySamples = static_cast<unsigned long long>(delaySeconds * sampleRate);
+        unsigned long long startClock = masterDspClock + delaySamples + safetyBufferSamples;
+        
+        ALICE_LOG_INFO("[SoundManager] PlaySFXDelayed: masterDspClock=%llu, delaySamples=%llu, safetyBuffer=%llu, startClock=%llu", 
+            masterDspClock, delaySamples, safetyBufferSamples, startClock);
+        
+        // paused=true로 생성하여 예약
+        FMOD::Channel* ch = nullptr;
+        FMOD_RESULT r = g_System->playSound(sound, g_SfxGroup, true, &ch);  // paused=true
+        if (r != FMOD_OK || !ch) 
+        {
+            ALICE_LOG_WARN("[SoundManager] PlaySFXDelayed: playSound failed: %s", FMOD_ErrorString(r));
+            return nullptr;
+        }
+        
+        // 볼륨, 피치 설정 (setDelay 전에 설정)
+        ch->setMode(FMOD_2D);
+        ch->setVolume(volume * g_VolSFX);
+        ch->setPitch(pitch);
+        ch->setPriority(128);
+        
+        // ✅ 1. Master ChannelGroup 기준으로 setDelay
+        FMOD_RESULT delayResult = ch->setDelay(startClock, 0, false);
+        if (delayResult != FMOD_OK)
+        {
+            ALICE_LOG_WARN("[SoundManager] PlaySFXDelayed: setDelay failed: %s", FMOD_ErrorString(delayResult));
+            ch->stop();
+            return nullptr;
+        }
+        
+        ALICE_LOG_INFO("[SoundManager] PlaySFXDelayed: setDelay success, startClock=%llu", startClock);
+        
+        // ✅ 4. 볼륨/음소거 확인
+        float actualVolume = 0.0f;
+        bool isMuted = false;
+        bool isPlaying = false;
+        ch->getVolume(&actualVolume);
+        ch->getMute(&isMuted);
+        ch->isPlaying(&isPlaying);
+        
+        ALICE_LOG_INFO("[SoundManager] PlaySFXDelayed: channel volume=%.2f, muted=%d, playing=%d", 
+            actualVolume, isMuted ? 1 : 0, isPlaying ? 1 : 0);
+        
+        if (actualVolume <= 0.0f || isMuted)
+        {
+            ALICE_LOG_WARN("[SoundManager] PlaySFXDelayed: channel is muted or volume is 0");
+        }
+        
+        // paused 해제하여 예약된 시점에 재생 시작
+        bool paused = true;
+        ch->getPaused(&paused);
+        ALICE_LOG_INFO("[SoundManager] PlaySFXDelayed: before setPaused(false), paused=%d", paused ? 1 : 0);
+        
+        FMOD_RESULT pauseResult = ch->setPaused(false);
+        if (pauseResult != FMOD_OK)
+        {
+            ALICE_LOG_WARN("[SoundManager] PlaySFXDelayed: setPaused(false) failed: %s", FMOD_ErrorString(pauseResult));
+            ch->stop();
+            return nullptr;
+        }
+        
+        ch->getPaused(&paused);
+        ALICE_LOG_INFO("[SoundManager] PlaySFXDelayed: after setPaused(false), paused=%d", paused ? 1 : 0);
+        
+        // One-shot인 경우 채널 리스트에 추가
+        if (!loop)
+        {
+            g_ChannelsSFX.push_back(ch);
+        }
+        else
+        {
+            g_SfxChannels[key] = { ch, true };
+        }
+        
+        ALICE_LOG_INFO("[SoundManager] PlaySFXDelayed: channel created successfully");
+        return ch;
+    }
+
     void StopSfx(const std::wstring& key)
     {
         // Loop 채널만 특정해서 끔 (OneShot은 보통 놔둠)
