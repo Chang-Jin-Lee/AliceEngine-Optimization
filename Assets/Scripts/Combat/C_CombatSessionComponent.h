@@ -78,7 +78,12 @@ namespace Alice
 
         // Animation blending
         ALICE_PROPERTY(float, m_animBlendSec, 0.12f);
+        ALICE_PROPERTY(float, m_bossAnimBlendSec, 0.12f);
+        ALICE_PROPERTY(float, m_bossGroggyEnterBlendSec, 1.5f);
+        ALICE_PROPERTY(float, m_bossGroggyRecoverBlendSec, 1.0f);
         ALICE_PROPERTY(float, m_moveBlendSpeed, 8.0f);
+        ALICE_PROPERTY(float, m_playerMoveInputDamping, 14.0f);
+        ALICE_PROPERTY(float, m_playerMoveYawDamping, 12.0f);
 
         // Default animation clips (shared fallback)
         ALICE_PROPERTY(std::string, m_idleClip, "Idle");
@@ -154,6 +159,9 @@ namespace Alice
         ALICE_PROPERTY(float, m_heavyAttackMoveStartSec, 2.2f);
         ALICE_PROPERTY(float, m_lightAttackMoveDurationSec, 0.05f);
         ALICE_PROPERTY(float, m_heavyAttackMoveDurationSec, 0.05f);
+        ALICE_PROPERTY(float, m_bossChargeFacingTrackSec, 0.6f);
+        ALICE_PROPERTY(float, m_bossDashMoveStartSec, -1.0f);
+        ALICE_PROPERTY(float, m_bossIdleFacingDamping, 6.0f);
         ALICE_PROPERTY(bool, m_debugAttackMoveTime, false);
 
         // Attack clip slow-motion was removed; keep commented for reference.
@@ -162,6 +170,7 @@ namespace Alice
 
         // Movement facing offset (degrees)
         ALICE_PROPERTY(float, m_rotationOffsetDeg, 180.0f);
+        ALICE_PROPERTY(float, m_lockOnTargetYOffset, 1.2f);
 
         // Fatal attack (front stab) tuning
         ALICE_PROPERTY(float, m_fatalFrontAngleDeg, 90.0f);
@@ -169,6 +178,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_fatalApproachSec, 0.25f);
         ALICE_PROPERTY(float, m_fatalHoldSec, 2.0f);
         ALICE_PROPERTY(float, m_fatalDamageScale, 1.5f);
+        ALICE_PROPERTY(float, m_groggyAttackStartDelaySec, 2.8f);
 
         void ForceReset();
         ALICE_FUNC(ForceReset);
