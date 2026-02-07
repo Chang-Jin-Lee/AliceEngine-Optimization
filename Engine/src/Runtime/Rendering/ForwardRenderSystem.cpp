@@ -1295,8 +1295,12 @@ namespace Alice
             bool isPositiveDet = XMVectorGetX(XMMatrixDeterminant(cmd.world)) >= 0.0f;
             m_context->RSSetState(isPositiveDet ? m_rasterizerStateReversed.Get() : m_rasterizerState.Get());
 
-            float r = (cmd.roughness != 0.0f) ? cmd.roughness : m_lightingParameters.roughness;
-            float m = (cmd.metalness != 0.0f) ? cmd.metalness : m_lightingParameters.metalness;
+            // NOTE:
+            // roughness/metalness에서 0.0은 유효한 아트 값입니다.
+            // 과거 "0이면 전역값 대체" 로직 때문에 metalness=0이어도 금속감이 남는 문제가 있어,
+            // 커맨드 값을 그대로 사용하고 범위만 안전하게 클램프합니다.
+            float r = std::clamp(cmd.roughness, 0.0f, 1.0f);
+            float m = std::clamp(cmd.metalness, 0.0f, 1.0f);
             float ao = (cmd.shadingMode >= 0) ? cmd.ambientOcclusion : m_lightingParameters.ambientOcclusion;
             const int objectShadingMode = (cmd.shadingMode >= 0) ? cmd.shadingMode : shadingMode;
             // 아웃라인 파라미터
