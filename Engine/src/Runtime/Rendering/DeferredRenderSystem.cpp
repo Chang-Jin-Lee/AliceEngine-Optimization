@@ -7,6 +7,7 @@
 #include <DirectXTK/DDSTextureLoader.h>
 #include <filesystem>
 #include <vector>
+#include <cstdint>
 #include <cmath>
 #include <cfloat>
 #include <algorithm>
@@ -58,6 +59,109 @@ namespace Alice
                 }
             }
             return {};
+        }
+
+        static bool IsDDSHeader(const std::vector<std::uint8_t>& data)
+        {
+            return data.size() >= 4 &&
+                   data[0] == 'D' &&
+                   data[1] == 'D' &&
+                   data[2] == 'S' &&
+                   data[3] == ' ';
+        }
+
+        static ComPtr<ID3D11ShaderResourceView> LoadColorTextureSRV(
+            ResourceManager* resources,
+            ID3D11Device* device,
+            const std::filesystem::path& logicalPath)
+        {
+            ComPtr<ID3D11ShaderResourceView> outSrv;
+            if (!resources || !device || logicalPath.empty())
+            {
+                return outSrv;
+            }
+
+            std::vector<std::uint8_t> data;
+            if (!resources->LoadBinaryAuto(logicalPath, data) || data.empty())
+            {
+                return outSrv;
+            }
+
+            HRESULT hr = E_FAIL;
+            if (IsDDSHeader(data))
+            {
+                constexpr auto kDdsFlags = DirectX::DDS_LOADER_FORCE_SRGB;
+                hr = DirectX::CreateDDSTextureFromMemoryEx(
+                    device,
+                    data.data(),
+                    data.size(),
+                    0,
+                    D3D11_USAGE_DEFAULT,
+                    D3D11_BIND_SHADER_RESOURCE,
+                    0,
+                    0,
+                    kDdsFlags,
+                    nullptr,
+                    outSrv.GetAddressOf());
+
+                if (FAILED(hr))
+                {
+                    hr = DirectX::CreateDDSTextureFromMemory(
+                        device,
+                        data.data(),
+                        data.size(),
+                        nullptr,
+                        outSrv.GetAddressOf());
+                }
+            }
+            else
+            {
+                ComPtr<ID3D11DeviceContext> ctx;
+                device->GetImmediateContext(ctx.GetAddressOf());
+                ComPtr<ID3D11Resource> res;
+
+                hr = DirectX::CreateWICTextureFromMemoryEx(
+                    device,
+                    ctx.Get(),
+                    data.data(),
+                    data.size(),
+                    0,
+                    D3D11_USAGE_DEFAULT,
+                    D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET,
+                    0,
+                    D3D11_RESOURCE_MISC_GENERATE_MIPS,
+                    DirectX::WIC_LOADER_FORCE_SRGB,
+                    res.GetAddressOf(),
+                    outSrv.GetAddressOf());
+
+                if (SUCCEEDED(hr) && ctx && outSrv)
+                {
+                    ctx->GenerateMips(outSrv.Get());
+                }
+                else if (FAILED(hr))
+                {
+                    hr = DirectX::CreateWICTextureFromMemoryEx(
+                        device,
+                        ctx.Get(),
+                        data.data(),
+                        data.size(),
+                        0,
+                        D3D11_USAGE_DEFAULT,
+                        D3D11_BIND_SHADER_RESOURCE,
+                        0,
+                        0,
+                        DirectX::WIC_LOADER_FORCE_SRGB,
+                        nullptr,
+                        outSrv.GetAddressOf());
+                }
+            }
+
+            if (FAILED(hr))
+            {
+                outSrv.Reset();
+            }
+
+            return outSrv;
         }
 
         // 인스턴싱 배치 키 (재질/메시 기준)
@@ -4625,7 +4729,14 @@ namespace Alice
 
         if (!m_device || !m_resources) return nullptr;
 
-        auto srv = m_resources->LoadData<ID3D11ShaderResourceView>(std::filesystem::path(path), m_device.Get());
+        // Material albedo/decal 경로는 컬러 텍스처로 취급해 sRGB를 강제합니다.
+        // (PNG/JPG에 sRGB 메타데이터가 없는 경우에도 Blender와 유사한 색역을 유지)
+        auto srv = LoadColorTextureSRV(m_resources, m_device.Get(), std::filesystem::path(path));
+        if (!srv)
+        {
+            // 폴백: 기존 ResourceManager 경로
+            srv = m_resources->LoadData<ID3D11ShaderResourceView>(std::filesystem::path(path), m_device.Get());
+        }
 
         if (!srv)
         {

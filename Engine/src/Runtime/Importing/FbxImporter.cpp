@@ -74,6 +74,72 @@ namespace Alice
             return (std::filesystem::path("Resource") / std::filesystem::path(rel)).generic_string();
         }
 
+        inline bool IsFbmDir(const std::filesystem::path& p)
+        {
+            std::string ext = p.extension().string();
+            ToLowerInPlace(ext);
+            return ext == ".fbm";
+        }
+
+        inline std::filesystem::path ResolveSourceTexturePath(const std::filesystem::path& fbxPath, std::string rawPath)
+        {
+            namespace fs = std::filesystem;
+
+            if (rawPath.empty())
+                return {};
+
+            std::replace(rawPath.begin(), rawPath.end(), '\\', '/');
+
+            // Blender/Assimp 상대 경로 패턴("//textures/...")
+            bool blenderStyleRelative = false;
+            if (rawPath.size() >= 2 && rawPath[0] == '/' && rawPath[1] == '/')
+            {
+                rawPath = rawPath.substr(2);
+                blenderStyleRelative = true;
+            }
+
+            fs::path src = fs::path(rawPath);
+            if (blenderStyleRelative || !src.is_absolute())
+            {
+                src = (fbxPath.parent_path() / src).lexically_normal();
+            }
+
+            if (fs::exists(src))
+            {
+                return src;
+            }
+
+            // FBX와 함께 생성되는 *.fbm 폴더에서 파일명 기준 탐색
+            const fs::path fileOnly = fs::path(rawPath).filename();
+            if (fileOnly.empty())
+            {
+                return {};
+            }
+
+            std::error_code ec;
+            const fs::path parent = fbxPath.parent_path();
+            for (const auto& entry : fs::directory_iterator(parent, ec))
+            {
+                if (ec) break;
+                if (!entry.is_directory(ec)) continue;
+                if (!IsFbmDir(entry.path())) continue;
+                fs::path candidate = entry.path() / fileOnly;
+                if (fs::exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+
+            // 마지막 폴백: FBX 폴더 바로 아래 파일명만으로 탐색
+            fs::path sibling = parent / fileOnly;
+            if (fs::exists(sibling))
+            {
+                return sibling;
+            }
+
+            return {};
+        }
+
         static void AppendSkeletonText(const std::vector<FbxSkeletonNode>& nodes,
                                        int idx,
                                        int depth,
@@ -164,14 +230,13 @@ namespace Alice
             else
             {
                 // 외부 파일 복사 (존재하지 않을 때만)
-                fs::path srcAbsPath = rawPath;
-                if (!srcAbsPath.is_absolute())
-                {
-                    srcAbsPath = fbxPath.parent_path() / rawPath;
-                    srcAbsPath = srcAbsPath.lexically_normal();
-                }
+                fs::path srcAbsPath = ResolveSourceTexturePath(fbxPath, rawPath);
 
-                if (fs::exists(srcAbsPath) && !fs::exists(finalAbsPath))
+                if (fs::exists(finalAbsPath))
+                {
+                    // 이미 추출/복사된 텍스처가 있으면 재사용
+                }
+                else if (fs::exists(srcAbsPath))
                 {
                     fs::copy_file(srcAbsPath, finalAbsPath, fs::copy_options::overwrite_existing, ec);
                     if (ec)
@@ -180,6 +245,12 @@ namespace Alice
                             srcAbsPath.string().c_str(), finalAbsPath.string().c_str(), ec.message().c_str());
                         return {};
                     }
+                }
+                else
+                {
+                    ALICE_LOG_WARN("[FbxImporter] ProcessTexture: source texture not found \"%s\" (fbx=\"%s\")",
+                        rawPath.c_str(), fbxPath.string().c_str());
+                    return {};
                 }
             }
 
@@ -324,7 +395,7 @@ namespace Alice
         //    쿠킹은 하지 않음 (전역 빌드 프로세스가 Resource 폴더를 청크로 변환)
         //    텍스처는 FBX 파일의 실제 위치를 기준으로 찾아야 하므로 resolved 경로 사용
         int embeddedCounter = 0;
-        std::vector<std::string> textureLogicalPaths;
+        std::vector<std::string> materialAlbedoPaths(scene->mNumMaterials);
 
         // 각 머티리얼에서 텍스처 추출 및 저장
         for (unsigned mi = 0; mi < scene->mNumMaterials; ++mi)
@@ -336,9 +407,8 @@ namespace Alice
             std::string albedoPath = ProcessTexture(m_resources, scene, mat, aiTextureType_DIFFUSE, resolved, baseName, "D", embeddedCounter);
             if (albedoPath.empty())
                 albedoPath = ProcessTexture(m_resources, scene, mat, aiTextureType_BASE_COLOR, resolved, baseName, "D", embeddedCounter);
-            
-            if (!albedoPath.empty())
-                textureLogicalPaths.push_back(albedoPath);
+
+            materialAlbedoPaths[mi] = std::move(albedoPath);
         }
 
         // 4) .mat 파일 생성 (서브셋 개수만큼)
@@ -354,15 +424,20 @@ namespace Alice
             fs::path matPath = matDir / (baseName + "_" + std::to_string(i) + ".mat");
 
             MaterialComponent matComp;
-            matComp.color = DirectX::XMFLOAT3(0.7f, 0.7f, 0.7f);
+            matComp.color = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
             matComp.roughness = 0.5f;
             matComp.metalness = 0.0f;
             matComp.assetPath = matPath.string();
             
-            // 첫 번째 텍스처를 albedo로 사용 (서브셋별로 매핑 가능하지만 현재는 단순화)
-            if (i < textureLogicalPaths.size())
+            // 서브셋의 materialIndex를 기준으로 알베도 텍스처를 매핑합니다.
+            std::size_t sourceMatIndex = i;
+            if (!subsets.empty() && i < subsets.size())
             {
-                matComp.albedoTexturePath = textureLogicalPaths[i];
+                sourceMatIndex = static_cast<std::size_t>(subsets[i].materialIndex);
+            }
+            if (sourceMatIndex < materialAlbedoPaths.size())
+            {
+                matComp.albedoTexturePath = materialAlbedoPaths[sourceMatIndex];
             }
 
             MaterialFile::Save(matPath, matComp);
