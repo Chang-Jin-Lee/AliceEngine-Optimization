@@ -1019,7 +1019,9 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     // Decal (premultiplied)
     baseColor.rgb = baseColor.rgb * (1.0f - decalAlbedo.a) + decalAlbedo.rgb;
     float3 albedo = baseColor.rgb;
-    float3 albedoLinear = pow(max(albedo, 0.0f), 2.2f);
+    // g_BaseColor는 SRGB RT에 기록되어 샘플 시 이미 linear로 복원됩니다.
+    // 여기서 추가 gamma 변환을 하면 백화(과노출)처럼 보이는 이중 변환이 발생합니다.
+    float3 albedoLinear = max(albedo, 0.0f);
     
     // shadingMode + AO 디코딩
     float modeAo = saturate(baseColor.a) * 8.0f;
@@ -1660,7 +1662,8 @@ float4 main(PSIn pIn) : SV_Target
         return float4(baseColor, alphaOut);
     }
 
-    float3 albedoLinear = pow(max(baseColor, 0.0f), 2.2f);
+    // 컬러 텍스처 샘플은 이미 linear 공간입니다.
+    float3 albedoLinear = max(baseColor, 0.0f);
 
     float3 N = normalize(pIn.Normal);
     if (gEnableNormalMap != 0)
