@@ -564,6 +564,7 @@ namespace Alice
             DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, // 2: BaseColor + ShadingMode(A)
             DXGI_FORMAT_R16G16B16A16_UNORM,  // 3: ToonParams (Strength/Levels/Env 2x8 packed)
             DXGI_FORMAT_R8G8B8A8_UNORM,      // 4: ToonAlphas (level1~3 alpha)
+            DXGI_FORMAT_R16G16B16A16_FLOAT,  // 5: OutlineData (rgb=color, a=width)
         };
 
         // 각 G-Buffer 텍스처 생성
@@ -657,6 +658,7 @@ namespace Alice
             DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, // 2: BaseColor + ShadingMode
             DXGI_FORMAT_R16G16B16A16_UNORM,  // 3: ToonParams (Strength/Levels/Env 2x8 packed)
             DXGI_FORMAT_R8G8B8A8_UNORM,      // 4: ToonAlphas (level1~3 alpha)
+            DXGI_FORMAT_R16G16B16A16_FLOAT,  // 5: OutlineData (rgb=color, a=width)
         };
 
         for (int i = 0; i < GBufferCount; ++i)
@@ -2963,6 +2965,7 @@ namespace Alice
         m_context->ClearRenderTargetView(m_gBufferRTVs[2].Get(), clearColor);  // BaseColor
         m_context->ClearRenderTargetView(m_gBufferRTVs[3].Get(), clearColor);  // ToonParams
         m_context->ClearRenderTargetView(m_gBufferRTVs[4].Get(), clearColor);  // ToonAlphas
+        m_context->ClearRenderTargetView(m_gBufferRTVs[5].Get(), clearColor);  // OutlineData
         m_context->ClearDepthStencilView(m_sceneDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
         // G-Buffer 렌더 타겟 설정
@@ -2971,7 +2974,8 @@ namespace Alice
             m_gBufferRTVs[1].Get(),
             m_gBufferRTVs[2].Get(),
             m_gBufferRTVs[3].Get(),
-            m_gBufferRTVs[4].Get()
+            m_gBufferRTVs[4].Get(),
+            m_gBufferRTVs[5].Get()
         };
         m_context->OMSetRenderTargets(GBufferCount, rtvs, m_sceneDSV.Get());
         m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
@@ -3119,27 +3123,12 @@ namespace Alice
             ID3D11ShaderResourceView* srvs[] = { texSRV, nullptr }; // 정적 메시는 노말맵 현재 null
             m_context->PSSetShaderResources(0, 2, srvs);
 
-            // Pass 1. 원본 물체 그리기 (아웃라인 두께 0으로 강제)
+            // Pass 1. 원본 물체 + 아웃라인 메타데이터 기록
             UpdatePerObjectCB(worldM, view, proj, color, rough, metal, ao, useTex, false,
                               objectShadingMode, normalStrength, toonCuts, toonLevels, toonAlphas, toonRampIntensity, toonSelfShadowStrength,
                               envDiffuseStrength, envSpecularStrength,
-                              outlineColor, 0.0f); // width = 0
+                              outlineColor, outlineWidth);
             m_context->DrawIndexed(m_cubeIndexCount, 0, 0);
-
-            // Pass 2. 아웃라인 그리기 (설정된 경우만)
-            if (outlineWidth > 0.0f)
-            {
-                m_context->RSSetState(m_rsCullFront.Get()); // 뒷면 그리기
-                
-                // 아웃라인 값 적용
-                UpdatePerObjectCB(worldM, view, proj, color, rough, metal, ao, useTex, false,
-                                  objectShadingMode, normalStrength, toonCuts, toonLevels, toonAlphas, toonRampIntensity, toonSelfShadowStrength,
-                                  envDiffuseStrength, envSpecularStrength,
-                                  outlineColor, outlineWidth);
-                m_context->DrawIndexed(m_cubeIndexCount, 0, 0);
-                
-                m_context->RSSetState(m_rasterizerState.Get()); // 상태 복구
-            }
         }
 
         // 정적 메시 인스턴싱 배치 렌더링 (outline 없는 오브젝트만)
@@ -3392,26 +3381,13 @@ namespace Alice
                         ID3D11ShaderResourceView* srvs[] = { diff, norm };
                         m_context->PSSetShaderResources(0, 2, srvs);
                         
-                        // Pass 1. 원본
+                        // Pass 1. 원본 + 아웃라인 메타데이터 기록
                         UpdatePerObjectCB(cmd.world, view, proj, color, cmd.roughness, cmd.metalness, ao,
                                           (diff != nullptr), (norm != nullptr), objectShadingMode, 
                                           cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                                           cmd.envDiffuseStrength, cmd.envSpecularStrength,
-                                          cmd.outlineColor, 0.0f); // width 0
+                                          cmd.outlineColor, cmd.outlineWidth);
                         m_context->DrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
-
-                        // Pass 2. 아웃라인
-                        if (cmd.outlineWidth > 0.0f)
-                        {
-                            m_context->RSSetState(m_rsCullFront.Get());
-                            UpdatePerObjectCB(cmd.world, view, proj, color, cmd.roughness, cmd.metalness, ao,
-                                              (diff != nullptr), (norm != nullptr), objectShadingMode, 
-                                              cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
-                                              cmd.envDiffuseStrength, cmd.envSpecularStrength,
-                                              cmd.outlineColor, cmd.outlineWidth);
-                            m_context->DrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
-                            m_context->RSSetState(m_rasterizerState.Get());
-                        }
                     }
                 }
                 else
@@ -3421,26 +3397,13 @@ namespace Alice
                     ID3D11ShaderResourceView* srvs[] = { diff, nullptr };
                     m_context->PSSetShaderResources(0, 2, srvs);
                     
-                    // Pass 1. 원본
+                    // Pass 1. 원본 + 아웃라인 메타데이터 기록
                     UpdatePerObjectCB(cmd.world, view, proj, color, cmd.roughness, cmd.metalness, ao,
                                       (diff != nullptr), false, objectShadingMode, 
                                       cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                                       cmd.envDiffuseStrength, cmd.envSpecularStrength,
-                                      cmd.outlineColor, 0.0f);
+                                      cmd.outlineColor, cmd.outlineWidth);
                     m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
-
-                    // Pass 2. 아웃라인
-                    if (cmd.outlineWidth > 0.0f)
-                    {
-                        m_context->RSSetState(m_rsCullFront.Get());
-                        UpdatePerObjectCB(cmd.world, view, proj, color, cmd.roughness, cmd.metalness, ao,
-                                          (diff != nullptr), false, objectShadingMode, 
-                                          cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
-                                          cmd.envDiffuseStrength, cmd.envSpecularStrength,
-                                          cmd.outlineColor, cmd.outlineWidth);
-                        m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
-                        m_context->RSSetState(m_rasterizerState.Get());
-                    }
                 }
             }
 
@@ -3829,6 +3792,7 @@ namespace Alice
             m_gBufferSRVs[2].Get(), // BaseColor
             m_gBufferSRVs[3].Get(), // ToonParams
             m_gBufferSRVs[4].Get(), // ToonAlphas
+            m_gBufferSRVs[5].Get(), // OutlineData
             m_sceneDepthSRV.Get(),  // Scene Depth (Position 복원용)
             m_iblDiffuseSRV.Get(),   // IBL Diffuse
             m_iblSpecularSRV.Get(),  // IBL Specular
@@ -3894,8 +3858,8 @@ namespace Alice
         m_context->DrawIndexed(m_quadIndexCount, 0, 0);
 
         // 리소스 해제
-        ID3D11ShaderResourceView* nullSRVs[11] = { nullptr };
-        m_context->PSSetShaderResources(0, 11, nullSRVs);
+        ID3D11ShaderResourceView* nullSRVs[12] = { nullptr };
+        m_context->PSSetShaderResources(0, 12, nullSRVs);
     }
 
     void DeferredRenderSystem::PassTransparentForward(
@@ -4431,6 +4395,7 @@ namespace Alice
             XMFLOAT4 gToonPbrAlphas;  // Offset: 288 -> 304
             float    gToonPbrRampIntensity; // Offset: 304 -> 308
             float    gToonSelfShadowStrength; // Offset: 308 -> 312
+            float gPadOutline[2];
             XMFLOAT3 gOutlineColor;   // Offset: 312 -> 324
             float    gOutlineWidth;   // Offset: 324 -> 328
         };
