@@ -35,6 +35,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
     float    gToonSelfShadowStrength;
+    float2   gPadOutline;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -64,8 +65,7 @@ VSOutput main(VSInput input)
     
     float3 N = normalize(mul(float4(input.Normal, 0.0f), gWorld).xyz);
     
-    // 아웃라인: 모든 쉐이딩 모드에서 normal 방향으로 확장 (아웃라인 두께가 0보다 클 때만)
-    float3 posOffset = (gOutlineWidth > 0.0f) ? (N * gOutlineWidth) : float3(0, 0, 0);
+    float3 posOffset = float3(0.0f, 0.0f, 0.0f);
     
     float4 posW = mul(float4(input.Position + posOffset, 1.0f), gWorld);
     output.Position = mul(mul(posW, gView), gProj);
@@ -114,6 +114,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
     float    gToonSelfShadowStrength;
+    float2   gPadOutline;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -153,7 +154,7 @@ VSOutput main(VSInput input)
     
     float3 N = normalize(mul(world, float4(input.Normal, 0.0f)).xyz);
     
-    float3 posOffset = (gOutlineWidth > 0.0f) ? (N * gOutlineWidth) : float3(0, 0, 0);
+    float3 posOffset = float3(0.0f, 0.0f, 0.0f);
     float4 posW = mul(world, float4(input.Position + posOffset, 1.0f));
     output.Position = mul(mul(posW, gView), gProj);
     output.WorldPos = posW.xyz;
@@ -201,6 +202,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
     float    gToonSelfShadowStrength;
+    float2   gPadOutline;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -257,11 +259,7 @@ VSOutput main(VSInput input)
     
     float3 N = normalize(mul(float4(skinnedN, 0.0f), gWorld).xyz);
     
-    // 아웃라인: 스무스 노멀 방향으로 확장 (하드 엣지 모델의 아웃라인 끊김 방지)
-    // 스무스 노멀도 스키닝 변환을 적용해야 함
-    float3 skinnedSmoothN = normalize(mul(input.SmoothNormal, M3));
-    float3 smoothN = normalize(mul(float4(skinnedSmoothN, 0.0f), gWorld).xyz);
-    float3 posOffset = (gOutlineWidth > 0.0f) ? (smoothN * gOutlineWidth) : float3(0, 0, 0);
+    float3 posOffset = float3(0.0f, 0.0f, 0.0f);
     
     float4 posW = mul(float4(skinnedPos.xyz + posOffset, 1.0f), gWorld);
     output.Position = mul(mul(posW, gView), gProj);
@@ -305,6 +303,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
     float    gToonSelfShadowStrength;
+    float2   gPadOutline;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -352,12 +351,8 @@ VSOutput main(VSInput input)
 
     //float3 N = normalize(mul(float4(input.Normal, 0.0f), world).xyz);
 
-    // 아웃라인: 스무스 노멀 방향으로 확장
-    //float3 smoothN = normalize(mul(float4(input.SmoothNormal, 0.0f), world).xyz);
     float3 N = normalize(mul(world, float4(input.Normal, 0.0f)).xyz);
-    float3 smoothN = normalize(mul(world, float4(input.SmoothNormal, 0.0f)).xyz);
-
-    float3 posOffset = (gOutlineWidth > 0.0f) ? (smoothN * gOutlineWidth) : float3(0, 0, 0);
+    float3 posOffset = float3(0.0f, 0.0f, 0.0f);
 
     //float4 posW = mul(float4(input.Position + posOffset, 1.0f), world);
     float4 posW = mul(world, float4(input.Position + posOffset, 1.0f));
@@ -404,6 +399,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
     float    gToonSelfShadowStrength;
+    float2 gPadOutline;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -427,6 +423,7 @@ struct GBufferOut
     float4 BaseColor       : SV_Target2;
     float4 ToonParams      : SV_Target3;
     float4 ToonAlphas      : SV_Target4;
+    float4 OutlineData     : SV_Target5;
 };
 
 Texture2D  g_DiffuseMap : register(t0);
@@ -454,25 +451,7 @@ GBufferOut main(VertexOut pIn)
     float ao = saturate(gAmbientOcclusion);
     float aoPacked = min(ao, 0.999f);
     float shadingEncoded = ((float)gShadingMode + aoPacked) / 8.0f;
-    float outlineEncoded = (6.0f + aoPacked) / 8.0f;
-    
-    // 아웃라인 패스 감지: Width가 0보다 크면 아웃라인용 드로우콜임
-    if (gOutlineWidth > 0.0f)
-    {
-        // 1. Normal/Roughness/Metalness: 조명 연산 방해 안 되게 더미 값
-        gOut.NormalRoughness = float4(0.5f, 0.5f, 1.0f, 1.0f);
-        gOut.Metalness  = float4(0.0f, 0.0f, 0.0f, 1.0f);
-        gOut.ToonParams = float4(0.0f, 0.0f, 0.0f, 0.0f);
-        gOut.ToonAlphas = float4(1.0f, 1.0f, 1.0f, 1.0f);
-        
-        // 3. BaseColor: 아웃라인 색상
-        // 4. Alpha (ShadingMode + AO) 인코딩: mode 6(OnlyTexture) + AO
-        gOut.BaseColor  = float4(gOutlineColor, saturate(outlineEncoded));
-        
-        return gOut;
-    }
-    
-    // --- 아래는 기존 원본 물체 렌더링 로직 (변화 없음) ---
+
     float4 textureColor = float4(1,1,1,1);
     if (gUseTexture != 0)
     {
@@ -542,6 +521,7 @@ GBufferOut main(VertexOut pIn)
     gOut.ToonAlphas = float4(saturate(gToonPbrAlphas.xyz), packedShadowSelf);
     // shadingMode + AO를 [0,1] 범위로 인코딩하여 저장
     gOut.BaseColor  = float4(baseColor, saturate(shadingEncoded));
+    gOut.OutlineData = float4(saturate(gOutlineColor), max(gOutlineWidth, 0.0f));
     
     return gOut;
 }
@@ -795,12 +775,13 @@ Texture2D g_Metalness : register(t1);
 Texture2D g_BaseColor : register(t2);
 Texture2D g_ToonParams : register(t3);
 Texture2D g_ToonAlphas : register(t4);
-Texture2D<float> g_SceneDepth : register(t5);
-TextureCube g_IBL_Diffuse : register(t6);
-TextureCube g_IBL_Specular : register(t7);
-Texture2D   g_IBL_BRDF_LUT : register(t8);
-Texture2D<float> g_ShadowMap : register(t9);
-Texture2D g_DecalAlbedo : register(t10);
+Texture2D g_OutlineData : register(t5);
+Texture2D<float> g_SceneDepth : register(t6);
+TextureCube g_IBL_Diffuse : register(t7);
+TextureCube g_IBL_Specular : register(t8);
+Texture2D   g_IBL_BRDF_LUT : register(t9);
+Texture2D<float> g_ShadowMap : register(t10);
+Texture2D g_DecalAlbedo : register(t11);
 
 SamplerState g_Sam : register(s0);
 SamplerComparisonState g_ShadowSampler : register(s1);
@@ -979,7 +960,143 @@ void AccumulateLegacy(float3 N, float3 V, float3 L, float3 lightColor, float att
 }
 )";
 
+	//float ComputeOutlineEdge(float2 uv, float2 texelSize, out float3 edgeColor, out float maxOutlineWidth)
+//{
+//    // Sample 대신 Load 사용 (int3 좌표: x, y, mipLevel)
+//    // 텍스처 좌표는 정수형 인덱스로 접근해야 정확합니다.
+//    int3 centerPos = int3(uv, 0);
+//
+//    //float4 center = g_OutlineData.Sample(g_Sam, uv);
+//    float4 center = g_OutlineData.Load(centerPos);
+//    maxOutlineWidth = max(center.a, 0.0f);
+//
+//    float3 colorAccum = float3(0.0f, 0.0f, 0.0f);
+//    float colorWeight = 0.0f;
+//    if (center.a > 1e-5f)
+//    {
+//        colorAccum += center.rgb;
+//        colorWeight += 1.0f;
+//    }
+//
+//    [unroll] for (int y = -1; y <= 1; ++y)
+//    {
+//        [unroll] for (int x = -1; x <= 1; ++x)
+//        {
+//            if (x == 0 && y == 0) continue;
+//            float4 s = g_OutlineData.Sample(g_Sam, uv + float2(x, y) * texelSize);
+//            maxOutlineWidth = max(maxOutlineWidth, max(s.a, 0.0f));
+//            if (s.a > 1e-5f)
+//            {
+//                colorAccum += s.rgb;
+//                colorWeight += 1.0f;
+//            }
+//        }
+//    }
+//
+//    if (maxOutlineWidth <= 1e-5f)
+//    {
+//        edgeColor = float3(0.0f, 0.0f, 0.0f);
+//        return 0.0f;
+//    }
+//
+//    edgeColor = (colorWeight > 0.0f) ? (colorAccum / colorWeight) : center.rgb;
+//
+//    float widthPx = clamp(maxOutlineWidth * 120.0f, 1.0f, 8.0f);
+//    float2 stepUV = texelSize * widthPx;
+//
+//    float m00 = (g_OutlineData.Sample(g_Sam, uv + float2(-1, -1) * stepUV).a > 1e-5f) ? 1.0f : 0.0f;
+//    float m10 = (g_OutlineData.Sample(g_Sam, uv + float2( 0, -1) * stepUV).a > 1e-5f) ? 1.0f : 0.0f;
+//    float m20 = (g_OutlineData.Sample(g_Sam, uv + float2( 1, -1) * stepUV).a > 1e-5f) ? 1.0f : 0.0f;
+//    float m01 = (g_OutlineData.Sample(g_Sam, uv + float2(-1,  0) * stepUV).a > 1e-5f) ? 1.0f : 0.0f;
+//    float m21 = (g_OutlineData.Sample(g_Sam, uv + float2( 1,  0) * stepUV).a > 1e-5f) ? 1.0f : 0.0f;
+//    float m02 = (g_OutlineData.Sample(g_Sam, uv + float2(-1,  1) * stepUV).a > 1e-5f) ? 1.0f : 0.0f;
+//    float m12 = (g_OutlineData.Sample(g_Sam, uv + float2( 0,  1) * stepUV).a > 1e-5f) ? 1.0f : 0.0f;
+//    float m22 = (g_OutlineData.Sample(g_Sam, uv + float2( 1,  1) * stepUV).a > 1e-5f) ? 1.0f : 0.0f;
+//
+//    float gx = (m20 + 2.0f * m21 + m22) - (m00 + 2.0f * m01 + m02);
+//    float gy = (m02 + 2.0f * m12 + m22) - (m00 + 2.0f * m10 + m20);
+//    return saturate((abs(gx) + abs(gy)) * 0.25f);
+//}
         inline static const char* LightPS2 = R"(
+// 호출 시 pixelPos에는 SV_Position.xy (화면 픽셀 좌표)를 넣어주세요.
+float ComputeOutlineEdge(float2 pixelPos, out float3 edgeColor, out float maxOutlineWidth)
+{
+    // 1. 픽셀 좌표 정수 변환 (Load 사용을 위해 필수)
+    int3 C = int3((int)pixelPos.x, (int)pixelPos.y, 0);
+
+    // 2. 중심 픽셀 로드
+    float4 center = g_OutlineData.Load(C);
+    
+    // 초기값 설정
+    maxOutlineWidth = center.a; 
+    float3 colorAccum = float3(0.0f, 0.0f, 0.0f);
+    float colorWeight = 0.0f;
+
+    // 중심점이 아웃라인 오브젝트라면 색상 누적
+    if (center.a > 1e-5f)
+    {
+        colorAccum += center.rgb;
+        colorWeight += 1.0f;
+    }
+
+    // 3. 주변 1픽셀 탐색 (최대 두께 및 색상 찾기)
+    [unroll] 
+    for (int y = -1; y <= 1; ++y)
+    {
+        [unroll] 
+        for (int x = -1; x <= 1; ++x)
+        {
+            if (x == 0 && y == 0) continue;
+            
+            // Sample 대신 Load로 정확한 인접 픽셀 가져오기
+            float4 s = g_OutlineData.Load(C + int3(x, y, 0));
+            
+            // 주변에서 가장 두꺼운 아웃라인 설정값 찾기
+            maxOutlineWidth = max(maxOutlineWidth, s.a);
+            
+            // 유효한 색상이면 누적 (배경인 픽셀에서도 엣지 색상을 알기 위함)
+            if (s.a > 1e-5f)
+            {
+                colorAccum += s.rgb;
+                colorWeight += 1.0f;
+            }
+        }
+    }
+
+    // 주변에 아웃라인 데이터가 전혀 없으면 빈 엣지 리턴
+    if (maxOutlineWidth <= 1e-5f)
+    {
+        edgeColor = float3(0.0f, 0.0f, 0.0f);
+        return 0.0f;
+    }
+
+    // 평균 색상 계산 (주변 색상들을 섞어서 부드럽게)
+    edgeColor = (colorWeight > 0.0f) ? (colorAccum / colorWeight) : center.rgb;
+
+    // 4. Sobel Edge Detection (가변 두께 적용)
+    // 두께(Alpha)에 따라 탐색 간격(Stride) 결정
+    int stride = clamp((int)(maxOutlineWidth * 120.0f), 1, 8); 
+
+    // Sobel 커널 적용 (Sample 대신 Load 사용)
+    float m00 = (g_OutlineData.Load(C + int3(-stride, -stride, 0)).a > 1e-5f) ? 1.0f : 0.0f;
+    float m10 = (g_OutlineData.Load(C + int3( 0,      -stride, 0)).a > 1e-5f) ? 1.0f : 0.0f;
+    float m20 = (g_OutlineData.Load(C + int3( stride, -stride, 0)).a > 1e-5f) ? 1.0f : 0.0f;
+    
+    float m01 = (g_OutlineData.Load(C + int3(-stride,  0,      0)).a > 1e-5f) ? 1.0f : 0.0f;
+    float m21 = (g_OutlineData.Load(C + int3( stride,  0,      0)).a > 1e-5f) ? 1.0f : 0.0f;
+    
+    float m02 = (g_OutlineData.Load(C + int3(-stride,  stride, 0)).a > 1e-5f) ? 1.0f : 0.0f;
+    float m12 = (g_OutlineData.Load(C + int3( 0,       stride, 0)).a > 1e-5f) ? 1.0f : 0.0f;
+    float m22 = (g_OutlineData.Load(C + int3( stride,  stride, 0)).a > 1e-5f) ? 1.0f : 0.0f;
+
+    // 수평/수직 변화량 계산
+    float gx = (m20 + 2.0f * m21 + m22) - (m00 + 2.0f * m01 + m02);
+    float gy = (m02 + 2.0f * m12 + m22) - (m00 + 2.0f * m10 + m20);
+
+    // 엣지 강도 계산
+    return saturate(sqrt(gx * gx + gy * gy));
+}
+
 float4 main(PS_INPUT_QUAD pIn) : SV_Target
 {
     // G-Buffer 가져오기
@@ -988,18 +1105,33 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     float4 baseColor = g_BaseColor.Sample(g_Sam, pIn.uv);
     float4 toonParams = g_ToonParams.Sample(g_Sam, pIn.uv);
     float4 toonAlphasSample = g_ToonAlphas.Sample(g_Sam, pIn.uv);
+    
+    float depth = g_SceneDepth.Sample(g_Sam, pIn.uv);
+
+    // [수정] 아웃라인 계산 (pIn.Position -> pIn.position 소문자로 수정)
+    float3 outlineEdgeColor = float3(0.0f, 0.0f, 0.0f);
+    float outlineMaxWidth = 0.0f;
+    float outlineEdge = ComputeOutlineEdge(pIn.position.xy, outlineEdgeColor, outlineMaxWidth);
+
+    // [배경 처리] Depth가 1.0(배경)이라도 아웃라인이 있으면 그려야 함
+    if (depth >= 0.9999f) 
+    {
+        if (outlineEdge > 1e-4f) 
+        {
+            return float4(outlineEdgeColor, 1.0f);
+        }
+        discard; // 아웃라인도 없으면 그리지 않음
+    }
+
+    // -- 이 아래는 물체 라이팅 연산 --
+
     float3 toonAlphas = toonAlphasSample.rgb;
     float2 shadowSelfPacked = Unpack2x8(toonAlphasSample.a);
     float  materialShadowStrength = shadowSelfPacked.x;
     float  toonSelfShadowStrength = shadowSelfPacked.y;
     float4 decalAlbedo = g_DecalAlbedo.Sample(g_Sam, pIn.uv);
-    float depth = g_SceneDepth.Sample(g_Sam, pIn.uv);
     
-    // 배경 체크 (Depth가 1.0이면 배경)
-    if (depth >= 0.9999f) discard;
-
     // 데이터 복원
-    // Normal을 [0,1]에서 [-1,1]로 디코딩
     float3 N = normalize(normalRoughness.xyz * 2.0f - 1.0f);
     float metalness = metalness_packed.r;
     float3 toonCuts = float3(metalness_packed.g, metalness_packed.b, metalness_packed.a);
@@ -1009,44 +1141,45 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     float3 toonLevels = toonParams.gba;
     float roughness = max(normalRoughness.w, 0.04f);
     
-    // Depth에서 월드 포지션 복원
+    // 월드 포지션 복원
     float2 ndc;
     ndc.x = pIn.uv.x * 2.0f - 1.0f;
     ndc.y = (1.0f - pIn.uv.y) * 2.0f - 1.0f;
     float4 clip = float4(ndc, depth, 1.0f);
     float4 posW4 = mul(clip, g_InvViewProj);
     float3 posW = posW4.xyz / max(posW4.w, 1e-6f);
-    // Decal (premultiplied)
+
+    // Decal
     baseColor.rgb = baseColor.rgb * (1.0f - decalAlbedo.a) + decalAlbedo.rgb;
     float3 albedo = baseColor.rgb;
-    // g_BaseColor는 SRGB RT에 기록되어 샘플 시 이미 linear로 복원됩니다.
-    // 여기서 추가 gamma 변환을 하면 백화(과노출)처럼 보이는 이중 변환이 발생합니다.
     float3 albedoLinear = max(albedo, 0.0f);
     
-    // shadingMode + AO 디코딩
+    // shadingMode 디코딩
     float modeAo = saturate(baseColor.a) * 8.0f;
     int shadingMode = (int)floor(modeAo + 1e-4f);
     shadingMode = clamp(shadingMode, 0, 7);
     float ao = saturate(modeAo - shadingMode);
     
-    // shadingMode == 6: TextureOnly (빛의 영향을 받지 않는 텍스처만 반환)
+    // TextureOnly 모드
     if (shadingMode == 6)
     {
-        return float4(albedoLinear, 1.0f);
+        float3 colorTexOnly = lerp(albedoLinear, outlineEdgeColor, outlineEdge);
+        return float4(colorTexOnly, 1.0f);
     }
 
-    // 라이팅 벡터 계산
+    // 라이팅 벡터
     float3 L = normalize(-g_LightDirection.xyz);
     float3 V = normalize(g_EyePosW - posW);
-    
     float NdotV = saturate(dot(N, V));
 
     const bool usePbr = (shadingMode == 4 || shadingMode == 5 || shadingMode == 7);
     const bool toonPbr = (shadingMode == 5 || shadingMode == 7);
     const bool toonEditable = (shadingMode == 7);
+
     float envDiffuseStrength = 1.0f;
     float envSpecularStrength = 1.0f;
     float toonRampIntensity = 0.0f;
+
     if (toonPbr)
     {
         float2 levels12 = Unpack2x8(toonParams.g);
@@ -1061,7 +1194,6 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     {
         envDiffuseStrength = toonParams.r;
         envSpecularStrength = toonParams.g;
-        toonRampIntensity = 0.0f;
     }
 
     float shadowVis = CalcShadowFactorDeferred(posW, g_ShadowMap, g_ShadowSampler);
@@ -1076,6 +1208,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     }
     shadowVis = saturate(lerp(1.0f, shadowVis, shadowStrength));
 
+    // [Legacy Lighting]
     if (!usePbr)
     {
         float3 totalDiffuse = float3(0.0f, 0.0f, 0.0f);
@@ -1085,19 +1218,17 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
 
         AccumulateLegacy(N, V, L, lightColorDir, shadowVis, shadingMode, shininess, totalDiffuse, totalSpecular);
 
-        [loop] for (int i = 0; i < g_PointLightCount; ++i)
-        {
-            PointLight pl = g_PointLights[i];
-            float3 toLight = pl.position - posW;
-            float dist = length(toLight);
-            float3 Lp = (dist > 0.0001f) ? (toLight / dist) : float3(0, 0, 1);
-            float atten = ComputeAttenuation(dist, pl.range);
-            float3 lc = pl.color * pl.intensity * atten;
-            AccumulateLegacy(N, V, Lp, lc, 1.0f, shadingMode, shininess, totalDiffuse, totalSpecular);
+        [loop] for (int i = 0; i < g_PointLightCount; ++i) {
+             PointLight pl = g_PointLights[i];
+             float3 toLight = pl.position - posW;
+             float dist = length(toLight);
+             float3 Lp = (dist > 0.0001f) ? (toLight / dist) : float3(0, 0, 1);
+             float atten = ComputeAttenuation(dist, pl.range);
+             float3 lc = pl.color * pl.intensity * atten;
+             AccumulateLegacy(N, V, Lp, lc, 1.0f, shadingMode, shininess, totalDiffuse, totalSpecular);
         }
-
-        [loop] for (int i = 0; i < g_SpotLightCount; ++i)
-        {
+        
+        [loop] for (int i = 0; i < g_SpotLightCount; ++i) {
             SpotLight sl = g_SpotLights[i];
             float3 toLight = sl.position - posW;
             float dist = length(toLight);
@@ -1108,8 +1239,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
             AccumulateLegacy(N, V, Ls, lc, 1.0f, shadingMode, shininess, totalDiffuse, totalSpecular);
         }
 
-        [loop] for (int i = 0; i < g_RectLightCount; ++i)
-        {
+        [loop] for (int i = 0; i < g_RectLightCount; ++i) {
             RectLight rl = g_RectLights[i];
             float3 toLight = rl.position - posW;
             float dist = length(toLight);
@@ -1123,32 +1253,27 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
 
         float3 ambient = g_DirLight_ambient.rgb * albedoLinear;
         float3 color = ambient + totalDiffuse * albedoLinear + totalSpecular * g_Material_specular.rgb;
+        
+        // [아웃라인 합성]
+        color = lerp(color, outlineEdgeColor, outlineEdge);
         return float4(color, 1.0f);
     }
 
-    // PBR 연산
+    // [PBR Lighting]
     float3 albedoPBR = albedoLinear;
     roughness = max(roughness, 0.04f);
-
-    // IBL 계산을 위해 필요한 F0와 kD를 여기서 미리 계산해야 합니다.
-    // --------------------------------------------------------------------------
+    
     float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), albedoPBR, metalness);
     float3 kS_IBL = FresnelSchlick(F0, NdotV);
     float3 kD = (1.0f - kS_IBL) * (1.0f - metalness);
     
-    // Direct Light (Directional + Extra Lights)
-    // NOTE:
-    // - EvaluatePBRLight 내부에서 diffuse는 INV_PI를 사용하므로
-    //   여기서 추가 PI를 곱하면 specular가 상대적으로 과증폭되어
-    //   metalness=0에서도 과도한 금속광처럼 보일 수 있습니다.
-    // - Forward 경로와 일치하도록 light 세기는 intensity 그대로 사용합니다.
+    // Direct Light
     float3 lightColorDir = g_LightColor.rgb * g_intensity;
     float3 directLighting = 0.0f;
     {
         float3 lit = EvaluatePBRLight(N, V, L, albedoPBR, metalness, roughness, lightColorDir);
         float ndotl = max(dot(N, L), 0.0f);
-        if (toonPbr && ndotl > 0.0f)
-        {
+        if (toonPbr && ndotl > 0.0f) {
             float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
             if (toonEditable) toonNdotL = lerp(ndotl, toonNdotL, saturate(toonSelfShadowStrength));
             lit *= toonNdotL / max(ndotl, 1e-4f);
@@ -1157,9 +1282,8 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     }
 
     float3 extraLighting = float3(0.0f, 0.0f, 0.0f);
-
-    [loop] for (int i = 0; i < g_PointLightCount; ++i)
-    {
+    
+    [loop] for (int i = 0; i < g_PointLightCount; ++i) {
         PointLight pl = g_PointLights[i];
         float3 toLight = pl.position - posW;
         float dist = length(toLight);
@@ -1168,8 +1292,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float3 lc = pl.color * pl.intensity * atten;
         float3 lit = EvaluatePBRLight(N, V, Lp, albedoPBR, metalness, roughness, lc);
         float ndotl = max(dot(N, Lp), 0.0f);
-        if (toonPbr && ndotl > 0.0f)
-        {
+        if (toonPbr && ndotl > 0.0f) {
             float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
             if (toonEditable) toonNdotL = lerp(ndotl, toonNdotL, saturate(toonSelfShadowStrength));
             lit *= toonNdotL / max(ndotl, 1e-4f);
@@ -1177,8 +1300,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         extraLighting += lit * ao;
     }
 
-    [loop] for (int i = 0; i < g_SpotLightCount; ++i)
-    {
+    [loop] for (int i = 0; i < g_SpotLightCount; ++i) {
         SpotLight sl = g_SpotLights[i];
         float3 toLight = sl.position - posW;
         float dist = length(toLight);
@@ -1188,8 +1310,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float3 lc = sl.color * sl.intensity * atten * spot;
         float3 lit = EvaluatePBRLight(N, V, Ls, albedoPBR, metalness, roughness, lc);
         float ndotl = max(dot(N, Ls), 0.0f);
-        if (toonPbr && ndotl > 0.0f)
-        {
+        if (toonPbr && ndotl > 0.0f) {
             float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
             if (toonEditable) toonNdotL = lerp(ndotl, toonNdotL, saturate(toonSelfShadowStrength));
             lit *= toonNdotL / max(ndotl, 1e-4f);
@@ -1197,8 +1318,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         extraLighting += lit * ao;
     }
 
-    [loop] for (int i = 0; i < g_RectLightCount; ++i)
-    {
+    [loop] for (int i = 0; i < g_RectLightCount; ++i) {
         RectLight rl = g_RectLights[i];
         float3 toLight = rl.position - posW;
         float dist = length(toLight);
@@ -1209,18 +1329,16 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float3 lc = rl.color * rl.intensity * atten * facing * areaScale;
         float3 lit = EvaluatePBRLight(N, V, Lr, albedoPBR, metalness, roughness, lc);
         float ndotl = max(dot(N, Lr), 0.0f);
-        if (toonPbr && ndotl > 0.0f)
-        {
+        if (toonPbr && ndotl > 0.0f) {
             float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
             if (toonEditable) toonNdotL = lerp(ndotl, toonNdotL, saturate(toonSelfShadowStrength));
             lit *= toonNdotL / max(ndotl, 1e-4f);
         }
         extraLighting += lit * ao;
     }
-    
+
     // Indirect Light (IBL)
     float3 diffuseIBL = kD * g_IBL_Diffuse.Sample(g_Sam, N).rgb * albedoPBR;
-    
     float3 Renv = reflect(-V, N);
     const float kMaxSpecularMip = 8.0f;
     float3 prefilteredColor = g_IBL_Specular.SampleLevel(g_Sam, Renv, roughness * kMaxSpecularMip).rgb;
@@ -1232,10 +1350,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
 
     float shadowIBLDiffuse = lerp(0.35f, 1.0f, shadowVis);
     float shadowIBLSpecular = 1.0f;
-    if (toonEditable)
-    {
-        // ToonPBREditable은 외부 물체 그림자 안에서 밝기 변화가 분명히 보이도록
-        // IBL까지 shadowVis를 적용합니다.
+    if (toonEditable) {
         shadowIBLDiffuse = shadowVis;
         shadowIBLSpecular = lerp(0.25f, 1.0f, shadowVis);
     }
@@ -1244,6 +1359,9 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
 
     // 최종 색상 계산
     float3 color = directLighting + extraLighting + iblColor;
+    
+    // [아웃라인 합성]
+    color = lerp(color, outlineEdgeColor, outlineEdge);
     
     return float4(color, 1.0f);
 }
@@ -1278,6 +1396,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
     float    gToonSelfShadowStrength;
+    float2   gPadOutline;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1382,6 +1501,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
     float    gToonSelfShadowStrength;
+    float2   gPadOutline;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1590,6 +1710,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
     float    gToonSelfShadowStrength;
+    float2   gPadOutline;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1767,6 +1888,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
     float    gToonSelfShadowStrength;
+    float2   gPadOutline;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1821,6 +1943,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
     float    gToonSelfShadowStrength;
+    float2   gPadOutline;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1885,6 +2008,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
     float    gToonSelfShadowStrength;
+    float2   gPadOutline;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1969,6 +2093,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrAlphas;
     float    gToonPbrRampIntensity;
     float    gToonSelfShadowStrength;
+    float2   gPadOutline;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
