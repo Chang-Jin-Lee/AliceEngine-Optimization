@@ -283,6 +283,8 @@ namespace Alice
         Combat::ActionState bossState = Combat::ActionState::Idle;
         Combat::ActionFlags playerFlags{};
         Combat::ActionFlags bossFlags{};
+        bool playerRageActive = false;
+        float playerRageRemainingSec = 0.0f;
 
         GameObject sessionGo = world->FindGameObject(Get_sessionEntityName());
         if (sessionGo.IsValid())
@@ -298,6 +300,8 @@ namespace Alice
                         bossState = session->GetBossState();
                         playerFlags = session->GetPlayerFlags();
                         bossFlags = session->GetBossFlags();
+                        playerRageActive = session->IsPlayerRageActive();
+                        playerRageRemainingSec = session->GetPlayerRageRemainingSec();
                         break;
                     }
                 }
@@ -336,6 +340,27 @@ namespace Alice
         UpdateStateTexts(m_bossStateTexts.data(), bossStates, bossStateCount, bossState, bossStateInactive, bossStateActive);
         UpdateWindowText(m_playerWindowText, playerFlags, playerWindowInactive, playerWindowActive);
         UpdateWindowText(m_bossWindowText, bossFlags, bossWindowInactive, bossWindowActive);
+        if (m_playerWindowText && playerRageActive)
+        {
+            std::ostringstream oss;
+            oss.setf(std::ios::fixed);
+            oss << std::setprecision(1);
+            if (m_playerWindowText->text != "None" && !m_playerWindowText->text.empty())
+                oss << m_playerWindowText->text << " | ";
+            oss << "Rage " << std::max(0.0f, playerRageRemainingSec) << "s";
+            m_playerWindowText->text = oss.str();
+
+            const bool baseWindowActive = playerFlags.hitActive || playerFlags.guardActive
+                || playerFlags.parryWindowActive || playerFlags.invulnActive || playerFlags.chargeActive;
+            if (!baseWindowActive)
+            {
+                const DirectX::XMFLOAT4 activeColor = Get_activeWindowTextColor();
+                m_playerWindowText->color = activeColor;
+                m_playerWindowText->color.w = Get_activeTextAlpha();
+                if (playerWindowActive > 0.0f)
+                    m_playerWindowText->fontSize = playerWindowActive;
+            }
+        }
 
         std::string bossBrainLabel;
         if (m_bossId != InvalidEntityId)
