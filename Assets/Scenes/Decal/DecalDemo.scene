@@ -11,6 +11,8 @@
                     "y": 0.75,
                     "z": 0.7799999713897705
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 1.0,
                 "outlineColor": {
@@ -21,20 +23,29 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.6000000238418579,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
                 "transparent": false
             },
             "Scripts": [
                 {
                     "enabled": true,
-                    "name": "SceneSwitchExample"
+                    "name": "SceneSwitchExample",
+                    "props": {
+                        "targetSceneA": "",
+                        "targetSceneB": ""
+                    }
                 }
             ],
             "SkinnedAnimation": {
@@ -81,6 +92,8 @@
                     "y": 0.25999999046325684,
                     "z": 0.30000001192092896
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 1.0,
                 "outlineColor": {
@@ -91,13 +104,18 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.800000011920929,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
                 "transparent": false
             },
@@ -157,7 +175,14 @@
             "Scripts": [
                 {
                     "enabled": false,
-                    "name": "DecalDemoController"
+                    "name": "DecalDemoController",
+                    "props": {
+                        "m_opacityMin": 0.3499999940395355,
+                        "m_opacityPulseSpeed": 1.5,
+                        "m_pulseOpacity": true,
+                        "m_spinSpeed": 0.6000000238418579,
+                        "m_uvScrollSpeed": 0.10000000149011612
+                    }
                 }
             ],
             "Transform": {
@@ -226,6 +251,8 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 1.0,
                 "outlineColor": {
@@ -236,13 +263,18 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
                 "transparent": false
             },
@@ -291,13 +323,13 @@
                 "enabled": true,
                 "position": {
                     "x": 6.8980817794799805,
-                    "y": 11.307735443115234,
+                    "y": 1.2260907888412476,
                     "z": 7.324047088623047
                 },
                 "rotation": {
-                    "x": 1.0030138492584229,
-                    "y": -3.137382984161377,
-                    "z": 0.0035502624232321978
+                    "x": -0.0,
+                    "y": -2.369899034500122,
+                    "z": 0.0
                 },
                 "scale": {
                     "x": 1.0,
@@ -308,6 +340,76 @@
             },
             "guid": "9736660331388967133",
             "name": "MainCamera"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "envDiffuseStrength": 0.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.06199999898672104,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.8709999918937683,
+                "shadingMode": 7,
+                "shadowStrength": 0.0,
+                "toonPbrBlur": true,
+                "toonPbrCut1": 0.3919999897480011,
+                "toonPbrCut2": 0.3089999854564667,
+                "toonPbrCut3": 0.4480000138282776,
+                "toonPbrLevel1": 0.6650000214576721,
+                "toonPbrLevel1Alpha": 0.42800000309944153,
+                "toonPbrLevel2": 0.722000002861023,
+                "toonPbrLevel2Alpha": 0.8199999928474426,
+                "toonPbrLevel3": 0.3919999897480011,
+                "toonPbrLevel3Alpha": 0.890999972820282,
+                "toonPbrRampIntensity": 1.0,
+                "toonPbrStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 280.07936621428235
+            },
+            "SkinnedMesh": {
+                "boneCount": 345,
+                "instanceAssetPath": "Assets/Fbx/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack.fbxasset",
+                "meshAssetPath": "Tia_Animaition_Run,Rolling,IDLE,Turn,Attack"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 2.1910400390625,
+                    "y": 0.03142665699124336,
+                    "z": 2.6690080165863037
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": -3.007750988006592,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 2.0,
+                    "y": 2.0,
+                    "z": 2.0
+                },
+                "visible": true
+            },
+            "guid": "16486367339125333052"
         }
     ],
     "sceneName": "DecalDemo",
