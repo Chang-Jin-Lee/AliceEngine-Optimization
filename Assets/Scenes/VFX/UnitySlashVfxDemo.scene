@@ -1,0 +1,407 @@
+{
+    "entities": [
+        {
+            "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
+                "aspectOverride": 0.0,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -2.2042195796966553,
+                    "y": 22.675003051757813,
+                    "z": -25.98736000061035
+                },
+                "rotation": {
+                    "x": 0.7079651355743408,
+                    "y": -0.02231142483651638,
+                    "z": -3.141592264175415
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "16542411873530743007",
+            "name": "MainCamera"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -22.036754608154297,
+                    "y": 0.0,
+                    "z": -2.4116549491882324
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_01/effect.json",
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "noiseScale": 1.0,
+                "rampScale": 1.0,
+                "sizeScale": 4.215000152587891,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "8400497155369824327",
+            "name": "Combo_slash_fx_01"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -13.111998558044434,
+                    "y": -3.900803676515352e-06,
+                    "z": -2.9041049480438232
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_02/effect.json",
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "noiseScale": 1.0,
+                "rampScale": 1.0,
+                "sizeScale": 2.9600000381469727,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "10712185476939892799",
+            "name": "Combo_slash_fx_02"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -4.854215145111084,
+                    "y": 2.7998908080917317e-08,
+                    "z": 0.8023388385772705
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_03/effect.json",
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "noiseScale": 1.0,
+                "rampScale": 1.0,
+                "sizeScale": 2.375999927520752,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "9489461495655007690",
+            "name": "Combo_slash_fx_03"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 9.712997436523438,
+                    "y": 0.0,
+                    "z": -0.7978272438049316
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04/effect.json",
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "noiseScale": 1.0,
+                "rampScale": 1.0,
+                "sizeScale": 1.659000039100647,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "10923619655797887620",
+            "name": "Combo_slash_fx_04"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 7.1725358963012695,
+                    "y": -1.9073486328125e-06,
+                    "z": 10.571295738220215
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_05/effect.json",
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "noiseScale": 1.0,
+                "rampScale": 1.0,
+                "sizeScale": 2.2799999713897705,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "7972619081911692113",
+            "name": "Combo_slash_fx_05"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -4.311139106750488,
+                    "y": 0.0,
+                    "z": 11.421540260314941
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_06/effect.json",
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "noiseScale": 1.0,
+                "rampScale": 1.0,
+                "sizeScale": 2.4140000343322754,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "12353679827082206830",
+            "name": "Combo_slash_fx_06"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -17.580860137939453,
+                    "y": 0.0,
+                    "z": 10.98771858215332
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_07/effect.json",
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "noiseScale": 1.0,
+                "rampScale": 1.0,
+                "sizeScale": 2.6730000972747803,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "1559099100787770065",
+            "name": "Combo_slash_fx_07"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "SceneSwitchExample",
+                    "props": {
+                        "targetSceneA": "Assets/Scenes/SceneChange/SceneChange1.scene",
+                        "targetSceneB": ""
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 1.520962119102478,
+                    "y": 2.123415470123291e-07,
+                    "z": -8.182388305664063
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "dissolveOffset": 0.0,
+                "effectPath": "D:\\Github\\AliceRenderer\\Assets\\VFX\\UnityExport\\Combo_slash_fx_01\\effect.json",
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "noiseScale": 1.0,
+                "rampScale": 1.0,
+                "sizeScale": 5.090000152587891,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "2559375063566136129",
+            "name": "GameObject652"
+        }
+    ],
+    "sceneName": "UnitySlashVfxDemo",
+    "version": 1
+}
