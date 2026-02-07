@@ -1075,7 +1075,9 @@ float ComputeOutlineEdge(float2 pixelPos, out float3 edgeColor, out float maxOut
 
     // 4. Sobel Edge Detection (가변 두께 적용)
     // 두께(Alpha)에 따라 탐색 간격(Stride) 결정
-    int stride = clamp((int)(maxOutlineWidth * 120.0f), 1, 8); 
+    // outline의 최대 두께
+    //int stride = clamp((int)(maxOutlineWidth * 120.0f), 1, 8); 
+    int stride = clamp((int)(maxOutlineWidth * 200.0f), 1, 32); 
 
     // Sobel 커널 적용 (Sample 대신 Load 사용)
     float m00 = (g_OutlineData.Load(C + int3(-stride, -stride, 0)).a > 1e-5f) ? 1.0f : 0.0f;
