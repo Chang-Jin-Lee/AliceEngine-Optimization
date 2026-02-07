@@ -163,10 +163,27 @@ namespace Alice
 				&lighting.shadowStrength,
 				0.0f,
 				1.0f);
-			lightingChanged |= Alice::ImGuiSliderFloat(L"Toon Shadow Strength (Editable)",
-				&lighting.toonShadowStrength,
-				0.0f,
-				1.0f);
+
+			bool shadowQualityChanged = false;
+			ShadowSettings shadowSettings = forward.GetShadowSettings();
+			int shadowMapSize = static_cast<int>(shadowSettings.mapSizePx);
+			float shadowPcfRadius = shadowSettings.pcfRadius;
+
+			shadowQualityChanged |= ImGui::SliderInt("Shadow Map Size", &shadowMapSize, 512, 8192);
+			shadowQualityChanged |= ImGui::SliderFloat("Shadow PCF Radius", &shadowPcfRadius, 0.0f, 3.0f, "%.2f");
+
+			if (shadowQualityChanged)
+			{
+				// Snap to reasonable increments for stability
+				shadowMapSize = (shadowMapSize / 256) * 256;
+				shadowMapSize = (std::max)(512, shadowMapSize);
+
+				shadowSettings.mapSizePx = static_cast<std::uint32_t>(shadowMapSize);
+				shadowSettings.pcfRadius = std::clamp(shadowPcfRadius, 0.0f, 3.0f);
+
+				forward.ApplyShadowSettings(shadowSettings);
+				deferred.ApplyShadowSettings(shadowSettings);
+			}
 
 			if (lightingChanged)
 			{

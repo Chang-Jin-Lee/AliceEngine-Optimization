@@ -33,6 +33,8 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
+    float    gToonPbrRampIntensity;
+
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -110,6 +112,8 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
+    float    gToonPbrRampIntensity;
+
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -195,6 +199,8 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
+    float    gToonPbrRampIntensity;
+
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -297,6 +303,8 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
+    float    gToonPbrRampIntensity;
+
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -394,6 +402,8 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
+    float    gToonPbrRampIntensity;
+
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -520,8 +530,9 @@ GBufferOut main(VertexOut pIn)
     if (isToonPbr)
     {
         float packedLevels12 = Pack2x8(gToonPbrLevels.x, gToonPbrLevels.y);
+        float packedLevel3Ramp = Pack2x8(saturate(gToonPbrLevels.z), saturate(gToonPbrRampIntensity));
         float packedEnv = Pack2x8(gEnvDiffuseStrength, gEnvSpecularStrength);
-        gOut.ToonParams = float4(toonStrengthPacked, packedLevels12, saturate(gToonPbrLevels.z), packedEnv);
+        gOut.ToonParams = float4(toonStrengthPacked, packedLevels12, packedLevel3Ramp, packedEnv);
     }
     else
     {
@@ -666,7 +677,7 @@ float ToonLevel(float n)
     return 0.1f;
 }
 
-float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float strength, float blur)
+float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float strength, float blur, float rampIntensity)
 {
     float c1 = saturate(cuts.x);
     float c2 = saturate(cuts.y);
@@ -685,6 +696,7 @@ float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float
     float a3 = 1.0f;
 
     float t = saturate(strength);
+    float ramp = saturate(rampIntensity);
     if (blur > 0.5f)
     {
         float w = max(fwidth(n) * 2.0f, 0.02f);
@@ -698,6 +710,8 @@ float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float
         float alpha = lerp(a0, a1, s1);
         alpha = lerp(alpha, a2, s2);
         alpha = lerp(alpha, a3, s3);
+        float darkMask = 1.0f - s1;
+        alpha *= (1.0f - ramp * darkMask);
         return lerp(n, level, t * alpha);
     }
 
@@ -709,6 +723,8 @@ float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float
                   (n > c2) ? a2 :
                   (n > c1) ? a1 :
                              a0;
+    float darkMask = (n > c1) ? 0.0f : 1.0f;
+    alpha *= (1.0f - ramp * darkMask);
     return lerp(n, level, t * alpha);
 }
 
@@ -1025,10 +1041,13 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     const bool toonEditable = (shadingMode == 7);
     float envDiffuseStrength = 1.0f;
     float envSpecularStrength = 1.0f;
+    float toonRampIntensity = 0.0f;
     if (toonPbr)
     {
         float2 levels12 = Unpack2x8(toonParams.g);
-        toonLevels = float3(levels12.x, levels12.y, toonParams.b);
+        float2 level3Ramp = Unpack2x8(toonParams.b);
+        toonLevels = float3(levels12.x, levels12.y, level3Ramp.x);
+        toonRampIntensity = level3Ramp.y;
         float2 env = Unpack2x8(toonParams.a);
         envDiffuseStrength = env.x;
         envSpecularStrength = env.y;
@@ -1037,15 +1056,18 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     {
         envDiffuseStrength = toonParams.r;
         envSpecularStrength = toonParams.g;
+        toonRampIntensity = 0.0f;
     }
 
     float shadowVis = CalcShadowFactorDeferred(posW, g_ShadowMap, g_ShadowSampler);
-    float shadowStrength = saturate(g_ShadowStrength2) * saturate(materialShadowStrength);
+    const float kShadowStrengthMax = 12.0f;
+    float shadowStrength = saturate(g_ShadowStrength2) * kShadowStrengthMax;
+    shadowStrength *= saturate(materialShadowStrength);
     if (toonEditable)
     {
         shadowStrength *= saturate(g_ToonShadowStrength2);
     }
-    shadowVis = lerp(1.0f, shadowVis, shadowStrength);
+    shadowVis = saturate(lerp(1.0f, shadowVis, shadowStrength));
 
     if (!usePbr)
     {
@@ -1115,7 +1137,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float ndotl = max(dot(N, L), 0.0f);
         if (toonPbr && ndotl > 0.0f)
         {
-            float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur) : ToonLevel(ndotl);
+            float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
             lit *= toonNdotL / max(ndotl, 1e-4f);
         }
         directLighting += lit * shadowVis * ao;
@@ -1135,7 +1157,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float ndotl = max(dot(N, Lp), 0.0f);
         if (toonPbr && ndotl > 0.0f)
         {
-            float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur) : ToonLevel(ndotl);
+            float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
             lit *= toonNdotL / max(ndotl, 1e-4f);
         }
         extraLighting += lit * ao;
@@ -1154,7 +1176,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float ndotl = max(dot(N, Ls), 0.0f);
         if (toonPbr && ndotl > 0.0f)
         {
-            float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur) : ToonLevel(ndotl);
+            float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
             lit *= toonNdotL / max(ndotl, 1e-4f);
         }
         extraLighting += lit * ao;
@@ -1174,7 +1196,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float ndotl = max(dot(N, Lr), 0.0f);
         if (toonPbr && ndotl > 0.0f)
         {
-            float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur) : ToonLevel(ndotl);
+            float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
             lit *= toonNdotL / max(ndotl, 1e-4f);
         }
         extraLighting += lit * ao;
@@ -1228,6 +1250,8 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
+    float    gToonPbrRampIntensity;
+
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1330,6 +1354,8 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
+    float    gToonPbrRampIntensity;
+
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1449,7 +1475,7 @@ float ToonLevel(float n)
     return 0.1f;
 }
 
-float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float strength, float blur)
+float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float strength, float blur, float rampIntensity)
 {
     float c1 = saturate(cuts.x);
     float c2 = saturate(cuts.y);
@@ -1468,6 +1494,7 @@ float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float
     float a3 = 1.0f;
 
     float t = saturate(strength);
+    float ramp = saturate(rampIntensity);
     if (blur > 0.5f)
     {
         float w = max(fwidth(n) * 2.0f, 0.02f);
@@ -1481,6 +1508,8 @@ float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float
         float alpha = lerp(a0, a1, s1);
         alpha = lerp(alpha, a2, s2);
         alpha = lerp(alpha, a3, s3);
+        float darkMask = 1.0f - s1;
+        alpha *= (1.0f - ramp * darkMask);
         return lerp(n, level, t * alpha);
     }
 
@@ -1492,6 +1521,8 @@ float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float
                   (n > c2) ? a2 :
                   (n > c1) ? a1 :
                              a0;
+    float darkMask = (n > c1) ? 0.0f : 1.0f;
+    alpha *= (1.0f - ramp * darkMask);
     return lerp(n, level, t * alpha);
 }
 
@@ -1531,6 +1562,8 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
+    float    gToonPbrRampIntensity;
+
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1655,7 +1688,7 @@ float4 main(PSIn pIn) : SV_Target
     if (toonPbr && NdotL > 0.0f)
     {
         float toonNdotL = toonEditable
-            ? ToonStepEditable(NdotL, gToonPbrCuts.xyz, gToonPbrLevels.xyz, gToonPbrAlphas.xyz, gToonPbrCuts.w, gToonPbrLevels.w)
+            ? ToonStepEditable(NdotL, gToonPbrCuts.xyz, gToonPbrLevels.xyz, gToonPbrAlphas.xyz, gToonPbrCuts.w, gToonPbrLevels.w, gToonPbrRampIntensity)
             : ToonLevel(NdotL);
         direct *= toonNdotL / max(NdotL, 1e-4f);
     }
@@ -1704,6 +1737,8 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
+    float    gToonPbrRampIntensity;
+
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1756,6 +1791,8 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
+    float    gToonPbrRampIntensity;
+
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1818,6 +1855,8 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
+    float    gToonPbrRampIntensity;
+
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -1900,6 +1939,8 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas;
+    float    gToonPbrRampIntensity;
+
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;

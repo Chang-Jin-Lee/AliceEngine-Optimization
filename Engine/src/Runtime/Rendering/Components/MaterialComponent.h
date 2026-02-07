@@ -53,6 +53,7 @@ namespace Alice {
         float toonPbrLevel3Alpha{ 1.0f };
         float toonPbrStrength{ 1.0f }; // 0: 부드러운 PBR, 1: 완전 Toon
         bool  toonPbrBlur{ false };    // 계단 사이를 부드럽게 블러 처리
+        float toonPbrRampIntensity{ 0.0f }; // 0: 기존, 1: 가장 어두운 밴드 완화
 
         Alice_Get_Set(color);
         Alice_Get_Set(alpha);
@@ -80,5 +81,6 @@ namespace Alice {
         Alice_Get_Set(toonPbrLevel3Alpha);
         Alice_Get_Set(toonPbrStrength);
         Alice_Get_Set(toonPbrBlur);
+        Alice_Get_Set(toonPbrRampIntensity);
     };
 }

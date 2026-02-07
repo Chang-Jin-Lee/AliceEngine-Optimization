@@ -68,6 +68,7 @@ namespace Alice
         outMaterial.toonPbrLevel1Alpha = std::clamp(outMaterial.toonPbrLevel1Alpha, 0.0f, 1.0f);
         outMaterial.toonPbrLevel2Alpha = std::clamp(outMaterial.toonPbrLevel2Alpha, 0.0f, 1.0f);
         outMaterial.toonPbrLevel3Alpha = std::clamp(outMaterial.toonPbrLevel3Alpha, 0.0f, 1.0f);
+        outMaterial.toonPbrRampIntensity = std::clamp(outMaterial.toonPbrRampIntensity, 0.0f, 1.0f);
         // 노말맵 강도는 0.0f 이상으로 제한
         outMaterial.normalStrength = std::max(outMaterial.normalStrength, 0.0f);
         // 아웃라인 두께는 음수 방지
@@ -104,6 +105,7 @@ namespace Alice
         copy.toonPbrLevel1Alpha = std::clamp(copy.toonPbrLevel1Alpha, 0.0f, 1.0f);
         copy.toonPbrLevel2Alpha = std::clamp(copy.toonPbrLevel2Alpha, 0.0f, 1.0f);
         copy.toonPbrLevel3Alpha = std::clamp(copy.toonPbrLevel3Alpha, 0.0f, 1.0f);
+        copy.toonPbrRampIntensity = std::clamp(copy.toonPbrRampIntensity, 0.0f, 1.0f);
         copy.normalStrength = std::max(copy.normalStrength, 0.0f);
         copy.outlineWidth = std::max(copy.outlineWidth, 0.0f);
 

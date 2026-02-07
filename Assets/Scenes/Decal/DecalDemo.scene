@@ -23,20 +23,29 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.6000000238418579,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
                 "transparent": false
             },
             "Scripts": [
                 {
                     "enabled": true,
-                    "name": "SceneSwitchExample"
+                    "name": "SceneSwitchExample",
+                    "props": {
+                        "targetSceneA": "",
+                        "targetSceneB": ""
+                    }
                 }
             ],
             "SkinnedAnimation": {
@@ -95,13 +104,18 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.800000011920929,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
                 "transparent": false
             },
@@ -161,7 +175,14 @@
             "Scripts": [
                 {
                     "enabled": false,
-                    "name": "DecalDemoController"
+                    "name": "DecalDemoController",
+                    "props": {
+                        "m_opacityMin": 0.3499999940395355,
+                        "m_opacityPulseSpeed": 1.5,
+                        "m_pulseOpacity": true,
+                        "m_spinSpeed": 0.6000000238418579,
+                        "m_uvScrollSpeed": 0.10000000149011612
+                    }
                 }
             ],
             "Transform": {
@@ -242,13 +263,18 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
                 "transparent": false
             },
@@ -326,9 +352,9 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
-                "envDiffuseStrength": 0.5799999833106995,
-                "envSpecularStrength": 0.8700000047683716,
-                "metalness": 0.0,
+                "envDiffuseStrength": 0.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.06199999898672104,
                 "normalStrength": 1.0,
                 "outlineColor": {
                     "x": 0.0,
@@ -336,23 +362,28 @@
                     "z": 0.0
                 },
                 "outlineWidth": 0.0,
-                "roughness": 0.5,
+                "roughness": 0.8709999918937683,
                 "shadingMode": 7,
+                "shadowStrength": 0.0,
                 "toonPbrBlur": true,
-                "toonPbrCut1": 0.11900000274181366,
-                "toonPbrCut2": 0.257999986410141,
-                "toonPbrCut3": 0.40700000524520874,
-                "toonPbrLevel1": 0.0,
-                "toonPbrLevel2": 0.6800000071525574,
-                "toonPbrLevel3": 0.9480000138282776,
-                "toonPbrStrength": 0.968999981880188,
+                "toonPbrCut1": 0.3919999897480011,
+                "toonPbrCut2": 0.3089999854564667,
+                "toonPbrCut3": 0.4480000138282776,
+                "toonPbrLevel1": 0.6650000214576721,
+                "toonPbrLevel1Alpha": 0.42800000309944153,
+                "toonPbrLevel2": 0.722000002861023,
+                "toonPbrLevel2Alpha": 0.8199999928474426,
+                "toonPbrLevel3": 0.3919999897480011,
+                "toonPbrLevel3Alpha": 0.890999972820282,
+                "toonPbrRampIntensity": 1.0,
+                "toonPbrStrength": 1.0,
                 "transparent": false
             },
             "SkinnedAnimation": {
-                "clipIndex": 5,
+                "clipIndex": 0,
                 "playing": true,
                 "speed": 1.0,
-                "timeSec": 422.83480867091566
+                "timeSec": 280.07936621428235
             },
             "SkinnedMesh": {
                 "boneCount": 345,
@@ -364,7 +395,7 @@
                 "position": {
                     "x": 2.1910400390625,
                     "y": 0.03142665699124336,
-                    "z": 1.9531701803207397
+                    "z": 2.6690080165863037
                 },
                 "rotation": {
                     "x": -0.0,

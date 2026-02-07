@@ -35,6 +35,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;   // (cut1, cut2, cut3, strength)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas; // (level1, level2, level3, shadowStrength)
+    float    gToonPbrRampIntensity;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -115,6 +116,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;   // (cut1, cut2, cut3, strength)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas; // (level1, level2, level3, shadowStrength)
+    float    gToonPbrRampIntensity;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -227,6 +229,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;   // (cut1, cut2, cut3, strength)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas; // (level1, level2, level3, shadowStrength)
+    float    gToonPbrRampIntensity;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -334,6 +337,7 @@ cbuffer CBPerObject : register(b0)
     float4   gToonPbrCuts;   // (cut1, cut2, cut3, strength)
     float4   gToonPbrLevels;
     float4   gToonPbrAlphas; // (level1, level2, level3, shadowStrength)
+    float    gToonPbrRampIntensity;
     
     // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
     float3   gOutlineColor;
@@ -522,7 +526,7 @@ float ToonLevel(float n)
     return 0.1f;
 }
 
-float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float strength, float blur)
+float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float strength, float blur, float rampIntensity)
 {
     float c1 = saturate(cuts.x);
     float c2 = saturate(cuts.y);
@@ -541,6 +545,7 @@ float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float
     float a3 = 1.0f;
 
     float t = saturate(strength);
+    float ramp = saturate(rampIntensity);
     if (blur > 0.5f)
     {
         float w = max(fwidth(n) * 2.0f, 0.02f);
@@ -554,6 +559,8 @@ float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float
         float alpha = lerp(a0, a1, s1);
         alpha = lerp(alpha, a2, s2);
         alpha = lerp(alpha, a3, s3);
+        float darkMask = 1.0f - s1;
+        alpha *= (1.0f - ramp * darkMask);
         return lerp(n, level, t * alpha);
     }
 
@@ -565,6 +572,8 @@ float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float
                   (n > c2) ? a2 :
                   (n > c1) ? a1 :
                              a0;
+    float darkMask = (n > c1) ? 0.0f : 1.0f;
+    alpha *= (1.0f - ramp * darkMask);
     return lerp(n, level, t * alpha);
 }
 
@@ -572,7 +581,7 @@ float ToonPbrNdotL(float n)
 {
     if (gShadingMode == 7)
     {
-         return ToonStepEditable(n, gToonPbrCuts.xyz, gToonPbrLevels.xyz, gToonPbrAlphas.xyz, gToonPbrCuts.w, gToonPbrLevels.w);
+         return ToonStepEditable(n, gToonPbrCuts.xyz, gToonPbrLevels.xyz, gToonPbrAlphas.xyz, gToonPbrCuts.w, gToonPbrLevels.w, gToonPbrRampIntensity);
     }
     return ToonLevel(n);
 }
@@ -779,13 +788,15 @@ float4 main(PSInput input) : SV_TARGET
         }
     }
 
-    // 전역 + 머티리얼 + ToonPBREditable 보정 강도 적용
-    float shadowStrength = saturate(gShadowStrength) * saturate(gToonPbrAlphas.w);
+    // 전역(0~1)을 더 강한 범위로 매핑 + 머티리얼 + ToonPBREditable 보정 강도 적용
+    const float kShadowStrengthMax = 12.0f;
+    float shadowStrength = saturate(gShadowStrength) * kShadowStrengthMax;
+    shadowStrength *= saturate(gToonPbrAlphas.w);
     if (gShadingMode == 7)
     {
         shadowStrength *= saturate(gToonShadowStrength);
     }
-    shadow = lerp(1.0f, shadow, shadowStrength);
+    shadow = saturate(lerp(1.0f, shadow, shadowStrength));
 
     totalDiffuse  *= shadow;
     totalSpecular *= shadow;

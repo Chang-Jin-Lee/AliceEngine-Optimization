@@ -20,7 +20,8 @@ namespace Alice
 		inline bool MaterialInspectorFilter(const std::string& propName)
 		{
 			// assetPath/albedoTexturePath/shadingMode는 특별 UI 처리하므로 제외
-			return propName != "assetPath" && propName != "albedoTexturePath" && propName != "shadingMode";
+			return propName != "assetPath" && propName != "albedoTexturePath" && propName != "shadingMode" &&
+			       propName != "shadowStrength" && propName != "toonPbrRampIntensity";
 		}
 	}
 
@@ -65,6 +66,25 @@ namespace Alice
 				}
 				ImGui::EndDragDropTarget();
 			}
+			// Shadow Intensity (커스텀 UI)
+			{
+				float shadowIntensity = mat->shadowStrength;
+				if (ImGui::SliderFloat("Shadow Intensity", &shadowIntensity, 0.0f, 1.0f, "%.3f"))
+				{
+					mat->shadowStrength = std::clamp(shadowIntensity, 0.0f, 1.0f);
+					changed = true;
+				}
+			}
+			// Toon Ramp Intensity (커스텀 UI)
+			{
+				float toonRamp = mat->toonPbrRampIntensity;
+				if (ImGui::SliderFloat("Toon Ramp Intensity", &toonRamp, 0.0f, 1.0f, "%.3f"))
+				{
+					mat->toonPbrRampIntensity = std::clamp(toonRamp, 0.0f, 1.0f);
+					changed = true;
+				}
+			}
+
 			changed |= ReflectionUI::RenderInspector(*mat, MaterialInspectorFilter).changed;
 
 			struct ShadingItem
