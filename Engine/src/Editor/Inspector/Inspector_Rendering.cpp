@@ -21,7 +21,8 @@ namespace Alice
 		{
 			// assetPath/albedoTexturePath/shadingMode는 특별 UI 처리하므로 제외
 			return propName != "assetPath" && propName != "albedoTexturePath" && propName != "shadingMode" &&
-			       propName != "shadowStrength" && propName != "toonPbrRampIntensity";
+			       propName != "shadowStrength" && propName != "toonPbrRampIntensity" &&
+			       propName != "toonSelfShadowStrength";
 		}
 	}
 
@@ -81,6 +82,15 @@ namespace Alice
 				if (ImGui::SliderFloat("Toon Ramp Intensity", &toonRamp, 0.0f, 1.0f, "%.3f"))
 				{
 					mat->toonPbrRampIntensity = std::clamp(toonRamp, 0.0f, 1.0f);
+					changed = true;
+				}
+			}
+			// Toon Self Shadow (커스텀 UI)
+			{
+				float toonSelfShadow = mat->toonSelfShadowStrength;
+				if (ImGui::SliderFloat("Toon Self Shadow", &toonSelfShadow, 0.0f, 1.0f, "%.3f"))
+				{
+					mat->toonSelfShadowStrength = std::clamp(toonSelfShadow, 0.0f, 1.0f);
 					changed = true;
 				}
 			}

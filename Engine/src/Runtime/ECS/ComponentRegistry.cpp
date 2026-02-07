@@ -182,7 +182,8 @@ namespace Alice
             .property("toonPbrLevel3Alpha", &MaterialComponent::toonPbrLevel3Alpha)
             .property("toonPbrStrength", &MaterialComponent::toonPbrStrength)
             .property("toonPbrBlur", &MaterialComponent::toonPbrBlur)
-            .property("toonPbrRampIntensity", &MaterialComponent::toonPbrRampIntensity);
+            .property("toonPbrRampIntensity", &MaterialComponent::toonPbrRampIntensity)
+            .property("toonSelfShadowStrength", &MaterialComponent::toonSelfShadowStrength);
 
         // === DecalComponent 등록 ===
         rttr::registration::class_<DecalComponent>("DecalComponent")
