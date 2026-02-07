@@ -4371,34 +4371,34 @@ namespace Alice
                                                  const XMFLOAT3& outlineColor,
                                                  float outlineWidth)
     {
-        struct CBPerObjectData
-        {
-            XMMATRIX gWorld;
-            XMMATRIX gView;
-            XMMATRIX gProj;
-            XMFLOAT4 gMaterialColor;
-            float    gRoughness;
-            float    gMetalness;
-            int      gUseTexture;
-            int      gEnableNormalMap;
-            int      gShadingMode;
-            int      gPad0;
-            // [Fixed] HLSL 패킹 규칙에 맞춰 8바이트 패딩 추가
-            float    gPad1[2];        // Offset: 232 -> 240
-            // 노말맵 강도 조절
-            float    gNormalStrength; // Offset: 240 -> 244
-            float    gAmbientOcclusion; // Offset: 244 -> 248
-            float    gEnvDiffuseStrength; // Offset: 248 -> 252
-            float    gEnvSpecularStrength; // Offset: 252 -> 256
-            XMFLOAT4 gToonPbrCuts;    // Offset: 256 -> 272
-            XMFLOAT4 gToonPbrLevels;  // Offset: 272 -> 288
-            XMFLOAT4 gToonPbrAlphas;  // Offset: 288 -> 304
-            float    gToonPbrRampIntensity; // Offset: 304 -> 308
-            float    gToonSelfShadowStrength; // Offset: 308 -> 312
-            float gPadOutline[2];
-            XMFLOAT3 gOutlineColor;   // Offset: 312 -> 324
-            float    gOutlineWidth;   // Offset: 324 -> 328
-        };
+		struct CBPerObjectData
+		{
+			XMMATRIX gWorld;
+			XMMATRIX gView;
+			XMMATRIX gProj;
+			XMFLOAT4 gMaterialColor;
+			float    gRoughness;
+			float    gMetalness;
+			int      gUseTexture;
+			int      gEnableNormalMap;
+			int      gShadingMode;
+			int      gPad0;
+			// [Fixed] HLSL 패킹 규칙에 맞춰 8바이트 패딩 추가
+			float    gPad1[2];        // Offset: 232 -> 240
+			// 노말맵 강도 조절
+			float    gNormalStrength; // Offset: 240 -> 244
+			float    gAmbientOcclusion; // Offset: 244 -> 248
+			float    gEnvDiffuseStrength; // Offset: 248 -> 252
+			float    gEnvSpecularStrength; // Offset: 252 -> 256
+			XMFLOAT4 gToonPbrCuts;    // Offset: 256 -> 272
+			XMFLOAT4 gToonPbrLevels;  // Offset: 272 -> 288
+			XMFLOAT4 gToonPbrAlphas;  // Offset: 288 -> 304
+			float    gToonPbrRampIntensity; // Offset: 304 -> 308
+			float    gToonSelfShadowStrength; // Offset: 308 -> 312
+			float gPadOutline[2];     // Offset: 312 -> 320
+			XMFLOAT3 gOutlineColor;   // Offset: 320 -> 332
+			float    gOutlineWidth;   // Offset: 332 -> 336
+		};
 
         D3D11_MAPPED_SUBRESOURCE mapped;
         if (SUCCEEDED(m_context->Map(m_cbPerObject.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
