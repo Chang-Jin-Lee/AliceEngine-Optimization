@@ -37,6 +37,7 @@ namespace Alice
             {
             case AttackDriverNotifyType::Dodge: j["type"] = "Dodge"; break;
             case AttackDriverNotifyType::Guard: j["type"] = "Guard"; break;
+            case AttackDriverNotifyType::Parry: j["type"] = "Parry"; break;
             default: j["type"] = "Attack"; break;
             }
             switch (clip.source)
@@ -51,6 +52,7 @@ namespace Alice
             j["clipName"] = clip.clipName;
             j["startTimeSec"] = clip.startTimeSec;
             j["endTimeSec"] = clip.endTimeSec;
+            j["traceSlotMask"] = clip.traceSlotMask;
             j["enabled"] = clip.enabled;
             j["canBeInterrupted"] = clip.canBeInterrupted;
             return j;
@@ -68,6 +70,7 @@ namespace Alice
                     const std::string s = it->get<std::string>();
                     if (s == "Dodge") out.type = AttackDriverNotifyType::Dodge;
                     else if (s == "Guard") out.type = AttackDriverNotifyType::Guard;
+                    else if (s == "Parry") out.type = AttackDriverNotifyType::Parry;
                     else out.type = AttackDriverNotifyType::Attack;
                 }
                 else if (it->is_number_integer())
@@ -99,6 +102,8 @@ namespace Alice
                 out.startTimeSec = static_cast<float>(it->get<double>());
             if (auto it = j.find("endTimeSec"); it != j.end() && it->is_number())
                 out.endTimeSec = static_cast<float>(it->get<double>());
+            if (auto it = j.find("traceSlotMask"); it != j.end() && it->is_number())
+                out.traceSlotMask = static_cast<std::uint32_t>(it->get<double>());
             if (auto it = j.find("enabled"); it != j.end())
             {
                 if (it->is_boolean())
@@ -121,6 +126,13 @@ namespace Alice
         {
             Json j = Json::object();
             j["traceGuid"] = std::to_string(ad.traceGuid);
+            if (!ad.traceGuids.empty())
+            {
+                Json traceGuids = Json::array();
+                for (const std::uint64_t guid : ad.traceGuids)
+                    traceGuids.push_back(std::to_string(guid));
+                j["traceGuids"] = std::move(traceGuids);
+            }
             if (ad.attackStateDurationSec > 0.0f)
                 j["attackStateDurationSec"] = ad.attackStateDurationSec;
 
@@ -139,6 +151,20 @@ namespace Alice
 
             if (auto it = j.find("traceGuid"); it != j.end())
                 ad.traceGuid = ParseGuidOrZero(*it);
+            ad.traceGuids.clear();
+            if (auto it = j.find("traceGuids"); it != j.end())
+            {
+                if (it->is_array())
+                {
+                    for (const auto& item : *it)
+                        ad.traceGuids.push_back(ParseGuidOrZero(item));
+                }
+                else
+                {
+                    ad.traceGuids.push_back(ParseGuidOrZero(*it));
+                }
+            }
+            ad.traceCachedList.assign(ad.traceGuids.size(), InvalidEntityId);
             if (auto it = j.find("attackStateDurationSec"); it != j.end() && it->is_number())
                 ad.attackStateDurationSec = static_cast<float>(it->get<double>());
 

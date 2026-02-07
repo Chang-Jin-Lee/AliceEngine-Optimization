@@ -5,6 +5,7 @@
 namespace Alice
 {
     class DebugDrawSystem;
+    class SkinnedMeshRegistry;
 
     /// DebugDraw 관련 컴포넌트를 모아 DebugDrawSystem에 그려주는 시스템
     class DebugDrawComponentSystem
@@ -15,6 +16,7 @@ namespace Alice
                    DebugDrawSystem* depth,
                    EntityId selectedEntity,
                    bool debugEnabled,
-                   bool editorMode);
+                   bool editorMode,
+                   const SkinnedMeshRegistry* skinnedRegistry = nullptr);
     };
 }

@@ -5,7 +5,12 @@
 #include "Runtime/Rendering/Components/DecalComponent.h"
 #include "Runtime/Audio/Components/SoundBoxComponent.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
+#include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
 #include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
+#include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
+#include "Runtime/Rendering/SkinnedMeshRegistry.h"
+#include "Runtime/Importing/FbxModel.h"
 #include "Runtime/ECS/Components/IDComponent.h"
 #include "Runtime/Physics/Components/Phy_ColliderComponent.h"
 #include "Runtime/Physics/Components/Phy_CCTComponent.h"
@@ -14,6 +19,10 @@
 #include <algorithm>
 #include <vector>
 #include <cmath>
+#include <cstdint>
+#include <string>
+#include <memory>
+#include <assimp/scene.h>
 
 namespace Alice
 {
@@ -276,13 +285,50 @@ namespace Alice
             return R * T;
         }
 
-        bool ComputeShapeWorldPose(const WeaponTraceShape& shape, const XMMATRIX& basisWorld, XMFLOAT3& outCenter, XMFLOAT4& outRot)
+        float ToShapePathPhase(float globalPhase)
+        {
+            return std::clamp(globalPhase, 0.0f, 1.0f);
+        }
+
+        XMFLOAT3 ResolveShapePathLocalPos(const WeaponTraceShape& shape, float phase)
+        {
+            if (!shape.pathEnabled)
+                return shape.localPos;
+
+            const float t = std::clamp(phase, 0.0f, 1.0f);
+            switch (shape.pathMode)
+            {
+            case WeaponTracePathMode::QuadraticBezier:
+            {
+                const float omt = 1.0f - t;
+                const float w0 = omt * omt;
+                const float w1 = 2.0f * omt * t;
+                const float w2 = t * t;
+                return XMFLOAT3(
+                    (w0 * shape.pathStartLocalPos.x) + (w1 * shape.pathControlLocalPos.x) + (w2 * shape.pathEndLocalPos.x),
+                    (w0 * shape.pathStartLocalPos.y) + (w1 * shape.pathControlLocalPos.y) + (w2 * shape.pathEndLocalPos.y),
+                    (w0 * shape.pathStartLocalPos.z) + (w1 * shape.pathControlLocalPos.z) + (w2 * shape.pathEndLocalPos.z));
+            }
+            case WeaponTracePathMode::Linear:
+            default:
+                return XMFLOAT3(
+                    shape.pathStartLocalPos.x + ((shape.pathEndLocalPos.x - shape.pathStartLocalPos.x) * t),
+                    shape.pathStartLocalPos.y + ((shape.pathEndLocalPos.y - shape.pathStartLocalPos.y) * t),
+                    shape.pathStartLocalPos.z + ((shape.pathEndLocalPos.z - shape.pathStartLocalPos.z) * t));
+            }
+        }
+
+        bool ComputeShapeWorldPose(const WeaponTraceShape& shape,
+                                   const XMMATRIX& basisWorld,
+                                   const XMFLOAT3& localPos,
+                                   XMFLOAT3& outCenter,
+                                   XMFLOAT4& outRot)
         {
             const float rx = XMConvertToRadians(shape.localRotDeg.x);
             const float ry = XMConvertToRadians(shape.localRotDeg.y);
             const float rz = XMConvertToRadians(shape.localRotDeg.z);
             const XMMATRIX R = XMMatrixRotationRollPitchYaw(rx, ry, rz);
-            const XMMATRIX T = XMMatrixTranslation(shape.localPos.x, shape.localPos.y, shape.localPos.z);
+            const XMMATRIX T = XMMatrixTranslation(localPos.x, localPos.y, localPos.z);
             const XMMATRIX local = R * T;
             const XMMATRIX world = local * basisWorld;
             XMVECTOR s, r, t;
@@ -292,6 +338,204 @@ namespace Alice
             XMStoreFloat4(&outRot, r);
             return true;
         }
+
+        bool ComputeShapeWorldPose(const WeaponTraceShape& shape, const XMMATRIX& basisWorld, XMFLOAT3& outCenter, XMFLOAT4& outRot)
+        {
+            return ComputeShapeWorldPose(shape, basisWorld, shape.localPos, outCenter, outRot);
+        }
+
+        float NormalizeClipPhase(double timeSec, float durationSec)
+        {
+            if (durationSec <= 0.0001f)
+                return 0.0f;
+            double wrapped = std::fmod(timeSec, static_cast<double>(durationSec));
+            if (wrapped < 0.0)
+                wrapped += static_cast<double>(durationSec);
+            return std::clamp(static_cast<float>(wrapped / static_cast<double>(durationSec)), 0.0f, 1.0f);
+        }
+
+        bool ResolveClipNameAndDurationByIndex(const SkinnedMeshRegistry* registry,
+                                               World& world,
+                                               EntityId entityId,
+                                               int clipIndex,
+                                               std::string& outName,
+                                               float& outDurationSec)
+        {
+            outName.clear();
+            outDurationSec = 0.0f;
+            if (!registry)
+                return false;
+
+            const auto* skinned = world.GetComponent<SkinnedMeshComponent>(entityId);
+            if (!skinned || skinned->meshAssetPath.empty())
+                return false;
+
+            std::shared_ptr<SkinnedMeshGPU> mesh = registry->Find(skinned->meshAssetPath);
+            if (!mesh || !mesh->sourceModel)
+                return false;
+
+            const aiScene* scene = mesh->sourceModel->GetScenePtr();
+            const auto& names = mesh->sourceModel->GetAnimationNames();
+            const int clipCount = scene ? static_cast<int>(scene->mNumAnimations) : static_cast<int>(names.size());
+            if (clipCount <= 0)
+                return false;
+
+            const int idx = std::clamp(clipIndex, 0, clipCount - 1);
+            if (idx < static_cast<int>(names.size()) && !names[static_cast<size_t>(idx)].empty())
+                outName = names[static_cast<size_t>(idx)];
+
+            if (outName.empty() && scene && static_cast<unsigned>(idx) < scene->mNumAnimations)
+            {
+                const aiAnimation* anim = scene->mAnimations[idx];
+                if (anim && anim->mName.length > 0)
+                    outName = anim->mName.C_Str();
+            }
+            if (outName.empty())
+                outName = "Anim" + std::to_string(idx);
+
+            outDurationSec = static_cast<float>(mesh->sourceModel->GetClipDurationSec(idx));
+            return (outDurationSec > 0.0f);
+        }
+
+        bool ResolveClipDurationByName(const SkinnedMeshRegistry* registry,
+                                       World& world,
+                                       EntityId entityId,
+                                       const std::string& clipName,
+                                       float& outDurationSec)
+        {
+            outDurationSec = 0.0f;
+            if (!registry || clipName.empty())
+                return false;
+
+            const auto* skinned = world.GetComponent<SkinnedMeshComponent>(entityId);
+            if (!skinned || skinned->meshAssetPath.empty())
+                return false;
+
+            std::shared_ptr<SkinnedMeshGPU> mesh = registry->Find(skinned->meshAssetPath);
+            if (!mesh || !mesh->sourceModel)
+                return false;
+
+            const aiScene* scene = mesh->sourceModel->GetScenePtr();
+            const auto& names = mesh->sourceModel->GetAnimationNames();
+            const std::size_t clipCount = scene ? static_cast<std::size_t>(scene->mNumAnimations) : names.size();
+            if (clipCount == 0)
+                return false;
+
+            for (std::size_t i = 0; i < clipCount && i < names.size(); ++i)
+            {
+                if (names[i] == clipName)
+                {
+                    outDurationSec = static_cast<float>(mesh->sourceModel->GetClipDurationSec(static_cast<int>(i)));
+                    return (outDurationSec > 0.0f);
+                }
+            }
+
+            if (scene)
+            {
+                for (std::size_t i = 0; i < scene->mNumAnimations; ++i)
+                {
+                    const aiAnimation* anim = scene->mAnimations[i];
+                    if (anim && anim->mName.length > 0 && clipName == anim->mName.C_Str())
+                    {
+                        outDurationSec = static_cast<float>(mesh->sourceModel->GetClipDurationSec(static_cast<int>(i)));
+                        return (outDurationSec > 0.0f);
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        bool ResolvePreviewClipTime(const SkinnedMeshRegistry* registry,
+                                    World& world,
+                                    EntityId entityId,
+                                    std::string& outClipName,
+                                    float& outTimeSec,
+                                    float& outDurationSec)
+        {
+            outClipName.clear();
+            outTimeSec = 0.0f;
+            outDurationSec = 0.0f;
+
+            // Prefer SkinnedAnimation in editor preview because users often scrub timeSec there.
+            if (const auto* skinnedAnim = world.GetComponent<SkinnedAnimationComponent>(entityId))
+            {
+                std::string clipName;
+                float duration = 0.0f;
+                if (ResolveClipNameAndDurationByIndex(registry, world, entityId, skinnedAnim->clipIndex, clipName, duration))
+                {
+                    outClipName = std::move(clipName);
+                    outTimeSec = static_cast<float>(skinnedAnim->timeSec);
+                    outDurationSec = duration;
+                    return true;
+                }
+            }
+
+            if (const auto* adv = world.GetComponent<AdvancedAnimationComponent>(entityId))
+            {
+                struct AdvCandidate
+                {
+                    const std::string* clip = nullptr;
+                    float timeSec = 0.0f;
+                };
+                const AdvCandidate candidates[] = {
+                    { &adv->base.clipA, adv->base.timeA },
+                    { &adv->base.clipB, adv->base.timeB },
+                    { &adv->upper.clipA, adv->upper.timeA },
+                    { &adv->upper.clipB, adv->upper.timeB },
+                    { &adv->additive.clip, adv->additive.time }
+                };
+                for (const auto& candidate : candidates)
+                {
+                    if (!candidate.clip || candidate.clip->empty())
+                        continue;
+                    float duration = 0.0f;
+                    if (!ResolveClipDurationByName(registry, world, entityId, *candidate.clip, duration))
+                        continue;
+                    outClipName = *candidate.clip;
+                    outTimeSec = candidate.timeSec;
+                    outDurationSec = duration;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool ResolveTracePreviewPhase(const SkinnedMeshRegistry* registry,
+                                      World& world,
+                                      EntityId traceEntity,
+                                      const WeaponTraceComponent& trace,
+                                      float& outPhase)
+        {
+            outPhase = 0.0f;
+            EntityId owner = traceEntity;
+            if (trace.ownerGuid != 0)
+            {
+                const EntityId resolved = world.FindEntityByGuid(trace.ownerGuid);
+                if (resolved != InvalidEntityId)
+                    owner = resolved;
+            }
+
+            std::string currentClipName;
+            float currentTimeSec = 0.0f;
+            float currentDurationSec = 0.0f;
+            if (!ResolvePreviewClipTime(registry, world, owner, currentClipName, currentTimeSec, currentDurationSec))
+            {
+                EntityId basis = traceEntity;
+                if (trace.traceBasisGuid != 0)
+                {
+                    const EntityId resolvedBasis = world.FindEntityByGuid(trace.traceBasisGuid);
+                    if (resolvedBasis != InvalidEntityId)
+                        basis = resolvedBasis;
+                }
+                if (!ResolvePreviewClipTime(registry, world, basis, currentClipName, currentTimeSec, currentDurationSec))
+                    return false;
+            }
+
+            outPhase = NormalizeClipPhase(currentTimeSec, currentDurationSec);
+            return true;
+        }
     }
 
     void DebugDrawComponentSystem::Build(World& world,
@@ -299,7 +543,8 @@ namespace Alice
                                          DebugDrawSystem* depth,
                                          EntityId selectedEntity,
                                          bool debugEnabled,
-                                         bool editorMode)
+                                         bool editorMode,
+                                         const SkinnedMeshRegistry* skinnedRegistry)
     {
         if (!overlay && !depth) return;
 
@@ -547,32 +792,115 @@ namespace Alice
             const XMFLOAT4 hitColor = (entityId == selectedEntity)
                 ? XMFLOAT4(1.0f, 0.2f, 0.2f, 1.0f)
                 : XMFLOAT4(0.9f, 0.1f, 0.1f, 1.0f);
+            const XMFLOAT4 pathStartColor = XMFLOAT4(1.0f, 0.85f, 0.1f, 1.0f);
+            const XMFLOAT4 pathEndColor = XMFLOAT4(0.15f, 1.0f, 0.95f, 1.0f);
+            const XMFLOAT4 pathGridColor = XMFLOAT4(0.8f, 0.85f, 1.0f, 1.0f);
+            const XMFLOAT4 sweepLineColor = XMFLOAT4(1.0f, 0.6f, 0.1f, 1.0f);
+            const XMFLOAT4 sweepStartColor = XMFLOAT4(1.0f, 0.45f, 0.45f, 1.0f);
+            const XMFLOAT4 sweepEndColor = XMFLOAT4(0.35f, 1.0f, 0.75f, 1.0f);
+            float traceGlobalPhase = (trace.activeWindowDurationSec > 0.0f)
+                ? std::clamp(trace.activeElapsedSec / trace.activeWindowDurationSec, 0.0f, 1.0f)
+                : (trace.active ? 1.0f : 0.0f);
+            bool hasPreviewPhase = false;
+            if (editorMode)
+            {
+                hasPreviewPhase = ResolveTracePreviewPhase(skinnedRegistry, world, entityId, trace, traceGlobalPhase);
+            }
+            const bool useEditorPreview = editorMode && hasPreviewPhase;
 
             const bool hasHit = trace.active && !trace.hitVictims.empty();
-            const XMFLOAT4 color = hasHit ? hitColor : (trace.active ? activeColor : inactiveColor);
+            const float markerRadius = std::max(0.005f, trace.debugPathMarkerRadius);
+            const std::uint32_t gridSteps = std::max(1u, trace.debugPathGridSteps);
 
-            for (const auto& shape : trace.shapes)
+            for (size_t shapeIndex = 0; shapeIndex < trace.shapes.size(); ++shapeIndex)
             {
+                const auto& shape = trace.shapes[shapeIndex];
                 if (!shape.enabled)
                     continue;
 
+                const bool shapeActiveNow = (useEditorPreview || trace.active);
+                const XMFLOAT4 shapeColor = hasHit ? hitColor : (shapeActiveNow ? activeColor : inactiveColor);
+
                 XMFLOAT3 center{};
                 XMFLOAT4 rot{};
-                if (!ComputeShapeWorldPose(shape, basisWorld, center, rot))
+                const float shapePathPhase = ToShapePathPhase(traceGlobalPhase);
+                const XMFLOAT3 localPos = ResolveShapePathLocalPos(shape, shapePathPhase);
+                if (!ComputeShapeWorldPose(shape, basisWorld, localPos, center, rot))
                     continue;
 
                 XMVECTOR rotQ = XMLoadFloat4(&rot);
                 if (shape.type == WeaponTraceShapeType::Sphere)
                 {
-                    DrawSphere(*target, center, shape.radius, color);
+                    DrawSphere(*target, center, shape.radius, shapeColor);
                 }
                 else if (shape.type == WeaponTraceShapeType::Capsule)
                 {
-                    DrawCapsule(*target, center, shape.radius, shape.capsuleHalfHeight, true, rotQ, color);
+                    DrawCapsule(*target, center, shape.radius, shape.capsuleHalfHeight, true, rotQ, shapeColor);
                 }
                 else if (shape.type == WeaponTraceShapeType::Box)
                 {
-                    DrawBox(*target, center, shape.boxHalfExtents, rotQ, color);
+                    DrawBox(*target, center, shape.boxHalfExtents, rotQ, shapeColor);
+                }
+
+                // Editor clip-time preview should be deterministic and not mixed with runtime sweep-cache.
+                if (!useEditorPreview && trace.active && !trace.debugSweepSegments.empty())
+                {
+                    for (const auto& seg : trace.debugSweepSegments)
+                    {
+                        if (seg.shapeIndex != static_cast<std::uint32_t>(shapeIndex))
+                            continue;
+
+                        target->AddLine(seg.startCenterWS, seg.endCenterWS, sweepLineColor);
+
+                        const XMVECTOR startRotQ = XMLoadFloat4(&seg.startRotWS);
+                        const XMVECTOR endRotQ = XMLoadFloat4(&seg.endRotWS);
+                        if (shape.type == WeaponTraceShapeType::Sphere)
+                        {
+                            DrawSphere(*target, seg.startCenterWS, shape.radius, sweepStartColor);
+                            DrawSphere(*target, seg.endCenterWS, shape.radius, sweepEndColor);
+                        }
+                        else if (shape.type == WeaponTraceShapeType::Capsule)
+                        {
+                            DrawCapsule(*target, seg.startCenterWS, shape.radius, shape.capsuleHalfHeight, true, startRotQ, sweepStartColor);
+                            DrawCapsule(*target, seg.endCenterWS, shape.radius, shape.capsuleHalfHeight, true, endRotQ, sweepEndColor);
+                        }
+                        else if (shape.type == WeaponTraceShapeType::Box)
+                        {
+                            DrawBox(*target, seg.startCenterWS, shape.boxHalfExtents, startRotQ, sweepStartColor);
+                            DrawBox(*target, seg.endCenterWS, shape.boxHalfExtents, endRotQ, sweepEndColor);
+                        }
+                    }
+                }
+
+                if (trace.debugPathGuide && shape.pathEnabled)
+                {
+                    XMFLOAT3 pathStartCenter{};
+                    XMFLOAT4 pathStartRot{};
+                    XMFLOAT3 pathEndCenter{};
+                    XMFLOAT4 pathEndRot{};
+                    if (!ComputeShapeWorldPose(shape, basisWorld, shape.pathStartLocalPos, pathStartCenter, pathStartRot))
+                        continue;
+                    if (!ComputeShapeWorldPose(shape, basisWorld, shape.pathEndLocalPos, pathEndCenter, pathEndRot))
+                        continue;
+
+                    DrawSphere(*target, pathStartCenter, markerRadius, pathStartColor);
+                    DrawSphere(*target, pathEndCenter, markerRadius, pathEndColor);
+                    XMFLOAT3 prevPathCenter = pathStartCenter;
+
+                    for (std::uint32_t s = 1; s <= gridSteps; ++s)
+                    {
+                        const float t = static_cast<float>(s) / static_cast<float>(gridSteps);
+                        XMFLOAT3 pathCenter{};
+                        XMFLOAT4 pathRot{};
+                        const XMFLOAT3 pathLocalPos = ResolveShapePathLocalPos(shape, t);
+                        if (ComputeShapeWorldPose(shape, basisWorld, pathLocalPos, pathCenter, pathRot))
+                        {
+                            target->AddLine(prevPathCenter, pathCenter, pathGridColor);
+                            if (s < gridSteps)
+                                DrawSphere(*target, pathCenter, markerRadius * 0.5f, pathGridColor);
+                            prevPathCenter = pathCenter;
+                        }
+                    }
                 }
             }
         }

@@ -89,6 +89,100 @@ namespace Alice
 					}
 				}
 
+				ImGui::Separator();
+				ImGui::Text("Additional Trace Slots");
+				if (ImGui::Button("+ Add Trace Slot"))
+				{
+					driver->traceGuids.push_back(0);
+					driver->traceCachedList.assign(driver->traceGuids.size(), InvalidEntityId);
+					changed = true;
+				}
+
+				for (size_t slot = 0; slot < driver->traceGuids.size(); ++slot)
+				{
+					ImGui::PushID(static_cast<int>(slot));
+					ImGui::Text("Slot %zu", slot + 1);
+					ImGui::SameLine();
+					if (ImGui::SmallButton("Remove##TraceSlot"))
+					{
+						driver->traceGuids.erase(driver->traceGuids.begin() + static_cast<ptrdiff_t>(slot));
+						driver->traceCachedList.assign(driver->traceGuids.size(), InvalidEntityId);
+						changed = true;
+						ImGui::PopID();
+						--slot;
+						continue;
+					}
+
+					std::uint64_t slotGuid = driver->traceGuids[slot];
+					if (ImGui::InputScalar("Trace GUID", ImGuiDataType_U64, &slotGuid))
+					{
+						driver->traceGuids[slot] = slotGuid;
+						if (driver->traceCachedList.size() != driver->traceGuids.size())
+							driver->traceCachedList.assign(driver->traceGuids.size(), InvalidEntityId);
+						else
+							driver->traceCachedList[slot] = InvalidEntityId;
+						changed = true;
+					}
+
+					EntityId resolved = (driver->traceGuids[slot] != 0) ? world.FindEntityByGuid(driver->traceGuids[slot]) : InvalidEntityId;
+					std::string preview = "(none)";
+					if (driver->traceGuids[slot] != 0)
+					{
+						if (resolved != InvalidEntityId)
+						{
+							std::string name = world.GetEntityName(resolved);
+							if (name.empty()) name = "Entity " + std::to_string(resolved);
+							preview = name + " (" + std::to_string(driver->traceGuids[slot]) + ")";
+						}
+						else
+						{
+							preview = std::to_string(driver->traceGuids[slot]);
+						}
+					}
+
+					if (ImGui::BeginCombo("Trace (pick entity)", preview.c_str()))
+					{
+						const bool selNone = (driver->traceGuids[slot] == 0);
+						if (ImGui::Selectable("(none)", selNone))
+						{
+							driver->traceGuids[slot] = 0;
+							if (driver->traceCachedList.size() != driver->traceGuids.size())
+								driver->traceCachedList.assign(driver->traceGuids.size(), InvalidEntityId);
+							else
+								driver->traceCachedList[slot] = InvalidEntityId;
+							changed = true;
+						}
+						if (selNone)
+							ImGui::SetItemDefaultFocus();
+
+						for (auto&& [eid, idc] : world.GetComponents<IDComponent>())
+						{
+							if (!world.GetComponent<WeaponTraceComponent>(eid))
+								continue;
+
+							std::string label = world.GetEntityName(eid);
+							if (label.empty()) label = "Entity " + std::to_string(eid);
+							label += " (";
+							label += std::to_string(idc.guid);
+							label += ")";
+							const bool sel = (idc.guid == driver->traceGuids[slot]);
+							if (ImGui::Selectable(label.c_str(), sel))
+							{
+								driver->traceGuids[slot] = idc.guid;
+								if (driver->traceCachedList.size() != driver->traceGuids.size())
+									driver->traceCachedList.assign(driver->traceGuids.size(), InvalidEntityId);
+								else
+									driver->traceCachedList[slot] = InvalidEntityId;
+								changed = true;
+							}
+							if (sel)
+								ImGui::SetItemDefaultFocus();
+						}
+						ImGui::EndCombo();
+					}
+					ImGui::PopID();
+				}
+
 				// Clip picker (SkinnedMesh animation list)
 				{
 					std::vector<std::string> clipNames;
@@ -113,6 +207,7 @@ namespace Alice
 						AttackDriverClip newClip{};
 						newClip.type = AttackDriverNotifyType::Attack;
 						newClip.source = AttackDriverClipSource::Explicit;
+						newClip.traceSlotMask = 1u; // Primary(slot0)
 						driver->clips.emplace_back(std::move(newClip));
 						changed = true;
 					}
@@ -142,6 +237,11 @@ namespace Alice
 						if (animComp->upper.clipB == clipName) return animComp->upper.timeB;
 						if (animComp->additive.clip == clipName) return animComp->additive.time;
 						return -1.0f;
+					};
+
+					auto GetSlotCountForUI = [&]() -> std::uint32_t {
+						return static_cast<std::uint32_t>(
+							std::min<std::size_t>(std::size_t(1) + driver->traceGuids.size(), 32));
 					};
 
 					for (size_t i = 0; i < driver->clips.size(); ++i)
@@ -199,7 +299,7 @@ namespace Alice
 						{
 							changed |= ImGui::Checkbox("Enabled", &clip.enabled);
 
-							const char* typeLabels[] = { "Attack", "Dodge", "Guard" };
+							const char* typeLabels[] = { "Attack", "Dodge", "Guard", "Parry" };
 							int typeIndex = static_cast<int>(clip.type);
 							if (ImGui::Combo("Type", &typeIndex, typeLabels, IM_ARRAYSIZE(typeLabels)))
 							{
@@ -262,6 +362,42 @@ namespace Alice
 
 							changed |= ImGui::DragFloat("Start Time (sec)", &clip.startTimeSec, 0.01f, 0.0f, 60.0f);
 							changed |= ImGui::DragFloat("End Time (sec)", &clip.endTimeSec, 0.01f, 0.0f, 60.0f);
+
+							const std::uint32_t slotCount = GetSlotCountForUI();
+							bool allTraceSlots = (clip.traceSlotMask == 0u);
+							if (ImGui::Checkbox("Use All Trace Slots", &allTraceSlots))
+							{
+								if (allTraceSlots)
+								{
+									clip.traceSlotMask = 0u;
+								}
+								else if (clip.traceSlotMask == 0u)
+								{
+									clip.traceSlotMask = 1u;
+								}
+								changed = true;
+							}
+
+							if (!allTraceSlots)
+							{
+								for (std::uint32_t slot = 0; slot < slotCount; ++slot)
+								{
+									const std::uint32_t bit = (1u << slot);
+									bool selected = (clip.traceSlotMask & bit) != 0u;
+									std::string label = (slot == 0)
+										? "Slot 0 (Primary)"
+										: ("Slot " + std::to_string(slot));
+									if (ImGui::Checkbox(label.c_str(), &selected))
+									{
+										if (selected) clip.traceSlotMask |= bit;
+										else clip.traceSlotMask &= ~bit;
+										changed = true;
+									}
+								}
+
+								if (clip.traceSlotMask == 0u)
+									ImGui::TextDisabled("No slot selected: trace will stay disabled for this clip.");
+							}
 
 							if (clip.endTimeSec < clip.startTimeSec)
 							{
@@ -537,6 +673,15 @@ namespace Alice
 					changed = true;
 				}
 
+				changed |= ImGui::Checkbox("Debug Path Guide", &trace->debugPathGuide);
+				uint32_t pathGridSteps = trace->debugPathGridSteps;
+				if (ImGui::InputScalar("Debug Path Grid Steps", ImGuiDataType_U32, &pathGridSteps))
+				{
+					trace->debugPathGridSteps = std::max(1u, pathGridSteps);
+					changed = true;
+				}
+				changed |= ImGui::DragFloat("Debug Path Marker Radius", &trace->debugPathMarkerRadius, 0.005f, 0.001f, 1.0f);
+
 				ImGui::Separator();
 				ImGui::Text("Trace Shapes");
 				if (ImGui::Button("Add Shape"))
@@ -620,6 +765,21 @@ namespace Alice
 
 						changed |= ImGui::DragFloat3("Local Pos", &shape.localPos.x, 0.01f);
 						changed |= ImGui::DragFloat3("Local Rot (deg)", &shape.localRotDeg.x, 0.5f);
+						changed |= ImGui::Checkbox("Path Sweep Enabled", &shape.pathEnabled);
+						if (shape.pathEnabled)
+						{
+							const char* pathModeItems[] = { "Linear", "Quadratic Bezier" };
+							int pathModeIdx = static_cast<int>(shape.pathMode);
+							if (ImGui::Combo("Path Mode", &pathModeIdx, pathModeItems, IM_ARRAYSIZE(pathModeItems)))
+							{
+								shape.pathMode = static_cast<WeaponTracePathMode>(pathModeIdx);
+								changed = true;
+							}
+							changed |= ImGui::DragFloat3("Path Start Local Pos", &shape.pathStartLocalPos.x, 0.01f);
+							if (shape.pathMode == WeaponTracePathMode::QuadraticBezier)
+								changed |= ImGui::DragFloat3("Path Control Local Pos", &shape.pathControlLocalPos.x, 0.01f);
+							changed |= ImGui::DragFloat3("Path End Local Pos", &shape.pathEndLocalPos.x, 0.01f);
+						}
 
 						if (shape.type == WeaponTraceShapeType::Sphere)
 						{
