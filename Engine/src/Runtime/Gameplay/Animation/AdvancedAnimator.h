@@ -59,6 +59,7 @@ namespace Alice
         {
             bool enabled = false;
             float yawRad = 0.0f;
+            float pitchRad = 0.0f;
             float weight = 1.0f;
         };
 
@@ -647,20 +648,24 @@ namespace Alice
             }
 
             // ---------------------------------------------------------
-            // 4.5) Aim Yaw (spine chain)
+            // 4.5) Aim (spine/neck/head chain)
             // ---------------------------------------------------------
-            auto ApplyYawToMatrix = [&](const XMMATRIX& inCol, float yawRad) -> XMMATRIX
+            auto ApplyAimToMatrix = [&](const XMMATRIX& inCol, float yawRad, float pitchRad) -> XMMATRIX
             {
                 XMVECTOR S, R, T;
                 if (!DecomposeSRT_Col(inCol, S, R, T))
                     return inCol;
                 XMVECTOR qYaw = XMQuaternionRotationAxis(XMVectorSet(0, 1, 0, 0), yawRad);
+                XMVECTOR qPitch = XMQuaternionRotationAxis(XMVectorSet(1, 0, 0, 0), pitchRad);
                 R = XMQuaternionMultiply(qYaw, R);
+                R = XMQuaternionMultiply(qPitch, R);
                 R = XMQuaternionNormalize(R);
                 return ComposeSRT_Col(S, R, T);
             };
 
-            if (d.aim.enabled && std::fabs(d.aim.yawRad) > 1e-6f && d.aim.weight > 0.0001f)
+            if (d.aim.enabled &&
+                (std::fabs(d.aim.yawRad) > 1e-6f || std::fabs(d.aim.pitchRad) > 1e-6f) &&
+                d.aim.weight > 0.0001f)
             {
                 const float w = std::clamp(d.aim.weight, 0.0f, 1.0f);
                 std::vector<size_t> aimNodes;
@@ -673,9 +678,30 @@ namespace Alice
 
                 if (!aimNodes.empty())
                 {
-                    const float per = (d.aim.yawRad * w) / (float)aimNodes.size();
+                    // Neck/Head gets more contribution than lower spine so facial follow is visible.
+                    auto NodeAimWeight = [&](const std::string& n) -> float
+                    {
+                        if (IContains(n, "head")) return 2.4f;
+                        if (IContains(n, "neck")) return 2.0f;
+                        if (IContains(n, "upperchest")) return 1.2f;
+                        if (IContains(n, "chest")) return 1.1f;
+                        return 0.8f; // spine/torso base contribution
+                    };
+
+                    float sumW = 0.0f;
                     for (size_t idx : aimNodes)
-                        localsFinal[idx] = ApplyYawToMatrix(localsFinal[idx], per);
+                        sumW += NodeAimWeight(m_NodeNames[idx]);
+                    if (sumW < 1e-6f) sumW = 1.0f;
+
+                    const float totalYaw = d.aim.yawRad * w;
+                    const float totalPitch = d.aim.pitchRad * w;
+                    for (size_t idx : aimNodes)
+                    {
+                        const float ratio = NodeAimWeight(m_NodeNames[idx]) / sumW;
+                        const float nodeYaw = totalYaw * ratio;
+                        const float nodePitch = totalPitch * ratio;
+                        localsFinal[idx] = ApplyAimToMatrix(localsFinal[idx], nodeYaw, nodePitch);
+                    }
                 }
             }
 
@@ -1117,7 +1143,7 @@ namespace Alice
 
         bool IsAimSpineBone(const std::string& name) const
         {
-            const char* keys[] = { "spine", "chest", "upperchest", "torso" };
+            const char* keys[] = { "spine", "chest", "upperchest", "torso", "neck", "head" };
             for (auto k : keys)
                 if (IContains(name, k))
                     return true;
