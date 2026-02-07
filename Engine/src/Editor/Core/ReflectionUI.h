@@ -499,7 +499,7 @@ namespace Alice
 
 				// 그 외 프로퍼티는 자동으로 렌더링
 				UIEditEvent event;
-				if (propName == "roughness" || propName == "metalness" || propName == "alpha")
+				if (propName == "roughness" || propName == "metalness" || propName == "alpha" || propName == "shadowStrength")
 				{
 					event = Detail::RenderPropertyWithRange(prop, inst, 0.0f, 1.0f, "", world);
 				}
@@ -509,7 +509,8 @@ namespace Alice
 					event = Detail::RenderPropertyWithRange(prop, inst, 0.0f, 5.0f, "", world);
 				}
 				else if (propName == "toonPbrCut1" || propName == "toonPbrCut2" || propName == "toonPbrCut3" ||
-					propName == "toonPbrLevel1" || propName == "toonPbrLevel2" || propName == "toonPbrLevel3")
+					propName == "toonPbrLevel1" || propName == "toonPbrLevel2" || propName == "toonPbrLevel3" ||
+					propName == "toonPbrLevel1Alpha" || propName == "toonPbrLevel2Alpha" || propName == "toonPbrLevel3Alpha")
 				{
 					event = Detail::RenderPropertyWithRange(prop, inst, 0.0f, 1.0f, "", world);
 				}
@@ -575,7 +576,7 @@ namespace Alice
 
 				// roughness, metalness는 자동으로 SliderFloat로 렌더링
 				UIEditEvent event;
-				if (propName == "roughness" || propName == "metalness" || propName == "alpha")
+				if (propName == "roughness" || propName == "metalness" || propName == "alpha" || propName == "shadowStrength")
 				{
 					event = Detail::RenderPropertyWithRange(prop, inst, 0.0f, 1.0f, displayLabel, world);
 				}
@@ -584,7 +585,8 @@ namespace Alice
 					event = Detail::RenderPropertyWithRange(prop, inst, 0.0f, 5.0f, displayLabel, world);
 				}
 				else if (propName == "toonPbrCut1" || propName == "toonPbrCut2" || propName == "toonPbrCut3" ||
-					propName == "toonPbrLevel1" || propName == "toonPbrLevel2" || propName == "toonPbrLevel3")
+					propName == "toonPbrLevel1" || propName == "toonPbrLevel2" || propName == "toonPbrLevel3" ||
+					propName == "toonPbrLevel1Alpha" || propName == "toonPbrLevel2Alpha" || propName == "toonPbrLevel3Alpha")
 				{
 					event = Detail::RenderPropertyWithRange(prop, inst, 0.0f, 1.0f, displayLabel, world);
 				}

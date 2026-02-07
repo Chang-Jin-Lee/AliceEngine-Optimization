@@ -24,6 +24,8 @@ namespace Alice::Combat
         float hitstopSec = 0.0f;
         bool wasAttacking = false;
         bool groggyTriggered = false;
+        float groggyExtendSec = 0.0f;
+        bool groggyHold = false;
         bool dead = false;
     };
 
@@ -36,5 +38,6 @@ namespace Alice::Combat
         bool wantsFaceTarget = false;
         bool hitstopActive = false;
         bool hitReactActive = false;
+        bool groggyRecoverActive = false;
     };
 }

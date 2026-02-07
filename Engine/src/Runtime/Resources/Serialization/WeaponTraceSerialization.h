@@ -71,6 +71,22 @@ namespace Alice
             return WeaponTraceShapeType::Sphere;
         }
 
+        inline const char* PathModeToString(WeaponTracePathMode mode)
+        {
+            switch (mode)
+            {
+            case WeaponTracePathMode::QuadraticBezier: return "QuadraticBezier";
+            case WeaponTracePathMode::Linear:
+            default: return "Linear";
+            }
+        }
+
+        inline WeaponTracePathMode PathModeFromString(const std::string& s)
+        {
+            if (s == "QuadraticBezier") return WeaponTracePathMode::QuadraticBezier;
+            return WeaponTracePathMode::Linear;
+        }
+
         inline void JsonToShapeType(const Json& j, WeaponTraceShapeType& out)
         {
             if (j.is_string())
@@ -84,6 +100,17 @@ namespace Alice
             }
         }
 
+        inline void JsonToPathMode(const Json& j, WeaponTracePathMode& out)
+        {
+            if (j.is_string())
+            {
+                out = PathModeFromString(j.get<std::string>());
+                return;
+            }
+            if (j.is_number_integer())
+                out = static_cast<WeaponTracePathMode>(j.get<int>());
+        }
+
         inline Json WeaponTraceShapeToJson(const WeaponTraceShape& shape)
         {
             Json j = Json::object();
@@ -95,6 +122,11 @@ namespace Alice
             j["radius"] = shape.radius;
             j["capsuleHalfHeight"] = shape.capsuleHalfHeight;
             j["boxHalfExtents"] = Float3ToJson(shape.boxHalfExtents);
+            j["pathEnabled"] = shape.pathEnabled;
+            j["pathMode"] = PathModeToString(shape.pathMode);
+            j["pathStartLocalPos"] = Float3ToJson(shape.pathStartLocalPos);
+            j["pathControlLocalPos"] = Float3ToJson(shape.pathControlLocalPos);
+            j["pathEndLocalPos"] = Float3ToJson(shape.pathEndLocalPos);
             return j;
         }
 
@@ -124,6 +156,21 @@ namespace Alice
                 out.capsuleHalfHeight = static_cast<float>(it->get<double>());
             if (auto it = j.find("boxHalfExtents"); it != j.end())
                 JsonToFloat3(*it, out.boxHalfExtents);
+            if (auto it = j.find("pathEnabled"); it != j.end())
+            {
+                if (it->is_boolean())
+                    out.pathEnabled = it->get<bool>();
+                else if (it->is_number())
+                    out.pathEnabled = (it->get<double>() != 0.0);
+            }
+            if (auto it = j.find("pathMode"); it != j.end())
+                JsonToPathMode(*it, out.pathMode);
+            if (auto it = j.find("pathStartLocalPos"); it != j.end())
+                JsonToFloat3(*it, out.pathStartLocalPos);
+            if (auto it = j.find("pathControlLocalPos"); it != j.end())
+                JsonToFloat3(*it, out.pathControlLocalPos);
+            if (auto it = j.find("pathEndLocalPos"); it != j.end())
+                JsonToFloat3(*it, out.pathEndLocalPos);
 
             return true;
         }
@@ -149,6 +196,9 @@ namespace Alice
             j["targetLayerBits"] = wt.targetLayerBits;
             j["queryLayerBits"] = wt.queryLayerBits;
             j["subSteps"] = wt.subSteps;
+            j["debugPathGuide"] = wt.debugPathGuide;
+            j["debugPathGridSteps"] = wt.debugPathGridSteps;
+            j["debugPathMarkerRadius"] = wt.debugPathMarkerRadius;
 
             Json shapes = Json::array();
             for (const auto& shape : wt.shapes)
@@ -210,6 +260,17 @@ namespace Alice
                 wt.queryLayerBits = static_cast<std::uint32_t>(it->get<double>());
             if (auto it = j.find("subSteps"); it != j.end() && it->is_number())
                 wt.subSteps = static_cast<std::uint32_t>(it->get<double>());
+            if (auto it = j.find("debugPathGuide"); it != j.end())
+            {
+                if (it->is_boolean())
+                    wt.debugPathGuide = it->get<bool>();
+                else if (it->is_number())
+                    wt.debugPathGuide = (it->get<double>() != 0.0);
+            }
+            if (auto it = j.find("debugPathGridSteps"); it != j.end() && it->is_number())
+                wt.debugPathGridSteps = static_cast<std::uint32_t>(it->get<double>());
+            if (auto it = j.find("debugPathMarkerRadius"); it != j.end() && it->is_number())
+                wt.debugPathMarkerRadius = static_cast<float>(it->get<double>());
 
             wt.shapes.clear();
             auto itShapes = j.find("shapes");

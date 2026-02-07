@@ -164,6 +164,7 @@ namespace Alice
             .property("roughness", &MaterialComponent::roughness)
             .property("metalness", &MaterialComponent::metalness)
             .property("ambientOcclusion", &MaterialComponent::ambientOcclusion)
+            .property("shadowStrength", &MaterialComponent::shadowStrength)
             .property("envDiffuseStrength", &MaterialComponent::envDiffuseStrength)
             .property("envSpecularStrength", &MaterialComponent::envSpecularStrength)
             .property("shadingMode", &MaterialComponent::shadingMode)
@@ -179,8 +180,13 @@ namespace Alice
             .property("toonPbrLevel1", &MaterialComponent::toonPbrLevel1)
             .property("toonPbrLevel2", &MaterialComponent::toonPbrLevel2)
             .property("toonPbrLevel3", &MaterialComponent::toonPbrLevel3)
+            .property("toonPbrLevel1Alpha", &MaterialComponent::toonPbrLevel1Alpha)
+            .property("toonPbrLevel2Alpha", &MaterialComponent::toonPbrLevel2Alpha)
+            .property("toonPbrLevel3Alpha", &MaterialComponent::toonPbrLevel3Alpha)
             .property("toonPbrStrength", &MaterialComponent::toonPbrStrength)
-            .property("toonPbrBlur", &MaterialComponent::toonPbrBlur);
+            .property("toonPbrBlur", &MaterialComponent::toonPbrBlur)
+            .property("toonPbrRampIntensity", &MaterialComponent::toonPbrRampIntensity)
+            .property("toonSelfShadowStrength", &MaterialComponent::toonSelfShadowStrength);
 
 
         // === DecalComponent 등록 ===
@@ -257,6 +263,7 @@ namespace Alice
             .constructor<>()
             .property("enabled", &AdvancedAnimAim::enabled)
             .property("yawRad", &AdvancedAnimAim::yawRad)
+            .property("pitchRad", &AdvancedAnimAim::pitchRad)
             .property("weight", &AdvancedAnimAim::weight);
 
         rttr::registration::class_<AdvancedAnimSocket>("AdvancedAnimSocket")
@@ -273,6 +280,7 @@ namespace Alice
             .property("playing", &AdvancedAnimationComponent::playing)
             .property("rootBoneName", &AdvancedAnimationComponent::rootBoneName)
             .property("rootMotionUnlock", &AdvancedAnimationComponent::rootMotionUnlock)
+            .property("rootMotionDriveCct", &AdvancedAnimationComponent::rootMotionDriveCct)
             .property("rootBoneLock", &AdvancedAnimationComponent::rootBoneLock)
             .property("base", &AdvancedAnimationComponent::base)    
             .property("upper", &AdvancedAnimationComponent::upper)
@@ -377,6 +385,12 @@ namespace Alice
 				rttr::value("Box", WeaponTraceShapeType::Box)
 				);
 
+		rttr::registration::enumeration<WeaponTracePathMode>("WeaponTracePathMode")
+			(
+				rttr::value("Linear", WeaponTracePathMode::Linear),
+				rttr::value("QuadraticBezier", WeaponTracePathMode::QuadraticBezier)
+				);
+
 		rttr::registration::class_<WeaponTraceShape>("WeaponTraceShape")
 			.constructor<>()
 			.property("name", &WeaponTraceShape::name)
@@ -386,7 +400,12 @@ namespace Alice
 			.property("localRotDeg", &WeaponTraceShape::localRotDeg)
 			.property("radius", &WeaponTraceShape::radius)
 			.property("capsuleHalfHeight", &WeaponTraceShape::capsuleHalfHeight)
-			.property("boxHalfExtents", &WeaponTraceShape::boxHalfExtents);
+			.property("boxHalfExtents", &WeaponTraceShape::boxHalfExtents)
+			.property("pathEnabled", &WeaponTraceShape::pathEnabled)
+			.property("pathMode", &WeaponTraceShape::pathMode)
+			.property("pathStartLocalPos", &WeaponTraceShape::pathStartLocalPos)
+			.property("pathControlLocalPos", &WeaponTraceShape::pathControlLocalPos)
+			.property("pathEndLocalPos", &WeaponTraceShape::pathEndLocalPos);
 
 		// WeaponTraceComponent 
 		rttr::registration::class_<WeaponTraceComponent>("WeaponTraceComponent")
@@ -409,7 +428,10 @@ namespace Alice
 			.property("attackInstanceId", &WeaponTraceComponent::attackInstanceId)
 			.property("targetLayerBits", &WeaponTraceComponent::targetLayerBits)
 			.property("queryLayerBits", &WeaponTraceComponent::queryLayerBits)
-			.property("subSteps", &WeaponTraceComponent::subSteps);
+			.property("subSteps", &WeaponTraceComponent::subSteps)
+			.property("debugPathGuide", &WeaponTraceComponent::debugPathGuide)
+			.property("debugPathGridSteps", &WeaponTraceComponent::debugPathGridSteps)
+			.property("debugPathMarkerRadius", &WeaponTraceComponent::debugPathMarkerRadius);
 
 		// HealthComponent 
 		rttr::registration::class_<HealthComponent>("HealthComponent")
@@ -468,6 +490,7 @@ namespace Alice
 			.property("clipName", &AttackDriverClip::clipName)
 			.property("startTimeSec", &AttackDriverClip::startTimeSec)
 			.property("endTimeSec", &AttackDriverClip::endTimeSec)
+			.property("traceSlotMask", &AttackDriverClip::traceSlotMask)
 			.property("enabled", &AttackDriverClip::enabled)
 			.property("canBeInterrupted", &AttackDriverClip::canBeInterrupted);
 
@@ -477,6 +500,7 @@ namespace Alice
 			.property("debugTeamId", &AttackDriverComponent::debugTeamId)
 			.property("debugLogs", &AttackDriverComponent::debugLogs)
 			.property("traceGuid", &AttackDriverComponent::traceGuid)
+			.property("traceGuids", &AttackDriverComponent::traceGuids)
 			.property("clips", &AttackDriverComponent::clips)
 			.property("attackStateDurationSec", &AttackDriverComponent::attackStateDurationSec);
 
@@ -594,6 +618,7 @@ namespace Alice
             .constructor<>()
             .property("enabled", &CameraLookAtComponent::enabled)
             .property("targetName", &CameraLookAtComponent::targetName)
+            .property("targetYOffset", &CameraLookAtComponent::targetYOffset)
             .property("rotationDamping", &CameraLookAtComponent::rotationDamping);
 
         // === CameraShakeComponent ��� ===

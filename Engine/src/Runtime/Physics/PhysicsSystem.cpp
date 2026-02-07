@@ -432,6 +432,7 @@ void PhysicsSystem::SetPhysicsWorld(IPhysicsWorld* physicsWorld)
 	m_runtimeMeshColliderMasks.clear();
 	m_runtimeTerrainMasks.clear();
 	m_runtimeCCTMasks.clear();
+    m_rootMotionStepStates.clear();
 
 }
 
@@ -3202,25 +3203,121 @@ void PhysicsSystem::ApplyRootMotionDeltas(float deltaTime)
 	{
 		auto* anim = m_world.GetComponent<AdvancedAnimationComponent>(entityId);
 		if (!anim || !anim->enabled || !anim->rootMotionDriveCct || !anim->rootMotionDeltaValid)
+        {
+            m_rootMotionStepStates.erase(entityId);
 			continue;
+        }
 
 		auto it = m_entityToCCT.find(entityId);
 		if (it == m_entityToCCT.end() || !it->second.IsValid())
+        {
+            m_rootMotionStepStates.erase(entityId);
 			continue;
+        }
 
 		ICharacterController* ctrl = it->second.cct;
 		if (!ctrl)
+        {
+            m_rootMotionStepStates.erase(entityId);
 			continue;
+        }
 
 		auto* tr = m_world.GetComponent<TransformComponent>(entityId);
 		if (!tr)
+        {
+            m_rootMotionStepStates.erase(entityId);
 			continue;
+        }
 
 		const DirectX::XMFLOAT3 prevPos = tr->position;
 		Vec3 disp;
 		disp.x = anim->rootMotionDeltaWS.x;
 		disp.y = anim->rootMotionDeltaWS.y;
 		disp.z = anim->rootMotionDeltaWS.z;
+
+        RootMotionStepState& rmState = m_rootMotionStepStates[entityId];
+        const std::string& clipName = anim->base.clipA;
+        const bool sameClipAsPrev = rmState.hasPrevTime && (rmState.prevClip == clipName);
+        const bool timeRewound = sameClipAsPrev && (anim->base.timeA + 0.0001f < rmState.prevTimeSec);
+        const bool clipChanged = rmState.hasPrevTime && !sameClipAsPrev;
+        if (timeRewound || clipChanged)
+        {
+            rmState.hasPrevDelta = false;
+            rmState.accumDeltaWS = { 0.0f, 0.0f, 0.0f };
+        }
+
+        const float dispLenSq = disp.x * disp.x + disp.y * disp.y + disp.z * disp.z;
+        const float dispLen = std::sqrt(dispLenSq);
+        const float hardSnapStep = std::max(0.75f, deltaTime * 20.0f);
+        const bool hardSnap = dispLen > hardSnapStep;
+
+        const bool isAttack2Clip = (clipName.find("Attack_2") != std::string::npos);
+        const bool isAttackHardClip = (clipName.find("Attack_hard") != std::string::npos);
+        const bool isKnownProblemClip = isAttack2Clip || isAttackHardClip;
+
+        bool reverseSnap = false;
+        if (rmState.hasPrevDelta)
+        {
+            const DirectX::XMFLOAT3 prevDelta = rmState.prevDeltaWS;
+            const float prevLenSq = prevDelta.x * prevDelta.x + prevDelta.y * prevDelta.y + prevDelta.z * prevDelta.z;
+            const float prevLen = std::sqrt(prevLenSq);
+            if (dispLen > 0.15f && prevLen > 0.03f)
+            {
+                const float dot = disp.x * prevDelta.x + disp.y * prevDelta.y + disp.z * prevDelta.z;
+                const float denom = dispLen * prevLen;
+                if (denom > 0.0001f)
+                {
+                    const float dirCos = dot / denom;
+                    if (dirCos < -0.75f && dispLen > prevLen * 1.5f)
+                        reverseSnap = true;
+                }
+            }
+        }
+
+        bool reverseAgainstAccum = false;
+        if (isKnownProblemClip)
+        {
+            const DirectX::XMFLOAT3 accum = rmState.accumDeltaWS;
+            const float accumLenSq = accum.x * accum.x + accum.y * accum.y + accum.z * accum.z;
+            const float accumLen = std::sqrt(accumLenSq);
+            if (accumLen > 0.2f && dispLen > 0.08f)
+            {
+                const float dotAcc = disp.x * accum.x + disp.y * accum.y + disp.z * accum.z;
+                const float denomAcc = dispLen * accumLen;
+                if (denomAcc > 0.0001f)
+                {
+                    const float dirCosAcc = dotAcc / denomAcc;
+                    if (dirCosAcc < -0.5f && dispLen > accumLen * 0.2f)
+                        reverseAgainstAccum = true;
+                }
+            }
+        }
+
+        bool shouldSuppress = hardSnap || reverseSnap || reverseAgainstAccum;
+
+        if (shouldSuppress)
+        {
+            // Guard against one-frame root-motion jumps (commonly seen at bad clip boundaries).
+            ALICE_LOG_WARN("[PhysicsSystem] Suppressed root-motion snap entity=%llu clip='%s' t=%.3f delta=(%.3f, %.3f, %.3f)",
+                static_cast<unsigned long long>(entityId),
+                anim->base.clipA.c_str(),
+                anim->base.timeA,
+                disp.x, disp.y, disp.z);
+            disp = Vec3::Zero;
+            rmState.hasPrevDelta = false;
+        }
+        else
+        {
+            rmState.prevDeltaWS = { disp.x, disp.y, disp.z };
+            rmState.hasPrevDelta = (dispLenSq > 0.000001f);
+            rmState.accumDeltaWS.x += disp.x;
+            rmState.accumDeltaWS.y += disp.y;
+            rmState.accumDeltaWS.z += disp.z;
+        }
+
+        rmState.prevClip = clipName;
+        rmState.prevTimeSec = anim->base.timeA;
+        rmState.hasPrevTime = true;
 
 		RuntimeMasks& runtime = m_runtimeCCTMasks[entityId];
 		CCTCollisionFlags cf = ctrl->Move(
@@ -3245,6 +3342,23 @@ void PhysicsSystem::ApplyRootMotionDeltas(float deltaTime)
 			newPos.y - prevPos.y,
 			newPos.z - prevPos.z
 		};
+
+        if (isKnownProblemClip)
+        {
+            const float dx = appliedDelta.x - disp.x;
+            const float dy = appliedDelta.y - disp.y;
+            const float dz = appliedDelta.z - disp.z;
+            const float errLen = std::sqrt(dx * dx + dy * dy + dz * dz);
+            if (errLen > 0.1f)
+            {
+                ALICE_LOG_WARN("[PhysicsSystem] RootMotion/CCT mismatch entity=%llu clip='%s' t=%.3f req=(%.3f, %.3f, %.3f) applied=(%.3f, %.3f, %.3f)",
+                    static_cast<unsigned long long>(entityId),
+                    clipName.c_str(),
+                    anim->base.timeA,
+                    disp.x, disp.y, disp.z,
+                    appliedDelta.x, appliedDelta.y, appliedDelta.z);
+            }
+        }
 
 		// Keep advanced animation socket world matrices in sync with late root motion.
 		for (auto& s : anim->sockets)
@@ -3540,6 +3654,7 @@ void PhysicsSystem::DestroyCharacterController(EntityId entityId)
     
     // 런타임 마스크 캐시 정리
     m_runtimeCCTMasks.erase(entityId);
+    m_rootMotionStepStates.erase(entityId);
 }
 
 // ComputeRuntimeMasks 멤버 함수 구현
