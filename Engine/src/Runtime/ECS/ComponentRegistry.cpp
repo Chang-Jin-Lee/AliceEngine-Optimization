@@ -253,6 +253,7 @@ namespace Alice
             .constructor<>()
             .property("enabled", &AdvancedAnimAim::enabled)
             .property("yawRad", &AdvancedAnimAim::yawRad)
+            .property("pitchRad", &AdvancedAnimAim::pitchRad)
             .property("weight", &AdvancedAnimAim::weight);
 
         rttr::registration::class_<AdvancedAnimSocket>("AdvancedAnimSocket")
