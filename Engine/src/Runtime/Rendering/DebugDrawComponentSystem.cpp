@@ -8,6 +8,7 @@
 #include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
 #include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
+#include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
 #include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
 #include "Runtime/Rendering/SkinnedMeshRegistry.h"
 #include "Runtime/Importing/FbxModel.h"
@@ -506,7 +507,10 @@ namespace Alice
                                       World& world,
                                       EntityId traceEntity,
                                       const WeaponTraceComponent& trace,
-                                      float& outPhase)
+                                      float& outPhase,
+                                      EntityId* outOwnerEntity = nullptr,
+                                      std::string* outClipName = nullptr,
+                                      float* outClipDurationSec = nullptr)
         {
             outPhase = 0.0f;
             EntityId owner = traceEntity;
@@ -534,6 +538,193 @@ namespace Alice
             }
 
             outPhase = NormalizeClipPhase(currentTimeSec, currentDurationSec);
+            if (outOwnerEntity)
+                *outOwnerEntity = owner;
+            if (outClipName)
+                *outClipName = currentClipName;
+            if (outClipDurationSec)
+                *outClipDurationSec = currentDurationSec;
+            return true;
+        }
+
+        bool IsAttackDriverClipMatchPreview(const AttackDriverClip& clip,
+                                            const AdvancedAnimationComponent* adv,
+                                            const std::string& currentClipName)
+        {
+            if (currentClipName.empty())
+                return false;
+
+            switch (clip.source)
+            {
+            case AttackDriverClipSource::Explicit:
+                return !clip.clipName.empty() && (clip.clipName == currentClipName);
+            case AttackDriverClipSource::BaseA:
+                return adv && !adv->base.clipA.empty() && (adv->base.clipA == currentClipName);
+            case AttackDriverClipSource::BaseB:
+                return adv && !adv->base.clipB.empty() && (adv->base.clipB == currentClipName);
+            case AttackDriverClipSource::UpperA:
+                return adv && !adv->upper.clipA.empty() && (adv->upper.clipA == currentClipName);
+            case AttackDriverClipSource::UpperB:
+                return adv && !adv->upper.clipB.empty() && (adv->upper.clipB == currentClipName);
+            case AttackDriverClipSource::Additive:
+                return adv && !adv->additive.clip.empty() && (adv->additive.clip == currentClipName);
+            default:
+                return false;
+            }
+        }
+
+        EntityId ResolveAttackDriverTraceSlotEntity(World& world,
+                                                    const AttackDriverComponent& driver,
+                                                    EntityId ownerEntity,
+                                                    std::uint32_t slotIndex)
+        {
+            if (slotIndex == 0u)
+            {
+                if (driver.traceGuid == 0u)
+                    return ownerEntity;
+                return world.FindEntityByGuid(driver.traceGuid);
+            }
+
+            const std::uint32_t extraIndex = slotIndex - 1u;
+            if (extraIndex >= driver.traceGuids.size())
+                return InvalidEntityId;
+            const std::uint64_t guid = driver.traceGuids[extraIndex];
+            if (guid == 0u)
+                return InvalidEntityId;
+            return world.FindEntityByGuid(guid);
+        }
+
+        float ResolveWindowPhase(const std::vector<std::pair<float, float>>& mergedIntervals, float clipPhaseNorm)
+        {
+            if (mergedIntervals.empty())
+                return std::clamp(clipPhaseNorm, 0.0f, 1.0f);
+
+            const float phase = std::clamp(clipPhaseNorm, 0.0f, 1.0f);
+            if (phase <= mergedIntervals.front().first)
+                return 0.0f;
+
+            for (size_t i = 0; i < mergedIntervals.size(); ++i)
+            {
+                const float start = mergedIntervals[i].first;
+                const float end = mergedIntervals[i].second;
+                const float len = std::max(0.0f, end - start);
+
+                if (phase < start)
+                    return 1.0f;
+                if (phase <= end)
+                {
+                    if (len <= 0.0001f)
+                        return 1.0f;
+                    return std::clamp((phase - start) / len, 0.0f, 1.0f);
+                }
+            }
+
+            return 1.0f;
+        }
+
+        bool ResolveAttackDriverPreviewWindowForTrace(World& world,
+                                                      EntityId traceEntity,
+                                                      EntityId ownerEntity,
+                                                      const std::string& clipName,
+                                                      float clipDurationSec,
+                                                      float clipPhaseNorm,
+                                                      bool& outActive,
+                                                      float& outWindowPhase)
+        {
+            outActive = false;
+            outWindowPhase = std::clamp(clipPhaseNorm, 0.0f, 1.0f);
+
+            if (ownerEntity == InvalidEntityId || clipName.empty() || clipDurationSec <= 0.0001f)
+                return false;
+
+            const auto* driver = world.GetComponent<AttackDriverComponent>(ownerEntity);
+            if (!driver)
+                return false;
+
+            const auto* adv = world.GetComponent<AdvancedAnimationComponent>(ownerEntity);
+            const std::uint32_t slotCount = static_cast<std::uint32_t>(
+                std::min<std::size_t>(std::size_t(1) + driver->traceGuids.size(), 32));
+            if (slotCount == 0u)
+                return false;
+
+            std::uint32_t traceSlotMask = 0u;
+            for (std::uint32_t slot = 0u; slot < slotCount; ++slot)
+            {
+                const EntityId slotEntity = ResolveAttackDriverTraceSlotEntity(world, *driver, ownerEntity, slot);
+                if (slotEntity == InvalidEntityId || slotEntity != traceEntity)
+                    continue;
+                traceSlotMask |= (1u << slot);
+            }
+            if (traceSlotMask == 0u)
+                return false;
+
+            bool foundAnyClipForCurrentAnim = false;
+            std::vector<std::pair<float, float>> intervals;
+            intervals.reserve(driver->clips.size());
+            for (const auto& clip : driver->clips)
+            {
+                if (!clip.enabled || clip.type != AttackDriverNotifyType::Attack)
+                    continue;
+                if (!IsAttackDriverClipMatchPreview(clip, adv, clipName))
+                    continue;
+
+                foundAnyClipForCurrentAnim = true;
+                if (clip.traceSlotMask != 0u && (clip.traceSlotMask & traceSlotMask) == 0u)
+                    continue;
+
+                float startSec = std::max(0.0f, clip.startTimeSec);
+                float endSec = std::max(0.0f, clip.endTimeSec);
+                if (endSec < startSec)
+                    std::swap(startSec, endSec);
+
+                float startNorm = std::clamp(startSec / clipDurationSec, 0.0f, 1.0f);
+                float endNorm = std::clamp(endSec / clipDurationSec, 0.0f, 1.0f);
+                if (endNorm < startNorm)
+                    std::swap(startNorm, endNorm);
+                intervals.emplace_back(startNorm, endNorm);
+            }
+
+            if (!foundAnyClipForCurrentAnim)
+                return false;
+
+            if (intervals.empty())
+            {
+                outActive = false;
+                outWindowPhase = 0.0f;
+                return true;
+            }
+
+            std::sort(intervals.begin(), intervals.end(), [](const auto& a, const auto& b) {
+                if (a.first != b.first)
+                    return a.first < b.first;
+                return a.second < b.second;
+            });
+
+            std::vector<std::pair<float, float>> merged;
+            merged.reserve(intervals.size());
+            for (const auto& span : intervals)
+            {
+                if (merged.empty() || span.first > (merged.back().second + 0.0001f))
+                {
+                    merged.push_back(span);
+                }
+                else
+                {
+                    merged.back().second = std::max(merged.back().second, span.second);
+                }
+            }
+
+            const float phase = std::clamp(clipPhaseNorm, 0.0f, 1.0f);
+            for (const auto& span : merged)
+            {
+                if (phase >= span.first && phase <= span.second)
+                {
+                    outActive = true;
+                    break;
+                }
+            }
+
+            outWindowPhase = ResolveWindowPhase(merged, phase);
             return true;
         }
     }
@@ -802,11 +993,37 @@ namespace Alice
                 ? std::clamp(trace.activeElapsedSec / trace.activeWindowDurationSec, 0.0f, 1.0f)
                 : (trace.active ? 1.0f : 0.0f);
             bool hasPreviewPhase = false;
+            EntityId previewOwner = InvalidEntityId;
+            std::string previewClipName;
+            float previewClipDurationSec = 0.0f;
             if (editorMode)
             {
-                hasPreviewPhase = ResolveTracePreviewPhase(skinnedRegistry, world, entityId, trace, traceGlobalPhase);
+                hasPreviewPhase = ResolveTracePreviewPhase(
+                    skinnedRegistry,
+                    world,
+                    entityId,
+                    trace,
+                    traceGlobalPhase,
+                    &previewOwner,
+                    &previewClipName,
+                    &previewClipDurationSec);
             }
             const bool useEditorPreview = editorMode && hasPreviewPhase;
+            bool hasAttackDriverPreviewWindow = false;
+            bool attackDriverPreviewActive = false;
+            float attackDriverPreviewPhase = traceGlobalPhase;
+            if (useEditorPreview)
+            {
+                hasAttackDriverPreviewWindow = ResolveAttackDriverPreviewWindowForTrace(
+                    world,
+                    entityId,
+                    previewOwner,
+                    previewClipName,
+                    previewClipDurationSec,
+                    traceGlobalPhase,
+                    attackDriverPreviewActive,
+                    attackDriverPreviewPhase);
+            }
 
             const bool hasHit = trace.active && !trace.hitVictims.empty();
             const float markerRadius = std::max(0.005f, trace.debugPathMarkerRadius);
@@ -818,12 +1035,15 @@ namespace Alice
                 if (!shape.enabled)
                     continue;
 
-                const bool shapeActiveNow = (useEditorPreview || trace.active);
+                const bool shapeActiveNow = useEditorPreview
+                    ? (hasAttackDriverPreviewWindow ? attackDriverPreviewActive : true)
+                    : trace.active;
                 const XMFLOAT4 shapeColor = hasHit ? hitColor : (shapeActiveNow ? activeColor : inactiveColor);
 
                 XMFLOAT3 center{};
                 XMFLOAT4 rot{};
-                const float shapePathPhase = ToShapePathPhase(traceGlobalPhase);
+                const float previewPhase = hasAttackDriverPreviewWindow ? attackDriverPreviewPhase : traceGlobalPhase;
+                const float shapePathPhase = ToShapePathPhase(previewPhase);
                 const XMFLOAT3 localPos = ResolveShapePathLocalPos(shape, shapePathPhase);
                 if (!ComputeShapeWorldPose(shape, basisWorld, localPos, center, rot))
                     continue;

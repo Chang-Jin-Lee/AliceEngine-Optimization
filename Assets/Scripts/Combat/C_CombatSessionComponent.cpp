@@ -1603,6 +1603,11 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				case C_BossBrainComponent::BrainState::Attack:
 					nextState = Combat::ActionState::Attack;
 					break;
+				case C_BossBrainComponent::BrainState::Gimmick:
+					nextState = (bossBrain->GetActivePattern() == C_BossBrainComponent::PatternType::Special)
+						? Combat::ActionState::Attack
+						: Combat::ActionState::Idle;
+					break;
 				case C_BossBrainComponent::BrainState::Idle:
 					nextState = Combat::ActionState::Idle;
 					break;
@@ -1640,6 +1645,28 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			bossOut.flags.canBeInterrupted = false;
 			bossOut.flags.chargeActive = bossIntent.chargeActive;
 			bossOut.flags.chargeLevel = bossIntent.chargeLevel;
+		}
+
+		const bool bossPhaseHowlingActive = bossBrain
+			&& (bossBrain->GetActivePattern() == C_BossBrainComponent::PatternType::Special);
+		if (bossPhaseHowlingActive)
+			bossOut.flags.hitActive = false;
+		if (bossBrain && bossBrain->ConsumePhase2HowlingStarted())
+		{
+			float basePushSpeed = 3.0f;
+			if (auto* trace = world.GetComponent<WeaponTraceComponent>(bossId))
+				basePushSpeed = std::max(0.0f, trace->guardBreakPushbackSpeed);
+
+			const float pushSpeed = std::max(0.0f, basePushSpeed * std::max(0.0f, m_guardBreakPushbackScale));
+			const float pushDuration = std::max(0.0f, m_guardBreakPushbackDurationSec);
+			if (pushSpeed > 0.0f && pushDuration > 0.0f)
+			{
+				std::vector<Combat::Command> phase2Commands;
+				phase2Commands.push_back({ Combat::CommandType::ApplyPushback,
+					Combat::CmdApplyPushback{ bossId, playerId, pushSpeed, pushDuration } });
+				m_state->apply.ApplyImmediate(world, m_state->fighterMap, m_state->bus, phase2Commands, true);
+			}
+			// TODO: add dedicated camera shake cue for phase-2 howling.
 		}
 
 		bossIntent = bossOut.intent;
