@@ -94,7 +94,7 @@ namespace Alice
     struct LightingParameters
     {
         // 재질 색상/하이라이트 (레거시 쉐이더용)
-        DirectX::XMFLOAT3 diffuseColor  { 0.7f, 0.7f, 0.9f };
+        DirectX::XMFLOAT3 diffuseColor  { 1.0f, 1.0f, 1.0f };
         DirectX::XMFLOAT3 specularColor { 1.0f, 1.0f, 1.0f };
         float             shininess     { 32.0f };
 

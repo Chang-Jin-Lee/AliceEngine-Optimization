@@ -1135,7 +1135,12 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     float3 kD = (1.0f - kS_IBL) * (1.0f - metalness);
     
     // Direct Light (Directional + Extra Lights)
-    float3 lightColorDir = g_LightColor.rgb * g_intensity * PI;
+    // NOTE:
+    // - EvaluatePBRLight 내부에서 diffuse는 INV_PI를 사용하므로
+    //   여기서 추가 PI를 곱하면 specular가 상대적으로 과증폭되어
+    //   metalness=0에서도 과도한 금속광처럼 보일 수 있습니다.
+    // - Forward 경로와 일치하도록 light 세기는 intensity 그대로 사용합니다.
+    float3 lightColorDir = g_LightColor.rgb * g_intensity;
     float3 directLighting = 0.0f;
     {
         float3 lit = EvaluatePBRLight(N, V, L, albedoPBR, metalness, roughness, lightColorDir);
@@ -1158,7 +1163,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float dist = length(toLight);
         float3 Lp = (dist > 0.0001f) ? (toLight / dist) : float3(0, 0, 1);
         float atten = ComputeAttenuation(dist, pl.range);
-        float3 lc = pl.color * pl.intensity * atten * PI;
+        float3 lc = pl.color * pl.intensity * atten;
         float3 lit = EvaluatePBRLight(N, V, Lp, albedoPBR, metalness, roughness, lc);
         float ndotl = max(dot(N, Lp), 0.0f);
         if (toonPbr && ndotl > 0.0f)
@@ -1178,7 +1183,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float3 Ls = (dist > 0.0001f) ? (toLight / dist) : float3(0, 0, 1);
         float atten = ComputeAttenuation(dist, sl.range);
         float spot = ComputeSpotFactor(Ls, sl.direction, sl.innerCos, sl.outerCos);
-        float3 lc = sl.color * sl.intensity * atten * spot * PI;
+        float3 lc = sl.color * sl.intensity * atten * spot;
         float3 lit = EvaluatePBRLight(N, V, Ls, albedoPBR, metalness, roughness, lc);
         float ndotl = max(dot(N, Ls), 0.0f);
         if (toonPbr && ndotl > 0.0f)
@@ -1199,7 +1204,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float atten = ComputeAttenuation(dist, rl.range);
         float facing = ComputeRectFactor(Lr, rl.direction);
         float areaScale = max(rl.width * rl.height, 0.01f);
-        float3 lc = rl.color * rl.intensity * atten * facing * areaScale * PI;
+        float3 lc = rl.color * rl.intensity * atten * facing * areaScale;
         float3 lit = EvaluatePBRLight(N, V, Lr, albedoPBR, metalness, roughness, lc);
         float ndotl = max(dot(N, Lr), 0.0f);
         if (toonPbr && ndotl > 0.0f)
@@ -1689,7 +1694,7 @@ float4 main(PSIn pIn) : SV_Target
     float3 kD = (1.0f - kS) * (1.0f - metalness);
     float3 diffuse = kD * albedoLinear * INV_PI;
 
-    float3 radiance = g_LightColor.rgb * PI * g_LightIntensity;
+    float3 radiance = g_LightColor.rgb * g_LightIntensity;
     float3 direct = (diffuse + specular) * radiance * NdotL * ao;
 
     const bool toonPbr = (gShadingMode == 5 || gShadingMode == 7);
