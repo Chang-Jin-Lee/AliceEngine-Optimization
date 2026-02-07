@@ -161,6 +161,7 @@ namespace Alice
             .property("roughness", &MaterialComponent::roughness)
             .property("metalness", &MaterialComponent::metalness)
             .property("ambientOcclusion", &MaterialComponent::ambientOcclusion)
+            .property("shadowStrength", &MaterialComponent::shadowStrength)
             .property("envDiffuseStrength", &MaterialComponent::envDiffuseStrength)
             .property("envSpecularStrength", &MaterialComponent::envSpecularStrength)
             .property("shadingMode", &MaterialComponent::shadingMode)
@@ -176,8 +177,13 @@ namespace Alice
             .property("toonPbrLevel1", &MaterialComponent::toonPbrLevel1)
             .property("toonPbrLevel2", &MaterialComponent::toonPbrLevel2)
             .property("toonPbrLevel3", &MaterialComponent::toonPbrLevel3)
+            .property("toonPbrLevel1Alpha", &MaterialComponent::toonPbrLevel1Alpha)
+            .property("toonPbrLevel2Alpha", &MaterialComponent::toonPbrLevel2Alpha)
+            .property("toonPbrLevel3Alpha", &MaterialComponent::toonPbrLevel3Alpha)
             .property("toonPbrStrength", &MaterialComponent::toonPbrStrength)
-            .property("toonPbrBlur", &MaterialComponent::toonPbrBlur);
+            .property("toonPbrBlur", &MaterialComponent::toonPbrBlur)
+            .property("toonPbrRampIntensity", &MaterialComponent::toonPbrRampIntensity)
+            .property("toonSelfShadowStrength", &MaterialComponent::toonSelfShadowStrength);
 
         // === DecalComponent 등록 ===
         rttr::registration::class_<DecalComponent>("DecalComponent")

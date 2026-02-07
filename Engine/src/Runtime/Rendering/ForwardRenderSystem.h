@@ -107,6 +107,9 @@ namespace Alice
                                float normalStrength,
                                const DirectX::XMFLOAT4& toonPbrCuts,
                                const DirectX::XMFLOAT4& toonPbrLevels,
+                               const DirectX::XMFLOAT4& toonPbrAlphas,
+                               float toonPbrRampIntensity,
+                               float toonSelfShadowStrength,
                                float envDiffuseStrength = 1.0f,
                                float envSpecularStrength = 1.0f,
                                const DirectX::XMFLOAT3& outlineColor = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),
@@ -301,6 +304,11 @@ namespace Alice
         /// ImGui 등에서 이 값을 직접 수정해도 됩니다.
         LightingParameters& GetLightingParameters() { return m_lightingParameters; }
         const LightingParameters& GetLightingParameters() const { return m_lightingParameters; }
+
+        /// Shadow 설정을 반환합니다.
+        const ShadowSettings& GetShadowSettings() const { return m_shadowSettings; }
+        /// Shadow 설정을 적용합니다. (해상도 변경 시 리소스를 재생성)
+        void ApplyShadowSettings(const ShadowSettings& settings);
 
         /// Game 창에서 사용할 씬 컬러 텍스처 SRV
         ID3D11ShaderResourceView* GetSceneColorSRV() const { return m_sceneSRV.Get(); }

@@ -10,6 +10,7 @@
 #include "imgui.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <filesystem>
 #include <DirectXMath.h>
@@ -87,6 +88,68 @@ namespace Alice
 
 			return {};
 		}
+
+		constexpr float kPi = 3.14159265358979323846f;
+		constexpr float kDegToRad = kPi / 180.0f;
+		constexpr float kRadToDeg = 180.0f / kPi;
+
+		DirectX::XMFLOAT3 NormalizeDirectionSafe(const DirectX::XMFLOAT3& dir)
+		{
+			using namespace DirectX;
+			const XMVECTOR v = XMLoadFloat3(&dir);
+			const float lenSq = XMVectorGetX(XMVector3LengthSq(v));
+			if (lenSq <= 1e-8f)
+			{
+				return XMFLOAT3(0.0f, -1.0f, 0.0f);
+			}
+			XMFLOAT3 out;
+			XMStoreFloat3(&out, XMVector3Normalize(v));
+			return out;
+		}
+
+		bool NearlyEqualDirection(const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT3& b, float eps = 1e-4f)
+		{
+			return (std::fabs(a.x - b.x) <= eps) &&
+				(std::fabs(a.y - b.y) <= eps) &&
+				(std::fabs(a.z - b.z) <= eps);
+		}
+
+		void DirectionToYawPitchDeg(const DirectX::XMFLOAT3& direction, float& outYawDeg, float& outPitchDeg)
+		{
+			const DirectX::XMFLOAT3 d = NormalizeDirectionSafe(direction);
+			outYawDeg = std::atan2(d.x, -d.z) * kRadToDeg;
+			const float y = std::clamp(-d.y, -1.0f, 1.0f);
+			outPitchDeg = std::asin(y) * kRadToDeg;
+		}
+
+		DirectX::XMFLOAT3 YawPitchRollDegToDirection(float yawDeg, float pitchDeg, float rollDeg)
+		{
+			using namespace DirectX;
+			const float yaw = yawDeg * kDegToRad;
+			const float pitch = pitchDeg * kDegToRad;
+			const float roll = rollDeg * kDegToRad;
+			const XMMATRIX rot = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+			const XMVECTOR forward = XMVectorSet(0.0f, 0.0f, -1.0f, 0.0f);
+			XMFLOAT3 out;
+			XMStoreFloat3(&out, XMVector3Normalize(XMVector3TransformNormal(forward, rot)));
+			return out;
+		}
+
+		bool DragWithInputAngle(const char* label, float& value, float minValue, float maxValue, float dragSpeed = 0.25f)
+		{
+			bool changed = false;
+			ImGui::PushID(label);
+			ImGui::SetNextItemWidth(170.0f);
+			changed |= ImGui::DragFloat("##drag", &value, dragSpeed, minValue, maxValue, "%.2f");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(100.0f);
+			changed |= ImGui::InputFloat("##input", &value, 0.0f, 0.0f, "%.2f");
+			ImGui::SameLine();
+			ImGui::TextUnformatted(label);
+			ImGui::PopID();
+			value = std::clamp(value, minValue, maxValue);
+			return changed;
+		}
 	}
 
 	void EditorCore::DrawLightingWindow(World& world,
@@ -134,6 +197,7 @@ namespace Alice
 				ImGui::Separator();
 				ImGui::Text("PBR Material Parameters");
 				lightingChanged |= ImGui::ColorEdit3("Base Color", &lighting.baseColor.x);
+				lightingChanged |= ImGui::ColorEdit3("Key Light Color", &lighting.diffuseColor.x);
 				lightingChanged |= ImGui::SliderFloat("Metalness", &lighting.metalness, 0.0f, 1.0f);
 				lightingChanged |= ImGui::SliderFloat("Roughness", &lighting.roughness, 0.0f, 1.0f);
 				lightingChanged |= ImGui::SliderFloat("Ambient Occlusion", &lighting.ambientOcclusion, 0.0f, 1.0f);
@@ -152,10 +216,84 @@ namespace Alice
 				&lighting.keyIntensity,
 				0.0f,
 				3.0f);
-			lightingChanged |= Alice::ImGuiSliderFloat3(L"Key Direction (주광)",
-				&lighting.keyDirection.x,
-				-1.0f,
+			ImGui::TextUnformatted("Key Rotation (Euler)");
+			static bool keyEulerInit = false;
+			static DirectX::XMFLOAT3 lastKeyDirection = { 0.0f, -1.0f, 0.0f };
+			static float keyYawDeg = 0.0f;
+			static float keyPitchDeg = 0.0f;
+			static float keyRollDeg = 0.0f;
+
+			const DirectX::XMFLOAT3 normalizedKeyDir = NormalizeDirectionSafe(lighting.keyDirection);
+			if (!keyEulerInit || !NearlyEqualDirection(normalizedKeyDir, lastKeyDirection))
+			{
+				DirectionToYawPitchDeg(normalizedKeyDir, keyYawDeg, keyPitchDeg);
+				lastKeyDirection = normalizedKeyDir;
+				keyEulerInit = true;
+			}
+
+			bool keyDirectionChanged = false;
+			keyDirectionChanged |= DragWithInputAngle("Yaw (deg)", keyYawDeg, -180.0f, 180.0f);
+			keyDirectionChanged |= DragWithInputAngle("Pitch (deg)", keyPitchDeg, -89.9f, 89.9f);
+			keyDirectionChanged |= DragWithInputAngle("Roll (deg)", keyRollDeg, -180.0f, 180.0f);
+
+			if (keyDirectionChanged)
+			{
+				lighting.keyDirection = YawPitchRollDegToDirection(keyYawDeg, keyPitchDeg, keyRollDeg);
+				lastKeyDirection = lighting.keyDirection;
+				lightingChanged = true;
+			}
+
+			ImGui::Text("Key Direction Vector: %.3f, %.3f, %.3f",
+				lighting.keyDirection.x, lighting.keyDirection.y, lighting.keyDirection.z);
+			
+			ImGui::Separator();
+			ImGui::TextUnformatted("Shadow");
+			lightingChanged |= Alice::ImGuiSliderFloat(L"Shadow Strength",
+				&lighting.shadowStrength,
+				0.0f,
 				1.0f);
+
+			bool shadowQualityChanged = false;
+			ShadowSettings shadowSettings = forward.GetShadowSettings();
+			int shadowMapSize = static_cast<int>(shadowSettings.mapSizePx);
+			float shadowPcfRadius = shadowSettings.pcfRadius;
+
+			shadowQualityChanged |= ImGui::SliderInt("Shadow Map Size", &shadowMapSize, 512, 8192);
+			shadowQualityChanged |= ImGui::SliderFloat("Shadow PCF Radius", &shadowPcfRadius, 0.0f, 3.0f, "%.2f");
+
+			if (shadowQualityChanged)
+			{
+				// Snap to reasonable increments for stability
+				shadowMapSize = (shadowMapSize / 256) * 256;
+				shadowMapSize = (std::max)(512, shadowMapSize);
+
+				shadowSettings.mapSizePx = static_cast<std::uint32_t>(shadowMapSize);
+				shadowSettings.pcfRadius = std::clamp(shadowPcfRadius, 0.0f, 3.0f);
+
+				forward.ApplyShadowSettings(shadowSettings);
+				deferred.ApplyShadowSettings(shadowSettings);
+			}
+
+			ImGui::Separator();
+			ImGui::TextUnformatted("Tone Mapping");
+			float tmExposure = 0.0f;
+			float tmMaxNits = 1000.0f;
+			float tmSaturation = 1.0f;
+			float tmContrast = 1.0f;
+			float tmGamma = 1.0f;
+			forward.GetPostProcessParams(tmExposure, tmMaxNits, tmSaturation, tmContrast, tmGamma);
+
+			bool toneMappingChanged = false;
+			toneMappingChanged |= ImGui::SliderFloat("Exposure", &tmExposure, -5.0f, 5.0f, "%.2f");
+			toneMappingChanged |= ImGui::SliderFloat("Saturation", &tmSaturation, 0.0f, 3.0f, "%.2f");
+			toneMappingChanged |= ImGui::SliderFloat("Contrast", &tmContrast, 0.0f, 2.0f, "%.2f");
+			toneMappingChanged |= ImGui::SliderFloat("Gamma", &tmGamma, 0.1f, 3.0f, "%.2f");
+
+			if (toneMappingChanged)
+			{
+				forward.SetPostProcessParams(tmExposure, tmMaxNits, tmSaturation, tmContrast, tmGamma);
+				deferred.SetPostProcessParams(tmExposure, tmMaxNits, tmSaturation, tmContrast, tmGamma);
+			}
 
 			if (lightingChanged)
 			{

@@ -24,6 +24,7 @@ namespace Alice {
         float roughness{ 0.5f };                     // 0~1 러프니스 (PBR)
         float metalness{ 0.0f };                     // 0~1 메탈니스 (PBR)
         float ambientOcclusion{ 1.0f };              // 0~1 AO (Ambient Occlusion)
+        float shadowStrength{ 1.0f };                // 0~1 그림자 강도 (0=그림자 없음, 1=기본)
         float envDiffuseStrength{ 1.0f };            // IBL Diffuse 기여도 (0 = 없음)
         float envSpecularStrength{ 1.0f };           // IBL Specular 기여도 (0 = 없음)
         int shadingMode{ -1 };                       // -1: 전역, 0~7: 개별 셰이딩 모드, 6: OnlyTextureWithOutline, 7: ToonPBREditable
@@ -47,14 +48,20 @@ namespace Alice {
         float toonPbrLevel1{ 0.1f };
         float toonPbrLevel2{ 0.4f };
         float toonPbrLevel3{ 0.7f };
+        float toonPbrLevel1Alpha{ 1.0f };
+        float toonPbrLevel2Alpha{ 1.0f };
+        float toonPbrLevel3Alpha{ 1.0f };
         float toonPbrStrength{ 1.0f }; // 0: 부드러운 PBR, 1: 완전 Toon
         bool  toonPbrBlur{ false };    // 계단 사이를 부드럽게 블러 처리
+        float toonPbrRampIntensity{ 0.0f }; // 0: 기존, 1: 가장 어두운 밴드 완화
+        float toonSelfShadowStrength{ 1.0f }; // 0: 셀프 음영 최소화, 1: 기존 Toon 셀프 음영
 
         Alice_Get_Set(color);
         Alice_Get_Set(alpha);
         Alice_Get_Set(roughness);
         Alice_Get_Set(metalness);
         Alice_Get_Set(ambientOcclusion);
+        Alice_Get_Set(shadowStrength);
         Alice_Get_Set(envDiffuseStrength);
         Alice_Get_Set(envSpecularStrength);
         Alice_Get_Set(shadingMode);
@@ -70,7 +77,12 @@ namespace Alice {
         Alice_Get_Set(toonPbrLevel1);
         Alice_Get_Set(toonPbrLevel2);
         Alice_Get_Set(toonPbrLevel3);
+        Alice_Get_Set(toonPbrLevel1Alpha);
+        Alice_Get_Set(toonPbrLevel2Alpha);
+        Alice_Get_Set(toonPbrLevel3Alpha);
         Alice_Get_Set(toonPbrStrength);
         Alice_Get_Set(toonPbrBlur);
+        Alice_Get_Set(toonPbrRampIntensity);
+        Alice_Get_Set(toonSelfShadowStrength);
     };
 }
