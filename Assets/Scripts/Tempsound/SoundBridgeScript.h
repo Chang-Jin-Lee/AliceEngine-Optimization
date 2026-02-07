@@ -2,10 +2,13 @@
 
 #include <string>
 #include <cstdint>
+#include <vector>
 
 #include "Runtime/Scripting/IScript.h"
 #include "Runtime/Scripting/ScriptReflection.h"
 #include "Runtime/ECS/Entity.h"
+#include "AudioSoundState.h"
+#include "../Combat/C_BossBrainComponent.h"
 
 namespace Alice
 {
@@ -32,12 +35,20 @@ namespace Alice
     private:
         //C_CombatSessionComponent* FindSession();
         //AudioEventBusScript* FindBus();
-        void OnCombatStateEntered(EntityId entityId, std::uint8_t actionState, const void* flagsPtr);
-        void OnCombatResolve(EntityId victimId, EntityId attackerId, std::uint8_t resolveResult, float damage);
+        void OnCombatStateEntered(EntityId entityId, std::uint8_t prevState, std::uint8_t curState, const void* flagsPtr);
+        void OnCombatResolve(EntityId victimId, EntityId attackerId, std::uint8_t resolveResult, float damage, const DirectX::XMFLOAT3& hitPos);
+        void OnPhase2Entered();
+        
+        // 보스 패턴의 실제 애니메이션 재생 시간 계산 (속도 반영)
+        float GetBossPatternActualDuration(EntityId bossId, C_BossBrainComponent::PatternType patternType);
 
         std::uint8_t m_prevActionState = 0xFF;
+        std::uint8_t m_prevBossState = 0xFF;
         int m_prevComboIndex = -1;
         bool m_combo2ExtraPending = false;
         float m_combo2ExtraTimer = 0.0f;
+        
+        // 보스 패턴 추적 (Charge → SoulSwordAttack 전환 감지용)
+        int m_prevBossPattern = -1;  // PatternType을 int로 저장 (None = 0)
     };
 }

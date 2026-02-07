@@ -51,6 +51,7 @@ namespace Alice::Sound
     // - loop=true: 핸들(ChannelID)을 반환하여 제어 가능하게 함
     // - loop=false: Fire-and-forget (중첩 재생 가능)
     void PlaySFX(const std::wstring& key, float volume = 1.0f, float pitch = 1.0f, bool loop = false);
+    FMOD::Channel* PlaySFXDelayed(const std::wstring& key, float delaySeconds, float volume = 1.0f, float pitch = 1.0f, bool loop = false);
     bool IsSfxPlaying(const std::wstring& key);
     void StopSfx(const std::wstring& key);
     void StopAllSFX();

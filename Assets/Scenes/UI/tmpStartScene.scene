@@ -10,7 +10,7 @@
                         "UnderLineWidgetName": "UI_Image",
                         "buttonWidgetName": "UI_StartButton",
                         "rootWidgetName": "UI_StartButton",
-                        "targetScenePath": "Assets/Scenes/TestSound/tmpCombat.scene",
+                        "targetScenePath": "Assets/Scenes/TestSound/tmpBoss.scene",
                         "uiSoundEntityName": "SoundObject"
                     }
                 }

@@ -36,6 +36,7 @@ namespace Alice
         GroggyEnter,
         Roar,
         Hit,
+        Death,
         Count
     };
 
@@ -72,6 +73,7 @@ namespace Alice
         GuardBreak,
         EgoCombine,
         Heal,
+        Death,
         Count
     };
 }
