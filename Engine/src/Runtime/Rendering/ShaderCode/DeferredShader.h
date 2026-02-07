@@ -1228,7 +1228,17 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     diffuseIBL *= envDiffuseStrength;
     specularIBL *= envSpecularStrength;
 
-    float3 iblColor = (diffuseIBL + specularIBL) * ao;
+    float shadowIBLDiffuse = lerp(0.35f, 1.0f, shadowVis);
+    float shadowIBLSpecular = 1.0f;
+    if (toonEditable)
+    {
+        // ToonPBREditable은 외부 물체 그림자 안에서 밝기 변화가 분명히 보이도록
+        // IBL까지 shadowVis를 적용합니다.
+        shadowIBLDiffuse = shadowVis;
+        shadowIBLSpecular = lerp(0.25f, 1.0f, shadowVis);
+    }
+
+    float3 iblColor = (diffuseIBL * shadowIBLDiffuse + specularIBL * shadowIBLSpecular) * ao;
 
     // 최종 색상 계산
     float3 color = directLighting + extraLighting + iblColor;

@@ -938,8 +938,16 @@ float4 main(PSInput input) : SV_TARGET
         specularIBL *= gEnvSpecularStrength;
 
         // 최종 색상 = 직접광 + 간접광(IBL)
-        float shadowIBL = lerp(0.35f, 1.0f, shadow);
-        float3 colorPbr = Lo + (diffuseIBL * shadowIBL + specularIBL) * ao;
+        // ToonPBREditable은 외부 오브젝트 그림자를 명확히 받도록 IBL도 shadow에 연동합니다.
+        float shadowIBLDiffuse = lerp(0.35f, 1.0f, shadow);
+        float shadowIBLSpecular = 1.0f;
+        if (gShadingMode == 7)
+        {
+            shadowIBLDiffuse = shadow;
+            shadowIBLSpecular = lerp(0.25f, 1.0f, shadow);
+        }
+
+        float3 colorPbr = Lo + (diffuseIBL * shadowIBLDiffuse + specularIBL * shadowIBLSpecular) * ao;
 
         return float4(colorPbr, alphaOut);
     }
