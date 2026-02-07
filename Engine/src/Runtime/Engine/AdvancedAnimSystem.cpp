@@ -632,6 +632,7 @@ namespace Alice
 
         d.aim.enabled = animComp.aim.enabled;
         d.aim.yawRad = animComp.aim.yawRad;
+        d.aim.pitchRad = animComp.aim.pitchRad;
         d.aim.weight = animComp.aim.weight;
 
         d.rootMotion.enabled = rmEnabled;

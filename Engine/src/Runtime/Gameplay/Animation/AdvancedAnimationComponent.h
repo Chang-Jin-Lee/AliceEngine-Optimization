@@ -81,6 +81,7 @@ namespace Alice
 	{
 		bool enabled = false;
 		float yawRad = 0.0f;
+		float pitchRad = 0.0f;
 		float weight = 1.0f;
 	};
 
