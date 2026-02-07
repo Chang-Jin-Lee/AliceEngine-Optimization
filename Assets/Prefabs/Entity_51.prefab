@@ -1,29 +1,6 @@
 {
     "entities": [
         {
-            "AttackDriver": {
-                "clips": [
-                    {
-                        "canBeInterrupted": true,
-                        "clipName": "Boss|Boss|Kick_Attack",
-                        "enabled": true,
-                        "endTimeSec": 0.20000000298023224,
-                        "source": "Explicit",
-                        "startTimeSec": 0.10000000149011612,
-                        "traceSlotMask": 1,
-                        "type": "Attack"
-                    }
-                ],
-                "traceGuid": "0",
-                "traceGuids": [
-                    "15550708057389281984",
-                    "969751095770042628",
-                    "8533227325239418313",
-                    "15901920595927611664",
-                    "17374239080296640833",
-                    "7805198160923123806"
-                ]
-            },
             "Material": {
                 "albedoTexturePath": "",
                 "alpha": 1.0,
@@ -58,9 +35,9 @@
             },
             "SkinnedAnimation": {
                 "clipIndex": 11,
-                "playing": true,
+                "playing": false,
                 "speed": 1.0800000429153442,
-                "timeSec": 32.45823522100967
+                "timeSec": 0.7300000190734863
             },
             "SkinnedMesh": {
                 "boneCount": 65,
@@ -93,9 +70,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -2.0,
+                    "x": -10.0,
                     "y": 0.0,
-                    "z": 0.0
+                    "z": 5.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -109,7 +86,7 @@
                 },
                 "visible": true
             },
-            "guid": "3811512470628769898",
+            "guid": "6938631727056854653",
             "name": "Dummy"
         },
         {
@@ -134,7 +111,7 @@
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 3,
+                "attackInstanceId": 0,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -198,8 +175,8 @@
                 "teamId": 1,
                 "traceBasisGuid": "0"
             },
-            "_parentGuid": "3811512470628769898",
-            "guid": "15550708057389281984",
+            "_parentGuid": "6938631727056854653",
+            "guid": "16405204166734133664",
             "name": "Attack_Kick"
         },
         {
@@ -224,7 +201,7 @@
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 3,
+                "attackInstanceId": 0,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -288,8 +265,8 @@
                 "teamId": 1,
                 "traceBasisGuid": "0"
             },
-            "_parentGuid": "3811512470628769898",
-            "guid": "969751095770042628",
+            "_parentGuid": "6938631727056854653",
+            "guid": "2174643288750600930",
             "name": "Attack_A"
         },
         {
@@ -314,7 +291,7 @@
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 3,
+                "attackInstanceId": 0,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -336,8 +313,8 @@
                 "teamId": 1,
                 "traceBasisGuid": "0"
             },
-            "_parentGuid": "3811512470628769898",
-            "guid": "8533227325239418313",
+            "_parentGuid": "6938631727056854653",
+            "guid": "2563689005812286452",
             "name": "Attack_BC"
         },
         {
@@ -362,7 +339,7 @@
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 3,
+                "attackInstanceId": 0,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -384,8 +361,8 @@
                 "teamId": 1,
                 "traceBasisGuid": "0"
             },
-            "_parentGuid": "3811512470628769898",
-            "guid": "15901920595927611664",
+            "_parentGuid": "6938631727056854653",
+            "guid": "6863112690193983802",
             "name": "Attack_ABC"
         },
         {
@@ -410,7 +387,7 @@
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 3,
+                "attackInstanceId": 0,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -432,8 +409,8 @@
                 "teamId": 1,
                 "traceBasisGuid": "0"
             },
-            "_parentGuid": "3811512470628769898",
-            "guid": "17374239080296640833",
+            "_parentGuid": "6938631727056854653",
+            "guid": "16524424592176446637",
             "name": "Attack_Charging"
         },
         {
@@ -458,7 +435,7 @@
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 3,
+                "attackInstanceId": 0,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -480,164 +457,11 @@
                 "teamId": 1,
                 "traceBasisGuid": "0"
             },
-            "_parentGuid": "3811512470628769898",
-            "guid": "7805198160923123806",
+            "_parentGuid": "6938631727056854653",
+            "guid": "15197116109027465385",
             "name": "Attack_Dash"
-        },
-        {
-            "Material": {
-                "albedoTexturePath": "",
-                "alpha": 1.0,
-                "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Tia_Animaition_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "envDiffuseStrength": 1.0,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.5,
-                "shadingMode": -1,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 309.62856159801595
-            },
-            "SkinnedMesh": {
-                "boneCount": 137,
-                "instanceAssetPath": "Assets/Fbx/Tia_Animaition.fbxasset",
-                "meshAssetPath": "Tia_Animaition"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": -2.0,
-                    "y": 0.0,
-                    "z": -3.0
-                },
-                "rotation": {
-                    "x": -0.0,
-                    "y": -3.134260892868042,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "guid": "9999760099736687428",
-            "name": "TiaDummy"
-        },
-        {
-            "Material": {
-                "albedoTexturePath": "",
-                "alpha": 1.0,
-                "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Boss_Weapon_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "envDiffuseStrength": 1.0,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.5,
-                "shadingMode": -1,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Boss_Weapon.fbxasset",
-                "meshAssetPath": "Boss_Weapon"
-            },
-            "SocketAttachment": {
-                "extraPos": {
-                    "x": 10.350000381469727,
-                    "y": -62.4900016784668,
-                    "z": 7.110000133514404
-                },
-                "extraRotRad": {
-                    "x": 3.4700000286102295,
-                    "y": 0.27000001072883606,
-                    "z": -2.130000114440918
-                },
-                "extraScale": {
-                    "x": 150.0,
-                    "y": 150.0,
-                    "z": 150.0
-                },
-                "followScale": true,
-                "ownerGuid": "3811512470628769898",
-                "ownerNameDebug": "Dummy",
-                "socketName": "HAND"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": -2.319884777069092,
-                    "y": 1.4197862148284912,
-                    "z": -0.3512439727783203
-                },
-                "rotation": {
-                    "x": 0.46592098474502563,
-                    "y": 1.1890428066253662,
-                    "z": -0.2163809835910797
-                },
-                "scale": {
-                    "x": 1.4999995231628418,
-                    "y": 1.499998927116394,
-                    "z": 1.4999991655349731
-                },
-                "visible": true
-            },
-            "guid": "17426777838114852149",
-            "name": "DummyWeapon"
         }
     ],
-    "sceneName": "NewScene",
-    "version": 1
+    "rootGuid": "6938631727056854653",
+    "version": 2
 }
