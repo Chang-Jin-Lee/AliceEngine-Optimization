@@ -107,7 +107,8 @@ namespace Alice
         float targetSideDot = 0.0f;
         if (hasDir)
         {
-            const float yaw = selfTr->rotation.y;
+            constexpr float kDegToRad = 0.01745329252f;
+            const float yaw = selfTr->rotation.y - (m_rotationOffsetDeg * kDegToRad);
             const float fx = std::sin(yaw);
             const float fz = std::cos(yaw);
             targetDot = fx * toTarget.x + fz * toTarget.y;
@@ -386,12 +387,30 @@ namespace Alice
                     }
                     return 0.0f;
                 };
+            auto BeginPhase2Howling = [&]()
+                {
+                    m_patternQueue.clear();
+                    m_followupQueue.clear();
+                    CompleteIntent();
+                    m_forceWalkAfterAttack = false;
+                    m_rerollAfterAttack = false;
+                    m_chargeTimer = 0.0f;
+                    m_attackOutcome = AttackOutcome::None;
+                    m_attackOutcomeSet = false;
+                    m_decision.sectorLocked = false;
+                    m_decision.sectorLockedSec = 0.0f;
+                    m_decision.lockedSector = Sector::Unknown;
+                    m_activePattern = PatternType::Special;
+                    m_attackIssued = false;
+                    MarkPatternUsed(PatternType::Special);
+                    EnterState(BrainState::Gimmick);
+                };
 
             const float phase2Ratio = std::clamp(m_phase2HpRatio, 0.0f, 1.0f);
             if (!m_phase2Active && hpRatio <= phase2Ratio)
             {
                 m_phase2Active = true;
-                // TODO: Phase2 gimmick sequence (howling + effects) before resuming combat.
+                m_phase2HowlingPending = true;
             }
 
             if (m_chargeIntervalSec > 0.0f)
@@ -402,6 +421,14 @@ namespace Alice
                     m_chargeIntervalTimer -= m_chargeIntervalSec;
                     m_chargePending = true;
                 }
+            }
+
+            if (m_phase2HowlingPending
+                && m_activePattern != PatternType::Special
+                && m_state != BrainState::Attack)
+            {
+                m_phase2HowlingPending = false;
+                BeginPhase2Howling();
             }
 
             auto IsPatternInRange = [&](PatternType type) -> bool
@@ -437,7 +464,32 @@ namespace Alice
                     return pool[idx];
                 };
 
-            if (m_state == BrainState::Attack)
+            if (m_activePattern == PatternType::Special)
+            {
+                if (m_state != BrainState::Gimmick)
+                    EnterState(BrainState::Gimmick);
+
+                if (!m_attackIssued)
+                {
+                    intent.attackRequested = true;
+                    m_attackIssued = true;
+                    m_phase2HowlingStartedPulse = true;
+                }
+
+                float minSpecialTime = std::max(0.0f, m_specialPatternHoldSec);
+                const float driverDuration = ResolveAttackDuration();
+                if (driverDuration > 0.0f)
+                    minSpecialTime = std::max(minSpecialTime, driverDuration);
+
+                if (m_attackIssued && m_stateTimer >= minSpecialTime)
+                {
+                    m_activePattern = PatternType::None;
+                    m_attackIssued = false;
+                    m_attackCooldownTimer = std::max(0.0f, m_attackCooldown);
+                    EnterState(BrainState::Idle);
+                }
+            }
+            else if (m_state == BrainState::Attack)
             {
                 if (m_activePattern == PatternType::Charge)
                 {
@@ -699,7 +751,9 @@ namespace Alice
                 label += (m_patrolDirection >= 0) ? " (Right)" : " (Left)";
             label += m_phase2Active ? " | Phase2" : " | Phase1";
             label += " | Active: ";
-            const PatternType debugPattern = (m_state == BrainState::Attack) ? m_activePattern : PeekPendingPattern();
+            const PatternType debugPattern = (m_state == BrainState::Attack || m_state == BrainState::Gimmick)
+                ? m_activePattern
+                : PeekPendingPattern();
             label += GetPatternLabel(debugPattern);
             label += " | Intent: ";
             label += GetPatternLabel(m_intentRoot);
@@ -1326,6 +1380,13 @@ namespace Alice
         m_attackOutcomeSet = false;
     }
 
+    bool C_BossBrainComponent::ConsumePhase2HowlingStarted()
+    {
+        const bool started = m_phase2HowlingStartedPulse;
+        m_phase2HowlingStartedPulse = false;
+        return started;
+    }
+
     C_BossBrainComponent::DistanceBand C_BossBrainComponent::ComputeDistanceBand(float dist) const
     {
         float d2 = std::max(0.0f, m_distBand2);
@@ -1452,6 +1513,8 @@ namespace Alice
         m_backAttackPending = false;
         m_gimmickActive = false;
         m_phase2Active = false;
+        m_phase2HowlingPending = false;
+        m_phase2HowlingStartedPulse = false;
         m_chargePending = false;
         m_forceWalkAfterAttack = false;
         m_rerollAfterAttack = false;

@@ -401,6 +401,18 @@ private:
     std::unordered_map<Alice::EntityId, RuntimeMasks> m_runtimeMeshColliderMasks;
     std::unordered_map<Alice::EntityId, RuntimeMasks> m_runtimeTerrainMasks;
     std::unordered_map<Alice::EntityId, RuntimeMasks> m_runtimeCCTMasks;
+
+    // Root-motion CCT step history used to suppress one-frame snap-backs.
+    struct RootMotionStepState
+    {
+        DirectX::XMFLOAT3 prevDeltaWS{ 0.0f, 0.0f, 0.0f };
+        bool hasPrevDelta = false;
+        std::string prevClip;
+        float prevTimeSec = 0.0f;
+        bool hasPrevTime = false;
+        DirectX::XMFLOAT3 accumDeltaWS{ 0.0f, 0.0f, 0.0f };
+    };
+    std::unordered_map<Alice::EntityId, RootMotionStepState> m_rootMotionStepStates;
     
     // 레이어 매트릭스 기반으로 런타임 마스크 계산
     RuntimeMasks ComputeRuntimeMasks(uint32_t layerBits, uint32_t ignoreLayers) const;

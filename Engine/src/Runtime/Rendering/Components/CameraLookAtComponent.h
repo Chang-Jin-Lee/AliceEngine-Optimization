@@ -9,6 +9,7 @@ namespace Alice
     {
         bool enabled{ false };
         std::string targetName{ "Enemy" };
+        float targetYOffset{ 0.0f };
         float rotationDamping{ 8.0f };
     };
 }
