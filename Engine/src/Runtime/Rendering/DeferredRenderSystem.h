@@ -117,6 +117,10 @@ namespace Alice
         void SetShadowResolutionScale(std::uint32_t scale);
         /// Shadow 맵 강제 갱신 플래그.
         void ForceShadowUpdate();
+        /// Shadow 설정을 반환합니다.
+        const ShadowSettings& GetShadowSettings() const { return m_shadowSettings; }
+        /// Shadow 설정을 적용합니다. (해상도 변경 시 리소스를 재생성)
+        void ApplyShadowSettings(const ShadowSettings& settings);
 
         /// 배경색을 설정합니다 (스카이박스가 Off일 때 사용).
         void SetBackgroundColor(const DirectX::XMFLOAT4& color) { m_backgroundColor = color; }
@@ -288,6 +292,7 @@ namespace Alice
                                const DirectX::XMFLOAT4& toonPbrCuts,
                                const DirectX::XMFLOAT4& toonPbrLevels,
                                const DirectX::XMFLOAT4& toonPbrAlphas,
+                               float toonPbrRampIntensity,
                                float envDiffuseStrength = 1.0f,
                                float envSpecularStrength = 1.0f,
                                const DirectX::XMFLOAT3& outlineColor = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),
@@ -525,7 +530,7 @@ namespace Alice
         bool                                            m_shadowCacheDirty = true;
         bool                                            m_shadowEnabledLast = true;
         std::uint32_t                                   m_shadowUpdateInterval = 2; // 1: 매 프레임
-        std::uint32_t                                   m_shadowResolutionScale = 2; // 1: 원본, 2: 1/2
+        std::uint32_t                                   m_shadowResolutionScale = 1; // 1: 원본, 2: 1/2
         std::uint32_t                                   m_shadowMapSizePxEffective = 0;
 
         // Forward와 동일한 조명/재질 파라미터 (에디터 UI 공유)

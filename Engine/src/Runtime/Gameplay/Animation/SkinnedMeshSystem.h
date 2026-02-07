@@ -133,6 +133,7 @@ namespace Alice
                     cmd.toonPbrLevels = DirectX::XMFLOAT4(mat->toonPbrLevel1, mat->toonPbrLevel2, mat->toonPbrLevel3,
                                                           mat->toonPbrBlur ? 1.0f : 0.0f);
                     cmd.toonPbrAlphas = DirectX::XMFLOAT4(mat->toonPbrLevel1Alpha, mat->toonPbrLevel2Alpha, mat->toonPbrLevel3Alpha, mat->shadowStrength);
+                    cmd.toonPbrRampIntensity = mat->toonPbrRampIntensity;
 
                     if (!mat->albedoTexturePath.empty())
                     {

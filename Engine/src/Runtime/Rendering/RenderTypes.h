@@ -196,6 +196,7 @@ namespace Alice
         DirectX::XMFLOAT4 toonPbrCuts   { 0.2f, 0.5f, 0.95f, 1.0f }; // cut1, cut2, cut3, strength
         DirectX::XMFLOAT4 toonPbrLevels { 0.1f, 0.4f, 0.7f, 0.0f };  // level1, level2, level3, blur(0/1)
         DirectX::XMFLOAT4 toonPbrAlphas { 1.0f, 1.0f, 1.0f, 1.0f };  // level1~3 alpha, w: shadowStrength
+        float             toonPbrRampIntensity { 0.0f };            // 0: 기존, 1: 가장 어두운 밴드 완화
 
         // 선택적인 알베도 텍스처 경로 (.alice 단일 포맷 또는 원본 이미지 경로)
         std::string       albedoTexturePath;
@@ -204,12 +205,12 @@ namespace Alice
     };
 
 
-    struct ShadowSettings
+	struct ShadowSettings
 	{
 		// 튜토리얼(34_ToneMapping)과 동일한 기본값 스케일
-		std::uint32_t mapSizePx = 2048;   // 섀도우맵 해상도(한 변)
+		std::uint32_t mapSizePx = 4096;   // 섀도우맵 해상도(한 변)
 		float         bias = 0.0015f;
-		float         pcfRadius = 1.0f;   // texel 단위(0~3 권장)
+		float         pcfRadius = 0.5f;   // texel 단위(0~3 권장)
 		float         orthoRadius = 20.0f; // 월드 단위(씬 크기에 맞게 조절)
 		bool          enabled = true;
 	};
@@ -399,10 +400,11 @@ namespace Alice
         DirectX::XMFLOAT4 toonPbrCuts;    // Offset: 256 -> 272
         DirectX::XMFLOAT4 toonPbrLevels;  // Offset: 272 -> 288 (w: blur)
         DirectX::XMFLOAT4 toonPbrAlphas;  // Offset: 288 -> 304 (alpha1~3, w: shadowStrength)
+        float             toonPbrRampIntensity; // Offset: 304 -> 308
         
         // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
-        DirectX::XMFLOAT3 outlineColor;  // 아웃라인 색상 (Offset: 304 -> 316)
-        float             outlineWidth;  // 아웃라인 두께 (월드 단위) (Offset: 316 -> 320)
+        DirectX::XMFLOAT3 outlineColor;  // 아웃라인 색상 (Offset: 308 -> 320)
+        float             outlineWidth;  // 아웃라인 두께 (월드 단위) (Offset: 320 -> 324)
 	};
 
 	/// 단순 Directional Light 2개와 재질 파라미터를 담는 구조체입니다.
