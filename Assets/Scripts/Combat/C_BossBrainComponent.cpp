@@ -237,6 +237,16 @@ namespace Alice
                 MarkPatternUsed(type);
                 EnterState(BrainState::Attack);
             };
+        auto IsFacingReadyForPattern = [&](PatternType type) -> bool
+            {
+                // Side attack is an anti-flank tool and may start without front-facing.
+                if (type == PatternType::Side || type == PatternType::Special || type == PatternType::None)
+                    return true;
+                if (!hasDir)
+                    return true;
+                const float facingDotThreshold = GetTurnInPlaceDotThreshold();
+                return targetDot >= facingDotThreshold;
+            };
 
         if (m_stationaryAttackBoss)
         {
@@ -311,7 +321,8 @@ namespace Alice
             {
                 if (dist <= approachDist)
                 {
-                    BeginAttack(PatternType::AttackA);
+                    if (IsFacingReadyForPattern(PatternType::AttackA))
+                        BeginAttack(PatternType::AttackA);
                 }
                 else if (hasDir)
                 {
@@ -779,7 +790,8 @@ namespace Alice
                 if (pending != PatternType::None)
                 {
                     const bool pendingInRange = (pending == PatternType::Dash) || IsPatternInRange(pending);
-                    if (pendingInRange)
+                    const bool facingReady = IsFacingReadyForPattern(pending);
+                    if (pendingInRange && facingReady)
                     {
                         if (pending == PatternType::Ranged)
                             m_forceWalkAfterAttack = true;
@@ -802,20 +814,26 @@ namespace Alice
                 }
                 else if (IsPatternInRange(pending))
                 {
-                    if (pending == PatternType::Ranged)
-                        m_forceWalkAfterAttack = true;
-                    m_activePattern = PopPendingPattern();
-                    BeginAttack(m_activePattern);
+                    if (IsFacingReadyForPattern(pending))
+                    {
+                        if (pending == PatternType::Ranged)
+                            m_forceWalkAfterAttack = true;
+                        m_activePattern = PopPendingPattern();
+                        BeginAttack(m_activePattern);
+                    }
                 }
                 else
                 {
                     const float approachCompleteDist = std::max(0.0f, m_approachCompleteDist);
                     if (approachCompleteDist > 0.0f && dist <= approachCompleteDist)
                     {
-                        if (pending == PatternType::Ranged)
-                            m_forceWalkAfterAttack = true;
-                        m_activePattern = PopPendingPattern();
-                        BeginAttack(m_activePattern);
+                        if (IsFacingReadyForPattern(pending))
+                        {
+                            if (pending == PatternType::Ranged)
+                                m_forceWalkAfterAttack = true;
+                            m_activePattern = PopPendingPattern();
+                            BeginAttack(m_activePattern);
+                        }
                     }
                     else
                     {
@@ -831,10 +849,13 @@ namespace Alice
                         }
                         else if (dashTimeout > 0.0f && m_stateTimer >= dashTimeout)
                         {
-                            PopPendingPattern();
-                            CompleteIntent();
-                            m_rerollAfterAttack = true;
-                            BeginAttack(PatternType::Dash);
+                            if (IsFacingReadyForPattern(PatternType::Dash))
+                            {
+                                PopPendingPattern();
+                                CompleteIntent();
+                                m_rerollAfterAttack = true;
+                                BeginAttack(PatternType::Dash);
+                            }
                         }
                     }
                 }
@@ -1112,7 +1133,8 @@ namespace Alice
 
                 if (inRange)
                 {
-                    BeginAttack(m_activePattern);
+                    if (IsFacingReadyForPattern(m_activePattern))
+                        BeginAttack(m_activePattern);
                 }
                 else
                 {

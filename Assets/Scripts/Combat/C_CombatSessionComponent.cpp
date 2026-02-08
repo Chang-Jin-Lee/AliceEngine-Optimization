@@ -2498,9 +2498,18 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					const bool isPlayerDodge = isPlayer
 						&& (outPlayer.state == Combat::ActionState::Dodge);
 					const auto* moveHealth = world.GetComponent<HealthComponent>(entityId);
-					const bool pushbackOverrideActive = moveHealth
+					const bool pushbackOverrideActive = !isBoss && moveHealth
 						&& moveHealth->pushbackRemainingSec > 0.0f
 						&& moveHealth->pushbackSpeed > 0.0f;
+					if (isBoss && moveHealth)
+					{
+						if (auto* bossHealth = world.GetComponent<HealthComponent>(entityId))
+						{
+							bossHealth->pushbackRemainingSec = 0.0f;
+							bossHealth->pushbackSpeed = 0.0f;
+							bossHealth->pushbackDir = { 0.0f, 0.0f, 0.0f };
+						}
+					}
 					if (pushbackOverrideActive)
 					{
 						// While pushback is active, ignore normal move requests.
@@ -2714,6 +2723,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					return false;
 				if (outBoss.state == Combat::ActionState::Groggy)
 					return false;
+				if (outBoss.state == Combat::ActionState::Dead)
+					return false;
 
 				// Boss attacks should keep their initial direction.
 				// Exception: charge attack can track only for the configured early-time window.
@@ -2770,6 +2781,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				auto* hc = world.GetComponent<HealthComponent>(entityId);
 				if (!hc || hc->pushbackRemainingSec <= 0.0f || hc->pushbackSpeed <= 0.0f)
 					return;
+				if (entityId == bossId)
+				{
+					hc->pushbackRemainingSec = 0.0f;
+					hc->pushbackSpeed = 0.0f;
+					hc->pushbackDir = { 0.0f, 0.0f, 0.0f };
+					return;
+				}
 				if (hitstopActive)
 					return;
 
@@ -4367,6 +4385,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				const float scale = std::max(0.0f, m_guardBreakPushbackScale);
 				payload.speed *= scale;
 				payload.durationSec = std::max(0.0f, m_guardBreakPushbackDurationSec);
+				if (bossId != InvalidEntityId
+					&& (payload.attacker == bossId || payload.victim == bossId))
+				{
+					const EntityId target = (payload.attacker == bossId) ? payload.victim : payload.attacker;
+					cmd.type = Combat::CommandType::ApplyPushback;
+					cmd.payload = Combat::CmdApplyPushback{ bossId, target, payload.speed, payload.durationSec };
+				}
 			}
 			if (wasGuardBreak)
 			{
@@ -4382,12 +4407,25 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				immediate.erase(std::remove_if(immediate.begin(), immediate.end(),
 					[&](const Combat::Command& cmd)
 					{
-						if (cmd.type != Combat::CommandType::ForceCancelAttack)
-							return false;
-						const auto& payload = std::get<Combat::CmdForceCancelAttack>(cmd.payload);
-						return payload.target == bossId;
+						if (cmd.type == Combat::CommandType::ForceCancelAttack)
+						{
+							const auto& payload = std::get<Combat::CmdForceCancelAttack>(cmd.payload);
+							return payload.target == bossId;
+						}
+						if (cmd.type == Combat::CommandType::ApplyPushback)
+						{
+							const auto& payload = std::get<Combat::CmdApplyPushback>(cmd.payload);
+							return payload.victim == bossId;
+						}
+						return false;
 					}),
 					immediate.end());
+				if (auto* hc = world.GetComponent<HealthComponent>(bossId))
+				{
+					hc->pushbackRemainingSec = 0.0f;
+					hc->pushbackSpeed = 0.0f;
+					hc->pushbackDir = { 0.0f, 0.0f, 0.0f };
+				}
 			}
 			m_state->apply.ApplyImmediate(world, m_state->fighterMap, m_state->bus, immediate, false);
 
