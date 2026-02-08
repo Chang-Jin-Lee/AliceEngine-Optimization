@@ -161,6 +161,7 @@ namespace Alice
 		bool bossGuardHeldAtHitstop = false;
 		float playerHealLoopSec = 0.0f;
 		float playerHealNextTickSec = 0.0f;
+		std::uint64_t playerParrySuccessCount = 0;
 		std::vector<PendingDeferredEvent> pendingDeferred;
 		std::vector<PendingImmediateCommand> pendingImmediate;
 		Combat::BossSignals bossSignals{};
@@ -240,6 +241,7 @@ namespace Alice
 			bossAttackSpeedScale = 1.0f;
 			playerHealLoopSec = 0.0f;
 			playerHealNextTickSec = 0.0f;
+			playerParrySuccessCount = 0;
 			pendingDeferred.clear();
 			pendingImmediate.clear();
 			parryResolvedByVictim.clear();
@@ -626,6 +628,11 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
     Combat::ActionFlags C_CombatSessionComponent::GetBossFlags() const
     {
         return m_state ? m_state->boss.flags : Combat::ActionFlags{};
+    }
+
+    std::uint64_t C_CombatSessionComponent::GetPlayerParrySuccessCount() const
+    {
+        return m_state ? m_state->playerParrySuccessCount : 0;
     }
 
     bool C_CombatSessionComponent::IsPlayerRageActive() const
@@ -4321,6 +4328,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			const bool wasGuarded = (resolveResult == Combat::ResolveResult::Guard);
 			const bool wasGuardBreak = (resolveResult == Combat::ResolveResult::GuardBreak);
 			const bool wasHit = (resolveResult == Combat::ResolveResult::Hit);
+			if (parrySuccess && hit.victimOwner == playerId)
+				++m_state->playerParrySuccessCount;
 			if (wasHit && hit.victimOwner == bossId)
 			{
 				nextBossSignals.hitThisFrame = true;

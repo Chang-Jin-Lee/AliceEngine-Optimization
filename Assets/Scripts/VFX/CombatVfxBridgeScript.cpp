@@ -486,85 +486,86 @@ namespace Alice
 
     void CombatVfxBridgeScript::DetachActiveSlashInstances()
     {
-        World* world = GetWorld();
-        if (!world)
-            return;
-
         for (int slot = SlashDefaultSlot; slot <= SlashStep6Slot; ++slot)
         {
             for (ActiveInstance& inst : m_active[slot])
+                FreezeSlashInstanceToWorldAnchor(inst);
+        }
+    }
+
+    void CombatVfxBridgeScript::FreezeSlashInstanceToWorldAnchor(ActiveInstance& inst)
+    {
+        World* world = GetWorld();
+        if (!world || inst.id == InvalidEntityId)
+            return;
+
+        TransformComponent* tr = world->GetComponent<TransformComponent>(inst.id);
+        if (!tr)
+            return;
+
+        // Slash is spawned under player. Once detached to a freeze anchor,
+        // parent is no longer player and this block won't run again.
+        const EntityId oldParent = tr->parent;
+        if (oldParent == InvalidEntityId || oldParent != m_playerId)
+            return;
+
+        const EntityId anchor = world->CreateEmpty();
+        if (anchor == InvalidEntityId)
+        {
+            world->SetParent(inst.id, InvalidEntityId, true);
+            return;
+        }
+
+        world->SetEntityName(anchor, "__CombatVfxFreezeAnchor");
+        world->SetParent(anchor, InvalidEntityId, false);
+
+        bool anchorPoseReady = false;
+        if (const auto* parentTr = world->GetComponent<TransformComponent>(oldParent))
+        {
+            if (parentTr->parent == InvalidEntityId)
             {
-                if (inst.id == InvalidEntityId)
-                    continue;
-                TransformComponent* tr = world->GetComponent<TransformComponent>(inst.id);
-                if (!tr)
-                    continue;
-
-                // Slash is spawned under player. Once detached to a freeze anchor,
-                // parent is no longer player and this block won't run again.
-                const EntityId oldParent = tr->parent;
-                if (oldParent == InvalidEntityId || oldParent != m_playerId)
-                    continue;
-
-                const EntityId anchor = world->CreateEmpty();
-                if (anchor == InvalidEntityId)
+                if (auto* anchorTr = world->GetComponent<TransformComponent>(anchor))
                 {
-                    world->SetParent(inst.id, InvalidEntityId, true);
-                    continue;
+                    anchorTr->position = parentTr->position;
+                    anchorTr->rotation = parentTr->rotation;
+                    anchorTr->scale = parentTr->scale;
+                    world->MarkTransformDirty(anchor);
+                    anchorPoseReady = true;
                 }
-
-                world->SetEntityName(anchor, "__CombatVfxFreezeAnchor");
-                world->SetParent(anchor, InvalidEntityId, false);
-
-                bool anchorPoseReady = false;
-                if (const auto* parentTr = world->GetComponent<TransformComponent>(oldParent))
-                {
-                    if (parentTr->parent == InvalidEntityId)
-                    {
-                        if (auto* anchorTr = world->GetComponent<TransformComponent>(anchor))
-                        {
-                            anchorTr->position = parentTr->position;
-                            anchorTr->rotation = parentTr->rotation;
-                            anchorTr->scale = parentTr->scale;
-                            world->MarkTransformDirty(anchor);
-                            anchorPoseReady = true;
-                        }
-                    }
-                }
-
-                if (!anchorPoseReady)
-                {
-                    XMFLOAT3 worldPos{};
-                    XMFLOAT3 worldRot{};
-                    XMFLOAT3 worldScale{};
-                    const XMMATRIX parentWorld = world->ComputeWorldMatrix(oldParent);
-                    if (DecomposeWorldMatrix(parentWorld, worldPos, worldRot, worldScale))
-                    {
-                        if (auto* anchorTr = world->GetComponent<TransformComponent>(anchor))
-                        {
-                            anchorTr->position = worldPos;
-                            anchorTr->rotation = worldRot;
-                            anchorTr->scale = worldScale;
-                            world->MarkTransformDirty(anchor);
-                            anchorPoseReady = true;
-                        }
-                    }
-                }
-
-                if (!anchorPoseReady)
-                {
-                    world->DestroyEntity(anchor);
-                    world->SetParent(inst.id, InvalidEntityId, true);
-                    continue;
-                }
-
-                world->SetParent(inst.id, anchor, false);
-
-                if (inst.freezeAnchor != InvalidEntityId && inst.freezeAnchor != anchor)
-                    world->DestroyEntity(inst.freezeAnchor);
-                inst.freezeAnchor = anchor;
             }
         }
+
+        if (!anchorPoseReady)
+        {
+            XMFLOAT3 worldPos{};
+            XMFLOAT3 worldRot{};
+            XMFLOAT3 worldScale{};
+            const XMMATRIX parentWorld = world->ComputeWorldMatrix(oldParent);
+            if (DecomposeWorldMatrix(parentWorld, worldPos, worldRot, worldScale))
+            {
+                if (auto* anchorTr = world->GetComponent<TransformComponent>(anchor))
+                {
+                    anchorTr->position = worldPos;
+                    anchorTr->rotation = worldRot;
+                    anchorTr->scale = worldScale;
+                    world->MarkTransformDirty(anchor);
+                    anchorPoseReady = true;
+                }
+            }
+        }
+
+        if (!anchorPoseReady)
+        {
+            world->DestroyEntity(anchor);
+            world->SetParent(inst.id, InvalidEntityId, true);
+            return;
+        }
+
+        world->SetParent(inst.id, anchor, false);
+
+        if (inst.freezeAnchor != InvalidEntityId && inst.freezeAnchor != anchor)
+            world->DestroyEntity(inst.freezeAnchor);
+        inst.freezeAnchor = anchor;
     }
 
     void CombatVfxBridgeScript::UpdatePathCacheAndPools()
@@ -843,7 +844,8 @@ namespace Alice
             return;
         }
 
-        const bool heavyFade = Get_enableHeavyFadeOut() && IsHeavyAttackSlotIndex(resolvedAttackSlotIndex);
+        const bool isHeavySlash = IsHeavyAttackSlotIndex(resolvedAttackSlotIndex);
+        const bool heavyFade = Get_enableHeavyFadeOut() && isHeavySlash;
         const float lifeSec = ResolveSpawnLifetimeSec(slashSlot, resolvedAttackSlotIndex);
         if (heavyFade)
             SetEntityLoopModeRecursive(*world, id, true);
@@ -877,6 +879,10 @@ namespace Alice
         world->MarkTransformDirty(id);
 
         m_active[slashSlot].push_back({ id, lifeSec, lifeSec, heavyFade, InvalidEntityId });
+
+        // Heavy slash should leave player immediately to keep a stable world afterimage.
+        if (isHeavySlash)
+            FreezeSlashInstanceToWorldAnchor(m_active[slashSlot].back());
     }
 
     void CombatVfxBridgeScript::SpawnHitFromResolve(const DirectX::XMFLOAT3& hitPos,
@@ -915,6 +921,8 @@ namespace Alice
         XMFLOAT3 slashRotationOffsetDeg = Get_slashRotationOffsetDeg();
         if (Get_useSlashSlotTransformTuning() && attackSlotIndex > 0)
             slashRotationOffsetDeg = Add(slashRotationOffsetDeg, GetSlashSlotRotationOffsetDeg(attackSlotIndex));
+        // HIT crack/card plane should face the opposite side of slash orientation.
+        // slashRotationOffsetDeg.x += 180.0f;
 
         ApplySpawnTransformTuned(hitSlot,
                                  id,

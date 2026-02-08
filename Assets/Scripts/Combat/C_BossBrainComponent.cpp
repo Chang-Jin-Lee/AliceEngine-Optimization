@@ -2,18 +2,25 @@
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <cmath>
+#include <cstdlib>
 #include <random>
 #include <vector>
+
+#include <assimp/scene.h>
 
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/ECS/World.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
 #include "Runtime/Gameplay/Combat/HealthComponent.h"
+#include "Runtime/Importing/FbxModel.h"
 #include "Runtime/Input/Input.h"
 #include "Runtime/Physics/Components/Phy_CCTComponent.h"
 #include "Runtime/Physics/IPhysicsWorld.h"
+#include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
+#include "Runtime/Rendering/SkinnedMeshRegistry.h"
 
 namespace Alice
 {
@@ -46,6 +53,65 @@ namespace Alice
         int RandomSign()
         {
             return (RandomRange(0.0f, 1.0f) < 0.5f) ? -1 : 1;
+        }
+
+        bool TryParseIndex(const std::string& key, int& outIdx)
+        {
+            if (key.empty())
+                return false;
+            for (char c : key)
+            {
+                if (!std::isdigit(static_cast<unsigned char>(c)))
+                    return false;
+            }
+            outIdx = std::atoi(key.c_str());
+            return true;
+        }
+
+        float GetClipDurationSecByName(const SkinnedMeshRegistry* registry,
+                                       World& world,
+                                       EntityId entityId,
+                                       const std::string& clipName)
+        {
+            if (clipName.empty() || !registry)
+                return 0.0f;
+
+            auto* skinned = world.GetComponent<SkinnedMeshComponent>(entityId);
+            if (!skinned || skinned->meshAssetPath.empty())
+                return 0.0f;
+
+            auto mesh = registry->Find(skinned->meshAssetPath);
+            if (!mesh || !mesh->sourceModel)
+                return 0.0f;
+
+            const auto& names = mesh->sourceModel->GetAnimationNames();
+            const auto* scene = mesh->sourceModel->GetScenePtr();
+            const size_t clipCount = scene ? scene->mNumAnimations : names.size();
+
+            for (size_t i = 0; i < names.size() && i < clipCount; ++i)
+            {
+                if (names[i] == clipName)
+                    return static_cast<float>(mesh->sourceModel->GetClipDurationSec(static_cast<int>(i)));
+            }
+
+            if (scene)
+            {
+                for (size_t i = 0; i < scene->mNumAnimations; ++i)
+                {
+                    const auto* anim = scene->mAnimations[i];
+                    if (anim && anim->mName.length > 0 && clipName == anim->mName.C_Str())
+                        return static_cast<float>(mesh->sourceModel->GetClipDurationSec(static_cast<int>(i)));
+                }
+            }
+
+            int idx = -1;
+            if (TryParseIndex(clipName, idx))
+            {
+                if (idx >= 0 && static_cast<size_t>(idx) < clipCount)
+                    return static_cast<float>(mesh->sourceModel->GetClipDurationSec(idx));
+            }
+
+            return 0.0f;
         }
     }
 
@@ -573,9 +639,18 @@ namespace Alice
                 }
 
                 float minSpecialTime = std::max(0.0f, m_specialPatternHoldSec);
-                const float driverDuration = ResolveAttackDuration();
-                if (driverDuration > 0.0f)
-                    minSpecialTime = std::max(minSpecialTime, driverDuration);
+                const float specialClipDuration = GetClipDurationSecByName(
+                    SkinnedRegistry(), *world, selfId, GetPatternClip(PatternType::Special));
+                if (specialClipDuration > 0.0f)
+                {
+                    minSpecialTime = specialClipDuration;
+                }
+                else
+                {
+                    const float driverDuration = ResolveAttackDuration();
+                    if (driverDuration > 0.0f)
+                        minSpecialTime = driverDuration;
+                }
 
                 if (m_attackIssued && m_stateTimer >= minSpecialTime)
                 {
@@ -1070,7 +1145,13 @@ namespace Alice
                 intent.attackRequested = true;
                 m_attackIssued = true;
             }
-            if (m_stateTimer >= std::max(0.0f, m_specialPatternHoldSec))
+            float minSpecialTime = std::max(0.0f, m_specialPatternHoldSec);
+            const float specialClipDuration = GetClipDurationSecByName(
+                SkinnedRegistry(), *world, selfId, GetPatternClip(PatternType::Special));
+            if (specialClipDuration > 0.0f)
+                minSpecialTime = specialClipDuration;
+
+            if (m_stateTimer >= minSpecialTime)
                 finishedPattern = true;
         }
         else if (m_activePattern != PatternType::None)

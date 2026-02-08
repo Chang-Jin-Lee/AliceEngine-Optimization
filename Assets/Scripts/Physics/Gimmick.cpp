@@ -22,6 +22,7 @@
 #include "Runtime/Rendering/Components/MaterialComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
 #include "Runtime/Rendering/Components/UnityVfxComponent.h"
+#include "../Combat/C_CombatSessionComponent.h"
 //TODO : Include 확인 해야함
 
 namespace Alice
@@ -137,6 +138,17 @@ namespace Alice
         m_rng = std::mt19937(std::random_device{}());
         FindEntities();
         SetupShardTrailVfx();
+        m_prevPlayerParrySuccessCount = 0;
+        m_hasSeenPlayerParrySuccessCount = false;
+        m_parryShieldVfx = InvalidEntityId;
+        m_parryShieldFreezeAnchor = InvalidEntityId;
+        m_parryShieldDetachTimerSec = 0.0f;
+        m_parryShieldDetached = false;
+        m_warnedMissingCombatSession = false;
+        m_warnedMissingPlayerEntity = false;
+        m_warnedMissingParryShield = false;
+        m_warnedMissingParryShieldVfx = false;
+        RestoreParryShieldToPlayer(true);
 
         m_initialized = (m_weaponCombined != InvalidEntityId && m_eye != InvalidEntityId);
         if (!m_initialized)
@@ -155,6 +167,8 @@ namespace Alice
 
     void Gimmick::Update(float deltaTime)
     {
+        UpdateParryShieldParryTrigger(deltaTime);
+
         if (!m_initialized)
             return;
 
@@ -317,6 +331,310 @@ namespace Alice
                     static_cast<unsigned long long>(traceId));
             }
         }
+    }
+
+    C_CombatSessionComponent* Gimmick::FindCombatSession()
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return nullptr;
+
+        const std::string& sessionName = Get_m_combatSessionName();
+        if (sessionName.empty())
+            return nullptr;
+
+        GameObject go = world->FindGameObject(sessionName);
+        if (!go.IsValid())
+        {
+            if (!m_warnedMissingCombatSession)
+            {
+                ALICE_LOG_WARN("[Gimmick] Combat session entity not found: %s", sessionName.c_str());
+                m_warnedMissingCombatSession = true;
+            }
+            return nullptr;
+        }
+
+        auto* scripts = world->GetScripts(go.id());
+        if (!scripts)
+            return nullptr;
+
+        for (auto& sc : *scripts)
+        {
+            if (sc.scriptName == "C_CombatSessionComponent" && sc.instance)
+                return static_cast<C_CombatSessionComponent*>(sc.instance.get());
+        }
+
+        if (!m_warnedMissingCombatSession)
+        {
+            ALICE_LOG_WARN("[Gimmick] C_CombatSessionComponent missing on entity: %s", sessionName.c_str());
+            m_warnedMissingCombatSession = true;
+        }
+        return nullptr;
+    }
+
+    EntityId Gimmick::ResolvePlayerEntity(bool logWarnings)
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return InvalidEntityId;
+
+        const std::string& playerName = Get_m_playerEntityName();
+        if (playerName.empty())
+            return InvalidEntityId;
+
+        GameObject go = world->FindGameObject(playerName);
+        if (!go.IsValid())
+        {
+            if (logWarnings && !m_warnedMissingPlayerEntity)
+            {
+                ALICE_LOG_WARN("[Gimmick] Player entity not found: %s", playerName.c_str());
+                m_warnedMissingPlayerEntity = true;
+            }
+            return InvalidEntityId;
+        }
+
+        return go.id();
+    }
+
+    EntityId Gimmick::ResolveParryShieldVfxEntity(bool logWarnings)
+    {
+        auto* world = GetWorld();
+        if (!world)
+        {
+            m_parryShieldVfx = InvalidEntityId;
+            return InvalidEntityId;
+        }
+
+        if (m_parryShieldVfx != InvalidEntityId && world->GetComponent<UnityVfxComponent>(m_parryShieldVfx))
+            return m_parryShieldVfx;
+
+        const std::string ownerName = Get_m_playerEntityName();
+        const std::string shieldName = Get_m_parryShieldVfxName();
+        if (shieldName.empty())
+        {
+            m_parryShieldVfx = InvalidEntityId;
+            return InvalidEntityId;
+        }
+
+        EntityId resolved = InvalidEntityId;
+        if (!ownerName.empty())
+        {
+            GameObject ownerGo = world->FindGameObject(ownerName);
+            if (ownerGo.IsValid())
+            {
+                const auto children = world->GetChildren(ownerGo.id());
+                for (EntityId child : children)
+                {
+                    if (world->GetEntityName(child) == shieldName)
+                    {
+                        resolved = child;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (resolved == InvalidEntityId)
+        {
+            GameObject shieldGo = world->FindGameObject(shieldName);
+            if (shieldGo.IsValid())
+                resolved = shieldGo.id();
+        }
+
+        if (resolved == InvalidEntityId)
+        {
+            m_parryShieldVfx = InvalidEntityId;
+            if (logWarnings && !m_warnedMissingParryShield)
+            {
+                ALICE_LOG_WARN("[Gimmick] Parry shield VFX entity not found: owner=%s child=%s",
+                               ownerName.c_str(),
+                               shieldName.c_str());
+                m_warnedMissingParryShield = true;
+            }
+            return InvalidEntityId;
+        }
+
+        if (!world->GetComponent<UnityVfxComponent>(resolved))
+        {
+            m_parryShieldVfx = InvalidEntityId;
+            if (logWarnings && !m_warnedMissingParryShieldVfx)
+            {
+                ALICE_LOG_WARN("[Gimmick] Parry shield entity has no UnityVfxComponent: %s", shieldName.c_str());
+                m_warnedMissingParryShieldVfx = true;
+            }
+            return InvalidEntityId;
+        }
+
+        m_parryShieldVfx = resolved;
+        return resolved;
+    }
+
+    void Gimmick::TriggerParryShieldOneShot()
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        const EntityId shieldId = ResolveParryShieldVfxEntity(true);
+        if (shieldId == InvalidEntityId)
+            return;
+
+        const EntityId playerId = ResolvePlayerEntity(true);
+        if (playerId == InvalidEntityId)
+            return;
+
+        // If already detached from a previous play, restore first, then re-freeze.
+        if (m_parryShieldDetached)
+            RestoreParryShieldToPlayer(false);
+
+        const EntityId anchor = world->CreateEmpty();
+        if (anchor != InvalidEntityId)
+        {
+            world->SetEntityName(anchor, "__ParryShieldFreezeAnchor");
+            world->SetParent(anchor, InvalidEntityId, false);
+
+            XMFLOAT3 worldPos{};
+            XMFLOAT3 worldRot{};
+            XMFLOAT3 worldScale{};
+            const XMMATRIX playerWorld = world->ComputeWorldMatrix(playerId);
+            if (DecomposeMatrix(playerWorld, worldPos, worldRot, worldScale))
+            {
+                if (auto* anchorTr = world->GetComponent<TransformComponent>(anchor))
+                {
+                    anchorTr->position = worldPos;
+                    anchorTr->rotation = worldRot;
+                    anchorTr->scale = worldScale;
+                    anchorTr->enabled = true;
+                    anchorTr->visible = true;
+                    world->MarkTransformDirty(anchor);
+                }
+
+                // Keep current local offset while freezing parent world transform snapshot.
+                world->SetParent(shieldId, anchor, false);
+                m_parryShieldFreezeAnchor = anchor;
+                m_parryShieldDetached = true;
+                const float safeTimeScale = std::max(0.01f, Get_m_parryShieldTimeScale());
+                m_parryShieldDetachTimerSec = std::max(0.05f, Get_m_parryShieldDetachDurationSec() / safeTimeScale);
+            }
+            else
+            {
+                world->DestroyEntity(anchor);
+            }
+        }
+
+        if (!m_parryShieldDetached && world->GetParent(shieldId) != playerId)
+            world->SetParent(shieldId, playerId, false);
+
+        if (auto* tr = world->GetComponent<TransformComponent>(shieldId))
+        {
+            const bool changed = (!tr->enabled) || (!tr->visible);
+            tr->enabled = true;
+            tr->visible = true;
+            if (changed)
+                world->MarkTransformDirty(shieldId);
+        }
+
+        if (auto* vfx = world->GetComponent<UnityVfxComponent>(shieldId))
+        {
+            vfx->enabled = true;
+            vfx->timeScale = std::max(0.01f, Get_m_parryShieldTimeScale());
+            vfx->overrideLoop = true;
+            vfx->loop = false;
+            vfx->emitNewParticles = true;
+            vfx->alphaScale = 1.0f;
+            vfx->playId += 1;
+        }
+
+        if (auto* compute = world->GetComponent<ComputeEffectComponent>(shieldId))
+        {
+            compute->enabled = false;
+            compute->spawnRate = 0.0f;
+        }
+    }
+
+    void Gimmick::RestoreParryShieldToPlayer(bool hideAfterRestore)
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        const EntityId shieldId = ResolveParryShieldVfxEntity(false);
+        const EntityId playerId = ResolvePlayerEntity(false);
+        if (shieldId != InvalidEntityId && playerId != InvalidEntityId)
+        {
+            if (world->GetParent(shieldId) != playerId)
+                world->SetParent(shieldId, playerId, false);
+
+            if (hideAfterRestore)
+            {
+                if (auto* tr = world->GetComponent<TransformComponent>(shieldId))
+                {
+                    tr->enabled = false;
+                    tr->visible = false;
+                    world->MarkTransformDirty(shieldId);
+                }
+
+                if (auto* vfx = world->GetComponent<UnityVfxComponent>(shieldId))
+                {
+                    vfx->enabled = false;
+                    vfx->emitNewParticles = false;
+                    vfx->alphaScale = 1.0f;
+                }
+            }
+        }
+
+        if (m_parryShieldFreezeAnchor != InvalidEntityId)
+        {
+            world->DestroyEntity(m_parryShieldFreezeAnchor);
+            m_parryShieldFreezeAnchor = InvalidEntityId;
+        }
+
+        m_parryShieldDetached = false;
+        m_parryShieldDetachTimerSec = 0.0f;
+    }
+
+    void Gimmick::UpdateParryShieldParryTrigger(float dt)
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        if (m_parryShieldDetached)
+        {
+            m_parryShieldDetachTimerSec = std::max(0.0f, m_parryShieldDetachTimerSec - std::max(0.0f, dt));
+            if (m_parryShieldDetachTimerSec <= 0.0f)
+                RestoreParryShieldToPlayer(true);
+        }
+
+        C_CombatSessionComponent* session = FindCombatSession();
+        if (!session)
+        {
+            return;
+        }
+
+        const std::uint64_t parryCount = session->GetPlayerParrySuccessCount();
+        if (!m_hasSeenPlayerParrySuccessCount)
+        {
+            m_prevPlayerParrySuccessCount = parryCount;
+            m_hasSeenPlayerParrySuccessCount = true;
+        }
+
+        const bool triggerPulse = (parryCount != m_prevPlayerParrySuccessCount);
+        if (triggerPulse)
+        {
+            TriggerParryShieldOneShot();
+        }
+        else
+        {
+            const EntityId shieldId = ResolveParryShieldVfxEntity(false);
+            if (shieldId != InvalidEntityId)
+            {
+                if (auto* vfx = world->GetComponent<UnityVfxComponent>(shieldId))
+                    vfx->emitNewParticles = false;
+            }
+        }
+
+        m_prevPlayerParrySuccessCount = parryCount;
     }
 
     bool Gimmick::IsGuardBroken() const

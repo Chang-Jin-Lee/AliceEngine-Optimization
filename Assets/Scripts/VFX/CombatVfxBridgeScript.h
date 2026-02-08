@@ -118,6 +118,7 @@ namespace Alice
         void UnbindResolveDelegateSafe();
         bool IsSlashWindowActive();
         void DetachActiveSlashInstances();
+        void FreezeSlashInstanceToWorldAnchor(ActiveInstance& inst);
         void UpdatePathCacheAndPools();
         void UpdateSocketTracking();
         void UpdateActive(float deltaTime);
