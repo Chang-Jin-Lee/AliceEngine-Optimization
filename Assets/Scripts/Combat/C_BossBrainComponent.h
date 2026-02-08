@@ -8,6 +8,7 @@
 
 #include "Runtime/Scripting/IScript.h"
 #include "Runtime/Scripting/ScriptReflection.h"
+#include "Runtime/Foundation/Delegate.h"
 
 #include "BossCombatTypes.h"
 
@@ -126,6 +127,10 @@ namespace Alice
         void ToggleBrainActivated();
         ALICE_FUNC(ToggleBrainActivated);
         bool IsBrainActivated() const { return m_brainActivated; }
+
+        // Phase2 전환 델리게이트
+        ALICE_DECLARE_DELEGATE(FOnPhase2Entered);
+        FOnPhase2Entered OnPhase2Entered;
 
         // 공격/패턴 튜닝
         ALICE_PROPERTY(bool, m_brainActivated, false);

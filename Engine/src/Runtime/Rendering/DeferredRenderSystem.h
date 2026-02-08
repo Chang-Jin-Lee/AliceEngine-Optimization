@@ -217,8 +217,8 @@ namespace Alice
 
         /// 백버퍼로 렌더 타겟을 복귀시킵니다 (ImGui 등 후처리를 위해).
         void RestoreBackBuffer();
-        // G-Buffer 개수 (Normal+Roughness, Metalness+ToonCuts, BaseColor, ToonParams, ToonAlphas)
-        static constexpr int GBufferCount = 5;
+        // G-Buffer 개수 (Normal+Roughness, Metalness+ToonCuts, BaseColor, ToonParams, ToonAlphas, OutlineData)
+        static constexpr int GBufferCount = 6;
         // D-Buffer 개수 (Decal Albedo)
         static constexpr int DBufferCount = 1;
 
