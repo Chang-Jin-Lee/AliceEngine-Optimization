@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstdint>
+#include <vector>
 
 #include "AudioSoundState.h"
 #include "Runtime/Scripting/IScript.h"
@@ -31,6 +32,7 @@ namespace Alice
         ALICE_PROPERTY(std::string, pathAttack1, "Resource/Test/4_Resources/sound/SFX/보스/공격 1/Boss_Attack_01.mp3");
         ALICE_PROPERTY(std::string, pathAttack2, "Resource/Test/4_Resources/sound/SFX/보스/공격 2/Boss_Attack_02.wav");
         ALICE_PROPERTY(std::string, pathAttack3, "Resource/Test/4_Resources/sound/SFX/보스/공격 3/Boss_Attack_03.wav");
+        ALICE_PROPERTY(std::string, pathAttackABC, "Resource/Test/4_Resources/sound/SFX/보스/공격 ABC/Boss_Attack_ABC.wav");
         ALICE_PROPERTY(std::string, pathSoulSwordCharge, "Resource/Test/4_Resources/sound/SFX/보스/영혼대검 차지/Boss_SoulAttack_Charging_01.mp3");
         ALICE_PROPERTY(std::string, pathSoulSwordAttack, "Resource/Test/4_Resources/sound/SFX/보스/영혼대검 공격/Boss_SoulAttack_Attack_01.wav");
         ALICE_PROPERTY(std::string, pathSideAttack, "Resource/Test/4_Resources/sound/SFX/보스/옆, 견제 공격/Boss_Attack_Side_01.mp3");
@@ -90,6 +92,15 @@ namespace Alice
         ALICE_FUNC(PlaySfx5);
 
     private:
+        struct DelayedSoundRequest
+        {
+            BossAttackState state;
+            float remainingDelay;
+            std::wstring key;  // 미리 로드된 사운드 키
+            float volume;
+            float pitch;
+        };
+
         void PlayAttackState(BossAttackState state);
         void PlayAttackStateDelayed(BossAttackState state, float delaySeconds);
         void PlayMovementState(BossMovementState state);
@@ -106,6 +117,18 @@ namespace Alice
         std::wstring m_loopKey;
         std::wstring m_loopInstanceId;
         bool m_loopPlaying = false;
-        int m_footstepIndex = 0;
+        
+        // C++ deltaTime 기반 딜레이 큐
+        std::vector<DelayedSoundRequest> m_delayedSoundQueue;
+
+
+
+
+
+   
+
     };
+
 }
+
+

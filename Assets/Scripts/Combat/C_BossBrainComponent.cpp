@@ -411,6 +411,12 @@ namespace Alice
             {
                 m_phase2Active = true;
                 m_phase2HowlingPending = true;
+                
+                // Phase2 전환 델리게이트 호출
+                if (OnPhase2Entered.IsBound())
+                {
+                    OnPhase2Entered.Execute();
+                }
             }
 
             if (m_chargeIntervalSec > 0.0f)

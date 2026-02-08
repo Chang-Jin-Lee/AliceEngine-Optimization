@@ -12,6 +12,7 @@ namespace Alice
         Attack1,
         Attack2,
         Attack3,
+        AttackABC,
         SoulSwordCharge,
         SoulSwordAttack,
         SideAttack,
