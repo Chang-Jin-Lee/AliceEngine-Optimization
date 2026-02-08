@@ -71,6 +71,18 @@ namespace Alice
         /// 마우스 커서를 윈도우 영역에 가둡니다 (true) 또는 해제합니다 (false).
         void SetCursorLocked(bool locked);
 
+        /// 앱 활성 상태를 갱신합니다 (WM_ACTIVATEAPP/WM_SETFOCUS/WM_KILLFOCUS).
+        void NotifyAppActivated(bool active);
+
+        /// 현재 앱 활성 상태
+        bool IsAppActive() const { return m_appActive; }
+
+        /// 앱 비활성 이벤트를 1회 소비합니다.
+        bool ConsumeAppDeactivated();
+
+        /// 앱 활성 이벤트를 1회 소비합니다.
+        bool ConsumeAppActivated();
+
         /// Raw Input 메시지 처리 (WM_INPUT 메시지에서 호출)
         void ProcessRawInput(HRAWINPUT hRawInput);
 
@@ -99,6 +111,11 @@ namespace Alice
         // Raw Input 델타 (누적값)
         int   m_rawInputDeltaX{ 0 };
         int   m_rawInputDeltaY{ 0 };
+
+        // 앱 활성 상태/이벤트
+        bool  m_appActive{ true };
+        bool  m_appDeactivated{ false };
+        bool  m_appActivated{ false };
     };
 }
 

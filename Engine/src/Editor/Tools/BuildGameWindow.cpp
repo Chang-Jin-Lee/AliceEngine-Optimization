@@ -3,6 +3,7 @@
 
 #include "Runtime/Resources/ResourceManager.h"
 #include "Runtime/Foundation/Logger.h"
+#include "Runtime/Scripting/ScriptHotReload.h"
 
 #include "ThirdParty/json/json.hpp"
 
@@ -774,6 +775,13 @@ namespace Alice
 			{
 				if (ImGui::Button("Build Game"))
 				{
+#if !defined(_DEBUG)
+					// Release 에디터에서는 빌드 전에 Play 중지 + 스크립트 언로드로 파일 잠금 해제
+					if (m_isPlayingPtr && *m_isPlayingPtr)
+						*m_isPlayingPtr = false;
+					ScriptHotReload_Unload();
+#endif
+
 					// 1) 빌드 설정 파일 저장 (JSON)
 					wchar_t exePathW[MAX_PATH] = {};
 					GetModuleFileNameW(nullptr, exePathW, MAX_PATH);
