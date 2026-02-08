@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <commdlg.h>
 #include <fstream>
+#include <string>
 
 namespace Alice
 {
@@ -23,6 +24,24 @@ namespace Alice
 			return propName != "assetPath" && propName != "albedoTexturePath" && propName != "shadingMode" &&
 			       propName != "shadowStrength" && propName != "toonPbrRampIntensity" &&
 			       propName != "toonSelfShadowStrength";
+		}
+
+		inline bool DragFloatWithInput(const char* label, float* value, float minValue, float maxValue, const char* fmt = "%.3f")
+		{
+			float speed = (maxValue - minValue) / 200.0f;
+			if (speed <= 0.0f) speed = 0.01f;
+
+			float v = *value;
+			bool changed = ImGui::DragFloat(label, &v, speed, minValue, maxValue, fmt);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(90.0f);
+			std::string inputId = std::string("##") + label + "_input";
+			changed |= ImGui::InputFloat(inputId.c_str(), &v, 0.0f, 0.0f, fmt);
+
+			if (changed)
+				*value = std::clamp(v, minValue, maxValue);
+
+			return changed;
 		}
 	}
 
@@ -305,8 +324,8 @@ namespace Alice
 				bool changed = false;
 				changed |= ImGui::Checkbox("Enabled##PointLight", &light->enabled);
 				changed |= ImGui::ColorEdit3("Color##PointLight", &light->color.x);
-				changed |= ImGui::SliderFloat("Intensity##PointLight", &light->intensity, 0.0f, 50.0f);
-				changed |= ImGui::SliderFloat("Range##PointLight", &light->range, 0.1f, 200.0f);
+				changed |= DragFloatWithInput("Intensity##PointLight", &light->intensity, 0.0f, 50.0f);
+				changed |= DragFloatWithInput("Range##PointLight", &light->range, 0.1f, 200.0f);
 
 				if (ImGui::Button("Remove Point Light")) {
 					world.RemoveComponent<PointLightComponent>(_selectedEntity);
@@ -327,8 +346,8 @@ namespace Alice
 				bool changed = false;
 				changed |= ImGui::Checkbox("Enabled##SpotLight", &light->enabled);
 				changed |= ImGui::ColorEdit3("Color##SpotLight", &light->color.x);
-				changed |= ImGui::SliderFloat("Intensity##SpotLight", &light->intensity, 0.0f, 50.0f);
-				changed |= ImGui::SliderFloat("Range##SpotLight", &light->range, 0.1f, 200.0f);
+				changed |= DragFloatWithInput("Intensity##SpotLight", &light->intensity, 0.0f, 50.0f);
+				changed |= DragFloatWithInput("Range##SpotLight", &light->range, 0.1f, 200.0f);
 				changed |= ImGui::SliderFloat("Inner Angle (deg)##SpotLight", &light->innerAngleDeg, 0.0f, 89.0f);
 				changed |= ImGui::SliderFloat("Outer Angle (deg)##SpotLight", &light->outerAngleDeg, 0.0f, 89.0f);
 
@@ -354,10 +373,10 @@ namespace Alice
 				bool changed = false;
 				changed |= ImGui::Checkbox("Enabled##RectLight", &light->enabled);
 				changed |= ImGui::ColorEdit3("Color##RectLight", &light->color.x);
-				changed |= ImGui::SliderFloat("Intensity##RectLight", &light->intensity, 0.0f, 50.0f);
+				changed |= DragFloatWithInput("Intensity##RectLight", &light->intensity, 0.0f, 50.0f);
 				changed |= ImGui::SliderFloat("Width##RectLight", &light->width, 0.1f, 50.0f);
 				changed |= ImGui::SliderFloat("Height##RectLight", &light->height, 0.1f, 50.0f);
-				changed |= ImGui::SliderFloat("Range##RectLight", &light->range, 0.1f, 200.0f);
+				changed |= DragFloatWithInput("Range##RectLight", &light->range, 0.1f, 200.0f);
 
 				if (ImGui::Button("Remove Rect Light")) {
 					world.RemoveComponent<RectLightComponent>(_selectedEntity);

@@ -3,6 +3,9 @@
 
 #include "Runtime/Rendering/Components/DebugDrawBoxComponent.h"
 #include "Runtime/Rendering/Components/DecalComponent.h"
+#include "Runtime/Rendering/Components/PointLightComponent.h"
+#include "Runtime/Rendering/Components/SpotLightComponent.h"
+#include "Runtime/Rendering/Components/RectLightComponent.h"
 #include "Runtime/Audio/Components/SoundBoxComponent.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
@@ -112,6 +115,54 @@ namespace Alice
                 XMFLOAT3 p2 = { center.x, center.y + radius * std::cos(a2), center.z + radius * std::sin(a2) };
                 dbg.AddLine(p1, p2, color);
             }
+        }
+
+        void DrawCone(DebugDrawSystem& dbg,
+                      const XMFLOAT3& apex,
+                      const XMVECTOR& forward,
+                      const XMVECTOR& right,
+                      const XMVECTOR& up,
+                      float length,
+                      float radius,
+                      const XMFLOAT4& color)
+        {
+            if (length <= 0.0f || radius <= 0.0f)
+                return;
+
+            const int segments = 16;
+            const float angleStep = XM_2PI / segments;
+
+            XMVECTOR apexV = XMLoadFloat3(&apex);
+            XMVECTOR baseCenter = XMVectorAdd(apexV, XMVectorScale(forward, length));
+
+            XMFLOAT3 first{};
+            XMFLOAT3 prev{};
+            for (int i = 0; i <= segments; ++i)
+            {
+                float a = i * angleStep;
+                XMVECTOR offset = XMVectorAdd(
+                    XMVectorScale(right, std::cos(a) * radius),
+                    XMVectorScale(up, std::sin(a) * radius));
+                XMVECTOR p = XMVectorAdd(baseCenter, offset);
+                XMFLOAT3 cur{};
+                XMStoreFloat3(&cur, p);
+
+                if (i == 0)
+                {
+                    first = cur;
+                }
+                else
+                {
+                    dbg.AddLine(prev, cur, color);
+                }
+
+                // cone side
+                dbg.AddLine(apex, cur, color);
+                prev = cur;
+            }
+
+            // close the base circle explicitly
+            dbg.AddLine(prev, first, color);
         }
 
         void DrawCapsule(DebugDrawSystem& dbg, const XMFLOAT3& center, float radius, float halfHeight, bool alignYAxis, const XMVECTOR& rot, const XMFLOAT4& color)
@@ -407,6 +458,82 @@ namespace Alice
                 : XMFLOAT4(decal.color.x, decal.color.y, decal.color.z, 1.0f);
 
             DrawBox(*target, center, halfExtents, r, color);
+        }
+
+        // Light debug draw
+        for (const auto& [entityId, light] : world.GetComponents<PointLightComponent>())
+        {
+            if (!light.enabled)
+                continue;
+
+            const TransformComponent* tr = world.GetComponent<TransformComponent>(entityId);
+            if (!tr || !tr->enabled) continue;
+
+            const float range = std::max(0.0f, light.range);
+            if (range <= 0.0f) continue;
+
+            const XMFLOAT4 color = (entityId == selectedEntity)
+                ? XMFLOAT4(1.0f, 1.0f, 0.2f, 1.0f)
+                : XMFLOAT4(light.color.x, light.color.y, light.color.z, 1.0f);
+
+            DrawSphere(*target, tr->position, range, color);
+        }
+
+        for (const auto& [entityId, light] : world.GetComponents<SpotLightComponent>())
+        {
+            if (!light.enabled)
+                continue;
+
+            const TransformComponent* tr = world.GetComponent<TransformComponent>(entityId);
+            if (!tr || !tr->enabled) continue;
+
+            const float range = std::max(0.0f, light.range);
+            if (range <= 0.0f) continue;
+
+            const float angleRad = XMConvertToRadians(std::max(0.0f, light.outerAngleDeg));
+            const float radius = std::tan(angleRad * 0.5f) * range;
+            if (radius <= 0.0f) continue;
+
+            const XMFLOAT4 color = (entityId == selectedEntity)
+                ? XMFLOAT4(1.0f, 0.6f, 0.2f, 1.0f)
+                : XMFLOAT4(light.color.x, light.color.y, light.color.z, 1.0f);
+
+            const XMVECTOR rot = EulerToQuaternion(tr->rotation);
+            const XMVECTOR forward = XMVector3Normalize(RotateVector(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), rot));
+            const XMVECTOR right = XMVector3Normalize(RotateVector(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), rot));
+            const XMVECTOR up = XMVector3Normalize(RotateVector(XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f), rot));
+
+            DrawCone(*target, tr->position, forward, right, up, range, radius, color);
+        }
+
+        for (const auto& [entityId, light] : world.GetComponents<RectLightComponent>())
+        {
+            if (!light.enabled)
+                continue;
+
+            const TransformComponent* tr = world.GetComponent<TransformComponent>(entityId);
+            if (!tr || !tr->enabled) continue;
+
+            const float range = std::max(0.0f, light.range);
+            const float halfW = std::max(0.0f, light.width * 0.5f);
+            const float halfH = std::max(0.0f, light.height * 0.5f);
+            if (halfW <= 0.0f || halfH <= 0.0f || range <= 0.0f)
+                continue;
+
+            const XMFLOAT4 color = (entityId == selectedEntity)
+                ? XMFLOAT4(0.2f, 1.0f, 1.0f, 1.0f)
+                : XMFLOAT4(light.color.x, light.color.y, light.color.z, 1.0f);
+
+            const XMVECTOR rot = EulerToQuaternion(tr->rotation);
+            const XMVECTOR forward = XMVector3Normalize(RotateVector(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), rot));
+
+            XMFLOAT3 center = tr->position;
+            center.x += XMVectorGetX(forward) * (range * 0.5f);
+            center.y += XMVectorGetY(forward) * (range * 0.5f);
+            center.z += XMVectorGetZ(forward) * (range * 0.5f);
+
+            XMFLOAT3 halfExtents{ halfW, halfH, range * 0.5f };
+            DrawBox(*target, center, halfExtents, rot, color);
         }
 
         // Collider debug draw
