@@ -29,7 +29,8 @@ namespace Alice
 	void EditorCore::DrawInspectorMaterial(World& world, const EntityId& _selectedEntity)
 	{
 		if (auto* mat = world.GetComponent<MaterialComponent>(_selectedEntity)) {
-			ImGui::Text("Material");
+			if (!ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
+				return;
 			if (!mat->assetPath.empty())
 				ImGui::Text("Asset: %s", mat->assetPath.c_str());
 
