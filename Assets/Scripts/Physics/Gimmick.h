@@ -68,6 +68,14 @@ namespace Alice
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalOffset, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalRotation, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalScale, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
+        ALICE_PROPERTY(std::string, m_eyeMoveTrailEffectPath, "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2/effect.json");
+        ALICE_PROPERTY(float, m_eyeMoveTrailSizeScale, 0.025f); // 파편 트레일과 동일 기본값
+        ALICE_PROPERTY(float, m_eyeMoveTrailIntensityScale, 0.0f);
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_eyeMoveTrailColorTint, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_eyeMoveTrailLocalScale, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f)); // 파편 트레일과 동일 기본값
+        ALICE_PROPERTY(std::string, m_eyeDustEffectPath, "Assets/VFX/UnityExport/Dust_3_41ffd4a3/effect.json");
+        ALICE_PROPERTY(float, m_eyeDustRiseStartHeight, 1.0f); // 눈이 이 높이 이상 떠오르면 알파 상승 시작
+        ALICE_PROPERTY(float, m_eyeDustFadeInSpeed, 0.9f); // 상승 시작 후 첫 파편 발사 전 알파 증가 속도
 
     private:
         enum class Phase
@@ -102,6 +110,7 @@ namespace Alice
             bool orbitBlending = false;
             float orbitHeightOffset = 0.0f;
             float pullStartHeightOffset = 0.0f;
+            float assembleStartDistance = 0.0f;
             DirectX::XMFLOAT3 prevPos{ 0.0f, 0.0f, 0.0f };
             bool prevPosValid = false;
             EntityId trailVfxId = InvalidEntityId;
@@ -135,6 +144,15 @@ namespace Alice
         bool m_enemyTraceForced = false;
         bool m_guardBreakLatched = false;
         float m_assembleFinishTimer = 0.0f;
+        EntityId m_eyeTrailVfx = InvalidEntityId;
+        DirectX::XMFLOAT3 m_eyeTrailPrevPos{ 0.0f, 0.0f, 0.0f };
+        bool m_eyeTrailPrevPosValid = false;
+        EntityId m_eyeMoveTrailVfx = InvalidEntityId;
+        DirectX::XMFLOAT3 m_eyeMoveTrailPrevPos{ 0.0f, 0.0f, 0.0f };
+        bool m_eyeMoveTrailPrevPosValid = false;
+        float m_eyeDustAlpha = 0.0f;
+        bool m_eyeDustRiseTriggered = false;
+        bool m_eyeDustFirstShardLaunched = false;
 
         std::mt19937 m_rng;
 
