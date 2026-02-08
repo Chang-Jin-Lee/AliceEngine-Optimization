@@ -6,6 +6,7 @@
 #include "Runtime/ECS/ComponentRegistry.h"  // RTTR 등록 코드 포함
 #include "Runtime/Resources/Serialization/JsonRttr.h"
 #include "Runtime/Resources/ResourceManager.h"
+#include "Runtime/Audio/SoundManager.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/Foundation/ThreadSafety.h"
 #include "Runtime/ECS/Components/IDComponent.h"
@@ -69,12 +70,15 @@
 #include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/UITextComponent.h"
 #include "Runtime/UI/UIButtonComponent.h"
+#include "Runtime/UI/UICheckboxComponent.h"
+#include "Runtime/UI/UISliderComponent.h"
 #include "Runtime/UI/UIGaugeComponent.h"
 #include "Runtime/UI/UIEffectComponent.h"
 #include "Runtime/UI/UIAnimationComponent.h"
 #include "Runtime/UI/UIShakeComponent.h"
 #include "Runtime/UI/UIHover3DComponent.h"
 #include "Runtime/UI/UIVitalComponent.h"
+#include "Runtime/UI/UIEmptyGaugeEffectComponent.h"
 
 #include <wrl/client.h>
 #include <dxgi.h>
@@ -762,6 +766,27 @@ namespace Alice
                 rttr::instance inst = copy;
                 outEntity["UIButton"] = JsonRttr::ToJsonObject(inst);
             }
+            if (const auto* uiCheckBox = world.GetComponent<UICheckBoxComponent>(id); uiCheckBox)
+            {
+                UICheckBoxComponent copy = *uiCheckBox;
+                copy.normalTexture = NormalizePathToRelative(copy.normalTexture);
+                copy.hoveredTexture = NormalizePathToRelative(copy.hoveredTexture);
+                copy.pressedTexture = NormalizePathToRelative(copy.pressedTexture);
+                copy.disabledTexture = NormalizePathToRelative(copy.disabledTexture);
+                rttr::instance inst = copy;
+                outEntity["UICheckBox"] = JsonRttr::ToJsonObject(inst);
+            }
+            if (const auto* uiSlider = world.GetComponent<UISliderComponent>(id); uiSlider)
+            {
+                UISliderComponent copy = *uiSlider;
+                copy.normalTexture = NormalizePathToRelative(copy.normalTexture);
+                copy.hoveredTexture = NormalizePathToRelative(copy.hoveredTexture);
+                copy.pressedTexture = NormalizePathToRelative(copy.pressedTexture);
+                copy.disabledTexture = NormalizePathToRelative(copy.disabledTexture);
+                copy.backgroundTexture = NormalizePathToRelative(copy.backgroundTexture);
+                rttr::instance inst = copy;
+                outEntity["UISlider"] = JsonRttr::ToJsonObject(inst);
+            }
             if (const auto* uiGauge = world.GetComponent<UIGaugeComponent>(id); uiGauge)
             {
                 UIGaugeComponent copy = *uiGauge;
@@ -794,6 +819,21 @@ namespace Alice
             {
                 rttr::instance inst = const_cast<UIVitalComponent&>(*uiVital);
                 outEntity["UIVital"] = JsonRttr::ToJsonObject(inst);
+            }
+            if (const auto* uiEmptyGaugeEffect = world.GetComponent<UIEmptyGaugeEffectComponent>(id); uiEmptyGaugeEffect)
+            {
+                rttr::instance inst = const_cast<UIEmptyGaugeEffectComponent&>(*uiEmptyGaugeEffect);
+                outEntity["UIEmptyGaugeEffect"] = JsonRttr::ToJsonObject(inst);
+            }
+            if (const auto* uiPencil = world.GetComponent<UIPencilComponent>(id); uiPencil)
+            {
+                rttr::instance inst = const_cast<UIPencilComponent&>(*uiPencil);
+                outEntity["UIPencil"] = JsonRttr::ToJsonObject(inst);
+            }
+            if (const auto* uiDieLineParams = world.GetComponent<UIDieLineParamsComponent>(id); uiDieLineParams)
+            {
+                rttr::instance inst = const_cast<UIDieLineParamsComponent&>(*uiDieLineParams);
+                outEntity["UIDieLineParams"] = JsonRttr::ToJsonObject(inst);
             }
 
             if (const auto* cam = world.GetComponent<CameraComponent>(id); cam)
@@ -1512,6 +1552,20 @@ namespace Alice
                 rttr::instance inst = comp;
                 if (!JsonRttr::FromJsonObject(inst, *itUIButton)) return false;
             }
+            auto itUICheckBox = e.find("UICheckBox");
+            if (itUICheckBox != e.end() && itUICheckBox->is_object())
+            {
+                UICheckBoxComponent& comp = world.AddComponent<UICheckBoxComponent>(id);
+                rttr::instance inst = comp;
+                if (!JsonRttr::FromJsonObject(inst, *itUICheckBox)) return false;
+            }
+            auto itUISlider = e.find("UISlider");
+            if (itUISlider != e.end() && itUISlider->is_object())
+            {
+                UISliderComponent& comp = world.AddComponent<UISliderComponent>(id);
+                rttr::instance inst = comp;
+                if (!JsonRttr::FromJsonObject(inst, *itUISlider)) return false;
+            }
             auto itUIGauge = e.find("UIGauge");
             if (itUIGauge != e.end() && itUIGauge->is_object())
             {
@@ -1554,6 +1608,27 @@ namespace Alice
                 rttr::instance inst = comp;
                 if (!JsonRttr::FromJsonObject(inst, *itUIVital)) return false;
             }
+            auto itUIEmptyGaugeEffect = e.find("UIEmptyGaugeEffect");
+            if (itUIEmptyGaugeEffect != e.end() && itUIEmptyGaugeEffect->is_object())
+            {
+                UIEmptyGaugeEffectComponent& comp = world.AddComponent<UIEmptyGaugeEffectComponent>(id);
+                rttr::instance inst = comp;
+                if (!JsonRttr::FromJsonObject(inst, *itUIEmptyGaugeEffect)) return false;
+            }
+            auto itUIPencil = e.find("UIPencil");
+            if (itUIPencil != e.end() && itUIPencil->is_object())
+            {
+                UIPencilComponent& comp = world.AddComponent<UIPencilComponent>(id);
+                rttr::instance inst = comp;
+                if (!JsonRttr::FromJsonObject(inst, *itUIPencil)) return false;
+            }
+            auto itUIDieLineParams = e.find("UIDieLineParams");
+            if (itUIDieLineParams != e.end() && itUIDieLineParams->is_object())
+            {
+                UIDieLineParamsComponent& comp = world.AddComponent<UIDieLineParamsComponent>(id);
+                rttr::instance inst = comp;
+                if (!JsonRttr::FromJsonObject(inst, *itUIDieLineParams)) return false;
+            }
 
             return true;
         }
@@ -1563,6 +1638,10 @@ namespace Alice
             auto itEntities = root.find("entities");
             if (itEntities == root.end() || !itEntities->is_array())
                 return false;
+
+            // Stop any playing audio before clearing/loading a new scene.
+            Sound::StopBGM();
+            Sound::StopAllSFX();
 
             world.Clear();
 

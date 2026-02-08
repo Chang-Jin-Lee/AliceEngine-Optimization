@@ -49,6 +49,7 @@
 #include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/UITextComponent.h"
 #include "Runtime/UI/UIButtonComponent.h"
+#include "Runtime/UI/UICheckboxComponent.h"
 #include "Runtime/UI/UIGaugeComponent.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -545,6 +546,7 @@ namespace Alice
                     outEntity["UIGauge"] = JsonRttr::ToJsonObject(inst);
                 }
 
+            
                 // Point Light
                 if (const auto* point = world.GetComponent<PointLightComponent>(entity); point)
                 {
@@ -895,6 +897,8 @@ namespace Alice
                     if (!JsonRttr::FromJsonObject(inst, *itUIWidget))
                         return false;
                 }
+
+
                 auto itUITransform = root.find("UITransform");
                 if (itUITransform != root.end() && itUITransform->is_object())
                 {
@@ -955,7 +959,6 @@ namespace Alice
                     if (!JsonRttr::FromJsonObject(inst, *itSL))
                         return false;
                 }
-
                 // Rect Light
                 auto itRL = root.find("RectLight");
                 if (itRL != root.end() && itRL->is_object())
