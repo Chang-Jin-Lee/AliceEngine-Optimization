@@ -1,0 +1,13 @@
+{
+    "preload": [
+        "Resource/Icon/AliceBanner.png",
+        "Resource/Fonts/NotoSansKR-Regular.ttf",
+        "Assets/Fbx/Alice.fbxasset",
+        "Assets/Fbx/Rapi.fbxasset",
+        "Assets/Fbx/Tia_Animaition.fbxasset",
+        "Assets/Fbx/zeldaPosed001.fbxasset",
+        "Assets/Fbx/Zombie_Run.fbxasset",
+        "Assets/Fbx/BoxHuman.fbxasset",
+        "Assets/Fbx/Tree.fbxasset"
+    ]
+}

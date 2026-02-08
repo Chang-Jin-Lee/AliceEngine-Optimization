@@ -111,6 +111,10 @@ namespace Alice
 	std::filesystem::path g_UICurveEditorPath{};
 	UICurveAsset g_UICurveEditorData{};
 	int g_UICurveEditorSelected = -1;
+	bool g_PreloadEditorOpen = false;
+	std::filesystem::path g_PreloadEditorPath{};
+	std::vector<std::string> g_PreloadEditorItems{};
+	int g_PreloadEditorSelected = -1;
 
 	// ICommand는 이제 EditorCore.h에 정의됨
 
@@ -395,6 +399,7 @@ namespace Alice
 
 		DrawMaterialAssetEditorWindow(world);
 		DrawUICurveAssetEditorWindow();
+		DrawPreloadAssetEditorWindow();
 
 		DrawEngineLogo();
 
