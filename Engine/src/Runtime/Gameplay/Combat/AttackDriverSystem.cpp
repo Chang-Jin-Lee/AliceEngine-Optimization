@@ -6,6 +6,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include <assimp/scene.h>
 
@@ -39,6 +41,7 @@ namespace Alice
             h = HashCombine(h, std::hash<bool>{}(clip.enabled));
             h = HashCombine(h, std::hash<int>{}(static_cast<int>(clip.type)));
             h = HashCombine(h, std::hash<int>{}(static_cast<int>(clip.source)));
+            h = HashCombine(h, std::hash<std::uint32_t>{}(clip.traceSlotMask));
             return h;
         }
 
@@ -295,20 +298,6 @@ namespace Alice
             return false;
         }
 
-        bool HasAnyEnabledAttackClip(const AttackDriverComponent& driver, const AdvancedAnimationComponent& anim)
-        {
-            for (const auto& clip : driver.clips)
-            {
-                if (!clip.enabled || clip.type != AttackDriverNotifyType::Attack)
-                    continue;
-
-                const std::string resolved = ResolveClipName(clip, anim);
-                if (!resolved.empty())
-                    return true;
-            }
-            return false;
-        }
-
         void SanitizeTimes(const AttackDriverClip& clip, float& outStart, float& outEnd)
         {
             outStart = std::max(0.0f, clip.startTimeSec);
@@ -378,10 +367,13 @@ namespace Alice
         {
             driver.attackActive = false;
             driver.attackPaused = false;
+            driver.attackTraceMaskActive = 0u;
+            driver.attackTraceWindowDurationSec = 0.0f;
             driver.dodgeActive = false;
             driver.guardActive = false;
             driver.parryActive = false;
             driver.attackCancelable = true;
+            driver.forceCancelRequested = false;
         }
 
         void ApplyHealthState(World& world, EntityId entityId, const AttackDriverComponent& driver)
@@ -524,38 +516,200 @@ namespace Alice
             }
         }
 
-        EntityId ResolveTraceEntity(World& world, AttackDriverComponent& driver, EntityId self)
+        std::uint32_t GetTraceSlotCount(const AttackDriverComponent& driver)
         {
-            if (driver.traceGuid == 0)
-            {
-                driver.traceCached = InvalidEntityId;
-                return self;
-            }
-
-            if (driver.traceCached != InvalidEntityId)
-            {
-                if (const auto* idc = world.GetComponent<IDComponent>(driver.traceCached))
-                {
-                    if (idc->guid == driver.traceGuid)
-                        return driver.traceCached;
-                }
-                driver.traceCached = InvalidEntityId;
-            }
-
-            if (driver.traceGuid != 0)
-            {
-                EntityId resolved = world.FindEntityByGuid(driver.traceGuid);
-                if (resolved != InvalidEntityId)
-                {
-                    driver.traceCached = resolved;
-                    return resolved;
-                }
-            }
-
-            return self;
+            const std::size_t total = std::size_t(1) + driver.traceGuids.size();
+            return static_cast<std::uint32_t>(std::min<std::size_t>(total, 32));
         }
 
-        void ActivateTrace(World& world, EntityId traceId, bool resetState)
+        float ComputeMergedSpanDuration(std::vector<std::pair<float, float>>& intervals)
+        {
+            if (intervals.empty())
+                return 0.0f;
+
+            std::sort(intervals.begin(), intervals.end(), [](const auto& a, const auto& b) {
+                if (a.first != b.first)
+                    return a.first < b.first;
+                return a.second < b.second;
+            });
+
+            float mergedStart = intervals[0].first;
+            float mergedEnd = intervals[0].second;
+            float longestSpan = std::max(0.0f, mergedEnd - mergedStart);
+            constexpr float kMergeEpsilon = 0.0001f;
+
+            for (size_t i = 1; i < intervals.size(); ++i)
+            {
+                const float start = intervals[i].first;
+                const float end = intervals[i].second;
+                if (start <= (mergedEnd + kMergeEpsilon))
+                {
+                    mergedEnd = std::max(mergedEnd, end);
+                    continue;
+                }
+
+                longestSpan = std::max(longestSpan, std::max(0.0f, mergedEnd - mergedStart));
+                mergedStart = start;
+                mergedEnd = end;
+            }
+
+            longestSpan = std::max(longestSpan, std::max(0.0f, mergedEnd - mergedStart));
+            return longestSpan;
+        }
+
+        void AccumulateTraceSlotIntervals(const AttackDriverClip& clip,
+                                          std::uint32_t slotCount,
+                                          std::vector<std::vector<std::pair<float, float>>>& slotIntervals)
+        {
+            if (slotCount == 0 || slotIntervals.empty())
+                return;
+
+            float startTime = 0.0f;
+            float endTime = 0.0f;
+            SanitizeTimes(clip, startTime, endTime);
+            if (endTime <= startTime)
+                return;
+
+            const bool allSlots = (clip.traceSlotMask == 0u);
+            for (std::uint32_t slot = 0; slot < slotCount; ++slot)
+            {
+                if (!allSlots)
+                {
+                    const std::uint32_t bit = (1u << slot);
+                    if ((clip.traceSlotMask & bit) == 0u)
+                        continue;
+                }
+                slotIntervals[slot].emplace_back(startTime, endTime);
+            }
+        }
+
+        void BuildSlotActivationFromIntervals(const std::vector<std::vector<std::pair<float, float>>>& slotIntervals,
+                                              std::vector<bool>& outActiveBySlot,
+                                              std::vector<float>& outDurationBySlot,
+                                              float& outMaxDuration)
+        {
+            const std::size_t slotCount = slotIntervals.size();
+            outActiveBySlot.assign(slotCount, false);
+            outDurationBySlot.assign(slotCount, 0.0f);
+            outMaxDuration = 0.0f;
+
+            for (std::size_t slot = 0; slot < slotCount; ++slot)
+            {
+                if (slotIntervals[slot].empty())
+                    continue;
+
+                std::vector<std::pair<float, float>> merged = slotIntervals[slot];
+                const float mergedDuration = ComputeMergedSpanDuration(merged);
+                if (mergedDuration <= 0.0f)
+                    continue;
+
+                outActiveBySlot[slot] = true;
+                outDurationBySlot[slot] = mergedDuration;
+                outMaxDuration = std::max(outMaxDuration, mergedDuration);
+            }
+        }
+
+        std::uint32_t BuildActiveTraceSlotMask(const std::vector<bool>& activeBySlot)
+        {
+            std::uint32_t mask = 0u;
+            const std::size_t slotCount = std::min<std::size_t>(activeBySlot.size(), 32);
+            for (std::size_t slot = 0; slot < slotCount; ++slot)
+            {
+                if (activeBySlot[slot])
+                    mask |= (1u << static_cast<std::uint32_t>(slot));
+            }
+            return mask;
+        }
+
+        EntityId ResolveTraceEntitySlot(World& world, AttackDriverComponent& driver, EntityId self, std::uint32_t slotIndex)
+        {
+            if (slotIndex == 0)
+            {
+                if (driver.traceGuid == 0)
+                {
+                    driver.traceCached = InvalidEntityId;
+                    return self;
+                }
+
+                if (driver.traceCached != InvalidEntityId)
+                {
+                    if (const auto* idc = world.GetComponent<IDComponent>(driver.traceCached))
+                    {
+                        if (idc->guid == driver.traceGuid)
+                            return driver.traceCached;
+                    }
+                    driver.traceCached = InvalidEntityId;
+                }
+
+                EntityId resolved = world.FindEntityByGuid(driver.traceGuid);
+                if (resolved != InvalidEntityId)
+                    driver.traceCached = resolved;
+                return (resolved != InvalidEntityId) ? resolved : self;
+            }
+
+            const std::uint32_t extraIndex = slotIndex - 1u;
+            if (extraIndex >= driver.traceGuids.size())
+                return InvalidEntityId;
+
+            const std::uint64_t guid = driver.traceGuids[extraIndex];
+            if (guid == 0)
+                return InvalidEntityId;
+
+            if (driver.traceCachedList.size() != driver.traceGuids.size())
+                driver.traceCachedList.assign(driver.traceGuids.size(), InvalidEntityId);
+
+            EntityId& cached = driver.traceCachedList[extraIndex];
+            if (cached != InvalidEntityId)
+            {
+                if (const auto* idc = world.GetComponent<IDComponent>(cached))
+                {
+                    if (idc->guid == guid)
+                        return cached;
+                }
+                cached = InvalidEntityId;
+            }
+
+            EntityId resolved = world.FindEntityByGuid(guid);
+            if (resolved != InvalidEntityId)
+                cached = resolved;
+            return resolved;
+        }
+
+        template <typename Fn>
+        void ForEachTraceEntity(World& world,
+                                AttackDriverComponent& driver,
+                                EntityId self,
+                                std::uint32_t slotMask,
+                                Fn&& fn)
+        {
+            const std::uint32_t slotCount = GetTraceSlotCount(driver);
+            if (slotCount == 0)
+                return;
+
+            const bool allSlots = (slotMask == 0u);
+            std::vector<EntityId> visited;
+            visited.reserve(slotCount);
+            for (std::uint32_t slot = 0; slot < slotCount; ++slot)
+            {
+                if (!allSlots)
+                {
+                    const std::uint32_t bit = (1u << slot);
+                    if ((slotMask & bit) == 0u)
+                        continue;
+                }
+
+                EntityId traceId = ResolveTraceEntitySlot(world, driver, self, slot);
+                if (traceId == InvalidEntityId)
+                    continue;
+
+                if (std::find(visited.begin(), visited.end(), traceId) != visited.end())
+                    continue;
+                visited.push_back(traceId);
+                fn(traceId);
+            }
+        }
+
+        void ActivateTrace(World& world, EntityId traceId, bool resetState, float windowDurationSec)
         {
             auto* trace = world.GetComponent<WeaponTraceComponent>(traceId);
             if (!trace)
@@ -571,6 +725,8 @@ namespace Alice
                 trace->hitVictims.clear();
                 trace->lastAttackInstanceId = trace->attackInstanceId;
             }
+            trace->activeElapsedSec = 0.0f;
+            trace->activeWindowDurationSec = std::max(0.0f, windowDurationSec);
             trace->active = true;
         }
 
@@ -581,6 +737,80 @@ namespace Alice
                 return;
 
             trace->active = false;
+            trace->activeElapsedSec = 0.0f;
+            trace->activeWindowDurationSec = 0.0f;
+        }
+
+        void SyncTraceSlots(World& world,
+                            AttackDriverComponent& driver,
+                            EntityId self,
+                            const std::vector<bool>& desiredActiveBySlot,
+                            const std::vector<float>& desiredDurationBySlot)
+        {
+            const std::uint32_t slotCount = GetTraceSlotCount(driver);
+            if (slotCount == 0)
+                return;
+
+            struct TraceDesiredState
+            {
+                EntityId traceId = InvalidEntityId;
+                bool desiredActive = false;
+                float desiredDurationSec = 0.0f;
+            };
+
+            std::vector<TraceDesiredState> traces;
+            traces.reserve(slotCount);
+
+            auto FindOrCreateTraceState = [&](EntityId traceId) -> TraceDesiredState* {
+                for (auto& state : traces)
+                {
+                    if (state.traceId == traceId)
+                        return &state;
+                }
+                traces.push_back(TraceDesiredState{ traceId, false, 0.0f });
+                return &traces.back();
+            };
+
+            for (std::uint32_t slot = 0; slot < slotCount; ++slot)
+            {
+                const EntityId traceId = ResolveTraceEntitySlot(world, driver, self, slot);
+                if (traceId == InvalidEntityId)
+                    continue;
+
+                TraceDesiredState* state = FindOrCreateTraceState(traceId);
+                const bool slotActive = (slot < desiredActiveBySlot.size()) && desiredActiveBySlot[slot];
+                if (!slotActive)
+                    continue;
+
+                const float slotDuration = (slot < desiredDurationBySlot.size())
+                    ? std::max(0.0f, desiredDurationBySlot[slot])
+                    : 0.0f;
+                state->desiredActive = true;
+                state->desiredDurationSec = std::max(state->desiredDurationSec, slotDuration);
+            }
+
+            for (auto& state : traces)
+            {
+                auto* trace = world.GetComponent<WeaponTraceComponent>(state.traceId);
+                if (!trace)
+                    continue;
+
+                if (state.desiredActive)
+                {
+                    if (!trace->active)
+                    {
+                        ActivateTrace(world, state.traceId, true, state.desiredDurationSec);
+                    }
+                    else if (state.desiredDurationSec > (trace->activeWindowDurationSec + 0.0001f))
+                    {
+                        trace->activeWindowDurationSec = state.desiredDurationSec;
+                    }
+                }
+                else if (trace->active)
+                {
+                    DeactivateTrace(world, state.traceId);
+                }
+            }
         }
 
         void LogStateChange(EntityId entityId, const char* ownerName, const char* label, bool prevState, bool currState)
@@ -610,66 +840,16 @@ namespace Alice
             }
 
             const std::uint64_t currentHash = HashClipList(driver.clips, *anim, true);
-            const bool wantsNotifies = HasAnyEnabledAttackClip(driver, *anim);
-            const bool missingNotifies = wantsNotifies && !HasNotifyTag(*anim, driver.notifyTag);
-            const bool needsRebuild = missingNotifies || (currentHash != driver.registeredHash);
+            const bool hasLegacyNotifies = HasNotifyTag(*anim, driver.notifyTag);
+            const bool needsRebuild = hasLegacyNotifies || (currentHash != driver.registeredHash);
 
             if (!needsRebuild)
                 continue;
 
-            anim->RemoveNotifiesByTag(driver.notifyTag);
-
-            bool registeredAny = false;
-            const std::uint32_t gen = world.GetEntityGeneration(entityId);
-            for (const auto& clip : driver.clips)
-            {
-                if (!clip.enabled || clip.type != AttackDriverNotifyType::Attack)
-                    continue;
-
-                const std::string resolvedName = ResolveClipName(clip, *anim);
-                if (resolvedName.empty())
-                    continue;
-
-                float startTime = 0.0f;
-                float endTime = 0.0f;
-                SanitizeTimes(clip, startTime, endTime);
-                registeredAny = true;
-
-                // SFX/VFX hook: attack window start (whoosh, trail enable, camera micro-shake).
-                // Use hit/guard/parry impacts in CombatSession (they know resolve result and hit position).
-                anim->AddNotify(resolvedName, startTime, [entityId, gen, &world]() {
-                    if (!world.IsEntityValid(entityId, gen))
-                        return;
-                    auto* driverComp = world.GetComponent<AttackDriverComponent>(entityId);
-                    if (!driverComp)
-                        return;
-                    if (driverComp->cancelAttackRequested)
-                        return;
-                    if (world.IsScriptCombatEnabled())
-                        return;
-                    EntityId traceId = ResolveTraceEntity(world, *driverComp, entityId);
-                    ActivateTrace(world, traceId, true);
-                }, driver.notifyTag);
-
-                // SFX/VFX hook: attack window end (trail disable, swing tail, etc.).
-                anim->AddNotify(resolvedName, endTime, [entityId, gen, &world]() {
-                    if (!world.IsEntityValid(entityId, gen))
-                        return;
-                    auto* driverComp = world.GetComponent<AttackDriverComponent>(entityId);
-                    if (!driverComp)
-                        return;
-                    if (world.IsScriptCombatEnabled())
-                        return;
-                    EntityId traceId = ResolveTraceEntity(world, *driverComp, entityId);
-                    DeactivateTrace(world, traceId);
-                }, driver.notifyTag);
-            }
-
-            if (!registeredAny)
-            {
-                EntityId traceId = ResolveTraceEntity(world, driver, entityId);
-                DeactivateTrace(world, traceId);
-            }
+            // Trace activation is synchronized only in PostUpdate.
+            // Remove stale notifies to avoid double-driving trace toggles.
+            if (hasLegacyNotifies)
+                anim->RemoveNotifiesByTag(driver.notifyTag);
 
             driver.registeredHash = currentHash;
         }
@@ -696,7 +876,6 @@ namespace Alice
                 LogStateChange(entityId, ownerLabel, "Parry", prevParry, driver.parryActive);
             };
 
-            EntityId traceId = ResolveTraceEntity(world, driver, entityId);
             auto* anim = world.GetComponent<AdvancedAnimationComponent>(entityId);
             auto UpdateAttackStateDuration = [&](AttackDriverComponent& target,
                                                  const AdvancedAnimationComponent* adv,
@@ -755,7 +934,9 @@ namespace Alice
                     ApplyInputOverrides(driver);
                     ApplyHealthState(world, entityId, driver);
                     LogChanges();
-                    DeactivateTrace(world, traceId);
+                    ForEachTraceEntity(world, driver, entityId, 0u, [&](EntityId traceId) {
+                        DeactivateTrace(world, traceId);
+                    });
                     continue;
                 }
 
@@ -769,7 +950,9 @@ namespace Alice
                     ApplyInputOverrides(driver);
                     ApplyHealthState(world, entityId, driver);
                     LogChanges();
-                    DeactivateTrace(world, traceId);
+                    ForEachTraceEntity(world, driver, entityId, 0u, [&](EntityId traceId) {
+                        DeactivateTrace(world, traceId);
+                    });
                     continue;
                 }
 
@@ -798,13 +981,21 @@ namespace Alice
 
                 bool attackPausedThisFrame = false;
                 bool attackWindowActiveThisFrame = false;
+                const std::uint32_t slotCount = GetTraceSlotCount(driver);
+                std::vector<std::vector<std::pair<float, float>>> traceSlotIntervals(slotCount);
+                std::vector<bool> traceSlotActive(slotCount, false);
+                std::vector<float> traceSlotDurations(slotCount, 0.0f);
+                float attackTraceWindowDurationSec = 0.0f;
                 for (const auto& clip : driver.clips)
                 {
                     if (IsClipWindowActiveSkinned(clip, skinnedState))
                     {
                         ApplyWindowState(driver, clip.type, true, clip.canBeInterrupted);
                         if (clip.type == AttackDriverNotifyType::Attack)
+                        {
                             attackWindowActiveThisFrame = true;
+                            AccumulateTraceSlotIntervals(clip, slotCount, traceSlotIntervals);
+                        }
                     }
 
                     if (!attackPausedThisFrame && clip.enabled && clip.type == AttackDriverNotifyType::Attack)
@@ -815,20 +1006,28 @@ namespace Alice
                             attackPausedThisFrame = true;
                     }
                 }
+                BuildSlotActivationFromIntervals(traceSlotIntervals, traceSlotActive, traceSlotDurations, attackTraceWindowDurationSec);
+                driver.attackTraceMaskActive = BuildActiveTraceSlotMask(traceSlotActive);
+                driver.attackTraceWindowDurationSec = attackTraceWindowDurationSec;
 
                 CommitPrevTimeSec(driver.prevSkinned, currentClipName, currTimeSec);
 
-                if (driver.cancelAttackRequested)
+                const bool cancelRequested = driver.cancelAttackRequested || driver.forceCancelRequested;
+                if (cancelRequested)
                 {
-                    if (driver.attackCancelable)
+                    if (driver.attackCancelable || driver.forceCancelRequested)
                     {
                         driver.attackActive = false;
                         if (!attackWindowActiveThisFrame && !attackPausedThisFrame)
+                        {
                             driver.cancelAttackRequested = false;
+                            driver.forceCancelRequested = false;
+                        }
                     }
                     else
                     {
                         driver.cancelAttackRequested = false;
+                        driver.forceCancelRequested = false;
                     }
                 }
                 ApplyInputOverrides(driver);
@@ -837,26 +1036,17 @@ namespace Alice
 
                 if (!world.IsScriptCombatEnabled())
                 {
-                    auto* trace = world.GetComponent<WeaponTraceComponent>(traceId);
                     if (prevAttack && !driver.attackActive && attackPausedThisFrame)
                         driver.attackPaused = true;
                     if (!driver.attackActive && !attackPausedThisFrame)
                         driver.attackPaused = false;
 
-                    if (driver.attackActive)
+                    if (!driver.attackActive || traceSlotActive.empty())
                     {
-                        if (trace && !trace->active)
-                        {
-                            const bool resetTrace = !driver.attackPaused;
-                            ActivateTrace(world, traceId, resetTrace);
-                        }
-                        driver.attackPaused = false;
+                        std::fill(traceSlotActive.begin(), traceSlotActive.end(), false);
                     }
-                    else
-                    {
-                        if (trace && trace->active)
-                            DeactivateTrace(world, traceId);
-                    }
+                    SyncTraceSlots(world, driver, entityId, traceSlotActive, traceSlotDurations);
+                    driver.attackPaused = false;
                 }
                 continue;
             }
@@ -869,7 +1059,9 @@ namespace Alice
                 ApplyInputOverrides(driver);
                 ApplyHealthState(world, entityId, driver);
                 LogChanges();
-                DeactivateTrace(world, traceId);
+                ForEachTraceEntity(world, driver, entityId, 0u, [&](EntityId traceId) {
+                    DeactivateTrace(world, traceId);
+                });
                 continue;
             }
 
@@ -920,17 +1112,28 @@ namespace Alice
 
             bool attackPausedThisFrame = false;
             bool attackWindowActiveThisFrame = false;
+            const std::uint32_t slotCount = GetTraceSlotCount(driver);
+            std::vector<std::vector<std::pair<float, float>>> traceSlotIntervals(slotCount);
+            std::vector<bool> traceSlotActive(slotCount, false);
+            std::vector<float> traceSlotDurations(slotCount, 0.0f);
+            float attackTraceWindowDurationSec = 0.0f;
             for (const auto& clip : driver.clips)
             {
                 if (IsClipWindowActive(clip, baseA, baseB, upperA, upperB, additive))
                 {
                     ApplyWindowState(driver, clip.type, true, clip.canBeInterrupted);
                     if (clip.type == AttackDriverNotifyType::Attack)
+                    {
                         attackWindowActiveThisFrame = true;
+                        AccumulateTraceSlotIntervals(clip, slotCount, traceSlotIntervals);
+                    }
                 }
                 if (!attackPausedThisFrame && IsClipPaused(clip, baseA, baseB, upperA, upperB, additive))
                     attackPausedThisFrame = true;
             }
+            BuildSlotActivationFromIntervals(traceSlotIntervals, traceSlotActive, traceSlotDurations, attackTraceWindowDurationSec);
+            driver.attackTraceMaskActive = BuildActiveTraceSlotMask(traceSlotActive);
+            driver.attackTraceWindowDurationSec = attackTraceWindowDurationSec;
 
             CommitPrevTimeSec(driver.prevBaseA, baseA.clipName, baseA.currTime);
             CommitPrevTimeSec(driver.prevBaseB, baseB.clipName, baseB.currTime);
@@ -938,17 +1141,22 @@ namespace Alice
             CommitPrevTimeSec(driver.prevUpperB, upperB.clipName, upperB.currTime);
             CommitPrevTimeSec(driver.prevAdditive, additive.clipName, additive.currTime);
 
-            if (driver.cancelAttackRequested)
+            const bool cancelRequested = driver.cancelAttackRequested || driver.forceCancelRequested;
+            if (cancelRequested)
             {
-                if (driver.attackCancelable)
+                if (driver.attackCancelable || driver.forceCancelRequested)
                 {
                     driver.attackActive = false;
                     if (!attackWindowActiveThisFrame && !attackPausedThisFrame)
+                    {
                         driver.cancelAttackRequested = false;
+                        driver.forceCancelRequested = false;
+                    }
                 }
                 else
                 {
                     driver.cancelAttackRequested = false;
+                    driver.forceCancelRequested = false;
                 }
             }
             ApplyInputOverrides(driver);
@@ -957,26 +1165,17 @@ namespace Alice
 
             if (!world.IsScriptCombatEnabled())
             {
-                auto* trace = world.GetComponent<WeaponTraceComponent>(traceId);
                 if (prevAttack && !driver.attackActive && attackPausedThisFrame)
                     driver.attackPaused = true;
                 if (!driver.attackActive && !attackPausedThisFrame)
                     driver.attackPaused = false;
 
-                if (driver.attackActive)
+                if (!driver.attackActive || traceSlotActive.empty())
                 {
-                    if (trace && !trace->active)
-                    {
-                        const bool resetTrace = !driver.attackPaused;
-                        ActivateTrace(world, traceId, resetTrace);
-                    }
-                    driver.attackPaused = false;
+                    std::fill(traceSlotActive.begin(), traceSlotActive.end(), false);
                 }
-                else
-                {
-                    if (trace && trace->active)
-                        DeactivateTrace(world, traceId);
-                }
+                SyncTraceSlots(world, driver, entityId, traceSlotActive, traceSlotDurations);
+                driver.attackPaused = false;
             }
         }
     }

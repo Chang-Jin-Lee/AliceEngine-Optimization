@@ -7,6 +7,7 @@
 #include "Runtime/Scripting/IScript.h"
 #include "Runtime/Scripting/ScriptReflection.h"
 #include "Runtime/ECS/Entity.h"
+#include "Runtime/Foundation/Delegate.h"
 #include <memory>
 #include <string>
 #include "C_CombatContracts.h"
@@ -29,6 +30,13 @@ namespace Alice
         Combat::ActionState GetBossState() const;
         Combat::ActionFlags GetPlayerFlags() const;
         Combat::ActionFlags GetBossFlags() const;
+        bool IsPlayerRageActive() const;
+        float GetPlayerRageRemainingSec() const;
+
+        // Combat resolve delegate: called when a hit is resolved
+        // Parameters: victimId, attackerId, resolveResult, damage, hitPosWS
+        using FOnCombatResolved = Alice::Delegate<EntityId, EntityId, std::uint8_t, float, const DirectX::XMFLOAT3&>;
+        FOnCombatResolved OnCombatResolved;
 
         // Entity resolution (GUID preferred, name fallback when enabled)
         ALICE_PROPERTY(uint64_t, m_playerGuid, 0);
@@ -45,6 +53,7 @@ namespace Alice
         ALICE_PROPERTY(bool, m_playerCanBeHitstunned, true);
         ALICE_PROPERTY(bool, m_bossCanBeHitstunned, false);
         ALICE_PROPERTY(std::string, m_gimmickEntityName, "W_Target");
+        ALICE_PROPERTY(std::string, m_healGimmickEntityName, "Heal_EYE");
         ALICE_PROPERTY(bool, m_blockPlayerActionsDuringGimmick, true);
         ALICE_PROPERTY(float, m_guardBreakPushbackScale, 0.5f);
         ALICE_PROPERTY(float, m_guardSuccessPushbackScale, 0.1f);
@@ -71,10 +80,16 @@ namespace Alice
         ALICE_PROPERTY(float, m_chargeScale3, 1.8f);
         ALICE_PROPERTY(float, m_lightComboWindowSec, 0.5f);
         ALICE_PROPERTY(float, m_chargeCombo2Speed, 0.7f);
+        ALICE_PROPERTY(float, m_rageDurationSec, 30.0f);
 
         // Animation blending
         ALICE_PROPERTY(float, m_animBlendSec, 0.12f);
+        ALICE_PROPERTY(float, m_bossAnimBlendSec, 0.12f);
+        ALICE_PROPERTY(float, m_bossGroggyEnterBlendSec, 1.5f);
+        ALICE_PROPERTY(float, m_bossGroggyRecoverBlendSec, 1.0f);
         ALICE_PROPERTY(float, m_moveBlendSpeed, 8.0f);
+        ALICE_PROPERTY(float, m_playerMoveInputDamping, 14.0f);
+        ALICE_PROPERTY(float, m_playerMoveYawDamping, 12.0f);
 
         // Default animation clips (shared fallback)
         ALICE_PROPERTY(std::string, m_idleClip, "Idle");
@@ -106,6 +121,7 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_playerLightAttackClip1, "rig|Tia_Normal_Attack_1");
         ALICE_PROPERTY(std::string, m_playerLightAttackClip2, "rig|Tia_Normal_Attack_2");
         ALICE_PROPERTY(std::string, m_playerLightAttackClip3, "rig|Tia_Normal_Attack_3");
+        ALICE_PROPERTY(std::string, m_playerRageAttackClip, "rig|Tia_Normal_Attack_1,2,3");
         ALICE_PROPERTY(std::string, m_playerHeavyAttackClipA, "");
         ALICE_PROPERTY(std::string, m_playerHeavyAttackClipB, "");
         ALICE_PROPERTY(std::string, m_playerDodgeClip, "rig|Tia_Rolling");
@@ -149,6 +165,9 @@ namespace Alice
         ALICE_PROPERTY(float, m_heavyAttackMoveStartSec, 2.2f);
         ALICE_PROPERTY(float, m_lightAttackMoveDurationSec, 0.05f);
         ALICE_PROPERTY(float, m_heavyAttackMoveDurationSec, 0.05f);
+        ALICE_PROPERTY(float, m_bossChargeFacingTrackSec, 0.6f);
+        ALICE_PROPERTY(float, m_bossDashMoveStartSec, -1.0f);
+        ALICE_PROPERTY(float, m_bossIdleFacingDamping, 6.0f);
         ALICE_PROPERTY(bool, m_debugAttackMoveTime, false);
 
         // Attack clip slow-motion was removed; keep commented for reference.
@@ -157,6 +176,7 @@ namespace Alice
 
         // Movement facing offset (degrees)
         ALICE_PROPERTY(float, m_rotationOffsetDeg, 180.0f);
+        ALICE_PROPERTY(float, m_lockOnTargetYOffset, 1.2f);
 
         // Fatal attack (front stab) tuning
         ALICE_PROPERTY(float, m_fatalFrontAngleDeg, 90.0f);
@@ -164,6 +184,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_fatalApproachSec, 0.25f);
         ALICE_PROPERTY(float, m_fatalHoldSec, 2.0f);
         ALICE_PROPERTY(float, m_fatalDamageScale, 1.5f);
+        ALICE_PROPERTY(float, m_groggyAttackStartDelaySec, 2.8f);
 
         void ForceReset();
         ALICE_FUNC(ForceReset);
@@ -180,6 +201,7 @@ namespace Alice
             std::string lightAttackClip1;
             std::string lightAttackClip2;
             std::string lightAttackClip3;
+            std::string rageAttackClip;
             std::string heavyAttackClipA;
             std::string heavyAttackClipB;
             std::string dodgeClip;

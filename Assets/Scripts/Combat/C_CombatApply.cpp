@@ -2,11 +2,13 @@
 
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 #include "Runtime/ECS/World.h"
 #include "Runtime/Gameplay/Combat/HealthComponent.h"
 #include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
 #include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
+#include "Runtime/ECS/Components/IDComponent.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Physics/Components/Phy_CCTComponent.h"
 #include "C_CombatEventBus.h"
@@ -16,17 +18,106 @@ namespace Alice::Combat
 {
     namespace
     {
-        EntityId ResolveTraceEntity(World& world, EntityId ownerOrWeapon)
+        std::uint32_t GetDriverTraceSlotCount(const AttackDriverComponent& driver)
+        {
+            const std::size_t total = std::size_t(1) + driver.traceGuids.size();
+            return static_cast<std::uint32_t>(std::min<std::size_t>(total, 32));
+        }
+
+        EntityId ResolveDriverTraceSlot(World& world, AttackDriverComponent& driver, EntityId owner, std::uint32_t slotIndex)
+        {
+            if (slotIndex == 0u)
+            {
+                if (driver.traceGuid == 0)
+                {
+                    driver.traceCached = InvalidEntityId;
+                    return owner;
+                }
+
+                if (driver.traceCached != InvalidEntityId)
+                {
+                    if (const auto* idc = world.GetComponent<IDComponent>(driver.traceCached))
+                    {
+                        if (idc->guid == driver.traceGuid)
+                            return driver.traceCached;
+                    }
+                    driver.traceCached = InvalidEntityId;
+                }
+
+                EntityId resolved = world.FindEntityByGuid(driver.traceGuid);
+                if (resolved != InvalidEntityId)
+                    driver.traceCached = resolved;
+                return (resolved != InvalidEntityId) ? resolved : owner;
+            }
+
+            const std::uint32_t extraIndex = slotIndex - 1u;
+            if (extraIndex >= driver.traceGuids.size())
+                return InvalidEntityId;
+
+            const std::uint64_t guid = driver.traceGuids[extraIndex];
+            if (guid == 0)
+                return InvalidEntityId;
+
+            if (driver.traceCachedList.size() != driver.traceGuids.size())
+                driver.traceCachedList.assign(driver.traceGuids.size(), InvalidEntityId);
+
+            EntityId& cached = driver.traceCachedList[extraIndex];
+            if (cached != InvalidEntityId)
+            {
+                if (const auto* idc = world.GetComponent<IDComponent>(cached))
+                {
+                    if (idc->guid == guid)
+                        return cached;
+                }
+                cached = InvalidEntityId;
+            }
+
+            EntityId resolved = world.FindEntityByGuid(guid);
+            if (resolved != InvalidEntityId)
+                cached = resolved;
+            return resolved;
+        }
+
+        template <typename Fn>
+        void ForEachTraceEntity(World& world, EntityId ownerOrWeapon, std::uint32_t slotMask, Fn&& fn)
         {
             if (world.GetComponent<WeaponTraceComponent>(ownerOrWeapon))
-                return ownerOrWeapon;
+            {
+                fn(ownerOrWeapon);
+                return;
+            }
 
             auto* driver = world.GetComponent<AttackDriverComponent>(ownerOrWeapon);
-            if (!driver || driver->traceGuid == 0)
-                return ownerOrWeapon;
+            if (!driver)
+            {
+                fn(ownerOrWeapon);
+                return;
+            }
 
-            EntityId resolved = world.FindEntityByGuid(driver->traceGuid);
-            return (resolved != InvalidEntityId) ? resolved : ownerOrWeapon;
+            const std::uint32_t slotCount = GetDriverTraceSlotCount(*driver);
+            if (slotCount == 0)
+                return;
+
+            const bool allSlots = (slotMask == 0u);
+            std::vector<EntityId> visited;
+            visited.reserve(slotCount);
+            for (std::uint32_t slot = 0; slot < slotCount; ++slot)
+            {
+                if (!allSlots)
+                {
+                    const std::uint32_t bit = (1u << slot);
+                    if ((slotMask & bit) == 0u)
+                        continue;
+                }
+
+                EntityId traceId = ResolveDriverTraceSlot(world, *driver, ownerOrWeapon, slot);
+                if (traceId == InvalidEntityId)
+                    continue;
+                if (std::find(visited.begin(), visited.end(), traceId) != visited.end())
+                    continue;
+                visited.push_back(traceId);
+                fn(traceId);
+            }
         }
     }
 
@@ -86,20 +177,29 @@ namespace Alice::Combat
                 auto p = std::get<CmdForceCancelAttack>(cmd.payload);
                 if (auto* driver = world.GetComponent<AttackDriverComponent>(p.target))
                 {
-                    if (driver->attackCancelable)
-                        driver->cancelAttackRequested = true;
+                    driver->cancelAttackRequested = true;
                 }
-                EntityId traceId = ResolveTraceEntity(world, p.target);
-                if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
-                    trace->active = false;
+                ForEachTraceEntity(world, p.target, 0u, [&](EntityId traceId) {
+                    if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
+                    {
+                        trace->active = false;
+                        trace->activeElapsedSec = 0.0f;
+                        trace->activeWindowDurationSec = 0.0f;
+                    }
+                });
                 break;
             }
             case CommandType::DisableTrace:
             {
                 auto p = std::get<CmdDisableTrace>(cmd.payload);
-                EntityId traceId = ResolveTraceEntity(world, p.weaponOrOwner);
-                if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
-                    trace->active = false;
+                ForEachTraceEntity(world, p.weaponOrOwner, 0u, [&](EntityId traceId) {
+                    if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
+                    {
+                        trace->active = false;
+                        trace->activeElapsedSec = 0.0f;
+                        trace->activeWindowDurationSec = 0.0f;
+                    }
+                });
                 if (auto* driver = world.GetComponent<AttackDriverComponent>(p.weaponOrOwner))
                 {
                     // If we disabled mid-attack window (parry/hit), suppress re-enable until window ends.
@@ -111,10 +211,17 @@ namespace Alice::Combat
             case CommandType::EnableTrace:
             {
                 auto p = std::get<CmdEnableTrace>(cmd.payload);
-                EntityId traceId = ResolveTraceEntity(world, p.weaponOrOwner);
-                if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
+                std::uint32_t traceMask = p.traceSlotMask;
+                float windowDurationSec = std::max(0.0f, p.activeWindowDurationSec);
+                if (auto* driver = world.GetComponent<AttackDriverComponent>(p.weaponOrOwner))
                 {
-                    if (!trace->active)
+                    if (traceMask == 0u)
+                        traceMask = driver->attackTraceMaskActive;
+                    if (windowDurationSec <= 0.0f)
+                        windowDurationSec = std::max(0.0f, driver->attackTraceWindowDurationSec);
+                }
+                ForEachTraceEntity(world, p.weaponOrOwner, traceMask, [&](EntityId traceId) {
+                    if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
                     {
                         trace->attackInstanceId++;
                         trace->active = true;
@@ -124,8 +231,10 @@ namespace Alice::Combat
                         trace->prevRotsWS.clear();
                         trace->hitVictims.clear();
                         trace->lastAttackInstanceId = trace->attackInstanceId;
+                        trace->activeElapsedSec = 0.0f;
+                        trace->activeWindowDurationSec = windowDurationSec;
                     }
-                }
+                });
                 break;
             }
             case CommandType::EnterHitstun:
@@ -168,12 +277,17 @@ namespace Alice::Combat
                             hc->groggy = hc->groggyMax;
                             if (auto* driver = world.GetComponent<AttackDriverComponent>(p.target))
                             {
-                                if (driver->attackCancelable)
-                                    driver->cancelAttackRequested = true;
+                                driver->forceCancelRequested = true;
+                                driver->cancelAttackRequested = true;
                             }
-                            EntityId traceId = ResolveTraceEntity(world, p.target);
-                            if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
-                                trace->active = false;
+                            ForEachTraceEntity(world, p.target, 0u, [&](EntityId traceId) {
+                                if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
+                                {
+                                    trace->active = false;
+                                    trace->activeElapsedSec = 0.0f;
+                                    trace->activeWindowDurationSec = 0.0f;
+                                }
+                            });
 
                             bus.PushDeferred({ CombatEventType::OnGroggy, p.target, InvalidEntityId, 0, 0.0f });
                         }

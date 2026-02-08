@@ -37,6 +37,8 @@ namespace Alice
             bool rmPrevEnabled = false;
             bool rmHasPrevClip = false;
             std::string rmPrevClip;
+            bool rmHasPrevTimeA = false;
+            float rmPrevTimeA = 0.0f;
 
             Runtime();
             Runtime(const Runtime&) = delete;

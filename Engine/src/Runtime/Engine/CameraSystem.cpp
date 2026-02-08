@@ -607,7 +607,7 @@ namespace Alice
                 {
                     const DirectX::XMFLOAT3 to = {
                         targetTr->position.x - outputTr->position.x,
-                        targetTr->position.y - outputTr->position.y,
+                        (targetTr->position.y + lookAtComp->targetYOffset) - outputTr->position.y,
                         targetTr->position.z - outputTr->position.z
                     };
                     const DirectX::XMFLOAT3 desiredRot = DirectionToEuler(to);

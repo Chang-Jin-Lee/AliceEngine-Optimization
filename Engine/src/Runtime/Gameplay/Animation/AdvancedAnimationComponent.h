@@ -81,6 +81,7 @@ namespace Alice
 	{
 		bool enabled = false;
 		float yawRad = 0.0f;
+		float pitchRad = 0.0f;
 		float weight = 1.0f;
 	};
 
@@ -107,6 +108,8 @@ namespace Alice
 		// Character-level root motion defaults (optional)
 		std::string rootBoneName = "root";
 		bool rootMotionUnlock = false;
+		// When true, extract root motion (lock/remove root bone motion) without moving the actor.
+		bool rootBoneLock = false;
 		// Runtime-only: when true, root motion translation is driven via CCT.
 		bool rootMotionDriveCct = false;
 		// Runtime-only: last root motion delta in world space (row convention).

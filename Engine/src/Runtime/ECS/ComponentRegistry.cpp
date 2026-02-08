@@ -6,7 +6,7 @@
 #include <rttr/registration>
 #include <DirectXMath.h>
 
-// 컴포넌트 헤더들
+//
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
 #include "Runtime/Rendering/Components/DecalComponent.h"
@@ -41,7 +41,7 @@
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
 #include "Runtime/Rendering/PostProcessSettings.h"
 
-// 물리 컴포넌트 헤더
+// Alice Physics
 #include "Runtime/Physics/Components/Phy_RigidBodyComponent.h"
 #include "Runtime/Physics/Components/Phy_ColliderComponent.h"
 #include "Runtime/Physics/Components/Phy_MeshColliderComponent.h"
@@ -52,26 +52,29 @@
 #include "Runtime/Physics/IPhysicsWorld.h"
 #include "Runtime/Rendering/Data/Material.h"
 
-// AliceUI 컴포넌트 헤더 (신규)
+// AliceUI 
 #include "Runtime/UI/UICommon.h"
 #include "Runtime/UI/UIWidgetComponent.h"
 #include "Runtime/UI/UITransformComponent.h"
 #include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/UITextComponent.h"
 #include "Runtime/UI/UIButtonComponent.h"
+#include "Runtime/UI/UICheckboxComponent.h"
+#include "Runtime/UI/UISliderComponent.h"
 #include "Runtime/UI/UIGaugeComponent.h"
 #include "Runtime/UI/UIEffectComponent.h"
 #include "Runtime/UI/UIAnimationComponent.h"
 #include "Runtime/UI/UIShakeComponent.h"
 #include "Runtime/UI/UIHover3DComponent.h"
 #include "Runtime/UI/UIVitalComponent.h"
+#include "Runtime/UI/UIEmptyGaugeEffectComponent.h"
 
 using namespace DirectX;
 
 namespace Alice
 {
 	void LinkComponentRegistry() {
-        ALICE_LOG_INFO("[리플렉션] rttr Success");
+        ALICE_LOG_INFO("[?�ы뵆??��? rttr Success");
     }
 
     RTTR_REGISTRATION
@@ -92,7 +95,7 @@ namespace Alice
                 rttr::value("VitalAmplitude", UIAnimProperty::VitalAmplitude)
             );
 
-        // === DirectX 타입 등록 ===
+        // === DirectX Ÿ�� ��� ===
         rttr::registration::class_<XMFLOAT2>("XMFLOAT2")
             .constructor<>()
             .property("x", &XMFLOAT2::x)
@@ -111,8 +114,8 @@ namespace Alice
             .property("z", &XMFLOAT4::z)
             .property("w", &XMFLOAT4::w);
 
-        // XMFLOAT4X4는 4x4 행렬을 나타내는 타입
-        // 렌더링할 때 4x4 행렬을 렌더링하기 위해 등록
+        // XMFLOAT4X4�� 4x4 ����� ��Ÿ���� Ÿ��
+        // �������� �� 4x4 ����� �������ϱ� ���� ���
         rttr::registration::class_<XMFLOAT4X4>("XMFLOAT4X4")
             .constructor<>()
             .property("_11", &XMFLOAT4X4::_11)
@@ -144,7 +147,7 @@ namespace Alice
             rttr::value("SFX", SoundBoxType::SFX)
         );
 
-        // === TransformComponent 등록 ===
+        // === TransformComponent  ===
         rttr::registration::class_<TransformComponent>("TransformComponent")
             .constructor<>()
             .property("position", &TransformComponent::position)
@@ -153,7 +156,7 @@ namespace Alice
             .property("enabled", &TransformComponent::enabled)
             .property("visible", &TransformComponent::visible);
 
-        // === MaterialComponent 등록 ===
+        // === MaterialComponent ===
         rttr::registration::class_<MaterialComponent>("MaterialComponent")
             .constructor<>()
             .property("color", &MaterialComponent::color)
@@ -185,6 +188,7 @@ namespace Alice
             .property("toonPbrRampIntensity", &MaterialComponent::toonPbrRampIntensity)
             .property("toonSelfShadowStrength", &MaterialComponent::toonSelfShadowStrength);
 
+
         // === DecalComponent 등록 ===
         rttr::registration::class_<DecalComponent>("DecalComponent")
             .constructor<>()
@@ -204,7 +208,7 @@ namespace Alice
             .property("instanceAssetPath", &SkinnedMeshComponent::instanceAssetPath)
             .property("boneCount", &SkinnedMeshComponent::boneCount);
 
-        // === SkinnedAnimationComponent 등록 ===
+        // === SkinnedAnimationComponent  ===
         rttr::registration::class_<SkinnedAnimationComponent>("SkinnedAnimationComponent")
             .constructor<>()
             .property("clipIndex", &SkinnedAnimationComponent::clipIndex)
@@ -212,9 +216,9 @@ namespace Alice
             .property("speed", &SkinnedAnimationComponent::speed)
             .property("timeSec", &SkinnedAnimationComponent::timeSec);
         
-        // palette는 팔레트를 나타내는 프로퍼티
+        // palette
 
-        // === AdvancedAnimationComponent 등록 ===
+        // === AdvancedAnimationComponent ===
         rttr::registration::class_<AdvancedAnimLayer>("AdvancedAnimLayer")
             .constructor<>()
             .property("enabled", &AdvancedAnimLayer::enabled)
@@ -259,6 +263,7 @@ namespace Alice
             .constructor<>()
             .property("enabled", &AdvancedAnimAim::enabled)
             .property("yawRad", &AdvancedAnimAim::yawRad)
+            .property("pitchRad", &AdvancedAnimAim::pitchRad)
             .property("weight", &AdvancedAnimAim::weight);
 
         rttr::registration::class_<AdvancedAnimSocket>("AdvancedAnimSocket")
@@ -275,6 +280,8 @@ namespace Alice
             .property("playing", &AdvancedAnimationComponent::playing)
             .property("rootBoneName", &AdvancedAnimationComponent::rootBoneName)
             .property("rootMotionUnlock", &AdvancedAnimationComponent::rootMotionUnlock)
+            .property("rootMotionDriveCct", &AdvancedAnimationComponent::rootMotionDriveCct)
+            .property("rootBoneLock", &AdvancedAnimationComponent::rootBoneLock)
             .property("base", &AdvancedAnimationComponent::base)    
             .property("upper", &AdvancedAnimationComponent::upper)
             .property("additive", &AdvancedAnimationComponent::additive)
@@ -284,7 +291,7 @@ namespace Alice
             .property("aim", &AdvancedAnimationComponent::aim)
             .property("sockets", &AdvancedAnimationComponent::sockets);
 
-        // AnimParamType enum 등록
+        // AnimParamType enum 
         rttr::registration::enumeration<AnimParamType>("AnimParamType")
             (
                 rttr::value("Bool", AnimParamType::Bool),
@@ -293,7 +300,7 @@ namespace Alice
                 rttr::value("Trigger", AnimParamType::Trigger)
             );
 
-        // AnimParamValue 등록
+        // AnimParamValue 
         rttr::registration::class_<AnimParamValue>("AnimParamValue")
             .constructor<>()
             .property("type", &AnimParamValue::type)
@@ -302,7 +309,7 @@ namespace Alice
             .property("f", &AnimParamValue::f)
             .property("trigger", &AnimParamValue::trigger);
 
-        // AnimBlueprintComponent 등록
+        // AnimBlueprintComponent 
         rttr::registration::class_<AnimBlueprintComponent>("AnimBlueprintComponent")
             .constructor<>()
             .property("blueprintPath", &AnimBlueprintComponent::blueprintPath)
@@ -310,7 +317,7 @@ namespace Alice
             .property("speed", &AnimBlueprintComponent::speed)
             .property("params", &AnimBlueprintComponent::params);
 
-		//  Enum 등록
+		//  Enum 
 		rttr::registration::enumeration<SoundBoxType>("alice_SoundBoxType")
 			(
 				rttr::value("BGM", SoundBoxType::BGM),
@@ -323,7 +330,7 @@ namespace Alice
 				rttr::value("SFX", AudioType::SFX)
 				);
 
-		//  SoundBoxComponent 등록
+		//  SoundBoxComponent 
 		rttr::registration::class_<SoundBoxComponent>("SoundBoxComponent")
 			.constructor<>()
 			.property("soundKey", &SoundBoxComponent::soundKey)
@@ -342,7 +349,7 @@ namespace Alice
 			.property("debugDraw", &SoundBoxComponent::debugDraw)
 			.property("targetEntity", &SoundBoxComponent::targetEntity);
 
-        // DebugDrawBoxComponent 등록
+        // DebugDrawBoxComponent
         rttr::registration::class_<DebugDrawBoxComponent>("DebugDrawBoxComponent")
             .constructor<>()
             .property("boundsMin", &DebugDrawBoxComponent::boundsMin)
@@ -351,7 +358,7 @@ namespace Alice
             .property("enabled", &DebugDrawBoxComponent::enabled)
             .property("depthTest", &DebugDrawBoxComponent::depthTest);
 
-		// SocketAttachmentComponent 등록
+		// SocketAttachmentComponent
 		rttr::registration::class_<SocketAttachmentComponent>("SocketAttachmentComponent")
 			.constructor<>()
 			.property("ownerGuid", &SocketAttachmentComponent::ownerGuid)
@@ -362,7 +369,7 @@ namespace Alice
 			.property("extraRotRad", &SocketAttachmentComponent::extraRotRad)
 			.property("extraScale", &SocketAttachmentComponent::extraScale);
 
-		// HurtboxComponent 등록
+		// HurtboxComponent 
 		rttr::registration::class_<HurtboxComponent>("HurtboxComponent")
 			.constructor<>()
 			.property("ownerGuid", &HurtboxComponent::ownerGuid)
@@ -378,6 +385,12 @@ namespace Alice
 				rttr::value("Box", WeaponTraceShapeType::Box)
 				);
 
+		rttr::registration::enumeration<WeaponTracePathMode>("WeaponTracePathMode")
+			(
+				rttr::value("Linear", WeaponTracePathMode::Linear),
+				rttr::value("QuadraticBezier", WeaponTracePathMode::QuadraticBezier)
+				);
+
 		rttr::registration::class_<WeaponTraceShape>("WeaponTraceShape")
 			.constructor<>()
 			.property("name", &WeaponTraceShape::name)
@@ -387,9 +400,14 @@ namespace Alice
 			.property("localRotDeg", &WeaponTraceShape::localRotDeg)
 			.property("radius", &WeaponTraceShape::radius)
 			.property("capsuleHalfHeight", &WeaponTraceShape::capsuleHalfHeight)
-			.property("boxHalfExtents", &WeaponTraceShape::boxHalfExtents);
+			.property("boxHalfExtents", &WeaponTraceShape::boxHalfExtents)
+			.property("pathEnabled", &WeaponTraceShape::pathEnabled)
+			.property("pathMode", &WeaponTraceShape::pathMode)
+			.property("pathStartLocalPos", &WeaponTraceShape::pathStartLocalPos)
+			.property("pathControlLocalPos", &WeaponTraceShape::pathControlLocalPos)
+			.property("pathEndLocalPos", &WeaponTraceShape::pathEndLocalPos);
 
-		// WeaponTraceComponent 등록
+		// WeaponTraceComponent 
 		rttr::registration::class_<WeaponTraceComponent>("WeaponTraceComponent")
 			.constructor<>()
 			.property("ownerGuid", &WeaponTraceComponent::ownerGuid)
@@ -410,9 +428,12 @@ namespace Alice
 			.property("attackInstanceId", &WeaponTraceComponent::attackInstanceId)
 			.property("targetLayerBits", &WeaponTraceComponent::targetLayerBits)
 			.property("queryLayerBits", &WeaponTraceComponent::queryLayerBits)
-			.property("subSteps", &WeaponTraceComponent::subSteps);
+			.property("subSteps", &WeaponTraceComponent::subSteps)
+			.property("debugPathGuide", &WeaponTraceComponent::debugPathGuide)
+			.property("debugPathGridSteps", &WeaponTraceComponent::debugPathGridSteps)
+			.property("debugPathMarkerRadius", &WeaponTraceComponent::debugPathMarkerRadius);
 
-		// HealthComponent 등록
+		// HealthComponent 
 		rttr::registration::class_<HealthComponent>("HealthComponent")
 			.constructor<>()
 			.property("maxHealth", &HealthComponent::maxHealth)
@@ -443,7 +464,7 @@ namespace Alice
 			.property("alive", &HealthComponent::alive)
 			.property("teamId", &HealthComponent::teamId);
 
-		// AttackDriverComponent 등록
+		// AttackDriverComponent 
 		rttr::registration::enumeration<AttackDriverNotifyType>("AttackDriverNotifyType")
 			(
 				rttr::value("Attack", AttackDriverNotifyType::Attack),
@@ -469,6 +490,7 @@ namespace Alice
 			.property("clipName", &AttackDriverClip::clipName)
 			.property("startTimeSec", &AttackDriverClip::startTimeSec)
 			.property("endTimeSec", &AttackDriverClip::endTimeSec)
+			.property("traceSlotMask", &AttackDriverClip::traceSlotMask)
 			.property("enabled", &AttackDriverClip::enabled)
 			.property("canBeInterrupted", &AttackDriverClip::canBeInterrupted);
 
@@ -478,10 +500,11 @@ namespace Alice
 			.property("debugTeamId", &AttackDriverComponent::debugTeamId)
 			.property("debugLogs", &AttackDriverComponent::debugLogs)
 			.property("traceGuid", &AttackDriverComponent::traceGuid)
+			.property("traceGuids", &AttackDriverComponent::traceGuids)
 			.property("clips", &AttackDriverComponent::clips)
 			.property("attackStateDurationSec", &AttackDriverComponent::attackStateDurationSec);
 
-		// SocketDef / SocketComponent 등록 (씬 저장/로드 및 인스펙터)
+        // SocketDef / SocketComponent ��� (�� ����/�ε� �� �ν�����)
 		rttr::registration::class_<SocketDef>("SocketDef")
 			.constructor<>()
 			.property("name", &SocketDef::name)
@@ -494,12 +517,12 @@ namespace Alice
 			.constructor<>()
 			.property("sockets", &SocketComponent::sockets);
 
-		//  AudioListenerComponent 등록
+        //  AudioListenerComponent ���
 		rttr::registration::class_<AudioListenerComponent>("AudioListenerComponent")
 			.constructor<>()
 			.property("primary", &AudioListenerComponent::primary);
 
-		//  AudioSourceComponent 등록
+        //  AudioSourceComponent ���
 		rttr::registration::class_<AudioSourceComponent>("AudioSourceComponent")
 			.constructor<>()
 			.property("soundKey", &AudioSourceComponent::soundKey)
@@ -516,8 +539,8 @@ namespace Alice
 			.property("requestStop", &AudioSourceComponent::requestStop)
 			.property("debugDraw", &AudioSourceComponent::debugDraw);
 
-        // === CameraComponent 등록 ===
-        // Transform은 TransformComponent에서 담당하므로 여기선 제외
+        // === CameraComponent ��� ===
+       // Transform�� TransformComponent���� ����ϹǷ� ���⼱ ����
         rttr::registration::class_<CameraComponent>("CameraComponent")
             .constructor<>()
             .property("primary", &CameraComponent::GetPrimary, &CameraComponent::SetPrimary)
@@ -530,7 +553,7 @@ namespace Alice
             .property("useAspectOverride", &CameraComponent::useAspectOverride)
             .property("aspectOverride", &CameraComponent::aspectOverride);
 
-        // === CameraFollowComponent 등록 ===
+        // === CameraFollowComponent ��� ===
         rttr::registration::class_<CameraFollowComponent>("CameraFollowComponent")
             .constructor<>()
             .property("enabled", &CameraFollowComponent::enabled)
@@ -575,7 +598,7 @@ namespace Alice
             .property("allowManualOrbitInLockOn", &CameraFollowComponent::allowManualOrbitInLockOn)
             .property("cameraTimeScale", &CameraFollowComponent::cameraTimeScale);
 
-        // === CameraSpringArmComponent 등록 ===
+        // === CameraSpringArmComponent ��� ===
         rttr::registration::class_<CameraSpringArmComponent>("CameraSpringArmComponent")
             .constructor<>()
             .property("enabled", &CameraSpringArmComponent::enabled)
@@ -590,14 +613,15 @@ namespace Alice
             .property("probePadding", &CameraSpringArmComponent::probePadding)
             .property("minHeight", &CameraSpringArmComponent::minHeight);
 
-        // === CameraLookAtComponent 등록 ===
+        // === CameraLookAtComponent ��� ===
         rttr::registration::class_<CameraLookAtComponent>("CameraLookAtComponent")
             .constructor<>()
             .property("enabled", &CameraLookAtComponent::enabled)
             .property("targetName", &CameraLookAtComponent::targetName)
+            .property("targetYOffset", &CameraLookAtComponent::targetYOffset)
             .property("rotationDamping", &CameraLookAtComponent::rotationDamping);
 
-        // === CameraShakeComponent 등록 ===
+        // === CameraShakeComponent ��� ===
         rttr::registration::class_<CameraShakeComponent>("CameraShakeComponent")
             .constructor<>()
             .property("enabled", &CameraShakeComponent::enabled)
@@ -606,7 +630,7 @@ namespace Alice
             .property("duration", &CameraShakeComponent::duration)
             .property("decay", &CameraShakeComponent::decay);
 
-        // === CameraBlendComponent 등록 ===
+        // === CameraBlendComponent ��� ===
         rttr::registration::class_<CameraBlendComponent>("CameraBlendComponent")
             .constructor<>()
             .property("targetName", &CameraBlendComponent::targetName)
@@ -616,7 +640,7 @@ namespace Alice
             .property("slowDuration", &CameraBlendComponent::slowDuration)
             .property("slowTimeScale", &CameraBlendComponent::slowTimeScale);
 
-        // === CameraInputComponent 등록 ===
+        // === CameraInputComponent ��� ===
         rttr::registration::class_<CameraInputComponent>("CameraInputComponent")
             .constructor<>()
             .property("enabled", &CameraInputComponent::enabled)
@@ -633,7 +657,7 @@ namespace Alice
             .property("slowTimeScaleKey5", &CameraInputComponent::slowTimeScaleKey5)
             .property("lookAtTargetName", &CameraInputComponent::lookAtTargetName);
 
-        // === PointLightComponent 등록 ===
+        // === PointLightComponent ��� ===
         rttr::registration::class_<PointLightComponent>("PointLightComponent")
             .constructor<>()
             .property("color", &PointLightComponent::color)
@@ -641,7 +665,7 @@ namespace Alice
             .property("range", &PointLightComponent::range)
             .property("enabled", &PointLightComponent::enabled);
 
-        // === SpotLightComponent 등록 ===
+        // === SpotLightComponent ��� ===
         rttr::registration::class_<SpotLightComponent>("SpotLightComponent")
             .constructor<>()
             .property("color", &SpotLightComponent::color)
@@ -651,7 +675,7 @@ namespace Alice
             .property("outerAngleDeg", &SpotLightComponent::outerAngleDeg)
             .property("enabled", &SpotLightComponent::enabled);
 
-        // === RectLightComponent 등록 ===
+        // === RectLightComponent ��� ===
         rttr::registration::class_<RectLightComponent>("RectLightComponent")
             .constructor<>()
             .property("color", &RectLightComponent::color)
@@ -661,7 +685,7 @@ namespace Alice
             .property("range", &RectLightComponent::range)
             .property("enabled", &RectLightComponent::enabled);
 
-        // === PostProcessVolumeComponent 등록 ===
+        // === PostProcessVolumeComponent ��� ===
         rttr::registration::enumeration<PostProcessVolumeShape>("PostProcessVolumeShape")
             (
                 rttr::value("Box", PostProcessVolumeShape::Box)
@@ -680,7 +704,7 @@ namespace Alice
             .property("useReferenceObject", &PostProcessVolumeComponent::GetUseReferenceObject, &PostProcessVolumeComponent::SetUseReferenceObject)
             .property("settings", &PostProcessVolumeComponent::settings);
 
-        // === PostProcessSettings 등록 ===
+        // === PostProcessSettings ��� ===
         rttr::registration::class_<PostProcessSettings>("PostProcessSettings")
             .constructor<>()
             // Exposure
@@ -711,7 +735,7 @@ namespace Alice
             .property("bOverride_BloomDownsample", &PostProcessSettings::bOverride_BloomDownsample)
             .property("bloomDownsample", &PostProcessSettings::bloomDownsample);
 
-        // === ComputeEffectComponent 등록 ===
+        // === ComputeEffectComponent ��� ===
         rttr::registration::class_<ComputeEffectComponent>("ComputeEffectComponent")
             .constructor<>()
             .property("enabled", &ComputeEffectComponent::enabled)
@@ -758,13 +782,15 @@ namespace Alice
             .property("trailWidthScale", &UnityVfxComponent::trailWidthScale)
             .property("trailLifeScale", &UnityVfxComponent::trailLifeScale);
 
+
         rttr::registration::enumeration<ParticleSimulationSpace>("ParticleSimulationSpace")
             (
                 rttr::value("World", ParticleSimulationSpace::World),
                 rttr::value("Local", ParticleSimulationSpace::Local)
             );
 
-        // === ColliderType enum 등록 ===
+        // === ColliderType enum ��� ===
+
         rttr::registration::enumeration<ColliderType>("ColliderType")
             (
                 rttr::value("Box", ColliderType::Box),
@@ -778,7 +804,7 @@ namespace Alice
                 rttr::value("Convex", MeshColliderType::Convex)
                 );
 
-        // === RigidBodyLockFlags enum 등록 ===
+        // === RigidBodyLockFlags enum ��� ===
         rttr::registration::enumeration<RigidBodyLockFlags>("RigidBodyLockFlags")
             (
                 rttr::value("None", RigidBodyLockFlags::None),
@@ -790,7 +816,7 @@ namespace Alice
                 rttr::value("LockAngularZ", RigidBodyLockFlags::LockAngularZ)
                 );
 
-        // === Phy_RigidBodyComponent 등록 (physicsActorHandle는 내부용이므로 등록하지 않음) ===
+        // === Phy_RigidBodyComponent ��� (physicsActorHandle�� ���ο��̹Ƿ� ������� ����) ===
         rttr::registration::class_<Phy_RigidBodyComponent>("Phy_RigidBodyComponent")
             .constructor<>()
             .property("density", &Phy_RigidBodyComponent::density)
@@ -812,7 +838,7 @@ namespace Alice
             .property("teleport", &Phy_RigidBodyComponent::teleport)
             .property("resetVelocityOnTeleport", &Phy_RigidBodyComponent::resetVelocityOnTeleport);
 
-        // === Phy_ColliderComponent 등록 (physicsActorHandle는 내부용이므로 등록하지 않음) ===
+        // === Phy_ColliderComponent ��� (physicsActorHandle�� ���ο��̹Ƿ� ������� ����) ===
         rttr::registration::class_<Phy_ColliderComponent>("Phy_ColliderComponent")
             .constructor<>()
             .property("type", &Phy_ColliderComponent::type)
@@ -830,7 +856,7 @@ namespace Alice
             .property("isTrigger", &Phy_ColliderComponent::isTrigger)
             .property("debugDraw", &Phy_ColliderComponent::debugDraw);
 
-        // === Phy_MeshColliderComponent 등록 (physicsActorHandle는 내부용이므로 등록하지 않음) ===
+        // === Phy_MeshColliderComponent ��� (physicsActorHandle�� ���ο��̹Ƿ� ������� ����) ===
         rttr::registration::class_<Phy_MeshColliderComponent>("Phy_MeshColliderComponent")
             .constructor<>()
             .property("type", &Phy_MeshColliderComponent::type)
@@ -848,7 +874,7 @@ namespace Alice
             .property("vertexLimit", &Phy_MeshColliderComponent::vertexLimit)
             .property("debugDraw", &Phy_MeshColliderComponent::debugDraw);
 
-        // === Phy_TerrainHeightFieldComponent 등록 (physicsActorHandle는 내부용이므로 등록하지 않음) ===
+        // === Phy_TerrainHeightFieldComponent ��� (physicsActorHandle�� ���ο��̹Ƿ� ������� ����) ===
         rttr::registration::class_<Phy_TerrainHeightFieldComponent>("Phy_TerrainHeightFieldComponent")
             .constructor<>()
             .property("numRows", &Phy_TerrainHeightFieldComponent::numRows)
@@ -865,7 +891,7 @@ namespace Alice
             .property("layerBits", &Phy_TerrainHeightFieldComponent::layerBits)
             .property("ignoreLayers", &Phy_TerrainHeightFieldComponent::ignoreLayers);
 
-        // === EffectComponent 등록 ===
+        // === EffectComponent ��� ===
         rttr::registration::class_<EffectComponent>("EffectComponent")
             .constructor<>()
             .property("color", &EffectComponent::color)
@@ -873,7 +899,7 @@ namespace Alice
             .property("enabled", &EffectComponent::enabled)
             .property("alpha", &EffectComponent::alpha);
 
-	// === TrailEffectComponent 등록 (trailSamples는 내부용이므로 등록하지 않음) ===
+        // === TrailEffectComponent ��� (trailSamples�� ���ο��̹Ƿ� ������� ����) ===
 	rttr::registration::class_<TrailEffectComponent>("TrailEffectComponent")
 		.constructor<>()
 		.property("color", &TrailEffectComponent::color)
@@ -882,21 +908,21 @@ namespace Alice
 		.property("maxSamples", &TrailEffectComponent::maxSamples)
 		.property("sampleInterval", &TrailEffectComponent::sampleInterval)
 		.property("fadeDuration", &TrailEffectComponent::fadeDuration);
-        // === CCTNonWalkableMode enum 등록 ===
+        // === CCTNonWalkableMode enum ��� ===
         rttr::registration::enumeration<CCTNonWalkableMode>("CCTNonWalkableMode")
             (
                 rttr::value("PreventClimbing", CCTNonWalkableMode::PreventClimbing),
                 rttr::value("PreventClimbingAndForceSliding", CCTNonWalkableMode::PreventClimbingAndForceSliding)
             );
 
-        // === CCTCapsuleClimbingMode enum 등록 ===
+        // === CCTCapsuleClimbingMode enum ��� ===
         rttr::registration::enumeration<CCTCapsuleClimbingMode>("CCTCapsuleClimbingMode")
             (
                 rttr::value("Easy", CCTCapsuleClimbingMode::Easy),
                 rttr::value("Constrained", CCTCapsuleClimbingMode::Constrained)
             );
 
-        // === Phy_CCTComponent 등록 (내부 핸들과 출력 값들은 제외) ===
+        // === Phy_CCTComponent ��� (���� �ڵ�� ��� ������ ����) ===
         rttr::registration::class_<Phy_CCTComponent>("Phy_CCTComponent")
             .constructor<>()
             .property("radius", &Phy_CCTComponent::radius)
@@ -919,7 +945,7 @@ namespace Alice
             .property("jumpSpeed", &Phy_CCTComponent::jumpSpeed)
             .property("teleport", &Phy_CCTComponent::teleport);
 
-        // === Phy_SettingsComponent 등록 ===
+        // === Phy_SettingsComponent ��� ===
         rttr::registration::class_<Phy_SettingsComponent>("Phy_SettingsComponent")
             .constructor<>()
             .property("enablePhysics", &Phy_SettingsComponent::enablePhysics)
@@ -940,7 +966,7 @@ namespace Alice
             .property("layerNames", &Phy_SettingsComponent::layerNames)
             .property("filterRevision", &Phy_SettingsComponent::filterRevision);
 
-        // === Joint enums 등록 ===
+        // === Joint enums ��� ===
         rttr::registration::enumeration<Phy_JointType>("Phy_JointType")
             (
                 rttr::value("Fixed", Phy_JointType::Fixed),
@@ -958,7 +984,7 @@ namespace Alice
                 rttr::value("Free", Phy_D6Motion::Free)
             );
 
-        // === Joint 설정 타입 등록 ===
+        // === Joint ??�젙 ?????깅줉 ===
         rttr::registration::class_<Phy_JointFrame>("Phy_JointFrame")
             .constructor<>()
             .property("position", &Phy_JointFrame::position)
@@ -1068,7 +1094,7 @@ namespace Alice
             .property("driveLinearVelocity", &Phy_D6JointSettings::driveLinearVelocity)
             .property("driveAngularVelocity", &Phy_D6JointSettings::driveAngularVelocity);
 
-        // === Phy_JointComponent 등록 (jointHandle 내부용 제외) ===
+        // === Phy_JointComponent ?깅줉 (jointHandle ??�?????�쇅) ===
         rttr::registration::class_<Phy_JointComponent>("Phy_JointComponent")
             .constructor<>()
             .property("type", &Phy_JointComponent::type)
@@ -1087,7 +1113,7 @@ namespace Alice
         rttr::registration::class_<IScript>("IScript")
             .constructor<>();
 
-        // === AliceUI 컴포넌트/열거형 등록 ===
+        // === AliceUI ?�댄�??�듃/??�굅???깅줉 ===
         rttr::registration::enumeration<AliceUI::UISpace>("UISpace")
             (
                 rttr::value("Screen", AliceUI::UISpace::Screen),
@@ -1187,6 +1213,39 @@ namespace Alice
             .property("pressedTexture", &UIButtonComponent::pressedTexture)
             .property("disabledTexture", &UIButtonComponent::disabledTexture);
 
+        rttr::registration::class_<UICheckBoxComponent>("UICheckBoxComponent")
+            .constructor<>()
+            .property("enabled", &UICheckBoxComponent::enabled)
+            .property("state", &UICheckBoxComponent::state)
+            .property("isCheck", &UICheckBoxComponent::isCheck)
+            .property("backgroundSize", &UICheckBoxComponent::backgroundSize)
+            .property("normalTexture", &UICheckBoxComponent::normalTexture)
+            .property("hoveredTexture", &UICheckBoxComponent::hoveredTexture)
+            .property("pressedTexture", &UICheckBoxComponent::pressedTexture)
+            .property("disabledTexture", &UICheckBoxComponent::disabledTexture)
+            .property("normalTint", &UICheckBoxComponent::normalTint)
+            .property("hoveredTint", &UICheckBoxComponent::hoveredTint)
+            .property("pressedTint", &UICheckBoxComponent::pressedTint)
+            .property("disabledTint", &UICheckBoxComponent::disabledTint);
+
+        rttr::registration::class_<UISliderComponent>("UISliderComponent")
+            .constructor<>()
+            .property("enabled", &UISliderComponent::enabled)
+            .property("state", &UISliderComponent::state)
+            .property("value", &UISliderComponent::value)
+            .property("direction", &UISliderComponent::direction)
+            .property("syncGauge", &UISliderComponent::syncGauge)
+            .property("handleSize", &UISliderComponent::handleSize)
+            .property("backgroundSize", &UISliderComponent::backgroundSize)
+            .property("normalTint", &UISliderComponent::normalTint)
+            .property("hoveredTint", &UISliderComponent::hoveredTint)
+            .property("pressedTint", &UISliderComponent::pressedTint)
+            .property("disabledTint", &UISliderComponent::disabledTint)
+            .property("normalTexture", &UISliderComponent::normalTexture)
+            .property("hoveredTexture", &UISliderComponent::hoveredTexture)
+            .property("pressedTexture", &UISliderComponent::pressedTexture)
+            .property("disabledTexture", &UISliderComponent::disabledTexture);
+
         rttr::registration::class_<UIGaugeComponent>("UIGaugeComponent")
             .constructor<>()
             .property("minValue", &UIGaugeComponent::minValue)
@@ -1195,9 +1254,15 @@ namespace Alice
             .property("normalized", &UIGaugeComponent::normalized)
             .property("direction", &UIGaugeComponent::direction)
             .property("fillTexture", &UIGaugeComponent::fillTexture)
+            .property("fillLateTexture", &UIGaugeComponent::fillLateTexture)
+            .property("fillLateShaderName", &UIGaugeComponent::fillLateShaderName)
             .property("backgroundTexture", &UIGaugeComponent::backgroundTexture)
             .property("fillColor", &UIGaugeComponent::fillColor)
+            .property("fillLateColor", &UIGaugeComponent::fillLateColor)
             .property("backgroundColor", &UIGaugeComponent::backgroundColor)
+            .property("useBackground", &UIGaugeComponent::useBackground)
+            .property("useCustomShader", &UIGaugeComponent::useCustomShader)
+            .property("useFillLate", &UIGaugeComponent::useFillLate)
             .property("smoothing", &UIGaugeComponent::smoothing);
         rttr::registration::class_<UIEffectComponent>("UIEffectComponent")
             .constructor<>()
@@ -1268,15 +1333,36 @@ namespace Alice
             .property("frequency", &UIVitalComponent::frequency)
             .property("speed", &UIVitalComponent::speed)
             .property("thickness", &UIVitalComponent::thickness);
+        rttr::registration::class_<UIEmptyGaugeEffectComponent>("UIEmptyGaugeEffectComponent")
+            .constructor<>()
+            .property("enabled", &UIEmptyGaugeEffectComponent::enabled)
+            .property("color", &UIEmptyGaugeEffectComponent::color)
+            .property("frequency", &UIEmptyGaugeEffectComponent::frequency)
+            .property("speed", &UIEmptyGaugeEffectComponent::speed)
+            .property("intensity", &UIEmptyGaugeEffectComponent::intensity);
+        
+        rttr::registration::class_<UIPencilComponent>("UIPencilComponent")
+            .constructor<>()
+            .property("pencilTexturePath", &UIPencilComponent::pencilTexturePath)
+            .property("pencilTileScale", &UIPencilComponent::pencilTileScale)
+            .property("pencilJitterStrength", &UIPencilComponent::pencilJitterStrength)
+            .property("pencilContrast", &UIPencilComponent::pencilContrast);
 
+        rttr::registration::class_<UIDieLineParamsComponent>("UIDieLineParamsComponent")
+            .constructor<>()
+            .property("totalCycle", &UIDieLineParamsComponent::totalCycle)
+            .property("phase1Duration", &UIDieLineParamsComponent::phase1Duration)
+            .property("phase2End", &UIDieLineParamsComponent::phase2End)
+            .property("phase3Duration", &UIDieLineParamsComponent::phase3Duration)
+            .property("startTime", &UIDieLineParamsComponent::startTime);
     }
 
-    // EditorComponentRegistry에 컴포넌트 등록
+    // EditorComponentRegistry???�댄�??�듃 ?깅줉
     static void RegisterEditorComponentsOnce()
     {
         auto& r = EditorComponentRegistry::Get();
 
-        // Transform은 필수라면 addable/removable 컨트롤
+        // Transform?? ?꾩닔??�㈃ addable/removable ?�⑦?�濡?
         r.Register<TransformComponent>("Transform", "Core",
             /*addFn*/{}, /*addable*/false, /*removable*/false);
 
@@ -1293,7 +1379,7 @@ namespace Alice
 
         r.Register<SkinnedMeshComponent>("Skinned Mesh", "Rendering",
             [](World& w, EntityId e) {
-                w.AddComponent<SkinnedMeshComponent>(e, ""); // 기본값
+                w.AddComponent<SkinnedMeshComponent>(e, ""); // 湲곕??��?
             });
 
         r.Register<SkinnedAnimationComponent>("Skinned Animation", "Rendering");
@@ -1308,6 +1394,10 @@ namespace Alice
         r.Register<CameraShakeComponent>("Shake", "Camera");
         r.Register<CameraBlendComponent>("Blend", "Camera");
         r.Register<CameraInputComponent>("Input", "Camera");
+
+        r.Register<AudioListenerComponent>("Audio Listener", "Audio");
+        r.Register<AudioSourceComponent>("Audio Source", "Audio");
+        r.Register<SoundBoxComponent>("Sound Box", "Audio");
 
         r.Register<PointLightComponent>("Point Light", "Lighting");
         r.Register<SpotLightComponent>("Spot Light", "Lighting");
@@ -1343,17 +1433,21 @@ namespace Alice
         r.Register<UIImageComponent>("UI Image", "UI");
         r.Register<UITextComponent>("UI Text", "UI");
         r.Register<UIButtonComponent>("UI Button", "UI");
+        r.Register<UICheckBoxComponent>("UI CheckBox", "UI");
+        r.Register<UISliderComponent>("UI Slider", "UI");
         r.Register<UIGaugeComponent>("UI Gauge", "UI");
         r.Register<UIEffectComponent>("UI Effect", "UI");
         r.Register<UIAnimationComponent>("UI Animation", "UI");
         r.Register<UIShakeComponent>("UI Shake", "UI");
         r.Register<UIHover3DComponent>("UI Hover 3D", "UI");
         r.Register<UIVitalComponent>("UI Vital", "UI");
+        r.Register<UIEmptyGaugeEffectComponent>("UI Gauge Empty Effect", "UI");
+        r.Register<UIDieLineParamsComponent>("UI Die Line Params", "UI");
 
         r.SortByCategoryThenName();
     }
 
-    // 정적 초기화로 1회 실행
+    // ?뺤쟻 ?�덇�?붾줈 1????�뻾
     static const bool s_regEditorComponents = [] {
         RegisterEditorComponentsOnce();
         return true;

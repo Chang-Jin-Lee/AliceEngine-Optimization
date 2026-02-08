@@ -108,12 +108,16 @@ namespace Alice
         rmPrevEnabled = other.rmPrevEnabled;
         rmHasPrevClip = other.rmHasPrevClip;
         rmPrevClip = std::move(other.rmPrevClip);
+        rmHasPrevTimeA = other.rmHasPrevTimeA;
+        rmPrevTimeA = other.rmPrevTimeA;
         animator = other.animator;
         initialized = other.initialized;
         other.animator = nullptr;
         other.initialized = false;
         other.rmPrevEnabled = false;
         other.rmHasPrevClip = false;
+        other.rmHasPrevTimeA = false;
+        other.rmPrevTimeA = 0.0f;
     }
 
     AdvancedAnimSystem::Runtime& AdvancedAnimSystem::Runtime::operator=(Runtime&& other) noexcept
@@ -126,12 +130,16 @@ namespace Alice
         rmPrevEnabled = other.rmPrevEnabled;
         rmHasPrevClip = other.rmHasPrevClip;
         rmPrevClip = std::move(other.rmPrevClip);
+        rmHasPrevTimeA = other.rmHasPrevTimeA;
+        rmPrevTimeA = other.rmPrevTimeA;
         animator = other.animator;
         initialized = other.initialized;
         other.animator = nullptr;
         other.initialized = false;
         other.rmPrevEnabled = false;
         other.rmHasPrevClip = false;
+        other.rmHasPrevTimeA = false;
+        other.rmPrevTimeA = 0.0f;
         return *this;
     }
 
@@ -507,7 +515,29 @@ namespace Alice
         // Root motion reset detection
         // ------------------------------
         bool rmReset = false;
-        const bool rmEnabled = animComp.rootMotionUnlock;
+        const bool rmEnabled = animComp.rootMotionUnlock || animComp.rootBoneLock;
+        const bool rmApply = animComp.rootMotionUnlock;
+        const bool hadPrevClip = rt.rmHasPrevClip;
+        const std::string prevClip = rt.rmPrevClip;
+        const bool hadPrevTimeA = rt.rmHasPrevTimeA;
+        const float prevTimeA = rt.rmPrevTimeA;
+        bool baseTimeRewound = false;
+        if (rmEnabled && hadPrevClip && hadPrevTimeA && prevClip == animComp.base.clipA)
+        {
+            constexpr float kTimeEps = 0.0001f;
+            const float currTimeA = animComp.base.timeA;
+            const float speedA = animComp.base.speedA;
+            if (speedA >= 0.0f)
+            {
+                if (currTimeA + kTimeEps < prevTimeA)
+                    baseTimeRewound = true;
+            }
+            else
+            {
+                if (currTimeA > prevTimeA + kTimeEps)
+                    baseTimeRewound = true;
+            }
+        }
         if (rmEnabled)
         {
             if (!rt.rmPrevEnabled)
@@ -520,11 +550,20 @@ namespace Alice
             }
             if (baseLoopWrapped)
                 rmReset = true;
+            if (baseTimeRewound)
+                rmReset = true;
         }
         else
         {
             rt.rmHasPrevClip = false;
             rt.rmPrevClip.clear();
+            rt.rmHasPrevTimeA = false;
+            rt.rmPrevTimeA = 0.0f;
+        }
+        if (rmEnabled)
+        {
+            rt.rmHasPrevTimeA = true;
+            rt.rmPrevTimeA = animComp.base.timeA;
         }
 
         // ------------------------------
@@ -593,6 +632,7 @@ namespace Alice
 
         d.aim.enabled = animComp.aim.enabled;
         d.aim.yawRad = animComp.aim.yawRad;
+        d.aim.pitchRad = animComp.aim.pitchRad;
         d.aim.weight = animComp.aim.weight;
 
         d.rootMotion.enabled = rmEnabled;
@@ -600,7 +640,7 @@ namespace Alice
         d.rootMotion.rootBone = rootBoneName.empty() ? nullptr : rootBoneName.c_str();
         d.rootMotion.rootLock = RootLockMode::AnimFirstFrame;
         d.rootMotion.extractTranslationXZ = true;
-        d.rootMotion.extractTranslationY = false;
+        d.rootMotion.extractTranslationY = animComp.rootMotionDriveCct;
         d.rootMotion.extractYaw = true;
         d.rootMotion.extractPitchRoll = false;
         d.rootMotion.reset = rmReset;
@@ -624,7 +664,7 @@ namespace Alice
         const auto rmDelta = rt.animator->ConsumeRootMotionDelta();
         animComp.rootMotionDeltaValid = false;
         animComp.rootMotionDeltaWS = { 0.0f, 0.0f, 0.0f };
-        if (rmDelta.valid && rmEnabled)
+        if (rmDelta.valid && rmApply)
         {
             if (auto* tc = world.GetComponent<TransformComponent>(id))
             {
@@ -660,6 +700,7 @@ namespace Alice
                         tc->position = newPos;
                         tc->SetRotation(q);
                     }
+                    world.MarkTransformDirty(id);
                 }
             }
         }
@@ -730,10 +771,9 @@ namespace Alice
         // ------------------------------
         // Socket world outputs (엔진 로우 컨벤션)
         // ------------------------------
-        DirectX::XMMATRIX charWorld = DirectX::XMMatrixIdentity();
+        DirectX::XMMATRIX charWorldRow = DirectX::XMMatrixIdentity();
 		if (const auto* t = world.GetComponent<TransformComponent>(id))
-			charWorld = BuildWorldMatrix(*t);
-        DirectX::XMMATRIX charWorldRow = charWorld;
+			charWorldRow = world.ComputeWorldMatrix(id);
 
         for (auto& s : animComp.sockets)
         {

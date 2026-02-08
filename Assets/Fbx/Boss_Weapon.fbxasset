@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/Boss_Weapon_0.mat"
+    ],
+    "mesh": "Boss_Weapon",
+    "source_fbx": "Resource/Test/4_Resources/charecter/boss/Boss_Weapon.fbx"
+}

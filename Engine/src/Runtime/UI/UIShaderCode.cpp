@@ -50,6 +50,11 @@ cbuffer UIPixelConstants : register(b1)
     float4 gParams3;
     float4 gParams4;
     float4 gParams5;
+    float4 gGaugeParams;
+    float4 gGaugeParams2;
+    float4 gEmptyColor;
+    float4 gEmptyParams;
+    float4 gPencilParams;
     float4 gTime;
 };
 
@@ -177,8 +182,272 @@ float4 main(PSInput input) : SV_Target
     float4 tex = gTexture.Sample(gSampler, input.TexCoord);
     float lum = dot(tex.rgb, float3(0.299f, 0.587f, 0.114f));
     float4 gray = float4(lum, lum, lum, tex.a);
-    return gray * input.Color;
+		return gray * input.Color;
+}
+)";
+
+        const char* UIGaugeCustomPS = R"(
+Texture2D gTexture : register(t0);
+SamplerState gSampler : register(s0);
+
+cbuffer UIPixelConstants : register(b1)
+{
+    float4 gOutlineColor;
+    float4 gGlowColor;
+    float4 gVitalColor;
+    float4 gVitalBgColor;
+    float4 gParams0; // gParams0.x 를 CellScale로 사용 가능
+    float4 gParams1;
+    float4 gParams2;
+    float4 gParams3;
+    float4 gParams4;
+    float4 gParams5;
+    float4 gGaugeParams;
+    float4 gGaugeParams2;
+    float4 gEmptyColor;
+    float4 gEmptyParams; // x: 사용여부, y: 스케일, z: 속도, w: 강도
+    float4 gPencilParams;
+    float4 gTime;
+};
+
+struct PSInput
+{
+    float4 Position : SV_POSITION;
+    float2 TexCoord : TEXCOORD0;
+    float4 Color    : COLOR0;
+};
+
+// --- 랜덤 및 노이즈 함수 추가 ---
+float random(float2 uv) {
+    return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
+}
+
+float noise(float2 uv) {
+    float2 i = floor(uv);
+    float2 f = frac(uv);
+    float a = random(i);
+    float b = random(i + float2(1.0, 0.0));
+    float c = random(i + float2(0.0, 1.0));
+    float d = random(i + float2(1.0, 1.0));
+    float2 u = f * f * (3.0 - 2.0 * f);
+    return lerp(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+}
+
+float fbm(float2 uv) {
+    float v = 0.0;
+    float a = 0.5;
+    for (int i = 0; i < 4; i++) {
+        v += a * noise(uv);
+        uv *= 2.0;
+        a *= 0.5;
+    }
+    return v;
+}
+
+float4 main(PSInput input) : SV_Target
+{
+    float2 uv = input.TexCoord;
+    float4 tex = gTexture.Sample(gSampler, uv);
+    float4 color = tex * input.Color;
+    
+    // 1. 기본 투명도 체크 (완전 투명한 부분은 연산 제외)
+    if (color.a < 0.1) discard;
+
+    float fillRatio = saturate(gGaugeParams.x);
+    float fillLateRatio = saturate(gGaugeParams.y);
+    float useFillLate = gGaugeParams.z;
+    float direction = gGaugeParams.w;
+
+    float pixelRatio = 0.0f;
+    bool isGauge = (direction >= 0.0f && direction <= 3.0f);
+    
+    if (direction < 0.5f) pixelRatio = uv.x;
+    else if (direction < 1.5f) pixelRatio = 1.0f - uv.x;
+    else if (direction < 2.5f) pixelRatio = 1.0f - uv.y;
+    else pixelRatio = uv.y;
+
+    float filledRatio = (useFillLate > 0.5f) ? max(fillRatio, fillLateRatio) : fillRatio;
+    
+    // 기본 색상을 텍스처 컬러로 설정
+    float4 finalColor = color;
+
+    // 2. 비어 있는 영역(Empty Area) 처리
+    if (isGauge && gEmptyParams.x > 0.5f && pixelRatio <= filledRatio)
+    {
+        float scale = max(gEmptyParams.y, 0.1f);
+        float speed = gTime.x * gEmptyParams.z;
+        float aspect = max(gGaugeParams2.x, 0.0001f);
+        float2 aspectScale = (aspect >= 1.0f)
+            ? float2(aspect, 1.0f)
+            : float2(1.0f, 1.0f / aspect);
+        float2 noiseUV = (uv * aspectScale) * scale + float2(speed, speed * 0.2f);
+        
+        float cloud = fbm(noiseUV);
+        float intensity = gEmptyParams.w;
+        float shade = lerp(1.0f - intensity, 1.0f, cloud);
+        
+        finalColor = gEmptyColor * shade;
+        finalColor.a = color.a; // 원본 알파 유지
+    }
+    
+    // --- [수정 포인트] ---
+    // gTime.y가 낮아질수록 finalColor의 RGB를 0(검은색)으로 수렴하게 만듭니다.
+    // 알파값은 그대로 1.0(불투명)을 유지하거나 원본을 유지하여 배경이 비치지 않게 합니다.
+    
+    float darkenFactor = saturate(gTime.y); // 0이면 검정, 1이면 원래색
+    finalColor.rgb *= darkenFactor; 
+    
+    // 만약 "완전히 불투명한 검정"을 원하시면 아래처럼 설정하세요.
+    // 배경이 투명해야 한다면 그대로 finalColor.a *= gTime.y; 를 쓰셔도 됩니다.
+    finalColor.a = color.a; 
+    
+    return finalColor;
+}
+)";
+
+		const char* UIPencilPS = R"(
+Texture2D gTexture : register(t0);
+Texture2D g_PencilTexture : register(t1);
+SamplerState gSampler : register(s0);
+
+cbuffer UIPixelConstants : register(b1)
+{
+    float4 gOutlineColor;
+    float4 gGlowColor;
+    float4 gVitalColor;
+    float4 gVitalBgColor;
+    float4 gParams0;
+    float4 gParams1;
+    float4 gParams2;
+    float4 gParams3;
+    float4 gParams4;
+    float4 gParams5;
+    float4 gGaugeParams;
+    float4 gGaugeParams2;
+    float4 gEmptyColor;
+    float4 gEmptyParams; // x: 사용여부, y: 스케일, z: 속도, w: 강도
+    float4 gPencilParams; // x: 타일 스케일, y: Jitter 강도, z: 대비, w: (예비)
+    float4 gTime;
+};
+
+struct PSInput
+{
+    float4 Position : SV_POSITION;
+    float2 TexCoord : TEXCOORD0;
+    float4 Color    : COLOR0;
+};
+
+float4 main(PSInput input) : SV_Target
+{
+    // 1. 기본 색상 및 밝기 계산
+    float4 color = gTexture.Sample(gSampler, input.TexCoord);
+    color = color * input.Color;
+    
+    // 알파값이 0.1 이하면 discard
+    if (color.a < 0.1)
+        discard;
+    
+    float brightness = dot(color.rgb, float3(0.299, 0.587, 0.114));
+
+    // 2. 우둘투둘한 느낌을 위한 UV 왜곡 (Jitter)
+    // 시간에 따라 미세하게 변하는 노이즈를 섞으면 애니메이션 느낌이 납니다.
+    float jitterStrength = gPencilParams.y;
+    float2 jitterUV = input.TexCoord + (sin(input.TexCoord.y * 100.0) * jitterStrength);
+    
+    // 3. 연필 질감 샘플링
+    // 밝기에 따라 연필 질감의 강도를 조절합니다.
+    float tileScale = gPencilParams.x;
+    float4 pencilNoise = g_PencilTexture.Sample(gSampler, jitterUV * tileScale); // 타일링 크게
+    
+    // 4. 합성 로직
+    // 밝은 부분은 종이색이 남고, 어두운 부분일수록 연필 자국(pencilNoise)이 진해지도록 합니다.
+    float4 finalColor = float4(lerp(pencilNoise.rgb, color.rgb, brightness), color.a);
+    
+    // 우둘투둘한 느낌을 강조하기 위해 대비(Contrast)를 살짝 높입니다.
+    float contrast = gPencilParams.z;
+    finalColor.rgb = pow(abs(finalColor.rgb), contrast);
+
+    // Global alpha
+    finalColor.a = color.a * gTime.y;
+
+    return finalColor;
+}
+)";
+
+		const char* UIDieLinePS = R"(
+Texture2D gTexture : register(t0);
+SamplerState gSampler : register(s0);
+
+cbuffer UIPixelConstants : register(b1)
+{
+    float4 gOutlineColor;
+    float4 gGlowColor;
+    float4 gVitalColor;
+    float4 gVitalBgColor;
+    float4 gParams0;
+    float4 gParams1;
+    float4 gParams2;
+    float4 gParams3;
+    float4 gParams4;
+    float4 gParams5;
+    float4 gGaugeParams;
+    float4 gGaugeParams2;
+    float4 gEmptyColor;
+    float4 gEmptyParams;
+    float4 gPencilParams;
+    float4 gTime;
+};
+
+struct PSInput
+{
+    float4 Position : SV_POSITION;
+    float2 TexCoord : TEXCOORD0;
+    float4 Color    : COLOR0;
+};
+
+float4 main(PSInput Input) : SV_Target
+{
+    float2 uv = Input.TexCoord;
+
+    float timeSec = gTime.x;
+    float totalCycle = gParams0.x > 0.0f ? gParams0.x : 3.2f;
+    float phase1Dur = gParams0.y > 0.0f ? gParams0.y : 1.2f;
+    float phase2End = gParams0.z > 0.0f ? gParams0.z : 2.0f;
+    float phase3Dur = gParams0.w > 0.0f ? gParams0.w : 1.2f;
+    float startTime = gParams1.x;
+
+    float t;
+    if (startTime >= 0.0f)
+    {
+        t = timeSec - startTime;
+        if (t < 0.0f || t > totalCycle)
+            return float4(0, 0, 0, 0);
+    }
+    else
+        t = fmod(timeSec, totalCycle);
+
+    float progress = 0.0f;
+    if (t < phase1Dur)       progress = t / phase1Dur;
+    else if (t < phase2End)  progress = 1.0f;
+    else                     progress = 1.0f - (t - phase2End) / phase3Dur;
+    progress = saturate(progress);
+
+    float currentSoftness = lerp(0.5f, 0.05f, progress);
+    float currentMaxAlpha = lerp(0.0f, 0.8f, progress);
+
+    float center = 0.5f;
+    float halfThickness = 0.1f;
+    float mask1 = smoothstep(center - halfThickness - currentSoftness, center - halfThickness, uv.y);
+    float mask2 = smoothstep(center + halfThickness, center + halfThickness + currentSoftness, uv.y);
+    float lineIntensity = saturate(mask1 - mask2);
+
+    return float4(0, 0, 0, lineIntensity * currentMaxAlpha * gTime.y);
 }
 )";
 	}
 }
+
+
+
+
+

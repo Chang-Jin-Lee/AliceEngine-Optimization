@@ -33,6 +33,9 @@ namespace Alice
 		std::string clipName;
 		float startTimeSec = 0.1f;
 		float endTimeSec = 0.2f;
+		// Bitmask over trace slots (bit0=traceGuid, bit1+=traceGuids[i-1]).
+		// 0 means "all slots" for backward compatibility.
+		std::uint32_t traceSlotMask = 0u;
 		bool enabled = true;
 		bool canBeInterrupted = true;
 	};
@@ -54,6 +57,9 @@ namespace Alice
 		// 공격을 제어할 트레이스 엔티티 GUID (0이면 자기 자신)
 		std::uint64_t traceGuid = 0;
 		EntityId traceCached = InvalidEntityId; // 런타임 캐시 (직렬화 금지)
+		// Additional trace slots (slot1+). slot0 is traceGuid.
+		std::vector<std::uint64_t> traceGuids;
+		std::vector<EntityId> traceCachedList; // 런타임 캐시 (직렬화 금지)
 
 		// AnimNotify 타이밍 목록
 		std::vector<AttackDriverClip> clips;
@@ -70,11 +76,14 @@ namespace Alice
 		// Trace suppression latch while attack window is still active (script combat).
 		bool attackSuppressed = false;
 		bool attackPaused = false;
+		std::uint32_t attackTraceMaskActive = 0u;
+		float attackTraceWindowDurationSec = 0.0f;
 		bool dodgeActive = false;
 		bool guardActive = false;
 		bool parryActive = false;
 		bool attackCancelable = true;
 		bool cancelAttackRequested = false;
+		bool forceCancelRequested = false;
 		float attackStateDurationAutoSec = 0.0f;
 		bool guardInputHeld = false;
 		bool guardInputPressed = false;
