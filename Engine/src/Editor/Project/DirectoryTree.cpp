@@ -17,6 +17,29 @@
 
 namespace Alice
 {
+	namespace
+	{
+		bool WritePreloadJsonSample(const std::filesystem::path& path)
+		{
+			namespace fs = std::filesystem;
+			std::error_code ec;
+			fs::create_directories(path.parent_path(), ec);
+
+			nlohmann::json j;
+			j["preload"] = nlohmann::json::array({
+				"Resource/Icon/AliceBanner.png",
+				"Resource/Fonts/NotoSansKR-Regular.ttf",
+				"Resource/Fonts/meiryo.ttc"
+				});
+
+			std::ofstream ofs(path);
+			if (!ofs.is_open())
+				return false;
+			ofs << j.dump(4);
+			return true;
+		}
+	}
+
 	void EditorCore::DrawDirectoryNode(World& world,
 		EntityId& selectedEntity,
 		const std::filesystem::path& path)
@@ -170,6 +193,21 @@ namespace Alice
 					{
 						ALICE_LOG_ERRORF("[EditorCore] Failed to create Curve asset: %s", curvePath.string().c_str());
 					}
+				}
+
+				// Preload.json 생성
+				if (ImGui::MenuItem("Create Preload.json"))
+				{
+					fs::path preloadPath = path / "Preload.json";
+					if (!fs::exists(preloadPath))
+					{
+						if (!WritePreloadJsonSample(preloadPath))
+						{
+							ALICE_LOG_ERRORF("[EditorCore] Failed to create Preload.json: %s", preloadPath.string().c_str());
+						}
+					}
+					g_PreloadEditorPath = preloadPath;
+					g_PreloadEditorOpen = true;
 				}
 
 				// Unity 스타일: C++ 스크립트(.h/.cpp)와 프리팹을 간단하게 생성합니다.
@@ -436,6 +474,11 @@ namespace Alice
 					g_UICurveEditorData.RecalcAutoTangents();
 					g_UICurveEditorSelected = -1;
 					g_UICurveEditorOpen = true;
+				}
+				else if (_stricmp(path.filename().string().c_str(), "Preload.json") == 0)
+				{
+					g_PreloadEditorPath = path;
+					g_PreloadEditorOpen = true;
 				}
 			}
 

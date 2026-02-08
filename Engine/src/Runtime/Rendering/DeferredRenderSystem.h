@@ -49,6 +49,10 @@ namespace Alice
         /// 스키닝 메시 레지스트리를 주입합니다.
         void SetSkinnedMeshRegistry(SkinnedMeshRegistry* registry) { m_skinnedRegistry = registry; }
 
+        /// 텍스처를 미리 로드하여 캐시에 보관합니다.
+        /// - 경로가 비거나 로딩 실패 시 false 반환.
+        bool PreloadTexture(const std::string& path);
+
         /// 디퍼드 렌더링을 수행합니다.
         /// @param world ECS 월드
         /// @param camera 카메라

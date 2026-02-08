@@ -11,9 +11,9 @@ namespace Alice
 	{
 		// ============================================= 아이콘 로드 =============================================
 		// CMake에서 exe에 임베딩된 아이콘을 사용합니다.
-		constexpr int kAppIconId = 101;
-		HICON hIconBig = LoadIconW(m_hInstance, MAKEINTRESOURCEW(kAppIconId));
-		HICON hIconSmall = LoadIconW(m_hInstance, MAKEINTRESOURCEW(kAppIconId));
+		constexpr wchar_t kAppIconName[] = L"IDI_ICON1";
+		HICON hIconBig = LoadIconW(m_hInstance, kAppIconName);
+		HICON hIconSmall = LoadIconW(m_hInstance, kAppIconName);
 
 		// ============================================= 윈도우 클래스 등록 =============================================
 		// C++ 구조체 제로 초기화({})를 활용하여 불필요한 0 대입 생략

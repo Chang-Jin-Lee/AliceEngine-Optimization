@@ -12,6 +12,7 @@
 
 // FbxModel은 전역 네임스페이스(Runtime/Importing/FbxModel.h) 에 정의되어 있습니다.
 class FbxModel;
+class FbxAnimation;
 
 namespace Alice
 {
@@ -84,8 +85,27 @@ namespace Alice
                               FbxImporter& importer,
                               ID3D11Device* device);
 
+        void SetPrecomputedAnimation(const std::string& meshKey,
+                                     std::shared_ptr<::FbxAnimation> anim)
+        {
+            if (meshKey.empty())
+                return;
+            if (!anim)
+                return;
+            m_precomputedAnims[meshKey] = std::move(anim);
+        }
+
+        std::shared_ptr<::FbxAnimation> GetPrecomputedAnimation(const std::string& meshKey) const
+        {
+            auto it = m_precomputedAnims.find(meshKey);
+            if (it == m_precomputedAnims.end())
+                return nullptr;
+            return it->second;
+        }
+
     private:
         std::unordered_map<std::string, std::shared_ptr<SkinnedMeshGPU>> m_meshes;
+        std::unordered_map<std::string, std::shared_ptr<::FbxAnimation>> m_precomputedAnims;
     };
 }
 

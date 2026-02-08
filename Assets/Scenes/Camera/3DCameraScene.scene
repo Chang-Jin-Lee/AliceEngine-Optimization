@@ -6,12 +6,13 @@
                     "enabled": true,
                     "name": "SceneSwitchExample",
                     "props": {
-                        "m_targetName1": "",
-                        "m_targetName2": ""
+                        "targetSceneA": "Assets/Scenes/SceneChange/SceneChange2.scene",
+                        "targetSceneB": ""
                     }
                 }
             ],
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": -10.624564170837402,
                     "y": 7.713817119598389,
@@ -26,19 +27,24 @@
                     "x": 1.0,
                     "y": 0.9999999403953552,
                     "z": 0.9999999403953552
-                }
+                },
+                "visible": true
             },
-            "id": 68
+            "guid": "15854061279726717599"
         },
         {
             "Material": {
                 "albedoTexturePath": "Cooked/Textures/Rapi/Rapi_Diffuse_embedded0.alice",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Rapi_0.mat",
                 "color": {
                     "x": 0.8957529067993164,
                     "y": 0.8957529067993164,
                     "z": 0.8957529067993164
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 5.0,
                 "outlineColor": {
@@ -46,9 +52,24 @@
                     "y": 0.0,
                     "z": 0.0
                 },
-                "outlineWidth": 0.14000000059604645,
+                "outlineWidth": 0.029999999329447746,
                 "roughness": 0.5,
-                "shadingMode": -1
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
             },
             "Scripts": [
                 {
@@ -65,7 +86,7 @@
                 "clipIndex": 0,
                 "playing": true,
                 "speed": 1.0,
-                "timeSec": 60.922822618624195
+                "timeSec": 297.2248766332632
             },
             "SkinnedMesh": {
                 "boneCount": 180,
@@ -73,6 +94,7 @@
                 "meshAssetPath": "Rapi"
             },
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": -1.84263014793396,
                     "y": 0.0,
@@ -84,20 +106,21 @@
                     "z": 0.0
                 },
                 "scale": {
-                    "x": 0.05000000074505806,
-                    "y": 0.05000000074505806,
-                    "z": 0.05000000074505806
-                }
+                    "x": 0.019999999552965164,
+                    "y": 0.019999999552965164,
+                    "z": 0.019999999552965164
+                },
+                "visible": true
             },
-            "id": 69,
+            "guid": "3247504205382143632",
             "name": "Rapi"
         },
         {
             "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
                 "aspectOverride": 0.0,
-                "farPlane": 5000.0,
-                "fovYRad": 1.047196626663208,
-                "nearPlane": 0.10000000149011612,
                 "primary": true,
                 "useAspectOverride": false
             },
@@ -130,6 +153,7 @@
                 "fastTurnYawThresholdDeg": 90.0,
                 "fovDamping": 6.0,
                 "heightOffset": 8.569999694824219,
+                "invertMouse": false,
                 "lockOnAngleWeight": 1.5,
                 "lockOnDistance": 24.0,
                 "lockOnFovDeg": 55.0,
@@ -193,12 +217,16 @@
             },
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
                 "assetPath": "",
                 "color": {
                     "x": 1.0,
                     "y": 0.0,
                     "z": 0.0
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 1.0,
                 "outlineColor": {
@@ -208,7 +236,22 @@
                 },
                 "outlineWidth": 0.009999999776482582,
                 "roughness": 0.5,
-                "shadingMode": -1
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
             },
             "Scripts": [
                 {
@@ -248,6 +291,7 @@
                 }
             ],
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": -8.49720287322998,
                     "y": 21.751176834106445,
@@ -262,20 +306,25 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
-            "id": 70,
+            "guid": "3117629515633492951",
             "name": "MainCamera"
         },
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
                 "assetPath": "",
                 "color": {
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 1.0,
                 "outlineColor": {
@@ -285,9 +334,25 @@
                 },
                 "outlineWidth": -5.079999923706055,
                 "roughness": 1.0,
-                "shadingMode": -1
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
             },
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": 0.18812775611877441,
                     "y": -1.5509624481201172,
@@ -302,20 +367,25 @@
                     "x": 150.4550018310547,
                     "y": 1.0,
                     "z": 118.77100372314453
-                }
+                },
+                "visible": true
             },
-            "id": 71,
+            "guid": "7071510380385917387",
             "name": "Ground"
         },
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
                 "assetPath": "",
                 "color": {
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 1.0,
                 "normalStrength": 1.0,
                 "outlineColor": {
@@ -325,7 +395,22 @@
                 },
                 "outlineWidth": 0.009999999776482582,
                 "roughness": 0.0,
-                "shadingMode": -1
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
             },
             "Scripts": [
                 {
@@ -339,6 +424,7 @@
                 }
             ],
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": 4.098037242889404,
                     "y": 8.976366996765137,
@@ -353,20 +439,25 @@
                     "x": 1.219151258468628,
                     "y": 1.219151258468628,
                     "z": 1.219151258468628
-                }
+                },
+                "visible": true
             },
-            "id": 72,
+            "guid": "4870920414070202551",
             "name": "Entity5"
         },
         {
             "Material": {
                 "albedoTexturePath": "Cooked/Textures/Zombie_Run/Zombie_Run_Diffuse_embedded5.alice",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Zombie_Run_0.mat",
                 "color": {
                     "x": 0.699999988079071,
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 1.0,
                 "outlineColor": {
@@ -376,13 +467,28 @@
                 },
                 "outlineWidth": 0.009999999776482582,
                 "roughness": 0.5,
-                "shadingMode": -1
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
             },
             "SkinnedAnimation": {
                 "clipIndex": 0,
                 "playing": true,
                 "speed": 1.0,
-                "timeSec": 2350.485586215509
+                "timeSec": 2586.787640230148
             },
             "SkinnedMesh": {
                 "boneCount": 67,
@@ -390,6 +496,7 @@
                 "meshAssetPath": "Zombie_Run"
             },
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": -15.32771110534668,
                     "y": 0.0,
@@ -404,29 +511,49 @@
                     "x": 0.07999999821186066,
                     "y": 0.07999999821186066,
                     "z": 0.07999999821186066
-                }
+                },
+                "visible": true
             },
-            "id": 73
+            "guid": "10975993849492367656"
         },
         {
             "Material": {
                 "albedoTexturePath": "Cooked/Textures/Tree/Tree_Diffuse_embedded7.alice",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Tree_0.mat",
                 "color": {
                     "x": 0.699999988079071,
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 1.0,
                 "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
+                    "x": 0.6571773290634155,
+                    "y": 0.12692120671272278,
+                    "z": 0.9961389899253845
                 },
-                "outlineWidth": -0.699999988079071,
+                "outlineWidth": 0.019999999552965164,
                 "roughness": 0.5,
-                "shadingMode": -1
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
             },
             "SkinnedAnimation": {
                 "clipIndex": 0,
@@ -440,6 +567,7 @@
                 "meshAssetPath": "Tree"
             },
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": 16.755603790283203,
                     "y": 0.0,
@@ -454,11 +582,50 @@
                     "x": 5.0,
                     "y": 5.0,
                     "z": 5.0
-                }
+                },
+                "visible": true
             },
-            "id": 74
+            "guid": "12443456840186684616"
         },
         {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 1.0,
+                    "z": 0.9189188480377197
+                },
+                "outlineWidth": 0.07000000029802322,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
             "SkinnedAnimation": {
                 "clipIndex": 0,
                 "playing": true,
@@ -471,6 +638,7 @@
                 "meshAssetPath": "zeldaPosed001"
             },
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": 19.82941436767578,
                     "y": 0.0,
@@ -482,12 +650,13 @@
                     "z": 0.0
                 },
                 "scale": {
-                    "x": 0.04000000283122063,
-                    "y": 0.03999999910593033,
-                    "z": 0.04000000283122063
-                }
+                    "x": 0.05000000074505806,
+                    "y": 0.05000000074505806,
+                    "z": 0.05000000074505806
+                },
+                "visible": true
             },
-            "id": 75,
+            "guid": "4107798903806519686",
             "name": "Enemy"
         },
         {
@@ -495,7 +664,7 @@
                 "clipIndex": 0,
                 "playing": true,
                 "speed": 1.0,
-                "timeSec": 2255.279237420531
+                "timeSec": 2491.58129143517
             },
             "SkinnedMesh": {
                 "boneCount": 16,
@@ -503,6 +672,7 @@
                 "meshAssetPath": "BoxHuman"
             },
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": -18.724641799926758,
                     "y": 0.0,
@@ -517,20 +687,22 @@
                     "x": 0.029999999329447746,
                     "y": 0.029999999329447746,
                     "z": 0.029999999329447746
-                }
+                },
+                "visible": true
             },
-            "id": 76
+            "guid": "6246121460388624064"
         },
         {
             "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
                 "aspectOverride": 0.0,
-                "farPlane": 5000.0,
-                "fovYRad": 0.7853981852531433,
-                "nearPlane": 0.10000000149011612,
                 "primary": false,
                 "useAspectOverride": false
             },
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": 19.534574508666992,
                     "y": 9.538835525512695,
@@ -545,21 +717,23 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
-            "id": 77,
+            "guid": "7647557469715538969",
             "name": "Camera1"
         },
         {
             "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
                 "aspectOverride": 0.0,
-                "farPlane": 5000.0,
-                "fovYRad": 0.7853981852531433,
-                "nearPlane": 0.10000000149011612,
                 "primary": false,
                 "useAspectOverride": false
             },
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": 5.509352684020996,
                     "y": 5.486000061035156,
@@ -574,21 +748,23 @@
                     "x": 0.9999995231628418,
                     "y": 0.9999999403953552,
                     "z": 0.9999999403953552
-                }
+                },
+                "visible": true
             },
-            "id": 78,
+            "guid": "7897188279278773419",
             "name": "Camera2"
         },
         {
             "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
                 "aspectOverride": 0.0,
-                "farPlane": 5000.0,
-                "fovYRad": 0.7853981852531433,
-                "nearPlane": 0.10000000149011612,
                 "primary": false,
                 "useAspectOverride": false
             },
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": -19.898765563964844,
                     "y": 5.294197082519531,
@@ -603,21 +779,23 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
-            "id": 79,
+            "guid": "3763756653405547499",
             "name": "Camera3"
         },
         {
             "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
                 "aspectOverride": 0.0,
-                "farPlane": 5000.0,
-                "fovYRad": 0.7853981852531433,
-                "nearPlane": 0.10000000149011612,
                 "primary": false,
                 "useAspectOverride": false
             },
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": 34.33367156982422,
                     "y": 7.49192476272583,
@@ -632,21 +810,23 @@
                     "x": 0.9999999403953552,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
-            "id": 80,
+            "guid": "11468521462846839239",
             "name": "Camera4"
         },
         {
             "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
                 "aspectOverride": 0.0,
-                "farPlane": 5000.0,
-                "fovYRad": 0.7853981852531433,
-                "nearPlane": 0.10000000149011612,
                 "primary": false,
                 "useAspectOverride": false
             },
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": -11.619190216064453,
                     "y": 8.984113693237305,
@@ -661,20 +841,25 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
-            "id": 81,
+            "guid": "11140710190559784894",
             "name": "Camera5"
         },
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Alice_0.mat",
                 "color": {
                     "x": 0.699999988079071,
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 1.906999945640564,
                 "outlineColor": {
@@ -684,13 +869,28 @@
                 },
                 "outlineWidth": 0.0010000000474974513,
                 "roughness": 0.5,
-                "shadingMode": -1
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
             },
             "SkinnedAnimation": {
                 "clipIndex": 4,
                 "playing": true,
                 "speed": 1.0,
-                "timeSec": 526.0881495517679
+                "timeSec": 762.3902035664069
             },
             "SkinnedMesh": {
                 "boneCount": 248,
@@ -698,6 +898,7 @@
                 "meshAssetPath": "Alice"
             },
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": 0.0,
                     "y": 0.0,
@@ -712,19 +913,24 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
-            "id": 82
+            "guid": "12108789652549811598"
         },
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/tile0120_0.mat",
                 "color": {
                     "x": 0.699999988079071,
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 0.0,
                 "outlineColor": {
@@ -734,7 +940,22 @@
                 },
                 "outlineWidth": 0.009999999776482582,
                 "roughness": 0.5,
-                "shadingMode": -1
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
             },
             "SkinnedAnimation": {
                 "clipIndex": 0,
@@ -748,6 +969,7 @@
                 "meshAssetPath": "tile0120"
             },
             "Transform": {
+                "enabled": true,
                 "position": {
                     "x": 0.0,
                     "y": 0.0,
@@ -762,10 +984,12 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
-            "id": 83
+            "guid": "8022266422418442521"
         }
     ],
+    "sceneName": "3DCameraScene",
     "version": 1
 }
