@@ -8223,6 +8223,199 @@
             },
             "guid": "5686800747017546815",
             "name": "Monkey"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "AudioPlayerScript",
+                    "props": {
+                        "busEntityName": "AudioBus",
+                        "is3D": true,
+                        "loop": false,
+                        "maxDistance": 50.0,
+                        "minDistance": 1.0,
+                        "pathAttack1": "Resource/Test/4_Resources/sound/SFX/플레이어/공격 1/Player_Attack_01.wav",
+                        "pathAttack2": "Resource/Test/4_Resources/sound/SFX/플레이어/공격 2/Player_Attack_02.wav",
+                        "pathAttack3": "Resource/Test/4_Resources/sound/SFX/플레이어/공격 3/Player_Attack_03.wav",
+                        "pathDash": "Resource/Test/4_Resources/sound/SFX/플레이어/대시/Player_Dash_01.mp3",
+                        "pathDeath": "Resource/Sound/SFX/플레이어/사망/Player_Death_01.wav",
+                        "pathEgoCombine": "Resource/Test/4_Resources/sound/SFX/플레이어/에고웨폰 재결합/Player_Weapon_Gather_01.wav",
+                        "pathGuard": "Resource/Test/4_Resources/sound/SFX/플레이어/가드/Player_Guard_01.mp3",
+                        "pathGuardBreak": "Resource/Test/4_Resources/sound/SFX/플레이어/가드 브레이크/Player_GuardBreak_01.mp3",
+                        "pathGuardBreakAlarm": "Resource/Test/4_Resources/sound/SFX/플레이어/가드 브레이크 전조음/Player_GuardBreak_Alarm_01.wav",
+                        "pathHeal": "Resource/Sound/SFX/플레이어/회복/Player_Healing_01.wav",
+                        "pathHeavyAttack": "Resource/Test/4_Resources/sound/SFX/플레이어/강공격/Player_HeavyAttack_01.mp3",
+                        "pathHitRoll": "Resource/Test/4_Resources/sound/SFX/플레이어/피격 후 구르기/Player_Attacked_Rolling.mp3",
+                        "pathParry": "Resource/Test/4_Resources/sound/SFX/플레이어/패링/Player_Parry_01.wav",
+                        "pathRoll": "Resource/Test/4_Resources/sound/SFX/플레이어/구르기/Player_Rolling_01.mp3",
+                        "pathRun": "Resource/Test/4_Resources/sound/SFX/플레이어/달리기/Player_Footstep_1.wav",
+                        "pathStop": "Resource/Test/4_Resources/sound/SFX/플레이어/멈추기/Player_Stop_1.wav",
+                        "pitch": 1.0,
+                        "useBus": true,
+                        "volume": 0.3400000035762787
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 20.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "17304686671634752108",
+            "name": "AudioPlayer"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "AudioEventBusScript",
+                    "props": {}
+                },
+                {
+                    "enabled": true,
+                    "name": "SoundBridgeScript",
+                    "props": {
+                        "busEntityName": "AudioBus",
+                        "combo2ExtraDelaySec": 0.7300000190734863,
+                        "combo2ExtraEnabled": true,
+                        "sessionEntityName": "SceneManager"
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 20.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "8917386486070800600",
+            "name": "AudioBus"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "AudioBossScript",
+                    "props": {
+                        "busEntityName": "AudioBus",
+                        "delayAttack1": 0.0,
+                        "delayAttack2": 0.0,
+                        "delayAttack3": 0.0,
+                        "delayAttackAlarm": 0.0,
+                        "delayDashAttack": 0.0,
+                        "delaySideAttack": 0.0,
+                        "delaySoulSwordAttack": 0.0,
+                        "delaySoulSwordCharge": 0.0,
+                        "is3D": true,
+                        "loop": false,
+                        "maxDistance": 50.0,
+                        "minDistance": 1.0,
+                        "pathAttack1": "Resource/Test/4_Resources/sound/SFX/보스/공격 1/Boss_Attack_01.mp3",
+                        "pathAttack2": "Resource/Test/4_Resources/sound/SFX/보스/공격 2/Boss_Attack_02.wav",
+                        "pathAttack3": "Resource/Test/4_Resources/sound/SFX/보스/공격 3/Boss_Attack_03.wav",
+                        "pathAttackABC": "Resource/Test/4_Resources/sound/SFX/보스/공격 ABC/Boss_Attack_ABC.wav",
+                        "pathAttackAlarm": "Resource/Test/4_Resources/sound/SFX/보스/공격 전조 알림/Boss_Attack_Alarm_01.mp3",
+                        "pathDashAttack": "Resource/Test/4_Resources/sound/SFX/보스/대쉬공격/Boss_DashAttack_01.mp3",
+                        "pathDeath": "Resource/Sound/SFX/보스/사망/Boss_Death_01.wav",
+                        "pathGroggyEnter": "Resource/Test/4_Resources/sound/SFX/보스/그로기 진입/Boss_Groggy_Alarm_01.wav",
+                        "pathHit": "Resource/Test/4_Resources/sound/SFX/보스/피격/Boss_Hit_01.wav",
+                        "pathRoar": "Resource/Test/4_Resources/sound/SFX/보스/포효/Boss_Roaring_01.mp3",
+                        "pathRotate": "Resource/Test/4_Resources/sound/SFX/보스/몸 돌리기/Boss_Rotate_01.wav",
+                        "pathSideAttack": "Resource/Test/4_Resources/sound/SFX/보스/옆, 견제 공격/Boss_Attack_Side_01.mp3",
+                        "pathSoulSwordAttack": "Resource/Test/4_Resources/sound/SFX/보스/영혼대검 공격/Boss_SoulAttack_Attack_01.wav",
+                        "pathSoulSwordCharge": "Resource/Test/4_Resources/sound/SFX/보스/영혼대검 차지/Boss_SoulAttack_Charging_01.mp3",
+                        "pathWalk": "Resource/Test/4_Resources/sound/SFX/보스/걷기/Boss_Footstep_01.mp3",
+                        "pitch": 1.0099999904632568,
+                        "useBus": true,
+                        "volume": 11.039999961853027
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 20.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "1449404601750602177",
+            "name": "AudioBoss"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "AudioBGMScript",
+                    "props": {
+                        "bgmPath": "Resource/Test/4_Resources/sound/SFX/BGM/BGM_Boss_FirstPhase_01.mp3",
+                        "busEntityName": "AudioBus",
+                        "playOnStart": true,
+                        "useBus": true,
+                        "volume": 0.30000001192092896
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 20.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "937938777173253594",
+            "name": "AudioBgm"
         }
     ],
     "sceneName": "#00(latest)Combat",
