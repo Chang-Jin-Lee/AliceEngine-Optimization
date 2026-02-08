@@ -71,6 +71,9 @@ namespace Alice
         /// 마우스 커서를 윈도우 영역에 가둡니다 (true) 또는 해제합니다 (false).
         void SetCursorLocked(bool locked);
 
+        /// 현재 커서 잠금 상태
+        bool IsCursorLocked() const { return m_isLocked; }
+
         /// 앱 활성 상태를 갱신합니다 (WM_ACTIVATEAPP/WM_SETFOCUS/WM_KILLFOCUS).
         void NotifyAppActivated(bool active);
 
