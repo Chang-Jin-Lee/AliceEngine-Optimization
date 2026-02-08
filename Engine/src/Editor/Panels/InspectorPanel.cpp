@@ -6,11 +6,15 @@
 #include "Runtime/Resources/ResourceManager.h"
 #include "Runtime/Resources/Prefab.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
+#include "Runtime/Rendering/Data/Material.h"
+#include "Runtime/Importing/FbxImporter.h"
+#include "Runtime/Importing/FbxAsset.h"
 #include "Runtime/Importing/FbxModel.h"
 
 #include "imgui.h"
 
 #include <algorithm>
+#include <commdlg.h>
 #include <filesystem>
 
 namespace Alice
@@ -147,50 +151,185 @@ namespace Alice
 			if (auto* skinned =
 				world.GetComponent<SkinnedMeshComponent>(selectedEntity)) {
 				ImGui::Separator();
-				ImGui::Text("Skinned Mesh: %s", skinned->meshAssetPath.c_str());
-
-				// 본 목록 미니 뷰 (이름 확인용)
-				if (m_skinnedRegistry) {
-					auto mesh = m_skinnedRegistry->Find(skinned->meshAssetPath);
-					if (mesh && mesh->sourceModel) {
-						const auto& bones = mesh->sourceModel->GetBoneNames();
-						if (ImGui::TreeNode("Bones")) {
-							for (size_t i = 0; i < bones.size(); ++i) {
-								ImGui::Text("%zu: %s", i, bones[i].c_str());
-							}
-							ImGui::TreePop();
-						}
-					}
-				}
-
-				// 메시 경로 필드에 드롭 타겟 추가
-				if (ImGui::BeginDragDropTarget())
+				if (ImGui::CollapsingHeader("Skinned Mesh", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_FILE_PATH"))
-					{
-						const char* pathStr = static_cast<const char*>(payload->Data);
-						std::filesystem::path droppedPath(pathStr);
-						std::string ext = droppedPath.extension().string();
+					ImGui::Text("Skinned Mesh: %s", skinned->meshAssetPath.c_str());
+					ImGui::Text("Instance Asset: %s", skinned->instanceAssetPath.empty() ? "None" : skinned->instanceAssetPath.c_str());
 
-						// FBX 파일인지 확인
+					ImGui::PushID("SkinnedMeshBrowse");
+					if (ImGui::Button("Browse..."))
+					{
+					// 프로젝트 루트 기준 경로 계산
+					wchar_t exePathW[MAX_PATH] = {};
+					GetModuleFileNameW(nullptr, exePathW, MAX_PATH);
+					std::filesystem::path exeDir = std::filesystem::path(exePathW).parent_path();
+					std::filesystem::path projectRoot = exeDir.parent_path().parent_path().parent_path();
+					std::filesystem::path resourceDir = projectRoot / "Resource";
+					if (!std::filesystem::exists(resourceDir))
+						resourceDir = projectRoot;
+
+					std::wstring initialDirW = resourceDir.wstring();
+
+					wchar_t fileBuffer[MAX_PATH] = {};
+					OPENFILENAMEW ofn{};
+					ofn.lStructSize = sizeof(ofn);
+					ofn.hwndOwner = m_hwnd;
+					ofn.lpstrFilter = L"FBX/FBXAsset\0*.fbx;*.fbxasset\0FBX\0*.fbx\0FBX Asset\0*.fbxasset\0All Files\0*.*\0";
+					ofn.lpstrFile = fileBuffer;
+					ofn.nMaxFile = MAX_PATH;
+					ofn.lpstrInitialDir = initialDirW.c_str();
+					ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
+
+					if (GetOpenFileNameW(&ofn))
+					{
+						std::filesystem::path pickedPath = fileBuffer;
+						std::string ext = pickedPath.extension().string();
 						std::transform(ext.begin(), ext.end(), ext.begin(),
 							[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-						if (ext == ".fbx" || ext == ".fbxasset")
+
+						// .fbxasset 선택: 인스턴스 경로로 연결
+						if (ext == ".fbxasset")
 						{
-							// 논리 경로로 변환
-							std::string logicalPath = droppedPath.string();
+							std::string logicalPath = pickedPath.string();
 							{
-								std::filesystem::path logical = ResourceManager::NormalizeResourcePathAbsoluteToLogical(droppedPath);
-								if (!logical.empty())
+								std::filesystem::path logical = ResourceManager::NormalizeResourcePathAbsoluteToLogical(pickedPath);
+								if (!logical.empty() && !logical.is_absolute())
+									logicalPath = logical.generic_string();
+								else
 								{
-									logicalPath = logical.string();
+									std::error_code ec;
+									std::filesystem::path rel = std::filesystem::relative(pickedPath, projectRoot, ec);
+									if (!ec && !rel.empty())
+										logicalPath = rel.generic_string();
 								}
 							}
-							skinned->meshAssetPath = logicalPath;
-							g_SceneDirty = true;
+
+							FbxInstanceAsset asset{};
+							if (LoadFbxInstanceAssetAuto(ResourceManager::Get(), logicalPath, asset))
+							{
+								skinned->instanceAssetPath = logicalPath;
+								skinned->meshAssetPath = asset.meshAssetPath;
+
+								static DirectX::XMFLOAT4X4 s_identityBone =
+									DirectX::XMFLOAT4X4(1, 0, 0, 0,
+										0, 1, 0, 0,
+										0, 0, 1, 0,
+										0, 0, 0, 1);
+								skinned->boneMatrices = &s_identityBone;
+								skinned->boneCount = 1;
+
+								if (m_renderDevice && m_skinnedRegistry && !asset.sourceFbx.empty())
+								{
+									FbxImporter importer(ResourceManager::Get(), m_skinnedRegistry);
+									importer.Import(m_renderDevice->GetDevice(),
+										ResourceManager::Get().Resolve(asset.sourceFbx), {});
+								}
+								g_SceneDirty = true;
+							}
+						}
+						// .fbx 선택: 임포트 후 컴포넌트에 연결
+						else if (ext == ".fbx")
+						{
+							if (m_renderDevice)
+							{
+								std::filesystem::path fbxPath = pickedPath;
+								std::error_code ec;
+								std::filesystem::path rel = std::filesystem::relative(pickedPath, projectRoot, ec);
+								if (!ec && !rel.empty())
+									fbxPath = rel;
+
+								FbxImportOptions opt{};
+								FbxImporter importer(ResourceManager::Get(), m_skinnedRegistry);
+								FbxImportResult result = importer.Import(m_renderDevice->GetDevice(), fbxPath, opt);
+
+								if (!result.meshAssetPath.empty())
+								{
+									skinned->meshAssetPath = result.meshAssetPath;
+									skinned->instanceAssetPath = result.instanceAssetPath;
+
+									static DirectX::XMFLOAT4X4 s_identityBone =
+										DirectX::XMFLOAT4X4(1, 0, 0, 0,
+											0, 1, 0, 0,
+											0, 0, 1, 0,
+											0, 0, 0, 1);
+									skinned->boneMatrices = &s_identityBone;
+									skinned->boneCount = 1;
+
+									if (!result.materialAssetPaths.empty())
+									{
+										MaterialComponent* mat = world.GetComponent<MaterialComponent>(selectedEntity);
+										if (!mat)
+										{
+											DirectX::XMFLOAT3 defaultColor(0.7f, 0.7f, 0.7f);
+											mat = &world.AddComponent<MaterialComponent>(selectedEntity, defaultColor);
+										}
+										mat->assetPath = result.materialAssetPaths.front();
+										MaterialFile::Load(mat->assetPath, *mat, &ResourceManager::Get());
+									}
+
+									g_SceneDirty = true;
+								}
+							}
 						}
 					}
-					ImGui::EndDragDropTarget();
+					}
+					ImGui::PopID();
+
+					ImGui::SameLine();
+					ImGui::PushID("SkinnedMeshClear");
+					if (ImGui::Button("Clear"))
+					{
+						skinned->meshAssetPath.clear();
+						skinned->instanceAssetPath.clear();
+						skinned->boneMatrices = nullptr;
+						skinned->boneCount = 0;
+						g_SceneDirty = true;
+					}
+					ImGui::PopID();
+
+					// 본 목록 미니 뷰 (이름 확인용)
+					if (m_skinnedRegistry) {
+						auto mesh = m_skinnedRegistry->Find(skinned->meshAssetPath);
+						if (mesh && mesh->sourceModel) {
+							const auto& bones = mesh->sourceModel->GetBoneNames();
+							if (ImGui::TreeNode("Bones")) {
+								for (size_t i = 0; i < bones.size(); ++i) {
+									ImGui::Text("%zu: %s", i, bones[i].c_str());
+								}
+								ImGui::TreePop();
+							}
+						}
+					}
+
+					// 메시 경로 필드에 드롭 타겟 추가
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_FILE_PATH"))
+						{
+							const char* pathStr = static_cast<const char*>(payload->Data);
+							std::filesystem::path droppedPath(pathStr);
+							std::string ext = droppedPath.extension().string();
+
+							// FBX 파일인지 확인
+							std::transform(ext.begin(), ext.end(), ext.begin(),
+								[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+							if (ext == ".fbx" || ext == ".fbxasset")
+							{
+								// 논리 경로로 변환
+								std::string logicalPath = droppedPath.string();
+								{
+									std::filesystem::path logical = ResourceManager::NormalizeResourcePathAbsoluteToLogical(droppedPath);
+									if (!logical.empty())
+									{
+										logicalPath = logical.string();
+									}
+								}
+								skinned->meshAssetPath = logicalPath;
+								g_SceneDirty = true;
+							}
+						}
+						ImGui::EndDragDropTarget();
+					}
 				}
 			}
 		}
