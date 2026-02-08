@@ -4,6 +4,7 @@
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/ECS/World.h"
 #include "Runtime/Input/Input.h"
+#include "Runtime/Audio/SoundManager.h"
 #include "Runtime/UI/UIWidgetComponent.h"
 
 namespace Alice
@@ -96,6 +97,9 @@ namespace Alice
                 childrenVisible ? "Visible" : "Collapsed");
             
             SetChildrenVisibility(*w, rootEntity, vis);
+
+            // ESC 메뉴 열림/닫힘에 맞춰 전체 사운드 일시정지/재개
+            Sound::PauseAll(childrenVisible);
             
             // 자식 개수 확인
             auto children = w->GetChildren(rootEntity);

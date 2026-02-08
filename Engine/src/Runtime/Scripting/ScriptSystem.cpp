@@ -315,6 +315,16 @@ namespace Alice
         Sound::StopBGM();
     }
 
+    void ScriptSystem::PauseAll(bool pause)
+    {
+        Sound::PauseAll(pause);
+    }
+
+    void ScriptSystem::PauseBGM(bool pause)
+    {
+        Sound::PauseBGM(pause);
+    }
+
     void ScriptSystem::PlaySFX(const std::wstring& key, float volume, float pitch, bool loop)
     {
         Sound::PlaySFX(key, volume, pitch, loop);

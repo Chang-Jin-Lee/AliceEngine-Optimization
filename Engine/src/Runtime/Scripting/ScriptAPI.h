@@ -77,6 +77,8 @@ namespace Alice
         virtual void SetBGMVolume(float volume) = 0;
         virtual void PlayBGM(const std::wstring& key) = 0;
         virtual void StopBGM() = 0;
+        virtual void PauseAll(bool pause) = 0;
+        virtual void PauseBGM(bool pause) = 0;
         virtual void PlaySFX(const std::wstring& key, float volume, float pitch, bool loop) = 0;
         virtual void StopSfx(const std::wstring& key) = 0;
         virtual void StopAllSFX() = 0;
