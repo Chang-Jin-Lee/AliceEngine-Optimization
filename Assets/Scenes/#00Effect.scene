@@ -76,19 +76,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -68.3131332397461,
-                    "y": 1.169959545135498,
-                    "z": 32.718994140625
+                    "x": -66.70203399658203,
+                    "y": 1.1358439922332764,
+                    "z": 39.06134796142578
                 },
                 "rotation": {
-                    "x": -0.07165918499231339,
-                    "y": -1.217306137084961,
-                    "z": -0.011898094788193703
+                    "x": -0.025123504921793938,
+                    "y": 1.3440366983413696,
+                    "z": -0.025224575772881508
                 },
                 "scale": {
-                    "x": 0.9999998211860657,
-                    "y": 0.9999995827674866,
-                    "z": 0.9999995827674866
+                    "x": 1.0000004768371582,
+                    "y": 0.9999998211860657,
+                    "z": 0.9999998807907104
                 },
                 "visible": false
             },
@@ -171,19 +171,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -68.32415008544922,
-                    "y": 0.9275364279747009,
-                    "z": 32.72492980957031
+                    "x": -66.70039367675781,
+                    "y": 0.893578290939331,
+                    "z": 39.06259536743164
                 },
                 "rotation": {
-                    "x": -0.031260330229997635,
-                    "y": -1.103053092956543,
-                    "z": 0.001355437096208334
+                    "x": 0.014090195298194885,
+                    "y": 1.405411958694458,
+                    "z": 0.008733122609555721
                 },
                 "scale": {
-                    "x": 1.0,
+                    "x": 1.000000238418579,
                     "y": 0.999999463558197,
-                    "z": 0.9999995231628418
+                    "z": 0.9999997019767761
                 },
                 "visible": false
             },
@@ -266,19 +266,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -68.31222534179688,
-                    "y": 0.24936653673648834,
-                    "z": 32.566261291503906
+                    "x": -66.83456420898438,
+                    "y": 0.24514010548591614,
+                    "z": 39.16401290893555
                 },
                 "rotation": {
-                    "x": 0.09211847931146622,
-                    "y": 0.17018668353557587,
-                    "z": 2.8615119457244873
+                    "x": 0.07382488250732422,
+                    "y": 2.579108476638794,
+                    "z": 2.7437705993652344
                 },
                 "scale": {
-                    "x": 0.9999992251396179,
-                    "y": 0.9999998211860657,
-                    "z": 0.9999998211860657
+                    "x": 0.9999997019767761,
+                    "y": 1.000000238418579,
+                    "z": 1.0000003576278687
                 },
                 "visible": false
             },
@@ -361,19 +361,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -68.3055419921875,
-                    "y": 0.25017786026000977,
-                    "z": 32.84969711303711
+                    "x": -66.65367889404297,
+                    "y": 0.2355756163597107,
+                    "z": 38.95565414428711
                 },
                 "rotation": {
-                    "x": 0.030420055612921715,
-                    "y": -2.565338373184204,
-                    "z": -2.7256968021392822
+                    "x": 0.030991606414318085,
+                    "y": -0.17869146168231964,
+                    "z": -2.594329595565796
                 },
                 "scale": {
-                    "x": 0.999999463558197,
-                    "y": 0.9999996423721313,
-                    "z": 0.9999998211860657
+                    "x": 0.9999995827674866,
+                    "y": 0.9999997019767761,
+                    "z": 1.0000001192092896
                 },
                 "visible": false
             },
@@ -456,19 +456,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -18.471914291381836,
-                    "y": 2.4292244911193848,
-                    "z": 8.574712753295898
+                    "x": -18.473390579223633,
+                    "y": 2.426774501800537,
+                    "z": 8.569686889648438
                 },
                 "rotation": {
-                    "x": -0.13740834593772888,
-                    "y": 2.925666570663452,
-                    "z": 0.01381791289895773
+                    "x": -0.13864699006080627,
+                    "y": 2.9281206130981445,
+                    "z": 0.010976891033351421
                 },
                 "scale": {
-                    "x": 0.009999996051192284,
+                    "x": 0.009999995119869709,
                     "y": 0.009999995119869709,
-                    "z": 0.00999999325722456
+                    "z": 0.009999995119869709
                 },
                 "visible": false
             },
@@ -551,19 +551,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -18.46377182006836,
-                    "y": 1.5941370725631714,
-                    "z": 8.174585342407227
+                    "x": -18.464088439941406,
+                    "y": 1.5894874334335327,
+                    "z": 8.17395305633545
                 },
                 "rotation": {
-                    "x": -0.43391311168670654,
-                    "y": 3.117579936981201,
-                    "z": 0.0098538463935256
+                    "x": -0.4286060035228729,
+                    "y": 3.120093822479248,
+                    "z": 0.007049097679555416
                 },
                 "scale": {
                     "x": 0.009999998845160007,
-                    "y": 0.009999998845160007,
-                    "z": 0.009999999776482582
+                    "y": 0.009999997913837433,
+                    "z": 0.009999998845160007
                 },
                 "visible": false
             },
@@ -646,19 +646,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -18.120407104492188,
-                    "y": 1.8215230703353882,
-                    "z": 8.673352241516113
+                    "x": -18.119720458984375,
+                    "y": 1.8206936120986938,
+                    "z": 8.670204162597656
                 },
                 "rotation": {
-                    "x": 0.2484293431043625,
-                    "y": 1.021597981452942,
-                    "z": 2.109657049179077
+                    "x": 0.24074718356132507,
+                    "y": 1.02732515335083,
+                    "z": 2.1091861724853516
                 },
                 "scale": {
                     "x": 0.009999994188547134,
                     "y": 0.009999994188547134,
-                    "z": 0.00999999325722456
+                    "z": 0.009999990463256836
                 },
                 "visible": false
             },
@@ -741,18 +741,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -18.84423828125,
-                    "y": 1.8132975101470947,
-                    "z": 8.514904975891113
+                    "x": -18.844440460205078,
+                    "y": 1.8100059032440186,
+                    "z": 8.515508651733398
                 },
                 "rotation": {
-                    "x": 0.057273730635643005,
-                    "y": -1.069496750831604,
-                    "z": -2.4851861000061035
+                    "x": 0.058043595403432846,
+                    "y": -1.0611852407455444,
+                    "z": -2.4874773025512695
                 },
                 "scale": {
-                    "x": 0.009999999776482582,
-                    "y": 0.009999996051192284,
+                    "x": 0.009999996982514858,
+                    "y": 0.009999995119869709,
                     "z": 0.010000000707805157
                 },
                 "visible": false
@@ -836,19 +836,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -18.111692428588867,
-                    "y": 0.7038556337356567,
-                    "z": 8.177925109863281
+                    "x": -18.113603591918945,
+                    "y": 0.6991620659828186,
+                    "z": 8.182657241821289
                 },
                 "rotation": {
-                    "x": -0.4412309229373932,
-                    "y": -2.6835856437683105,
-                    "z": 2.906006097793579
+                    "x": -0.44789978861808777,
+                    "y": -2.68505859375,
+                    "z": 2.9169857501983643
                 },
                 "scale": {
-                    "x": 0.010000022128224373,
-                    "y": 0.010000031441450119,
-                    "z": 0.010000057518482208
+                    "x": 0.010000020265579224,
+                    "y": 0.010000032372772694,
+                    "z": 0.010000058449804783
                 },
                 "visible": false
             },
@@ -931,19 +931,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -18.756122589111328,
-                    "y": 0.7490956783294678,
-                    "z": 8.418155670166016
+                    "x": -18.758007049560547,
+                    "y": 0.7438799738883972,
+                    "z": 8.416802406311035
                 },
                 "rotation": {
-                    "x": -0.07009008526802063,
-                    "y": 2.9786436557769775,
-                    "z": -2.989311695098877
+                    "x": -0.05687730386853218,
+                    "y": 2.9797706604003906,
+                    "z": -2.9867594242095947
                 },
                 "scale": {
-                    "x": 0.010000036098062992,
-                    "y": 0.01000002771615982,
-                    "z": 0.010000026784837246
+                    "x": 0.010000035166740417,
+                    "y": 0.010000024922192097,
+                    "z": 0.010000028647482395
                 },
                 "visible": false
             },
@@ -3501,7 +3501,7 @@
                 "maxDistance": 8.079999923706055,
                 "minDistance": 0.0,
                 "mode": 0,
-                "pitchDeg": 13.644472122192383,
+                "pitchDeg": 10.674099922180176,
                 "pitchMaxDeg": 80.0,
                 "pitchMinDeg": -45.0,
                 "positionDamping": 8.0,
@@ -3510,7 +3510,7 @@
                 "shoulderOffset": 0.0,
                 "shoulderSide": 1.0,
                 "targetName": "Player(Tia)",
-                "yawDeg": 109.92662811279297
+                "yawDeg": -113.2735595703125
             },
             "CameraInput": {
                 "blendTimeKey3": 0.6000000238418579,
@@ -3593,14 +3593,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -70.73680114746094,
-                    "y": 1.66280198097229,
-                    "z": 33.58790969848633
+                    "x": -64.96038055419922,
+                    "y": 1.5614492893218994,
+                    "z": 39.824607849121094
                 },
                 "rotation": {
-                    "x": 0.23814097046852112,
-                    "y": 1.9185817241668701,
-                    "z": 7.450582373280668e-09
+                    "x": 0.1862981915473938,
+                    "y": -1.976996660232544,
+                    "z": 1.4901162970204496e-08
                 },
                 "scale": {
                     "x": 1.0,
@@ -4484,17 +4484,35 @@
                         "m_breakMaxSpeed": 7.0,
                         "m_breakScatterDurationSec": 2.0,
                         "m_captureCompleteDelaySec": 2.0,
+                        "m_captureOrbitHeightJitter": 1.0,
                         "m_capturePullBaseSpeed": 3.0,
                         "m_capturePullDistanceAccel": 2.0,
                         "m_capturePullMaxDuration": 3.0,
                         "m_capturePullMinDuration": 1.0,
+                        "m_capturePullStartHeightJitter": 1.0,
                         "m_capturePullTargetDuration": 2.0,
                         "m_coreName": "EGO_Blade(combined)",
                         "m_enableShardTrailVfx": true,
                         "m_enemyName": "Boss",
                         "m_eyeDistanceAccel": 4.0,
+                        "m_eyeDustEffectPath": "Assets/VFX/UnityExport/Dust_3_41ffd4a3/effect.json",
+                        "m_eyeDustFadeInSpeed": 0.8999999761581421,
+                        "m_eyeDustRiseStartHeight": 1.0,
                         "m_eyeFloatMoveSpeed": 2.0,
                         "m_eyeMoveSpeed": 16.0,
+                        "m_eyeMoveTrailColorTint": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "m_eyeMoveTrailEffectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2/effect.json",
+                        "m_eyeMoveTrailIntensityScale": 0.0,
+                        "m_eyeMoveTrailLocalScale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "m_eyeMoveTrailSizeScale": 0.02500000037252903,
                         "m_eyeName": "W_EYE",
                         "m_guardBreakOwnerName": "Player(Tia)",
                         "m_ignoreLayersMask": 0,
@@ -4504,7 +4522,7 @@
                         "m_orbitMinRadius": 0.10000000149011612,
                         "m_orbitRadiusScale": 0.30000001192092896,
                         "m_shardAssembleFinishDelaySec": 0.5,
-                        "m_shardTrailEffectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2/effect.json",
+                        "m_shardTrailEffectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json",
                         "m_shardTrailEmitMinSpeed": 0.15000000596046448,
                         "m_shardTrailLocalOffset": {
                             "x": 0.0,
@@ -4552,19 +4570,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -68.85568237304688,
-                    "y": 1.0854690074920654,
-                    "z": 32.94711685180664
+                    "x": -66.11538696289063,
+                    "y": 1.07682466506958,
+                    "z": 39.293006896972656
                 },
                 "rotation": {
-                    "x": 0.6354321241378784,
-                    "y": 0.09177141636610031,
-                    "z": 0.6982210874557495
+                    "x": 0.846980094909668,
+                    "y": 2.2216598987579346,
+                    "z": 0.6245696544647217
                 },
                 "scale": {
-                    "x": 0.9999998211860657,
-                    "y": 0.9999997019767761,
-                    "z": 1.0000001192092896
+                    "x": 0.9999998807907104,
+                    "y": 1.0000001192092896,
+                    "z": 1.000000238418579
                 },
                 "visible": true
             },
@@ -6149,19 +6167,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -68.36957550048828,
-                    "y": 0.8991138935089111,
-                    "z": 32.747920989990234
+                    "x": -66.65145111083984,
+                    "y": 0.8628779649734497,
+                    "z": 39.070499420166016
                 },
                 "rotation": {
-                    "x": -0.031260330229997635,
-                    "y": -1.103053092956543,
-                    "z": 0.001355437096208334
+                    "x": 0.014090195298194885,
+                    "y": 1.405411958694458,
+                    "z": 0.008733122609555721
                 },
                 "scale": {
-                    "x": 1.0,
+                    "x": 1.000000238418579,
                     "y": 0.999999463558197,
-                    "z": 0.9999995231628418
+                    "z": 0.9999997019767761
                 },
                 "visible": true
             },
@@ -6188,7 +6206,7 @@
                 },
                 "base": {
                     "autoAdvance": true,
-                    "blend01": 0.5123216509819031,
+                    "blend01": 0.6112942099571228,
                     "clipA": "rig|Tia_IDLE",
                     "clipB": "rig|Tia_Normal_Attack_1",
                     "enabled": true,
@@ -6197,8 +6215,8 @@
                     "loopB": false,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.8054344058036804,
-                    "timeB": 1.7916666269302368
+                    "timeA": 0.8411773443222046,
+                    "timeB": 0.0733553022146225
                 },
                 "enabled": true,
                 "ik": {
@@ -6317,7 +6335,7 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.0035000001080334187,
                 "teleport": false,
-                "verticalVelocity": -0.06899471580982208
+                "verticalVelocity": 0.0
             },
             "Health": {
                 "alive": true,
@@ -6581,14 +6599,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -68.90966796875,
-                    "y": 0.0010080933570861816,
-                    "z": 32.92548370361328
+                    "x": -66.76750946044922,
+                    "y": 0.00100785493850708,
+                    "z": 39.047359466552734
                 },
                 "rotation": {
                     "x": -0.0,
-                    "y": -1.223010540008545,
-                    "z": 0.0
+                    "y": 1.1645963191986084,
+                    "z": -0.0
                 },
                 "scale": {
                     "x": 1.0,
@@ -6620,7 +6638,7 @@
                 },
                 "base": {
                     "autoAdvance": true,
-                    "blend01": 0.5123216509819031,
+                    "blend01": 0.6112942099571228,
                     "clipA": "Armature|Tia_IDLE",
                     "clipB": "Armature|Tia_Normal_Attack_1",
                     "enabled": true,
@@ -6629,8 +6647,8 @@
                     "loopB": false,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.8054344058036804,
-                    "timeB": 1.7916666269302368
+                    "timeA": 0.8411773443222046,
+                    "timeB": 0.0733553022146225
                 },
                 "enabled": true,
                 "ik": {
@@ -6854,19 +6872,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -68.85568237304688,
-                    "y": 1.0854690074920654,
-                    "z": 32.94711685180664
+                    "x": -66.11538696289063,
+                    "y": 1.07682466506958,
+                    "z": 39.293006896972656
                 },
                 "rotation": {
-                    "x": 0.6354321241378784,
-                    "y": 0.09177141636610031,
-                    "z": 0.6982210874557495
+                    "x": 0.846980094909668,
+                    "y": 2.2216598987579346,
+                    "z": 0.6245696544647217
                 },
                 "scale": {
-                    "x": 0.9999998211860657,
-                    "y": 0.9999997019767761,
-                    "z": 1.0000001192092896
+                    "x": 0.9999998807907104,
+                    "y": 1.0000001192092896,
+                    "z": 1.000000238418579
                 },
                 "visible": true
             },
@@ -7122,8 +7140,8 @@
                     "loopB": true,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 1.4597712755203247,
-                    "timeB": 1.0264276266098022
+                    "timeA": 1.0122686624526978,
+                    "timeB": 1.2122684717178345
                 },
                 "enabled": true,
                 "ik": {
@@ -7275,7 +7293,7 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.0010000000474974513,
                 "teleport": false,
-                "verticalVelocity": -0.06899471580982208
+                "verticalVelocity": 0.0
             },
             "Health": {
                 "alive": false,
@@ -7620,7 +7638,7 @@
                 "enabled": true,
                 "position": {
                     "x": -18.4588680267334,
-                    "y": 0.0945671796798706,
+                    "y": 0.08990561962127686,
                     "z": 8.167296409606934
                 },
                 "rotation": {
@@ -7712,19 +7730,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -18.178659439086914,
-                    "y": 1.1758923530578613,
-                    "z": 8.4906005859375
+                    "x": -18.176055908203125,
+                    "y": 1.1736364364624023,
+                    "z": 8.490633964538574
                 },
                 "rotation": {
-                    "x": -0.006619889289140701,
-                    "y": -2.04071307182312,
-                    "z": -0.847443699836731
+                    "x": 6.964802742004395e-05,
+                    "y": -2.033555030822754,
+                    "z": -0.8455274701118469
                 },
                 "scale": {
                     "x": 1.499998927116394,
-                    "y": 1.4999988079071045,
-                    "z": 1.499998927116394
+                    "y": 1.499998688697815,
+                    "z": 1.499998688697815
                 },
                 "visible": true
             },
@@ -8105,19 +8123,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -68.48062896728516,
-                    "y": 0.6724340915679932,
-                    "z": 32.6198844909668
+                    "x": -66.67012023925781,
+                    "y": 0.7020125985145569,
+                    "z": 39.221397399902344
                 },
                 "rotation": {
-                    "x": -1.1973901987075806,
-                    "y": 0.5779558420181274,
-                    "z": 3.113910675048828
+                    "x": -1.324775218963623,
+                    "y": 2.5910141468048096,
+                    "z": -1.8681365251541138
                 },
                 "scale": {
-                    "x": 0.9999997019767761,
-                    "y": 0.9999998211860657,
-                    "z": 0.9999996423721313
+                    "x": 1.0000003576278687,
+                    "y": 0.9999994039535522,
+                    "z": 0.9999999403953552
                 },
                 "visible": true
             },
@@ -8200,19 +8218,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -68.2248764038086,
-                    "y": 0.6648262739181519,
-                    "z": 32.85874938964844
+                    "x": -66.75202941894531,
+                    "y": 0.6965547204017639,
+                    "z": 38.92888641357422
                 },
                 "rotation": {
-                    "x": -1.529550313949585,
-                    "y": -2.8165884017944336,
-                    "z": -2.041735887527466
+                    "x": -1.2538766860961914,
+                    "y": 1.5858712196350098,
+                    "z": 2.429396390914917
                 },
                 "scale": {
-                    "x": 1.0000003576278687,
-                    "y": 0.9999999403953552,
-                    "z": 0.9999997615814209
+                    "x": 1.0000004768371582,
+                    "y": 0.9999996423721313,
+                    "z": 0.9999996423721313
                 },
                 "visible": true
             },
@@ -8513,7 +8531,7 @@
                     "z": 1.0
                 },
                 "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2/effect.json",
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json",
                 "emitNewParticles": false,
                 "enableTrails": true,
                 "enabled": false,
@@ -8567,7 +8585,7 @@
                     "z": 1.0
                 },
                 "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2/effect.json",
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json",
                 "emitNewParticles": false,
                 "enableTrails": true,
                 "enabled": false,
@@ -8621,7 +8639,7 @@
                     "z": 1.0
                 },
                 "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2/effect.json",
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json",
                 "emitNewParticles": false,
                 "enableTrails": true,
                 "enabled": false,
@@ -8675,7 +8693,7 @@
                     "z": 1.0
                 },
                 "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2/effect.json",
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json",
                 "emitNewParticles": false,
                 "enableTrails": true,
                 "enabled": false,
@@ -8729,7 +8747,7 @@
                     "z": 1.0
                 },
                 "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2/effect.json",
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json",
                 "emitNewParticles": false,
                 "enableTrails": true,
                 "enabled": false,
@@ -8783,7 +8801,7 @@
                     "z": 1.0
                 },
                 "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2/effect.json",
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json",
                 "emitNewParticles": false,
                 "enableTrails": true,
                 "enabled": false,
@@ -8807,6 +8825,114 @@
             "_parentGuid": "4073673833718499296",
             "guid": "17610366074497654655",
             "name": "WB_FrontD_TrailVfx"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.02500000037252903,
+                    "y": 0.02500000037252903,
+                    "z": 0.02500000037252903
+                },
+                "visible": false
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 5.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json",
+                "emitNewParticles": false,
+                "enableTrails": true,
+                "enabled": false,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 2.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": false,
+                "rampScale": 1.0,
+                "sizeScale": 0.02500000037252903,
+                "spawnRateScale": 1.5,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "_parentGuid": "14190828958690152112",
+            "guid": "11738991992411666195",
+            "name": "W_EYE_MoveTrailVfx"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "visible": false
+            },
+            "UnityVfx": {
+                "alphaScale": 0.0,
+                "colorScale": 2.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Dust_3_41ffd4a3/effect.json",
+                "emitNewParticles": false,
+                "enableTrails": true,
+                "enabled": false,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 2.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": false,
+                "rampScale": 1.0,
+                "sizeScale": 2.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 6.445000171661377,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "_parentGuid": "14190828958690152112",
+            "guid": "1181344560784191448",
+            "name": "W_EYE_TrailVfx"
         }
     ],
     "sceneName": "#00Effect",

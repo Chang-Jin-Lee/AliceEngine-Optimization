@@ -62,13 +62,13 @@ namespace Alice
         ALICE_PROPERTY(float, m_breakScatterDurationSec, 2.0f); // 파괴 후 흩뿌려진 상태 유지 시간
         ALICE_PROPERTY(float, m_shardAssembleFinishDelaySec, 0.5f); // 파편 조립 완료 후 눈 조립 전 대기
         ALICE_PROPERTY(bool, m_enableShardTrailVfx, false); // 파편 이동 중 트레일 VFX 사용
-        ALICE_PROPERTY(std::string, m_shardTrailEffectPath, "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2/effect.json");
+        ALICE_PROPERTY(std::string, m_shardTrailEffectPath, "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json");
         ALICE_PROPERTY(float, m_shardTrailEmitMinSpeed, 0.15f); // 이 속도 이상일 때만 emission
         ALICE_PROPERTY(float, m_shardTrailSpawnRateScale, 1.0f);
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalOffset, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalRotation, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalScale, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
-        ALICE_PROPERTY(std::string, m_eyeMoveTrailEffectPath, "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2/effect.json");
+        ALICE_PROPERTY(std::string, m_eyeMoveTrailEffectPath, "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json");
         ALICE_PROPERTY(float, m_eyeMoveTrailSizeScale, 0.025f); // 파편 트레일과 동일 기본값
         ALICE_PROPERTY(float, m_eyeMoveTrailIntensityScale, 0.0f);
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_eyeMoveTrailColorTint, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
