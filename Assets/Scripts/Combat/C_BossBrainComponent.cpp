@@ -11,6 +11,7 @@
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
 #include "Runtime/Gameplay/Combat/HealthComponent.h"
+#include "Runtime/Input/Input.h"
 #include "Runtime/Physics/Components/Phy_CCTComponent.h"
 #include "Runtime/Physics/IPhysicsWorld.h"
 
@@ -55,6 +56,15 @@ namespace Alice
 
     void C_BossBrainComponent::Update(float deltaTime)
     {
+        if (m_enableF4ActivationToggle)
+        {
+            if (auto* input = Input())
+            {
+                if (input->GetKeyDown(KeyCode::F4))
+                    ToggleBrainActivated();
+            }
+        }
+
         auto* world = GetWorld();
         if (world && world->IsScriptCombatEnabled())
             return;
@@ -66,6 +76,26 @@ namespace Alice
     void C_BossBrainComponent::OnDisable()
     {
         ResetBrain();
+    }
+
+    void C_BossBrainComponent::SetBrainActivated(bool active)
+    {
+        m_brainActivated = active;
+        if (m_brainActivated)
+        {
+            m_deactivateAfterCurrentAttack = false;
+            return;
+        }
+
+        if (m_state == BrainState::Attack)
+            m_deactivateAfterCurrentAttack = true;
+        else
+            EnterStandbyState();
+    }
+
+    void C_BossBrainComponent::ToggleBrainActivated()
+    {
+        SetBrainActivated(!m_brainActivated);
     }
 
     Combat::BossIntent C_BossBrainComponent::Think(float deltaTime, EntityId targetId)
@@ -88,6 +118,21 @@ namespace Alice
         m_stateTimer += dt;
         m_attackCooldownTimer = std::max(0.0f, m_attackCooldownTimer - dt);
         m_blockedCooldownTimer = std::max(0.0f, m_blockedCooldownTimer - dt);
+
+        if (m_brainActivated)
+        {
+            m_deactivateAfterCurrentAttack = false;
+        }
+        else if (m_state == BrainState::Attack)
+        {
+            m_deactivateAfterCurrentAttack = true;
+        }
+        else
+        {
+            EnterStandbyState();
+            intent.wantsFaceTarget = m_wantsFaceTarget;
+            return intent;
+        }
 
         const float dx = targetTr->position.x - selfTr->position.x;
         const float dz = targetTr->position.z - selfTr->position.z;
@@ -440,7 +485,9 @@ namespace Alice
                     return dist >= minRange && dist <= maxRange;
                 };
 
-            auto PickRandomPattern = [&](PatternType avoid, bool includeCharge) -> PatternType
+            auto PickRandomPattern = [&](PatternType avoid,
+                                        bool includeCharge,
+                                        PatternType prevPattern) -> PatternType
                 {
                     std::vector<PatternType> pool;
                     pool.reserve(4);
@@ -454,6 +501,12 @@ namespace Alice
                     {
                         pool.erase(std::remove(pool.begin(), pool.end(), avoid), pool.end());
                     }
+                    pool.erase(std::remove_if(pool.begin(), pool.end(),
+                                              [&](PatternType type)
+                                              {
+                                                  return !IsTransitionAllowed(prevPattern, type);
+                                              }),
+                               pool.end());
                     if (pool.empty())
                         return PatternType::None;
 
@@ -561,6 +614,13 @@ namespace Alice
                     m_decision.sectorLockedSec = 0.0f;
                     m_decision.lockedSector = Sector::Unknown;
 
+                    if (m_deactivateAfterCurrentAttack)
+                    {
+                        EnterStandbyState();
+                        intent.wantsFaceTarget = m_wantsFaceTarget;
+                        return intent;
+                    }
+
                     if (m_rerollAfterAttack)
                     {
                         m_rerollAfterAttack = false;
@@ -629,11 +689,25 @@ namespace Alice
                 {
                     const float closeRange = std::max(0.0f, m_kickRange);
                     PatternType nextPattern = PatternType::None;
+                    const PatternType prevPattern = m_lastPattern;
                     if (dist <= closeRange)
                     {
-                        nextPattern = targetInFront ? PatternType::Kick : PatternType::Side;
+                        const PatternType harass = targetInFront ? PatternType::Kick : PatternType::Side;
+                        if (IsTransitionAllowed(prevPattern, harass))
+                        {
+                            nextPattern = harass;
+                        }
+                        else
+                        {
+                            const bool includeCharge = m_chargePending;
+                            nextPattern = PickRandomPattern(m_lastPattern, includeCharge, prevPattern);
+                            if (nextPattern == PatternType::Charge)
+                                m_chargePending = false;
+                        }
                     }
-                    else if (m_chargePending && m_lastPattern != PatternType::Charge)
+                    else if (m_chargePending
+                        && m_lastPattern != PatternType::Charge
+                        && IsTransitionAllowed(prevPattern, PatternType::Charge))
                     {
                         nextPattern = PatternType::Charge;
                         m_chargePending = false;
@@ -641,11 +715,12 @@ namespace Alice
                     else
                     {
                         const bool includeCharge = m_chargePending;
-                        nextPattern = PickRandomPattern(m_lastPattern, includeCharge);
+                        nextPattern = PickRandomPattern(m_lastPattern, includeCharge, prevPattern);
                         if (nextPattern == PatternType::Charge)
                             m_chargePending = false;
                     }
-                    PushQueuedPattern(nextPattern);
+                    if (nextPattern != PatternType::None)
+                        PushQueuedPattern(nextPattern);
                 }
 
                 PatternType pending = PeekPendingPattern();
@@ -841,6 +916,9 @@ namespace Alice
             {
                 if (type == PatternType::None)
                     return false;
+                const PatternType prevPattern = m_patternQueue.empty() ? m_lastPattern : m_patternQueue.back();
+                if (!IsTransitionAllowed(prevPattern, type))
+                    return false;
                 if (!allowDuplicate && type == LastQueued())
                     return false;
                 m_patternQueue.push_back(type);
@@ -1010,6 +1088,12 @@ namespace Alice
             m_decision.sectorLocked = false;
             m_decision.sectorLockedSec = 0.0f;
             m_decision.lockedSector = Sector::Unknown;
+            if (m_deactivateAfterCurrentAttack)
+            {
+                EnterStandbyState();
+                intent.wantsFaceTarget = m_wantsFaceTarget;
+                return intent;
+            }
             if (inMelee)
                 EnterState(BrainState::Idle);
             else
@@ -1166,13 +1250,19 @@ namespace Alice
             PushUnique(PatternType::Charge);
 
         if (count == 0)
-            return PatternType::AttackA;
+            return PatternType::None;
+
+        const PatternType prevPattern = (avoidB != PatternType::None)
+            ? avoidB
+            : ((avoidA != PatternType::None) ? avoidA : m_lastPattern);
 
         auto Pick = [&](bool allowDuplicate) -> PatternType
             {
                 for (size_t i = 0; i < count; ++i)
                 {
                     const PatternType type = candidates[i];
+                    if (!IsTransitionAllowed(prevPattern, type))
+                        continue;
                     if (!allowDuplicate && (type == avoidA || type == avoidB))
                         continue;
                     return type;
@@ -1387,6 +1477,50 @@ namespace Alice
         return started;
     }
 
+    void C_BossBrainComponent::EnterStandbyState()
+    {
+        m_state = BrainState::Idle;
+        m_stateTimer = 0.0f;
+        m_activePattern = PatternType::None;
+        m_attackIssued = false;
+        m_chargeTimer = 0.0f;
+        m_chargePending = false;
+        m_patternQueue.clear();
+        m_followupQueue.clear();
+        ForceCompleteIntent();
+        m_decision.sectorLocked = false;
+        m_decision.sectorLockedSec = 0.0f;
+        m_decision.lockedSector = Sector::Unknown;
+        m_retreatTargetDist = 0.0f;
+        m_deactivateAfterCurrentAttack = false;
+        // In standby, boss should ignore player presence and keep current forward.
+        m_wantsFaceTarget = false;
+        m_debugLabel = "Standby | Idle | Inactive";
+    }
+
+    bool C_BossBrainComponent::IsHarassPattern(PatternType type) const
+    {
+        return type == PatternType::Kick || type == PatternType::Side;
+    }
+
+    bool C_BossBrainComponent::IsNormalPattern(PatternType type) const
+    {
+        return type == PatternType::AttackA
+            || type == PatternType::AttackB
+            || type == PatternType::AttackC;
+    }
+
+    bool C_BossBrainComponent::IsTransitionAllowed(PatternType prev, PatternType next) const
+    {
+        if (prev == PatternType::None || next == PatternType::None)
+            return true;
+        if (IsHarassPattern(prev) && IsHarassPattern(next))
+            return false;
+        if (IsNormalPattern(prev) && IsNormalPattern(next) && prev == next)
+            return false;
+        return true;
+    }
+
     C_BossBrainComponent::DistanceBand C_BossBrainComponent::ComputeDistanceBand(float dist) const
     {
         float d2 = std::max(0.0f, m_distBand2);
@@ -1518,7 +1652,8 @@ namespace Alice
         m_chargePending = false;
         m_forceWalkAfterAttack = false;
         m_rerollAfterAttack = false;
-        m_wantsFaceTarget = false;
+        m_deactivateAfterCurrentAttack = false;
+        m_wantsFaceTarget = m_brainActivated;
         m_targetDot = 1.0f;
         m_targetSideDot = 0.0f;
         m_decision = {};
@@ -1527,7 +1662,7 @@ namespace Alice
         m_testRetreatTimer = 0.0f;
         m_idleTargetSec = 0.0f;
         m_retreatTargetDist = 0.0f;
-        m_debugLabel = "Idle";
+        m_debugLabel = m_brainActivated ? "Idle" : "Standby | Idle | Inactive";
         m_traceEnterDist = 0.0f;
         m_lastPattern = PatternType::None;
         m_lastAttackPattern = PatternType::None;
