@@ -175,6 +175,10 @@ namespace Alice
 			if (wParam == VK_RETURN && (HIWORD(lParam) & KF_ALTDOWN))
 			{
 				ToggleBorderlessFullscreen();
+				if (m_inputSystem.IsCursorLocked())
+				{
+					m_inputSystem.SetCursorLocked(true);
+				}
 				return 0;
 			}
 			break;
