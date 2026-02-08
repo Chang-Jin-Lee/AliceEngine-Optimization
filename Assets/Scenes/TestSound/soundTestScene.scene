@@ -76,6 +76,14 @@
                         "useBus": true,
                         "volume": 0.5
                     }
+                },
+                {
+                    "enabled": true,
+                    "name": "TimeStopScript",
+                    "props": {
+                        "pauseAudioOnStop": true,
+                        "timeStopped": false
+                    }
                 }
             ],
             "Transform": {

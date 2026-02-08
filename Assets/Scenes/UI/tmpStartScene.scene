@@ -10,7 +10,7 @@
                         "UnderLineWidgetName": "UI_Image",
                         "buttonWidgetName": "UI_StartButton",
                         "rootWidgetName": "UI_StartButton",
-                        "targetScenePath": "Assets/Scenes/TestSound/tmpBoss.scene",
+                        "targetScenePath": "Assets/Scenes/UI/tmpBossScene2.scene",
                         "uiSoundEntityName": "SoundObject"
                     }
                 }
@@ -666,6 +666,15 @@
                     "enabled": true,
                     "name": "VisibleMouseScript",
                     "props": {}
+                },
+                {
+                    "enabled": true,
+                    "name": "TimeStopScript",
+                    "props": {
+                        "pauseAudioOnStop": true,
+                        "timeStopped": true,
+                        "toggleKey": 42
+                    }
                 }
             ],
             "Transform": {

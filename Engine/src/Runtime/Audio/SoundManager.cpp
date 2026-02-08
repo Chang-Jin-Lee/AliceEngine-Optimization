@@ -51,9 +51,15 @@ namespace
     std::vector<FMOD::Channel*> g_ChannelsSFX;
     float g_VolSFX = 1.0f;
     float g_PitchSFX = 1.0f;
+    constexpr float kMaxSfxVolume3D = 8.0f;
 
     struct Inst3D { FMOD::Channel* ch = nullptr; };
     std::map<std::wstring, Inst3D> g_Inst3D;
+
+    // 보스 사운드 상태별 ChannelGroup 저장
+    std::map<std::wstring, FMOD::ChannelGroup*> g_BossAttackGroups;
+    std::map<std::wstring, FMOD::ChannelGroup*> g_BossMovementGroups;
+    std::map<std::wstring, FMOD::ChannelGroup*> g_BossOtherGroups;
 
     struct FadeInfo
     {
@@ -336,6 +342,23 @@ namespace Alice::Sound
             }
         }
         g_SoundBank.clear();
+
+        // 보스 그룹 해제
+        for (auto& pair : g_BossAttackGroups)
+        {
+            if (pair.second) { pair.second->release(); }
+        }
+        g_BossAttackGroups.clear();
+        for (auto& pair : g_BossMovementGroups)
+        {
+            if (pair.second) { pair.second->release(); }
+        }
+        g_BossMovementGroups.clear();
+        for (auto& pair : g_BossOtherGroups)
+        {
+            if (pair.second) { pair.second->release(); }
+        }
+        g_BossOtherGroups.clear();
 
         // 그룹 해제
         if (g_BgmGroup) { g_BgmGroup->release(); g_BgmGroup = nullptr; }
@@ -792,6 +815,55 @@ namespace Alice::Sound
         }
     }
 
+    FMOD::Channel* PlaySFXOneShotWithChannel(const std::wstring& key, float volume, float pitch)
+    {
+        if (!g_System) return nullptr;
+        if (!g_SoundBank.contains(key)) return nullptr;
+
+        FMOD::Sound* sound = g_SoundBank[key].fmodSound;
+        if (!sound) return nullptr;
+
+        volume = std::clamp(volume, 0.f, 1.f);
+        pitch = std::clamp(pitch, 0.5f, 2.f);
+
+        // 재생 전에 Sound 자체의 Mode를 변경
+        FMOD_MODE mode;
+        if (sound->getMode(&mode) == FMOD_OK)
+        {
+            mode |= FMOD_LOOP_OFF;
+            mode &= ~FMOD_LOOP_NORMAL;
+            sound->setMode(mode);
+        }
+
+        CleanupSFX();
+        TrimOneShotLimit();
+
+        FMOD::Channel* ch = nullptr;
+        FMOD_RESULT r = g_System->playSound(sound, g_SfxGroup, false, &ch);
+        if (r != FMOD_OK || !ch) return nullptr;
+
+        ch->setMode(FMOD_2D);
+        ch->setVolume(volume * g_VolSFX);
+        ch->setPitch(pitch);
+        ch->setPriority(128);
+
+        // 키 연타로 한 프레임에 여러 번 호출될 때도
+        // 가상화 여부를 즉시 반영시키려고 update 1번 돌림
+        g_System->update();
+
+        // 재생 중인 채널만 벡터에 추가하고 반환
+        bool playing = false;
+        if (ch->isPlaying(&playing) == FMOD_OK && playing)
+        {
+            g_ChannelsSFX.push_back(ch);
+            return ch;
+        }
+
+        // 가상화된 채널이면 정리
+        ch->stop();
+        return nullptr;
+    }
+
     bool IsSfxPlaying(const std::wstring& key)
     {
         if (auto it = g_SfxChannels.find(key); it != g_SfxChannels.end() && it->second.channel)
@@ -1046,7 +1118,7 @@ namespace Alice::Sound
         FMOD_VECTOR p = ToFmod(pos);
         FMOD_VECTOR v = { 0, 0, 0 };
         channel->set3DAttributes(&p, &v);
-        channel->setVolume(std::clamp(volume * g_VolSFX, 0.0f, 1.0f));
+        channel->setVolume(std::clamp(volume * g_VolSFX, 0.0f, kMaxSfxVolume3D));
         channel->setPitch(std::clamp(pitch, 0.5f, 2.0f));
         channel->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
         channel->set3DMinMaxDistance(1.0f, 50.0f); // 기본값
@@ -1086,7 +1158,7 @@ namespace Alice::Sound
             FMOD_VECTOR p = ToFmod(pos);
             FMOD_VECTOR v = { 0, 0, 0 };
             it->second.ch->set3DAttributes(&p, &v);
-            it->second.ch->setVolume(std::clamp(volume * g_VolSFX, 0.0f, 1.0f));
+            it->second.ch->setVolume(std::clamp(volume * g_VolSFX, 0.0f, kMaxSfxVolume3D));
             it->second.ch->set3DMinMaxDistance(std::max(0.1f, minDistance), std::max(minDistance, maxDistance));
         }
     }
@@ -1109,6 +1181,358 @@ namespace Alice::Sound
                           float maxDist)
     {
         Update3D(instanceId, pos, volume01, minDist, maxDist);
+    }
+
+    // 보스 사운드 상태별 ChannelGroup 관리
+    FMOD::ChannelGroup* GetOrCreateBossAttackGroup(const std::wstring& stateName)
+    {
+        if (!g_System || !g_SfxGroup) return nullptr;
+        
+        auto it = g_BossAttackGroups.find(stateName);
+        if (it != g_BossAttackGroups.end() && it->second)
+        {
+            // 기존 그룹의 볼륨/음소거 확인
+            float v = 0.0f;
+            bool m = false;
+            if (it->second->getVolume(&v) == FMOD_OK)
+                ALICE_LOG_INFO("[SoundManager] GetOrCreateBossAttackGroup: existing group '%ls' volume=%.2f", stateName.c_str(), v);
+            if (it->second->getMute(&m) == FMOD_OK && m)
+                ALICE_LOG_WARN("[SoundManager] GetOrCreateBossAttackGroup: existing group '%ls' is MUTED!", stateName.c_str());
+            return it->second;
+        }
+        
+        FMOD::ChannelGroup* group = nullptr;
+        // wstring을 string으로 변환 (해시 사용)
+        std::string name = "BossAttack_" + std::to_string(std::hash<std::wstring>{}(stateName));
+        FMOD_RESULT r = g_System->createChannelGroup(name.c_str(), &group);
+        if (r == FMOD_OK && group)
+        {
+            g_SfxGroup->addGroup(group);  // SFX 그룹 하위에 추가
+            g_BossAttackGroups[stateName] = group;
+            
+            // 그룹 생성 직후 볼륨/음소거 확인
+            float v = 0.0f;
+            bool m = false;
+            group->getVolume(&v);
+            group->getMute(&m);
+            ALICE_LOG_INFO("[SoundManager] Created BossAttackGroup: %ls, volume=%.2f, muted=%d", 
+                stateName.c_str(), v, m ? 1 : 0);
+            
+            // 상위 그룹도 확인
+            if (g_SfxGroup)
+            {
+                float sfxVol = 0.0f;
+                bool sfxMute = false;
+                g_SfxGroup->getVolume(&sfxVol);
+                g_SfxGroup->getMute(&sfxMute);
+                ALICE_LOG_INFO("[SoundManager] Parent SFXGroup: volume=%.2f, muted=%d", sfxVol, sfxMute ? 1 : 0);
+            }
+            
+            return group;
+        }
+        return nullptr;
+    }
+    
+    FMOD::ChannelGroup* GetOrCreateBossMovementGroup(const std::wstring& stateName)
+    {
+        if (!g_System || !g_SfxGroup) return nullptr;
+        
+        auto it = g_BossMovementGroups.find(stateName);
+        if (it != g_BossMovementGroups.end() && it->second)
+        {
+            float v = 0.0f;
+            bool m = false;
+            if (it->second->getVolume(&v) == FMOD_OK)
+                ALICE_LOG_INFO("[SoundManager] GetOrCreateBossMovementGroup: existing group '%ls' volume=%.2f", stateName.c_str(), v);
+            if (it->second->getMute(&m) == FMOD_OK && m)
+                ALICE_LOG_WARN("[SoundManager] GetOrCreateBossMovementGroup: existing group '%ls' is MUTED!", stateName.c_str());
+            return it->second;
+        }
+        
+        FMOD::ChannelGroup* group = nullptr;
+        std::string name = "BossMovement_" + std::to_string(std::hash<std::wstring>{}(stateName));
+        FMOD_RESULT r = g_System->createChannelGroup(name.c_str(), &group);
+        if (r == FMOD_OK && group)
+        {
+            g_SfxGroup->addGroup(group);
+            g_BossMovementGroups[stateName] = group;
+            
+            float v = 0.0f;
+            bool m = false;
+            group->getVolume(&v);
+            group->getMute(&m);
+            ALICE_LOG_INFO("[SoundManager] Created BossMovementGroup: %ls, volume=%.2f, muted=%d", 
+                stateName.c_str(), v, m ? 1 : 0);
+            return group;
+        }
+        return nullptr;
+    }
+    
+    FMOD::ChannelGroup* GetOrCreateBossOtherGroup(const std::wstring& stateName)
+    {
+        if (!g_System || !g_SfxGroup) return nullptr;
+        
+        auto it = g_BossOtherGroups.find(stateName);
+        if (it != g_BossOtherGroups.end() && it->second)
+        {
+            float v = 0.0f;
+            bool m = false;
+            if (it->second->getVolume(&v) == FMOD_OK)
+                ALICE_LOG_INFO("[SoundManager] GetOrCreateBossOtherGroup: existing group '%ls' volume=%.2f", stateName.c_str(), v);
+            if (it->second->getMute(&m) == FMOD_OK && m)
+                ALICE_LOG_WARN("[SoundManager] GetOrCreateBossOtherGroup: existing group '%ls' is MUTED!", stateName.c_str());
+            return it->second;
+        }
+        
+        FMOD::ChannelGroup* group = nullptr;
+        std::string name = "BossOther_" + std::to_string(std::hash<std::wstring>{}(stateName));
+        FMOD_RESULT r = g_System->createChannelGroup(name.c_str(), &group);
+        if (r == FMOD_OK && group)
+        {
+            g_SfxGroup->addGroup(group);
+            g_BossOtherGroups[stateName] = group;
+            
+            float v = 0.0f;
+            bool m = false;
+            group->getVolume(&v);
+            group->getMute(&m);
+            ALICE_LOG_INFO("[SoundManager] Created BossOtherGroup: %ls, volume=%.2f, muted=%d", 
+                stateName.c_str(), v, m ? 1 : 0);
+            return group;
+        }
+        return nullptr;
+    }
+    
+    void SetBossGroupVolume(const std::wstring& groupName, float volume)
+    {
+        // 1.0f 이상도 허용 (증폭)
+        volume = std::max(0.0f, volume);
+        
+        // Attack 그룹에서 찾기
+        auto it = g_BossAttackGroups.find(groupName);
+        if (it != g_BossAttackGroups.end() && it->second)
+        {
+            it->second->setVolume(volume);
+            
+            // 설정 후 확인
+            float actualVol = 0.0f;
+            bool muted = false;
+            it->second->getVolume(&actualVol);
+            it->second->getMute(&muted);
+            ALICE_LOG_INFO("[SoundManager] SetBossGroupVolume: Attack group '%ls' = %.2f (actual=%.2f, muted=%d)", 
+                groupName.c_str(), volume, actualVol, muted ? 1 : 0);
+            
+            // 상위 그룹도 확인
+            if (g_SfxGroup)
+            {
+                float sfxVol = 0.0f;
+                bool sfxMute = false;
+                g_SfxGroup->getVolume(&sfxVol);
+                g_SfxGroup->getMute(&sfxMute);
+                ALICE_LOG_INFO("[SoundManager] SetBossGroupVolume: Parent SFXGroup volume=%.2f, muted=%d", sfxVol, sfxMute ? 1 : 0);
+            }
+            
+            return;
+        }
+        
+        // Movement 그룹에서 찾기
+        it = g_BossMovementGroups.find(groupName);
+        if (it != g_BossMovementGroups.end() && it->second)
+        {
+            it->second->setVolume(volume);
+            float actualVol = 0.0f;
+            bool muted = false;
+            it->second->getVolume(&actualVol);
+            it->second->getMute(&muted);
+            ALICE_LOG_INFO("[SoundManager] SetBossGroupVolume: Movement group '%ls' = %.2f (actual=%.2f, muted=%d)", 
+                groupName.c_str(), volume, actualVol, muted ? 1 : 0);
+            return;
+        }
+        
+        // Other 그룹에서 찾기
+        it = g_BossOtherGroups.find(groupName);
+        if (it != g_BossOtherGroups.end() && it->second)
+        {
+            it->second->setVolume(volume);
+            float actualVol = 0.0f;
+            bool muted = false;
+            it->second->getVolume(&actualVol);
+            it->second->getMute(&muted);
+            ALICE_LOG_INFO("[SoundManager] SetBossGroupVolume: Other group '%ls' = %.2f (actual=%.2f, muted=%d)", 
+                groupName.c_str(), volume, actualVol, muted ? 1 : 0);
+            return;
+        }
+        
+        ALICE_LOG_WARN("[SoundManager] SetBossGroupVolume: Group not found: %ls", groupName.c_str());
+    }
+
+    void PlaySFXWithGroup(const std::wstring& key, FMOD::ChannelGroup* group, float volume, float pitch, bool loop)
+    {
+        if (!g_System) return;
+        if (!g_SoundBank.contains(key)) return;
+
+        FMOD::Sound* sound = g_SoundBank[key].fmodSound;
+        if (!sound) return;
+
+        volume = std::clamp(volume, 0.f, 1.f);
+        pitch = std::clamp(pitch, 0.5f, 2.f);
+
+        // 재생 전에 Sound 자체의 Mode를 변경
+        FMOD_MODE mode;
+        if (sound->getMode(&mode) == FMOD_OK)
+        {
+            if (loop) { mode |= FMOD_LOOP_NORMAL; mode &= ~FMOD_LOOP_OFF; }
+            else      { mode |= FMOD_LOOP_OFF;    mode &= ~FMOD_LOOP_NORMAL; }
+            sound->setMode(mode);
+        }
+
+        // 그룹이 없으면 기본 g_SfxGroup 사용
+        FMOD::ChannelGroup* targetGroup = group ? group : g_SfxGroup;
+        
+        // 보스 그룹인지 확인 (우선순위 조정용)
+        bool isBossGroup = (group != nullptr && group != g_SfxGroup);
+        int priority = isBossGroup ? 32 : 128;  // 보스는 더 높은 우선순위
+
+        if (loop)
+        {
+            // Loop SFX에선 Map 사용 (1개를 인스턴스함)
+            auto it = g_SfxChannels.find(key);
+            // 이미 재생 중이면 그룹이 같은지 확인
+            if (it != g_SfxChannels.end() && it->second.channel)
+            {
+                bool playing = false;
+                if (it->second.channel->isPlaying(&playing) == FMOD_OK && playing) 
+                {
+                    // 그룹이 바뀌었는지 확인
+                    FMOD::ChannelGroup* currentGroup = nullptr;
+                    if (it->second.channel->getChannelGroup(&currentGroup) == FMOD_OK)
+                    {
+                        if (currentGroup != targetGroup)
+                        {
+                            // 그룹이 바뀌었으면 재생 중지 후 새로 재생
+                            ALICE_LOG_INFO("[SoundManager] PlaySFXWithGroup: Group changed for loop key='%ls', stopping and restarting", key.c_str());
+                            it->second.channel->stop();
+                            // 아래 새로 재생 로직으로 진행
+                        }
+                        else
+                        {
+                            // 같은 그룹이면 속성만 업데이트
+                            it->second.originalVolume = volume;
+                            it->second.channel->setVolume(volume * g_VolSFX);
+                            it->second.channel->setPitch(pitch);
+                            return; 
+                        }
+                    }
+                }
+            }
+            
+            // 새로 재생
+            FMOD::Channel* ch = nullptr;
+            FMOD_RESULT r = g_System->playSound(sound, targetGroup, false, &ch);
+            if (r == FMOD_OK && ch) 
+            {
+                ch->setVolume(volume * g_VolSFX);
+                ch->setPitch(pitch);
+                ch->setPriority(priority);
+                g_SfxChannels[key] = { ch, true, volume };
+                
+                // 재생 직후 채널 그룹 확인
+                FMOD::ChannelGroup* actualGroup = nullptr;
+                if (ch->getChannelGroup(&actualGroup) == FMOD_OK && actualGroup)
+                {
+                    char groupName[256] = {0};
+                    if (actualGroup->getName(groupName, 256) == FMOD_OK)
+                    {
+                        ALICE_LOG_INFO("[SoundManager] PlaySFXWithGroup (loop): key='%ls' attached to group='%s', priority=%d", 
+                            key.c_str(), groupName, priority);
+                    }
+                }
+            }
+        }
+        else
+        {
+            // One-shot: virtual 재시도 루프 추가 (PlaySFX와 동일한 로직)
+            CleanupSFX();
+            
+            FMOD::Channel* ch = nullptr;
+            
+            for (int attempt = 0; attempt < 8; ++attempt)
+            {
+                TrimOneShotLimit();
+                
+                ch = nullptr;
+                FMOD_RESULT r = g_System->playSound(sound, targetGroup, false, &ch);
+                if (r != FMOD_OK || !ch)
+                {
+                    StopOldestOneShot();
+                    continue;
+                }
+                
+                ch->setMode(FMOD_2D);
+                ch->setVolume(volume * g_VolSFX);
+                ch->setPitch(pitch);
+                ch->setPriority(priority);  // 보스는 더 높은 우선순위
+                
+                // 가상화 여부를 즉시 반영시키려고 update 1번 돌림
+                g_System->update();
+                
+                if (!IsVirtual(ch))
+                {
+                    g_ChannelsSFX.push_back(ch);
+                    
+                    // 재생 직후 채널 그룹 확인
+                    FMOD::ChannelGroup* actualGroup = nullptr;
+                    if (ch->getChannelGroup(&actualGroup) == FMOD_OK && actualGroup)
+                    {
+                        char groupName[256] = {0};
+                        if (actualGroup->getName(groupName, 256) == FMOD_OK)
+                        {
+                            ALICE_LOG_INFO("[SoundManager] PlaySFXWithGroup (oneshot): key='%ls' attached to group='%s', priority=%d", 
+                                key.c_str(), groupName, priority);
+                        }
+                    }
+                    
+                    return;
+                }
+                
+                // 안 들리는 클릭 발생시 자리 확보 후 즉시 재시도
+                ch->stop();
+                
+                // 한 번에 하나씩만 정리하면서 재시도 (안전)
+                if (!g_ChannelsSFX.empty()) StopOldestOneShot();
+                else StopAllOneShot();
+            }
+            
+            // 원샷 전부 비우고 1번 더 재생 시도함. 이번 클릭 살리는 것
+            StopAllOneShot();
+            
+            ch = nullptr;
+            FMOD_RESULT r = g_System->playSound(sound, targetGroup, false, &ch);
+            if (r != FMOD_OK || !ch) 
+            {
+                ALICE_LOG_WARN("[SoundManager] PlaySFXWithGroup: failed after all retries, key='%ls'", key.c_str());
+                return;
+            }
+            
+            ch->setMode(FMOD_2D);
+            ch->setVolume(volume * g_VolSFX);
+            ch->setPitch(pitch);
+            ch->setPriority(priority);
+            
+            g_ChannelsSFX.push_back(ch);
+            
+            // 재생 직후 채널 그룹 확인
+            FMOD::ChannelGroup* actualGroup = nullptr;
+            if (ch->getChannelGroup(&actualGroup) == FMOD_OK && actualGroup)
+            {
+                char groupName[256] = {0};
+                if (actualGroup->getName(groupName, 256) == FMOD_OK)
+                {
+                    ALICE_LOG_INFO("[SoundManager] PlaySFXWithGroup (oneshot final): key='%ls' attached to group='%s', priority=%d", 
+                        key.c_str(), groupName, priority);
+                }
+            }
+        }
     }
 }
 

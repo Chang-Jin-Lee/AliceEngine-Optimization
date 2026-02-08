@@ -66,6 +66,8 @@ namespace Alice
         void SetBGMVolume(float volume) override;
         void PlayBGM(const std::wstring& key) override;
         void StopBGM() override;
+        void PauseAll(bool pause) override;
+        void PauseBGM(bool pause) override;
         void PlaySFX(const std::wstring& key, float volume, float pitch, bool loop) override;
         void StopSfx(const std::wstring& key) override;
         void StopAllSFX() override;

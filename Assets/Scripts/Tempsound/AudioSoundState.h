@@ -20,6 +20,7 @@ namespace Alice
         Count
     };
 
+
     /// 보스 움직임 상태 (델리게이트: OnBossMovementSfxRequest)
     enum class BossMovementState : std::uint8_t
     {

@@ -15,6 +15,7 @@ namespace Alice
 		if (updateFromScene)
 		{
 			UpdateSceneAndScript(dt);
+
 			sceneChangedThisFrame = UpdateCommitPendingSceneChanges(dt);
 
 			if (!sceneChangedThisFrame)
