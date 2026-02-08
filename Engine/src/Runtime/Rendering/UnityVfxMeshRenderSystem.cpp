@@ -630,6 +630,7 @@ namespace Alice
                 const float dt = dtComponent;
 
                 const bool loopEnabled = vfx.overrideLoop ? vfx.loop : def.loop;
+                const float emissionScale = vfx.emitNewParticles ? 1.0f : 0.0f;
                 const bool canSpawn = loopEnabled || rt.time < def.duration;
                 bool looped = false;
                 rt.time += dt;
@@ -776,7 +777,7 @@ namespace Alice
 
                 if (canSpawn)
                 {
-                    const float rate = def.rateOverTime * vfx.spawnRateScale;
+                    const float rate = def.rateOverTime * vfx.spawnRateScale * emissionScale;
                     if (rate > 0.0f)
                     {
                         rt.spawnAccum += rate * dt;
@@ -809,7 +810,7 @@ namespace Alice
                                 count = bd.maxCount;
                             else
                                 count = RandomRangeInt(bd.minCount, bd.maxCount);
-                            count = static_cast<int>(count * vfx.spawnRateScale);
+                            count = static_cast<int>(count * vfx.spawnRateScale * emissionScale);
                             for (int s = 0; s < count; ++s)
                                 spawnOne();
                             br.remaining--;
