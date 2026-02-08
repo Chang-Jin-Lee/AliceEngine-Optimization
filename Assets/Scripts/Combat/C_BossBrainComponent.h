@@ -121,8 +121,15 @@ namespace Alice
         void NotifyAttackOutcome(bool evaded);
         void ForceCompleteIntent();
         bool ConsumePhase2HowlingStarted();
+        void SetBrainActivated(bool active);
+        ALICE_FUNC(SetBrainActivated);
+        void ToggleBrainActivated();
+        ALICE_FUNC(ToggleBrainActivated);
+        bool IsBrainActivated() const { return m_brainActivated; }
 
         // 공격/패턴 튜닝
+        ALICE_PROPERTY(bool, m_brainActivated, false);
+        ALICE_PROPERTY(bool, m_enableF4ActivationToggle, true);
         ALICE_PROPERTY(float, m_attackCooldown, 1.0f);
         ALICE_PROPERTY(float, m_attackStateHoldSec, 0.45f);
         ALICE_PROPERTY(float, m_specialPatternHoldSec, 1.2f);
@@ -239,6 +246,10 @@ namespace Alice
         float GetPatternMaxRange(PatternType type) const;
         const char* GetStateLabel(BrainState state) const;
         const char* GetPatternLabel(PatternType type) const;
+        void EnterStandbyState();
+        bool IsHarassPattern(PatternType type) const;
+        bool IsNormalPattern(PatternType type) const;
+        bool IsTransitionAllowed(PatternType prev, PatternType next) const;
         void ResetBrain();
 
         BrainState m_state = BrainState::Orbit;
@@ -270,6 +281,7 @@ namespace Alice
         bool m_chargePending = false;
         bool m_forceWalkAfterAttack = false;
         bool m_rerollAfterAttack = false;
+        bool m_deactivateAfterCurrentAttack = false;
         bool m_wantsFaceTarget = false;
         float m_targetDot = 1.0f;
         float m_targetSideDot = 0.0f;
