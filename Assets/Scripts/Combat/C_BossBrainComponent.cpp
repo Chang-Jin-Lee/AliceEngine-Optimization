@@ -80,10 +80,24 @@ namespace Alice
 
     void C_BossBrainComponent::SetBrainActivated(bool active)
     {
+        const bool wasActive = m_brainActivated;
         m_brainActivated = active;
         if (m_brainActivated)
         {
             m_deactivateAfterCurrentAttack = false;
+            if (!wasActive)
+            {
+                // Wake-up should immediately run one howling sequence.
+                m_attackCooldownTimer = 0.0f;
+                if (m_usePhaseRules)
+                {
+                    m_phase2HowlingPending = true;
+                }
+                else
+                {
+                    m_specialPending = true;
+                }
+            }
             return;
         }
 
@@ -1485,6 +1499,9 @@ namespace Alice
         m_attackIssued = false;
         m_chargeTimer = 0.0f;
         m_chargePending = false;
+        m_specialPending = false;
+        m_phase2HowlingPending = false;
+        m_phase2HowlingStartedPulse = false;
         m_patternQueue.clear();
         m_followupQueue.clear();
         ForceCompleteIntent();

@@ -147,6 +147,8 @@ namespace Alice
 		float bossParryNoDurabilitySec = 0.0f;
 		float playerGuardExitLockSec = 0.0f;
 		float bossGuardExitLockSec = 0.0f;
+		float playerHowlingGuardLockSec = 0.0f;
+		bool playerHowlingGuardActivePrev = false;
 		float playerHitstunDurationSec = 0.0f;
 		float bossHitstunDurationSec = 0.0f;
 		float playerHitstopTimer = 0.0f;
@@ -226,6 +228,8 @@ namespace Alice
 			bossParryNoDurabilitySec = 0.0f;
 			playerGuardExitLockSec = 0.0f;
 			bossGuardExitLockSec = 0.0f;
+			playerHowlingGuardLockSec = 0.0f;
+			playerHowlingGuardActivePrev = false;
 			playerHitstunDurationSec = 0.0f;
 			bossHitstunDurationSec = 0.0f;
 			playerHitstopTimer = 0.0f;
@@ -894,7 +898,69 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 			};
 
+		// Guard exit recovery can always be canceled by dodge.
+		if (playerIntent.dodgePressed
+			&& (m_state->playerGuardExitLockSec > 0.0f || m_state->playerAnim.guardExitActive))
+		{
+			m_state->playerGuardExitLockSec = 0.0f;
+			m_state->playerAnim.guardExitActive = false;
+			m_state->playerAnim.guardExitTimer = 0.0f;
+			m_state->playerAnim.guardExitAnimDurationSec = 0.0f;
+			if (auto* driver = world.GetComponent<AttackDriverComponent>(playerId))
+			{
+				driver->guardLockRemainingSec = 0.0f;
+				driver->parryOverrideRemainingSec = 0.0f;
+				driver->parryUsedThisPress = false;
+			}
+		}
+
 		ApplyGuardExitLockIntent(playerIntent, m_state->playerGuardExitLockSec, playerId);
+
+		auto ApplyForcedInputLock = [&](Combat::Intent& intent,
+			EntityId entityId,
+			bool forceGuard,
+			bool lockInput,
+			float guardLockSec)
+			{
+				if (!forceGuard && !lockInput)
+					return;
+
+				if (lockInput)
+					intent = {};
+
+				if (forceGuard)
+				{
+					intent.guardHeld = true;
+					intent.guardPressed = false;
+					intent.guardReleased = false;
+					intent.guardHeldSec = std::max(0.0f, intent.guardHeldSec);
+				}
+
+				if (auto* driver = world.GetComponent<AttackDriverComponent>(entityId))
+				{
+					if (driver->attackCancelable)
+						driver->cancelAttackRequested = true;
+					if (forceGuard && guardLockSec > 0.0f)
+						driver->guardLockRemainingSec = std::max(driver->guardLockRemainingSec, guardLockSec);
+					driver->parryOverrideRemainingSec = 0.0f;
+					driver->parryUsedThisPress = false;
+				}
+			};
+
+		if (m_state->playerHowlingGuardLockSec > 0.0f)
+		{
+			ApplyForcedInputLock(playerIntent,
+				playerId,
+				m_phaseHowlingForceGuard,
+				m_phaseHowlingLockInput,
+				m_state->playerHowlingGuardLockSec);
+		}
+
+		// Even after guard-exit lock timer ends, keep motion/actions blocked while exit animation is active.
+		if (m_state->playerAnim.guardExitActive)
+		{
+			ApplyForcedInputLock(playerIntent, playerId, false, true, 0.0f);
+		}
 
 		if (!playerCanInteract)
 			playerIntent.interactPressed = false;
@@ -993,6 +1059,20 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		{
 			playerIntent.move = { 0.0f, 0.0f };
 			playerIntent.runHeld = false;
+		}
+
+		// Re-apply post-filters so heal/interaction gating cannot override forced howl guard lock.
+		if (m_state->playerHowlingGuardLockSec > 0.0f)
+		{
+			ApplyForcedInputLock(playerIntent,
+				playerId,
+				m_phaseHowlingForceGuard,
+				m_phaseHowlingLockInput,
+				m_state->playerHowlingGuardLockSec);
+		}
+		if (m_state->playerAnim.guardExitActive)
+		{
+			ApplyForcedInputLock(playerIntent, playerId, false, true, 0.0f);
 		}
 
 		const float rageDurationSec = std::max(0.0f, m_rageDurationSec);
@@ -1657,14 +1737,27 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			if (auto* trace = world.GetComponent<WeaponTraceComponent>(bossId))
 				basePushSpeed = std::max(0.0f, trace->guardBreakPushbackSpeed);
 
-			const float pushSpeed = std::max(0.0f, basePushSpeed * std::max(0.0f, m_guardBreakPushbackScale));
-			const float pushDuration = std::max(0.0f, m_guardBreakPushbackDurationSec);
+			const float pushSpeed = std::max(0.0f, basePushSpeed * std::max(0.0f, m_phaseHowlingPushbackScale));
+			const float pushDuration = std::max(0.0f, m_phaseHowlingPushbackDurationSec);
 			if (pushSpeed > 0.0f && pushDuration > 0.0f)
 			{
 				std::vector<Combat::Command> phase2Commands;
 				phase2Commands.push_back({ Combat::CommandType::ApplyPushback,
 					Combat::CmdApplyPushback{ bossId, playerId, pushSpeed, pushDuration } });
 				m_state->apply.ApplyImmediate(world, m_state->fighterMap, m_state->bus, phase2Commands, true);
+			}
+			if (pushDuration > 0.0f && (m_phaseHowlingForceGuard || m_phaseHowlingLockInput))
+			{
+				m_state->playerHowlingGuardLockSec = std::max(m_state->playerHowlingGuardLockSec, pushDuration);
+				if (auto* driver = world.GetComponent<AttackDriverComponent>(playerId))
+				{
+					if (driver->attackCancelable)
+						driver->cancelAttackRequested = true;
+					if (m_phaseHowlingForceGuard)
+						driver->guardLockRemainingSec = std::max(driver->guardLockRemainingSec, pushDuration);
+					driver->parryOverrideRemainingSec = 0.0f;
+					driver->parryUsedThisPress = false;
+				}
 			}
 			// TODO: add dedicated camera shake cue for phase-2 howling.
 		}
@@ -2422,6 +2515,20 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						continue;
 					}
 
+					const bool playerMovementLocked = isPlayer
+						&& ((m_state->playerGuardExitLockSec > 0.0f)
+							|| m_state->playerAnim.guardExitActive
+							|| (m_phaseHowlingLockInput && m_state->playerHowlingGuardLockSec > 0.0f));
+					if (playerMovementLocked)
+					{
+						cct->desiredVelocity.x = 0.0f;
+						cct->desiredVelocity.z = 0.0f;
+						cct->desiredVelocity.y = 0.0f;
+						m_state->playerMoveSmoothedDir = {};
+						m_state->playerMoveSmoothedValid = false;
+						continue;
+					}
+
 					if (isPlayer && payload.useCameraRelative && camBasis.valid)
 					{
 						dx = camBasis.rightX * inputX + camBasis.forwardX * inputZ;
@@ -2541,7 +2648,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		auto StopIfNotMoving = [&](EntityId entityId, Combat::ActionState state, const SessionState::AttackMoveState& attackMove)
 			{
-				if (state == Combat::ActionState::Move || state == Combat::ActionState::Dodge || (state == Combat::ActionState::Attack && attackMove.active))
+				const bool forcePlayerMotionLock = (entityId == playerId)
+					&& ((m_state->playerGuardExitLockSec > 0.0f)
+						|| m_state->playerAnim.guardExitActive
+						|| (m_phaseHowlingLockInput && m_state->playerHowlingGuardLockSec > 0.0f));
+				if (!forcePlayerMotionLock
+					&& (state == Combat::ActionState::Move
+						|| state == Combat::ActionState::Dodge
+						|| (state == Combat::ActionState::Attack && attackMove.active)))
 					return;
 				if (auto* hc = world.GetComponent<HealthComponent>(entityId))
 				{
@@ -2974,6 +3088,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			bool blendIdleOnAttackEnd,
 			bool hitReactActive,
 			bool suppressGuardExit,
+			bool forceGuardLoopOnly,
 			bool forceGroggyRecoverClip) {
 				auto* anim = world.GetComponent<AdvancedAnimationComponent>(entityId);
 				if (!anim)
@@ -3111,7 +3226,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					if (clipDuration > 0.0f)
 						guardEnterAnimDurationSec = clipDuration;
 				}
-				if ((enteringGuard || guardEnterPulse)
+				if (!forceGuardLoopOnly
+					&& (enteringGuard || guardEnterPulse)
 					&& !cfg.guardEnterClip.empty()
 					&& guardEnterAnimDurationSec > 0.0f)
 				{
@@ -3280,25 +3396,36 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 				else if (clipName.empty() && (curr == Combat::ActionState::Guard))
 				{
-					const bool parryWindowActive = driver && driver->parryActive;
-					if (parryWindowActive && !cfg.guardEnterClip.empty())
+					const std::string guardLoop = !cfg.guardLoopClip.empty()
+						? cfg.guardLoopClip
+						: resolveClipByType(AttackDriverNotifyType::Guard);
+					if (forceGuardLoopOnly)
 					{
-						clipName = cfg.guardEnterClip;
-						loop = false;
-					}
-					else if (animState.guardEnterActive)
-					{
-						clipName = cfg.guardEnterClip;
-						loop = false;
+						animState.guardEnterActive = false;
+						animState.guardEnterTimer = 0.0f;
+						animState.guardEnterAnimDurationSec = 0.0f;
+						clipName = guardLoop;
+						loop = true;
 					}
 					else
 					{
-						const std::string guardLoop = !cfg.guardLoopClip.empty()
-							? cfg.guardLoopClip
-							: resolveClipByType(AttackDriverNotifyType::Guard);
-						clipName = guardLoop;
-						const bool guardHeld = driver ? driver->guardInputHeld : false;
-						loop = (curr == Combat::ActionState::Guard) && guardHeld;
+						const bool parryWindowActive = driver && driver->parryActive;
+						if (parryWindowActive && !cfg.guardEnterClip.empty())
+						{
+							clipName = cfg.guardEnterClip;
+							loop = false;
+						}
+						else if (animState.guardEnterActive)
+						{
+							clipName = cfg.guardEnterClip;
+							loop = false;
+						}
+						else
+						{
+							clipName = guardLoop;
+							const bool guardHeld = driver ? driver->guardInputHeld : false;
+							loop = (curr == Combat::ActionState::Guard) && guardHeld;
+						}
 					}
 				}
 
@@ -3681,11 +3808,19 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				prev = curr;
 			};
 
-        const bool playerGuardEnterPulse = playerGuardPressed;
+		const bool playerHowlingGuardActive = m_phaseHowlingForceGuard
+			&& (m_state->playerHowlingGuardLockSec > 0.0f);
+		const bool playerHowlingGuardJustEnded = m_state->playerHowlingGuardActivePrev
+			&& !playerHowlingGuardActive;
+		const bool suppressPlayerGuardExitAnim = playerHowlingGuardActive || playerHowlingGuardJustEnded;
+		const bool forcePlayerGuardLoopOnly = playerHowlingGuardActive;
+
+		const bool playerGuardEnterPulse = playerGuardPressed;
 		ApplyAnimByState(playerId, playerIntent, outPlayer.state, m_state->prevPlayerState, m_state->playerAnim, m_state->playerMoveBlend,
-            playerGuardEnterPulse, false, m_state->playerChargeActive, outPlayer.attackRestarted, playerAttackEndedOnFinal, false, false, false);
-        ApplyAnimByState(bossId, bossIntentCompat, outBoss.state, m_state->prevBossState, m_state->bossAnim, m_state->bossMoveBlend,
-            false, false, m_state->bossChargeActive, outBoss.attackRestarted, false, bossOut.hitReactActive, false, bossOut.groggyRecoverActive);
+			playerGuardEnterPulse, false, m_state->playerChargeActive, outPlayer.attackRestarted, playerAttackEndedOnFinal, false, suppressPlayerGuardExitAnim, forcePlayerGuardLoopOnly, false);
+		ApplyAnimByState(bossId, bossIntentCompat, outBoss.state, m_state->prevBossState, m_state->bossAnim, m_state->bossMoveBlend,
+			false, false, m_state->bossChargeActive, outBoss.attackRestarted, false, bossOut.hitReactActive, false, false, bossOut.groggyRecoverActive);
+		m_state->playerHowlingGuardActivePrev = playerHowlingGuardActive;
 
 		auto ApplyHitstopVelocityStop = [&](EntityId entityId, float timerSec)
 			{
@@ -3769,6 +3904,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		m_state->bossParryNoDurabilitySec = std::max(0.0f, m_state->bossParryNoDurabilitySec - bossLogicDt);
 		m_state->playerGuardExitLockSec = std::max(0.0f, m_state->playerGuardExitLockSec - playerLogicDt);
 		m_state->bossGuardExitLockSec = std::max(0.0f, m_state->bossGuardExitLockSec - bossLogicDt);
+		m_state->playerHowlingGuardLockSec = std::max(0.0f, m_state->playerHowlingGuardLockSec - playerLogicDt);
 
 		auto BuildResolveSnapshot = [&](Combat::Fighter& fighter,
 			Combat::ActionState state,
