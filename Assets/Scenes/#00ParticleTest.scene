@@ -35,9 +35,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -18.0,
+                    "x": 36.0,
                     "y": 0.0,
-                    "z": 0.0
+                    "z": -24.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -88,9 +88,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.0,
+                    "x": -72.0,
                     "y": 0.0,
-                    "z": 0.0
+                    "z": -24.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -141,9 +141,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 4.0,
+                    "x": -36.0,
                     "y": 0.0,
-                    "z": 0.0
+                    "z": -24.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -194,9 +194,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 11.0,
+                    "x": 0.0,
                     "y": 0.0,
-                    "z": 0.0
+                    "z": -24.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -228,7 +228,7 @@
                 "lifetimeScale": 1.0,
                 "loop": true,
                 "noiseScale": 1.0,
-                "overrideLoop": false,
+                "overrideLoop": true,
                 "rampScale": 1.0,
                 "sizeScale": 1.659000039100647,
                 "spawnRateScale": 1.0,
@@ -247,9 +247,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -3.0,
+                    "x": -54.0,
                     "y": 0.0,
-                    "z": 10.0
+                    "z": -24.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -281,7 +281,7 @@
                 "lifetimeScale": 1.0,
                 "loop": true,
                 "noiseScale": 1.0,
-                "overrideLoop": false,
+                "overrideLoop": true,
                 "rampScale": 1.0,
                 "sizeScale": 1.659000039100647,
                 "spawnRateScale": 1.0,
@@ -300,9 +300,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 4.0,
+                    "x": -18.0,
                     "y": 0.0,
-                    "z": 10.0
+                    "z": -24.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -353,9 +353,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 11.0,
+                    "x": 18.0,
                     "y": 0.0,
-                    "z": 10.0
+                    "z": -24.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -406,9 +406,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -48.0,
-                    "y": 28.004650115966797,
-                    "z": 36.0
+                    "x": -90.0,
+                    "y": 0.0,
+                    "z": 12.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -459,9 +459,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -14.049948692321777,
-                    "y": 28.40047264099121,
-                    "z": 36.0
+                    "x": -72.0,
+                    "y": 0.0,
+                    "z": 12.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -512,9 +512,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 10.180694580078125,
-                    "y": 32.813819885253906,
-                    "z": 36.0
+                    "x": -35.81745910644531,
+                    "y": -1.9966316223144531,
+                    "z": 10.968990325927734
                 },
                 "rotation": {
                     "x": 0.0,
@@ -565,9 +565,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -46.61686325073242,
-                    "y": 30.504798889160156,
-                    "z": -10.787845611572266
+                    "x": -90.0,
+                    "y": 0.0,
+                    "z": 48.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -618,9 +618,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -19.20197868347168,
-                    "y": 35.740108489990234,
-                    "z": -19.059181213378906
+                    "x": -54.0,
+                    "y": 0.0,
+                    "z": 48.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -671,9 +671,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 8.081134796142578,
-                    "y": 35.094852447509766,
-                    "z": -19.221233367919922
+                    "x": -36.0,
+                    "y": 0.0,
+                    "z": 48.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -724,9 +724,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 55.67125701904297,
-                    "y": 21.570085525512695,
-                    "z": -14.48504638671875
+                    "x": -18.0,
+                    "y": 0.0,
+                    "z": 48.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -777,9 +777,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 38.16402816772461,
-                    "y": 50.431114196777344,
-                    "z": -8.277509689331055
+                    "x": -72.0,
+                    "y": 0.0,
+                    "z": 48.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -830,9 +830,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -48.0,
+                    "x": -90.0,
                     "y": 0.0,
-                    "z": 54.0
+                    "z": 30.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -885,7 +885,7 @@
                 "position": {
                     "x": -36.0,
                     "y": 0.0,
-                    "z": 54.0
+                    "z": 30.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -936,9 +936,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -29.0,
+                    "x": -54.0,
                     "y": 0.0,
-                    "z": 54.0
+                    "z": 30.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -989,9 +989,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -22.0,
-                    "y": 2.4220995903015137,
-                    "z": 54.0
+                    "x": -72.0,
+                    "y": 0.0,
+                    "z": 30.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1042,9 +1042,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -48.0,
-                    "y": 34.202579498291016,
-                    "z": 63.0
+                    "x": -90.0,
+                    "y": 0.0,
+                    "z": 66.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1095,9 +1095,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -36.0,
-                    "y": 34.41245651245117,
-                    "z": 63.0
+                    "x": -72.0,
+                    "y": 0.0,
+                    "z": 66.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1148,9 +1148,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -29.0,
-                    "y": 33.7659912109375,
-                    "z": 63.0
+                    "x": -54.0,
+                    "y": 0.0,
+                    "z": 66.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1201,9 +1201,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -20.39084243774414,
-                    "y": 34.147491455078125,
-                    "z": 63.0
+                    "x": -47.46312713623047,
+                    "y": 2.4084348678588867,
+                    "z": 66.68228912353516
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1254,9 +1254,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -48.0,
-                    "y": 45.556339263916016,
-                    "z": 72.0
+                    "x": -90.0,
+                    "y": 0.0,
+                    "z": 102.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1307,9 +1307,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -30.495975494384766,
-                    "y": 44.104270935058594,
-                    "z": 72.0
+                    "x": -72.0,
+                    "y": 0.0,
+                    "z": 102.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1360,9 +1360,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -15.189434051513672,
-                    "y": 43.803001403808594,
-                    "z": 72.0
+                    "x": -54.0,
+                    "y": 0.0,
+                    "z": 102.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1413,9 +1413,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -48.0,
+                    "x": -90.0,
                     "y": 0.0,
-                    "z": 34.04043197631836
+                    "z": 84.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1466,9 +1466,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -21.317243576049805,
+                    "x": -36.0,
                     "y": 0.0,
-                    "z": 38.236106872558594
+                    "z": 84.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1519,9 +1519,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -6.449497699737549,
-                    "y": 23.709423065185547,
-                    "z": 19.81253433227539
+                    "x": -72.0,
+                    "y": 0.0,
+                    "z": 84.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1572,9 +1572,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 7.507815837860107,
-                    "y": 23.742870330810547,
-                    "z": 10.155762672424316
+                    "x": -54.0,
+                    "y": 0.0,
+                    "z": 84.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1625,9 +1625,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -64.33721923828125,
-                    "y": 0.6103506088256836,
-                    "z": 93.49561309814453
+                    "x": -90.0,
+                    "y": 0.0,
+                    "z": 138.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1678,9 +1678,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -43.70710754394531,
-                    "y": -2.86102294921875e-05,
-                    "z": 93.71082305908203
+                    "x": -72.0,
+                    "y": 0.0,
+                    "z": 138.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1731,9 +1731,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -17.675464630126953,
-                    "y": 7.967588424682617,
-                    "z": 89.92897033691406
+                    "x": -54.0,
+                    "y": 0.0,
+                    "z": 138.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1784,9 +1784,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -29.52537727355957,
-                    "y": 16.91651725769043,
-                    "z": 90.27400970458984
+                    "x": -36.0,
+                    "y": 0.0,
+                    "z": 138.0
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1832,6 +1832,2020 @@
             },
             "guid": "18440000000000000005",
             "name": "DECOMP_GimmickTrail__Effect_06_Smoke_2"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 18.0,
+                    "y": 0.0,
+                    "z": 12.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.4609999656677246,
+                "colorScale": 1.6339999437332153,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.07999999821186066,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_04_SwordSlash__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.50600004196167,
+                "intensityScale": 1.600000023841858,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 0.9589999914169312,
+                "overrideLoop": true,
+                "rampScale": 1.1030000448226929,
+                "sizeScale": 2.246999979019165,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.3949999809265137,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 0.984000027179718,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.9500000476837158
+            },
+            "guid": "18440000000000000006",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_04_SwordSlash__Original"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 36.0,
+                    "y": 0.0,
+                    "z": 12.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.4609999656677246,
+                "colorScale": 1.6339999437332153,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.07999999821186066,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_04_SwordSlash__Effect_04_Slash__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.50600004196167,
+                "intensityScale": 1.600000023841858,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 0.9589999914169312,
+                "overrideLoop": true,
+                "rampScale": 1.1030000448226929,
+                "sizeScale": 2.246999979019165,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.3949999809265137,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 0.984000027179718,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.9500000476837158
+            },
+            "guid": "18440000000000000007",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_04_SwordSlash__Effect_04_Slash"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 54.0,
+                    "y": 0.0,
+                    "z": 12.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.4609999656677246,
+                "colorScale": 1.6339999437332153,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.07999999821186066,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_04_SwordSlash__Effect_04_Smoke__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.50600004196167,
+                "intensityScale": 1.600000023841858,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 0.9589999914169312,
+                "overrideLoop": true,
+                "rampScale": 1.1030000448226929,
+                "sizeScale": 2.246999979019165,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.3949999809265137,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 0.984000027179718,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.9500000476837158
+            },
+            "guid": "18440000000000000008",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_04_SwordSlash__Effect_04_Smoke"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 18.0,
+                    "y": 0.0,
+                    "z": 48.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_OuterRingEffect_2__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.5,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000009",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_07_OuterRingEffect_2__Original"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 54.0,
+                    "y": 0.0,
+                    "z": 48.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_OuterRingEffect_2__Effect_07_OuterPlaneRing__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.5,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000010",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_07_OuterRingEffect_2__Effect_07_OuterPlaneRing"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 72.0,
+                    "y": 0.0,
+                    "z": 48.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_OuterRingEffect_2__Effect_07_OuterPlaneRing_2__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.5,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000011",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_07_OuterRingEffect_2__Effect_07_OuterPlaneRing_2"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 90.0,
+                    "y": 0.0,
+                    "z": 48.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_OuterRingEffect_2__Effect_07_OuterPlaneRing_3__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.5,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000012",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_07_OuterRingEffect_2__Effect_07_OuterPlaneRing_3"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 36.0,
+                    "y": 0.0,
+                    "z": 48.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_OuterRingEffect_2__Effect_07_OuterPlaneParticle__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.5,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000013",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_07_OuterRingEffect_2__Effect_07_OuterPlaneParticle"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 18.0,
+                    "y": 0.0,
+                    "z": 30.0
+                },
+                "rotation": {
+                    "x": 0.23300878703594208,
+                    "y": 2.7885801792144775,
+                    "z": 0.5598239898681641
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_OuterRingEffect__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 0.5009999871253967,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0800000429153442,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000014",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_07_OuterRingEffect__Original"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 72.0,
+                    "y": 0.0,
+                    "z": 30.0
+                },
+                "rotation": {
+                    "x": 1.0751800537109375,
+                    "y": -0.05946141481399536,
+                    "z": 2.2892110347747803
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_OuterRingEffect__Effect_07_OuterSphereRing__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 0.5009999871253967,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0800000429153442,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000015",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_07_OuterRingEffect__Effect_07_OuterSphereRing"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 54.0,
+                    "y": 0.0,
+                    "z": 30.0
+                },
+                "rotation": {
+                    "x": 1.2097219228744507,
+                    "y": 0.4357161819934845,
+                    "z": -3.0538015365600586
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_OuterRingEffect__Effect_07_OuterPlaneRing__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 0.5009999871253967,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0800000429153442,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000016",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_07_OuterRingEffect__Effect_07_OuterPlaneRing"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 36.0,
+                    "y": 0.0,
+                    "z": 30.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_OuterRingEffect__Effect_07_OuterPlaneParticle__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 0.5009999871253967,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0800000429153442,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000017",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_07_OuterRingEffect__Effect_07_OuterPlaneParticle"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 18.0,
+                    "y": 0.0,
+                    "z": 66.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_23_PulseEnergy__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000018",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_23_PulseEnergy__Original"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 36.0,
+                    "y": 0.0,
+                    "z": 66.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_23_PulseEnergy__Effect_23_Slash__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000019",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_23_PulseEnergy__Effect_23_Slash"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 54.0,
+                    "y": 0.0,
+                    "z": 66.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_23_PulseEnergy__Effect_23_Slash2__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000020",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_23_PulseEnergy__Effect_23_Slash2"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 72.0,
+                    "y": 0.0,
+                    "z": 66.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_23_PulseEnergy__Effect_23_Smoke__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000021",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_23_PulseEnergy__Effect_23_Smoke"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 18.0,
+                    "y": 0.0,
+                    "z": 102.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_04_SwordSlash__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 2.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000022",
+            "name": "ONESHOT_DECOMP_Effect_04_SwordSlash__Original"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 36.0,
+                    "y": 0.0,
+                    "z": 102.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_04_SwordSlash__Effect_04_Slash__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 2.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000023",
+            "name": "ONESHOT_DECOMP_Effect_04_SwordSlash__Effect_04_Slash"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 72.0,
+                    "y": 0.0,
+                    "z": 102.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_04_SwordSlash__Effect_04_Smoke__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 2.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000024",
+            "name": "ONESHOT_DECOMP_Effect_04_SwordSlash__Effect_04_Smoke"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 18.0,
+                    "y": 0.0,
+                    "z": 84.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_31_LightShield__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.3480000495910645,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000025",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_31_LightShield__Original"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 72.0,
+                    "y": 0.0,
+                    "z": 84.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_31_LightShield__Effect_31_Ring__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.3480000495910645,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000026",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_31_LightShield__Effect_31_Ring"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 36.0,
+                    "y": 0.0,
+                    "z": 84.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_31_LightShield__Effect_31_LightParticle__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.3480000495910645,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000027",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_31_LightShield__Effect_31_LightParticle"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 54.0,
+                    "y": 0.0,
+                    "z": 84.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_31_LightShield__Effect_31_LightSideParticle__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.3480000495910645,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000028",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_31_LightShield__Effect_31_LightSideParticle"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 18.0,
+                    "y": 0.0,
+                    "z": 138.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 0.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 0.20000000298023224,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000029",
+            "name": "ONESHOT_DECOMP_GimmickTrail__Original"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 36.0,
+                    "y": 0.0,
+                    "z": 138.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Effect_06_Slash__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 0.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 0.20000000298023224,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000030",
+            "name": "ONESHOT_DECOMP_GimmickTrail__Effect_06_Slash"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 54.0,
+                    "y": 0.0,
+                    "z": 138.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Effect_06_Smoke_1__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 0.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 0.20000000298023224,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000031",
+            "name": "ONESHOT_DECOMP_GimmickTrail__Effect_06_Smoke_1"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 72.0,
+                    "y": 0.0,
+                    "z": 138.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 9.600000381469727,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "dissolveOffset": 1.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Effect_06_Smoke_2__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 0.699999988079071,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 0.20000000298023224,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000032",
+            "name": "ONESHOT_DECOMP_GimmickTrail__Effect_06_Smoke_2"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 54.0,
+                    "y": 0.0,
+                    "z": 102.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_04_SwordSlash__Effect_04_Slash__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 2.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "17309145172968785727",
+            "name": "ONESHOT_DECOMP_Effect_04_SwordSlash__Effect_04_Slash_Extra"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -90.0,
+                    "y": 0.0,
+                    "z": 120.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_70_EnergyShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": false,
+                "rampScale": 1.0,
+                "sizeScale": 5.500999927520752,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000033",
+            "name": "DECOMP_Effect_70_EnergyShot__Original"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -36.0,
+                    "y": 0.0,
+                    "z": 120.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_70_EnergyShot__Effect_70_Slash/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": false,
+                "rampScale": 1.0,
+                "sizeScale": 5.500999927520752,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000034",
+            "name": "DECOMP_Effect_70_EnergyShot__Effect_70_Slash"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -72.0,
+                    "y": 0.0,
+                    "z": 120.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_70_EnergyShot__Effect_70_Particle/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": false,
+                "rampScale": 1.0,
+                "sizeScale": 5.500999927520752,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000035",
+            "name": "DECOMP_Effect_70_EnergyShot__Effect_70_Particle"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -54.0,
+                    "y": 0.0,
+                    "z": 120.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_70_EnergyShot__Effect_70_Particle_2/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": false,
+                "rampScale": 1.0,
+                "sizeScale": 5.500999927520752,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000036",
+            "name": "DECOMP_Effect_70_EnergyShot__Effect_70_Particle_2"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -18.0,
+                    "y": 0.0,
+                    "z": 120.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_70_EnergyShot__Effect_70_Smoke/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 5.500999927520752,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000037",
+            "name": "DECOMP_Effect_70_EnergyShot__Effect_70_Smoke"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 18.0,
+                    "y": 0.0,
+                    "z": 120.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_70_EnergyShot__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 5.500999927520752,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000038",
+            "name": "ONESHOT_DECOMP_Effect_70_EnergyShot__Original"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 72.0,
+                    "y": 0.0,
+                    "z": 120.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_70_EnergyShot__Effect_70_Slash__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 5.500999927520752,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000039",
+            "name": "ONESHOT_DECOMP_Effect_70_EnergyShot__Effect_70_Slash"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 36.0,
+                    "y": 0.0,
+                    "z": 120.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_70_EnergyShot__Effect_70_Particle__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 5.500999927520752,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000040",
+            "name": "ONESHOT_DECOMP_Effect_70_EnergyShot__Effect_70_Particle"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 54.0,
+                    "y": 0.0,
+                    "z": 120.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_70_EnergyShot__Effect_70_Particle_2__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": true,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 5.500999927520752,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000041",
+            "name": "ONESHOT_DECOMP_Effect_70_EnergyShot__Effect_70_Particle_2"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 90.0,
+                    "y": 0.0,
+                    "z": 120.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Effect_70_EnergyShot__Effect_70_Smoke__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 5.500999927520752,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "18440000000000000042",
+            "name": "ONESHOT_DECOMP_Effect_70_EnergyShot__Effect_70_Smoke"
         }
     ],
     "sceneName": "#00ParticleTest",
