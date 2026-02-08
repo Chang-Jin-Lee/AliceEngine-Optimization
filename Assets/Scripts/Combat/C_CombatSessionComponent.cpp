@@ -2494,6 +2494,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					float dx = inputX;
 					float dz = inputZ;
 					const bool isPlayer = (entityId == playerId);
+					const bool isBoss = (entityId == bossId);
 					const bool isPlayerDodge = isPlayer
 						&& (outPlayer.state == Combat::ActionState::Dodge);
 					const auto* moveHealth = world.GetComponent<HealthComponent>(entityId);
@@ -2612,7 +2613,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 					const bool lockFacing = (entityId == playerId
 						&& outPlayer.state == Combat::ActionState::Attack
-						&& m_state->playerAttackFacingLocked);
+						&& m_state->playerAttackFacingLocked)
+						|| isBoss;
 					if (!lockFacing && payload.faceMove && (dx != 0.0f || dz != 0.0f))
 					{
 						if (auto* tr = world.GetComponent<TransformComponent>(entityId))
@@ -2746,10 +2748,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		if (ShouldTrackBossFacingThisFrame())
 		{
-			const float idleFacingDamping = (outBoss.state == Combat::ActionState::Idle)
-				? std::max(0.0f, m_bossIdleFacingDamping)
-				: 0.0f;
-			FaceTarget(bossId, playerId, idleFacingDamping);
+			const float bossFacingDamping = std::max(0.0f, m_bossIdleFacingDamping);
+			FaceTarget(bossId, playerId, bossFacingDamping);
 		}
 
 		// Root motion unlock/drive is now left to component settings (disable attack-only override).
@@ -3504,6 +3504,35 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					if (bossBrain->GetBrainState() == C_BossBrainComponent::BrainState::Orbit && !moveSideClip.empty())
 						moveClipResolved = moveSideClip;
 				}
+				bool reverseBossSideMove = false;
+				float reverseBossSideStartTime = 0.0f;
+				if (entityId == bossId
+					&& curr == Combat::ActionState::Move
+					&& !moveSideClip.empty()
+					&& moveClipResolved == moveSideClip)
+				{
+					const float moveX = intent.move.x;
+					const float moveZ = intent.move.y;
+					const float moveLenSq = moveX * moveX + moveZ * moveZ;
+					if (moveLenSq > 0.0001f)
+					{
+						if (auto* tr = world.GetComponent<TransformComponent>(entityId))
+						{
+							const float yaw = tr->rotation.y - (m_rotationOffsetDeg * kDegToRad);
+							const float rightX = std::cos(yaw);
+							const float rightZ = -std::sin(yaw);
+							const float sideDot = rightX * moveX + rightZ * moveZ;
+							reverseBossSideMove = (sideDot > 0.0f);
+						}
+					}
+
+					if (reverseBossSideMove)
+					{
+						reverseBossSideStartTime = GetClipDurationSecByName(registry, world, entityId, moveClipResolved);
+						if (reverseBossSideStartTime <= 0.0f)
+							reverseBossSideStartTime = 0.5f;
+					}
+				}
 
 				const bool isLocomotion = (curr == Combat::ActionState::Idle || curr == Combat::ActionState::Move);
 				AdvancedAnimLayer locomotionBase{};
@@ -3518,10 +3547,10 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					locomotionBase.loopA = true;
 					locomotionBase.loopB = true;
 					locomotionBase.speedA = 1.0f;
-					locomotionBase.speedB = 1.0f;
+					locomotionBase.speedB = reverseBossSideMove ? -1.0f : 1.0f;
 					locomotionBase.blend01 = moveBlend;
 					locomotionBase.timeA = 0.0f;
-					locomotionBase.timeB = 0.0f;
+					locomotionBase.timeB = reverseBossSideMove ? reverseBossSideStartTime : 0.0f;
 
 					if (animState.overrideActive && !wantsOverride)
 					{
@@ -3538,7 +3567,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					anim->base.loopA = true;
 					anim->base.loopB = true;
 					anim->base.speedA = 1.0f;
-					anim->base.speedB = 1.0f;
+					anim->base.speedB = reverseBossSideMove ? -1.0f : 1.0f;
 					anim->base.blend01 = moveBlend;
 				}
 
