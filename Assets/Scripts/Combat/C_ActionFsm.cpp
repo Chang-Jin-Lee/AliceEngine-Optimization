@@ -261,7 +261,6 @@ namespace Alice::Combat
                     && sensors.attackCancelable
                     && wantsGuard;
                 const bool canDodgeCancel = postWindow
-                    && sensors.attackCancelable
                     && intent.dodgePressed
                     && sensors.stamina >= 10.0f;
                 const float restartLateRatio = 0.7f;

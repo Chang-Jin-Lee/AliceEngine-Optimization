@@ -56,6 +56,10 @@ namespace Alice
         ALICE_PROPERTY(float, m_hitstopSec, 2.0f);
         ALICE_PROPERTY(float, m_guardBreakPushbackDurationSec, 1.0f);
         ALICE_PROPERTY(float, m_hitPushbackDurationSec, 0.3f);
+        ALICE_PROPERTY(float, m_phaseHowlingPushbackScale, 1.0f);
+        ALICE_PROPERTY(float, m_phaseHowlingPushbackDurationSec, 1.0f);
+        ALICE_PROPERTY(bool, m_phaseHowlingForceGuard, true);
+        ALICE_PROPERTY(bool, m_phaseHowlingLockInput, true);
         ALICE_PROPERTY(bool, m_playerInteractionEnabled, false);
         ALICE_PROPERTY(float, m_healStartDelaySec, 1.0f);
         ALICE_PROPERTY(float, m_healTickIntervalSec, 1.0f);
