@@ -30,6 +30,7 @@ namespace Alice
         Combat::ActionState GetBossState() const;
         Combat::ActionFlags GetPlayerFlags() const;
         Combat::ActionFlags GetBossFlags() const;
+        std::uint64_t GetPlayerParrySuccessCount() const;
         bool IsPlayerRageActive() const;
         float GetPlayerRageRemainingSec() const;
 

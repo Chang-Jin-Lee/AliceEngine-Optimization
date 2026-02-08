@@ -13,6 +13,8 @@
 
 namespace Alice
 {
+    class C_CombatSessionComponent;
+
     // Weapon break/assemble gimmick controller
     class Gimmick : public IScript
     {
@@ -76,6 +78,11 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_eyeDustEffectPath, "Assets/VFX/UnityExport/Dust_3_41ffd4a3/effect.json");
         ALICE_PROPERTY(float, m_eyeDustRiseStartHeight, 1.0f); // 눈이 이 높이 이상 떠오르면 알파 상승 시작
         ALICE_PROPERTY(float, m_eyeDustFadeInSpeed, 0.9f); // 상승 시작 후 첫 파편 발사 전 알파 증가 속도
+        ALICE_PROPERTY(std::string, m_combatSessionName, "SceneManager");
+        ALICE_PROPERTY(std::string, m_playerEntityName, "Player(Tia)");
+        ALICE_PROPERTY(std::string, m_parryShieldVfxName, "LightShield");
+        ALICE_PROPERTY(float, m_parryShieldTimeScale, 1.5f);
+        ALICE_PROPERTY(float, m_parryShieldDetachDurationSec, 1.0f);
 
     private:
         enum class Phase
@@ -153,10 +160,26 @@ namespace Alice
         float m_eyeDustAlpha = 0.0f;
         bool m_eyeDustRiseTriggered = false;
         bool m_eyeDustFirstShardLaunched = false;
+        EntityId m_parryShieldVfx = InvalidEntityId;
+        EntityId m_parryShieldFreezeAnchor = InvalidEntityId;
+        float m_parryShieldDetachTimerSec = 0.0f;
+        bool m_parryShieldDetached = false;
+        std::uint64_t m_prevPlayerParrySuccessCount = 0;
+        bool m_hasSeenPlayerParrySuccessCount = false;
+        bool m_warnedMissingCombatSession = false;
+        bool m_warnedMissingPlayerEntity = false;
+        bool m_warnedMissingParryShield = false;
+        bool m_warnedMissingParryShieldVfx = false;
 
         std::mt19937 m_rng;
 
         void FindEntities();
+        C_CombatSessionComponent* FindCombatSession();
+        EntityId ResolvePlayerEntity(bool logWarnings);
+        EntityId ResolveParryShieldVfxEntity(bool logWarnings);
+        void TriggerParryShieldOneShot();
+        void RestoreParryShieldToPlayer(bool hideAfterRestore);
+        void UpdateParryShieldParryTrigger(float dt);
 
         void AdvancePhase();
         void EnterPhase(Phase phase);

@@ -178,6 +178,13 @@ namespace Alice
             Stretch = 2,
         };
 
+        enum class BillboardAlignment
+        {
+            View = 0,
+            Local = 1,
+            World = 2,
+        };
+
         struct BillboardNode
         {
             DirectX::XMFLOAT3 localPos{ 0.0f, 0.0f, 0.0f };
@@ -253,6 +260,7 @@ namespace Alice
             ShapeDef shape;
             bool shapeEnabled{ true };
             BillboardMode renderMode{ BillboardMode::Billboard };
+            BillboardAlignment alignment{ BillboardAlignment::View };
             bool meshRenderer{ false };
             std::string materialPath;
             std::string meshPath;
