@@ -84,12 +84,48 @@ namespace Alice
 
 	LRESULT Engine::Impl::HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		auto ReleaseMouseLockOnDeactivate = [&]()
+			{
+				m_inputSystem.NotifyAppActivated(false);
+				m_inputSystem.SetCursorLocked(false);
+				m_inputSystem.SetCursorVisible(true);
+
+				for (auto&& [id, follow] : m_world.GetComponents<CameraFollowComponent>())
+				{
+					(void)id;
+					follow.mouseLocked = false;
+				}
+			};
+
 		switch (message)
 		{
 		case WM_SIZE:
+			if (wParam == SIZE_MINIMIZED)
+			{
+				ReleaseMouseLockOnDeactivate();
+			}
 			// 리사이즈
 			// lParam의 하위/상위 워드에서 해상도 추출 후 즉시 반영
 			OnResize(static_cast<std::uint32_t>(LOWORD(lParam)), static_cast<std::uint32_t>(HIWORD(lParam)));
+			return 0;
+
+		case WM_ACTIVATEAPP:
+			if (wParam == FALSE)
+			{
+				ReleaseMouseLockOnDeactivate();
+			}
+			else
+			{
+				m_inputSystem.NotifyAppActivated(true);
+			}
+			return 0;
+
+		case WM_KILLFOCUS:
+			ReleaseMouseLockOnDeactivate();
+			return 0;
+
+		case WM_SETFOCUS:
+			m_inputSystem.NotifyAppActivated(true);
 			return 0;
 
 		case WM_DESTROY:
