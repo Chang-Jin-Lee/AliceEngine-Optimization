@@ -20,6 +20,7 @@
 #include "Runtime/Physics/Components/Phy_MeshColliderComponent.h"
 #include "Runtime/Physics/IPhysicsWorld.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
 //TODO : Include 확인 해야함
 
 namespace Alice
@@ -134,6 +135,7 @@ namespace Alice
     {
         m_rng = std::mt19937(std::random_device{}());
         FindEntities();
+        SetupShardTrailVfx();
 
         m_initialized = (m_weaponCombined != InvalidEntityId && m_eye != InvalidEntityId);
         if (!m_initialized)
@@ -230,6 +232,8 @@ namespace Alice
             if (m_eyeArrived && m_tendonFading && m_tendonTimer >= m_tendonVisibleDelay)
                 EnterPhase(Phase::Normal);
         }
+
+        UpdateShardTrailEmission(deltaTime);
     }
 
     void Gimmick::DebugEnableEnemyWeaponTrace()
@@ -421,6 +425,178 @@ namespace Alice
         }
     }
 
+    void Gimmick::SetupShardTrailVfx()
+    {
+        if (!m_enableShardTrailVfx || m_shardTrailEffectPath.empty())
+            return;
+
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        const float spawnRateScale = std::max(0.0f, m_shardTrailSpawnRateScale);
+        for (auto& shard : m_shards)
+        {
+            if (shard.id == InvalidEntityId)
+                continue;
+
+            // Legacy direct-on-shard VFX는 비활성화하고, 자식 empty에만 VFX를 유지한다.
+            if (auto* legacy = world->GetComponent<UnityVfxComponent>(shard.id))
+            {
+                legacy->emitNewParticles = false;
+                legacy->enabled = false;
+            }
+
+            const std::string childName = shard.name + "_TrailVfx";
+            EntityId vfxEntity = InvalidEntityId;
+            GameObject childGo = world->FindGameObject(childName);
+            if (childGo.IsValid())
+                vfxEntity = childGo.id();
+
+            if (vfxEntity == InvalidEntityId)
+            {
+                vfxEntity = world->CreateEmpty();
+                if (vfxEntity == InvalidEntityId)
+                    continue;
+                world->SetEntityName(vfxEntity, childName);
+                
+            }
+
+            shard.trailVfxId = vfxEntity;
+            world->SetParent(vfxEntity, shard.id, false);
+            if (auto* vfxTr = world->GetComponent<TransformComponent>(vfxEntity))
+            {
+                vfxTr->position = m_shardTrailLocalOffset;
+                vfxTr->rotation = m_shardTrailLocalRotation;
+                vfxTr->scale = m_shardTrailLocalScale;
+                vfxTr->enabled = true;
+                vfxTr->visible = false;
+                world->MarkTransformDirty(vfxEntity);
+            }
+
+            auto* vfx = world->GetComponent<UnityVfxComponent>(vfxEntity);
+            if (!vfx)
+                vfx = &world->AddComponent<UnityVfxComponent>(vfxEntity);
+            if (!vfx)
+                continue;
+
+            vfx->enabled = false;
+            vfx->effectPath = m_shardTrailEffectPath;
+            vfx->useMeshRenderer = true;
+            vfx->useComputeEffect = false;
+            vfx->timeScale = 1.0f;
+            vfx->lifetimeScale = 1.0f;
+            // Match UnityExportVfxDemo_01.scene "(Opt)Effect_06_PortalEffect_2"
+            vfx->overrideLoop = false;
+            vfx->loop = true;
+            vfx->sizeScale = 0.05f;
+            vfx->intensityScale = 0.0f;
+            vfx->spawnRateScale = spawnRateScale;
+            vfx->enableTrails = true;
+            vfx->emitNewParticles = false;
+        }
+    }
+
+    void Gimmick::UpdateShardTrailEmission(float dt)
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        const bool hasTrail = m_enableShardTrailVfx && !m_shardTrailEffectPath.empty();
+        const bool pullPhaseActive =
+            (m_phase == Phase::Magnetize) ||
+            (m_phase == Phase::AssembleShards) ||
+            (m_phase == Phase::AssembleEye);
+        const float safeDt = std::max(dt, 0.0001f);
+        const float minSpeed = std::max(0.0f, m_shardTrailEmitMinSpeed);
+
+        for (auto& shard : m_shards)
+        {
+            if (shard.id == InvalidEntityId)
+                continue;
+
+            const EntityId vfxEntity = shard.trailVfxId;
+            if (vfxEntity == InvalidEntityId)
+                continue;
+
+            auto* vfx = world->GetComponent<UnityVfxComponent>(vfxEntity);
+            if (!vfx)
+                continue;
+
+            auto* shardTr = world->GetComponent<TransformComponent>(shard.id);
+            const bool activeTransform = (shardTr && shardTr->enabled && shardTr->visible);
+            const bool activate = hasTrail && pullPhaseActive && activeTransform;
+
+            if (auto* vfxTr = world->GetComponent<TransformComponent>(vfxEntity))
+            {
+                if (vfxTr->enabled != activate || vfxTr->visible != activate)
+                {
+                    vfxTr->enabled = activate;
+                    vfxTr->visible = activate;
+                    world->MarkTransformDirty(vfxEntity);
+                }
+            }
+
+            bool shouldEmit = false;
+            if (hasTrail && pullPhaseActive && activeTransform)
+            {
+                if (shard.prevPosValid)
+                {
+                    XMFLOAT3 delta{
+                        shardTr->position.x - shard.prevPos.x,
+                        shardTr->position.y - shard.prevPos.y,
+                        shardTr->position.z - shard.prevPos.z
+                    };
+                    const float speed = Length(delta) / safeDt;
+                    shouldEmit = (speed >= minSpeed);
+                }
+
+                shard.prevPos = shardTr->position;
+                shard.prevPosValid = true;
+            }
+            else
+            {
+                shard.prevPosValid = false;
+            }
+
+            vfx->enabled = activate;
+            vfx->emitNewParticles = shouldEmit;
+        }
+    }
+
+    void Gimmick::ResetShardTrailPlayback()
+    {
+        if (!m_enableShardTrailVfx)
+            return;
+
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        for (auto& shard : m_shards)
+        {
+            shard.prevPosValid = false;
+            const EntityId vfxEntity = shard.trailVfxId;
+            if (vfxEntity == InvalidEntityId)
+                continue;
+
+            if (auto* vfx = world->GetComponent<UnityVfxComponent>(vfxEntity))
+            {
+                vfx->enabled = false;
+                vfx->emitNewParticles = false;
+                vfx->playId += 1;
+            }
+
+            if (auto* vfxTr = world->GetComponent<TransformComponent>(vfxEntity))
+            {
+                vfxTr->enabled = false;
+                vfxTr->visible = false;
+                world->MarkTransformDirty(vfxEntity);
+            }
+        }
+    }
+
     void Gimmick::AdvancePhase()
     {
         switch (m_phase)
@@ -487,6 +663,7 @@ namespace Alice
 
         if (phase == Phase::Restore)
         {
+            ResetShardTrailPlayback();
             SetOwnerWeaponDurability(true);
             SetEnabled(m_weaponCombined, true);
             SetVisible(m_weaponCombined, true);
@@ -507,6 +684,7 @@ namespace Alice
 
         if (phase == Phase::Normal)
         {
+            ResetShardTrailPlayback();
             SetOwnerWeaponDurability(true);
             SetEnabled(m_weaponCombined, true);
             SetVisible(m_weaponCombined, true);
@@ -526,6 +704,7 @@ namespace Alice
 
         if (phase == Phase::Break)
         {
+            ResetShardTrailPlayback();
             SetOwnerWeaponDurability(false);
             SetVisible(m_eye, true);
             SetMaterialAlpha(m_weaponCombined, 0.0f);
@@ -995,6 +1174,8 @@ namespace Alice
             shard.orbitAngularStartSpeed = 0.0f;
             shard.orbitBlendTimer = 0.0f;
             shard.orbitBlending = false;
+            shard.prevPos = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+            shard.prevPosValid = false;
         }
         m_magnetizeInitialized = false;
     }

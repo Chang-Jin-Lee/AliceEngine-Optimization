@@ -59,6 +59,13 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_guardBreakOwnerName, "Enemy"); // 가드브레이크 감지 대상
         ALICE_PROPERTY(float, m_breakScatterDurationSec, 2.0f); // 파괴 후 흩뿌려진 상태 유지 시간
         ALICE_PROPERTY(float, m_shardAssembleFinishDelaySec, 0.5f); // 파편 조립 완료 후 눈 조립 전 대기
+        ALICE_PROPERTY(bool, m_enableShardTrailVfx, false); // 파편 이동 중 트레일 VFX 사용
+        ALICE_PROPERTY(std::string, m_shardTrailEffectPath, "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2/effect.json");
+        ALICE_PROPERTY(float, m_shardTrailEmitMinSpeed, 0.15f); // 이 속도 이상일 때만 emission
+        ALICE_PROPERTY(float, m_shardTrailSpawnRateScale, 1.0f);
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalOffset, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalRotation, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalScale, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
 
     private:
         enum class Phase
@@ -91,6 +98,9 @@ namespace Alice
             float orbitAngularStartSpeed = 0.0f;
             float orbitBlendTimer = 0.0f;
             bool orbitBlending = false;
+            DirectX::XMFLOAT3 prevPos{ 0.0f, 0.0f, 0.0f };
+            bool prevPosValid = false;
+            EntityId trailVfxId = InvalidEntityId;
         };
 
         EntityId m_weaponCombined = InvalidEntityId;
@@ -140,6 +150,9 @@ namespace Alice
 
         void UpdateEyeFloat(float dt);
         void UpdateOrbitingShards(float dt);
+        void SetupShardTrailVfx();
+        void UpdateShardTrailEmission(float dt);
+        void ResetShardTrailPlayback();
 
         void ApplyBreakImpulse();
         bool CanApplyBreakImpulse() const;
