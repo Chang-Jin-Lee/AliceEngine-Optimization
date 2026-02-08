@@ -1,0 +1,53 @@
+{
+    "Transform": {
+        "enabled": true,
+        "position": {
+            "x": 36.0,
+            "y": 0.0,
+            "z": 12.0
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "visible": true
+    },
+    "UnityVfx": {
+        "alphaScale": 1.4609999656677246,
+        "colorScale": 1.6339999437332153,
+        "colorTint": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "dissolveOffset": 0.07999999821186066,
+        "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_04_SwordSlash__Effect_04_Slash__OneShot/effect.json",
+        "emitNewParticles": true,
+        "enableTrails": true,
+        "enabled": true,
+        "hdrColorClamp": 1.50600004196167,
+        "intensityScale": 1.600000023841858,
+        "lifetimeScale": 1.0,
+        "loop": false,
+        "noiseScale": 0.9589999914169312,
+        "overrideLoop": true,
+        "rampScale": 1.1030000448226929,
+        "sizeScale": 2.246999979019165,
+        "spawnRateScale": 1.0,
+        "speedScale": 1.3949999809265137,
+        "timeScale": 1.0,
+        "trailLifeScale": 1.0,
+        "trailWidthScale": 0.984000027179718,
+        "useComputeEffect": false,
+        "useMeshRenderer": true,
+        "uvScrollScale": 1.9500000476837158
+    },
+    "name": "ONESHOT_DECOMP_(Opt)Effect_04_SwordSlash__Effect_04_Slash",
+    "version": 1
+}
