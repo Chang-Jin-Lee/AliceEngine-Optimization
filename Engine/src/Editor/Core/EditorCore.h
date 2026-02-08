@@ -405,6 +405,7 @@ namespace Alice
 		bool SaveLightingSettingsForBuild(const std::filesystem::path& projectRoot) const;
 		void DrawMaterialAssetEditorWindow(World& world);
 		void DrawUICurveAssetEditorWindow();
+		void DrawPreloadAssetEditorWindow();
 		void HandleSceneLoadFlow(World& world, SceneManager* sceneManager, bool& isPlaying, EntityId& selectedEntity);
 
 		// UI

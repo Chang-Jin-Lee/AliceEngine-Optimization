@@ -26,6 +26,41 @@ namespace
         std::uint64_t originalSize;
         std::uint32_t payloadSize;
     };
+
+    std::string NormalizeRelForHash(std::string_view rel)
+    {
+        std::string s(rel);
+        std::replace(s.begin(), s.end(), '\\', '/');
+        if (s.rfind("./", 0) == 0)
+            s = s.substr(2);
+        std::filesystem::path p(s);
+        std::string normalized = p.lexically_normal().generic_string();
+        if (normalized.rfind("./", 0) == 0)
+            normalized = normalized.substr(2);
+        std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                       [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+        return normalized;
+    }
+
+    std::uint64_t HashRelNormalized(std::string_view rel)
+    {
+        const std::string normalized = NormalizeRelForHash(rel);
+        return Alice::ResourceManager::HashString64(normalized);
+    }
+
+    std::uint64_t HashRelLegacy(std::string_view rel)
+    {
+        return Alice::ResourceManager::HashString64(rel);
+    }
+
+    std::filesystem::path Chunk0PathFromFileId(const std::filesystem::path& baseDir, std::uint64_t fileId)
+    {
+        char hex[17] = {};
+        std::snprintf(hex, sizeof(hex), "%016llx", static_cast<unsigned long long>(fileId));
+        const std::string hexStr = hex;
+        const std::filesystem::path dir = baseDir / "Chunks" / hexStr.substr(0, 2) / hexStr;
+        return (dir / "c0000.alice").lexically_normal();
+    }
 }
 
 namespace Alice
@@ -184,7 +219,17 @@ namespace Alice
             if (m_gameMode)
             {
                 const std::string rest = s.substr(std::string_view("Assets/").size());
-                return Chunk0PathForMetasRel(rest);
+                auto path = Chunk0PathForMetasRel(rest);
+                std::error_code ec;
+                if (!std::filesystem::exists(path, ec))
+                {
+                    const std::uint64_t legacyId = HashRelLegacy(rest);
+                    auto legacyPath = Chunk0PathFromFileId(MetasDir(), legacyId);
+                    ec.clear();
+                    if (std::filesystem::exists(legacyPath, ec))
+                        return legacyPath;
+                }
+                return path;
             }
             return (m_rootDir / p).lexically_normal();
         }
@@ -200,7 +245,17 @@ namespace Alice
             if (m_gameMode)
             {
                 const std::string rest = s.substr(std::string_view("Resource/").size());
-                return Chunk0PathForResourceRel(rest);
+                auto path = Chunk0PathForResourceRel(rest);
+                std::error_code ec;
+                if (!std::filesystem::exists(path, ec))
+                {
+                    const std::uint64_t legacyId = HashRelLegacy(rest);
+                    auto legacyPath = Chunk0PathFromFileId(CookedDir(), legacyId);
+                    ec.clear();
+                    if (std::filesystem::exists(legacyPath, ec))
+                        return legacyPath;
+                }
+                return path;
             }
             return (m_rootDir / p).lexically_normal();
         }
@@ -359,39 +414,40 @@ namespace Alice
     std::filesystem::path ResourceManager::Chunk0PathForResourceRel(std::string_view resourceRel) const
     {
         // fileId = rel 문자열 해시 (폴더구조 노출 방지용)
-        const std::uint64_t fileId = HashString64(resourceRel);
-
-        char hex[17] = {};
-        std::snprintf(hex, sizeof(hex), "%016llx", static_cast<unsigned long long>(fileId));
-        const std::string hexStr = hex;
-
-        const std::filesystem::path dir = CookedDir() / "Chunks" / hexStr.substr(0, 2) / hexStr;
-        return (dir / "c0000.alice").lexically_normal();
+        const std::uint64_t fileId = HashRelNormalized(resourceRel);
+        return Chunk0PathFromFileId(CookedDir(), fileId);
     }
 
     std::filesystem::path ResourceManager::Chunk0PathForMetasRel(std::string_view assetsRel) const
     {
-        const std::uint64_t fileId = HashString64(assetsRel);
-
-        char hex[17] = {};
-        std::snprintf(hex, sizeof(hex), "%016llx", static_cast<unsigned long long>(fileId));
-        const std::string hexStr = hex;
-
-        const std::filesystem::path dir = MetasDir() / "Chunks" / hexStr.substr(0, 2) / hexStr;
-        return (dir / "c0000.alice").lexically_normal();
+        const std::uint64_t fileId = HashRelNormalized(assetsRel);
+        return Chunk0PathFromFileId(MetasDir(), fileId);
     }
 
     std::shared_ptr<const std::vector<std::uint8_t>> ResourceManager::LoadMetasChunksByRel(std::string_view assetsRel) const
     {
         namespace fs = std::filesystem;
 
-        const std::uint64_t fileId = HashString64(assetsRel);
-        fs::path c0 = Chunk0PathForMetasRel(assetsRel);
+        const std::uint64_t normId = HashRelNormalized(assetsRel);
+        fs::path c0 = Chunk0PathFromFileId(MetasDir(), normId);
+        std::uint64_t fileId = normId;
         if (!fs::exists(c0))
         {
-            ALICE_LOG_ERRORF("ResourceManager: missing metas chunk0 for Assets/%s -> \"%s\"",
-                             std::string(assetsRel).c_str(), c0.string().c_str());
-            return nullptr;
+            const std::uint64_t legacyId = HashRelLegacy(assetsRel);
+            fs::path legacyC0 = Chunk0PathFromFileId(MetasDir(), legacyId);
+            if (fs::exists(legacyC0))
+            {
+                ALICE_LOG_WARN("ResourceManager: metas chunk0 not found with normalized hash. Falling back to legacy hash for Assets/%s",
+                               std::string(assetsRel).c_str());
+                c0 = legacyC0;
+                fileId = legacyId;
+            }
+            else
+            {
+                ALICE_LOG_ERRORF("ResourceManager: missing metas chunk0 for Assets/%s -> \"%s\"",
+                                 std::string(assetsRel).c_str(), c0.string().c_str());
+                return nullptr;
+            }
         }
 
         struct ChunkReader
@@ -471,13 +527,26 @@ namespace Alice
     {
         namespace fs = std::filesystem;
 
-        const std::uint64_t fileId = HashString64(resourceRel);
-        fs::path c0 = Chunk0PathForResourceRel(resourceRel);
+        const std::uint64_t normId = HashRelNormalized(resourceRel);
+        fs::path c0 = Chunk0PathFromFileId(CookedDir(), normId);
+        std::uint64_t fileId = normId;
         if (!fs::exists(c0))
         {
-            ALICE_LOG_ERRORF("ResourceManager: missing chunk0 for Resource/%s -> \"%s\"",
-                             std::string(resourceRel).c_str(), c0.string().c_str());
-            return nullptr;
+            const std::uint64_t legacyId = HashRelLegacy(resourceRel);
+            fs::path legacyC0 = Chunk0PathFromFileId(CookedDir(), legacyId);
+            if (fs::exists(legacyC0))
+            {
+                ALICE_LOG_WARN("ResourceManager: chunk0 not found with normalized hash. Falling back to legacy hash for Resource/%s",
+                               std::string(resourceRel).c_str());
+                c0 = legacyC0;
+                fileId = legacyId;
+            }
+            else
+            {
+                ALICE_LOG_ERRORF("ResourceManager: missing chunk0 for Resource/%s -> \"%s\"",
+                                 std::string(resourceRel).c_str(), c0.string().c_str());
+                return nullptr;
+            }
         }
 
         struct ChunkReader
@@ -724,7 +793,7 @@ namespace Alice
             if (ec) { ec.clear(); continue; }
 
             const std::string relStr = rel.generic_string(); // fileId는 이 문자열로 결정
-            const std::uint64_t fileId = HashString64(relStr);
+            const std::uint64_t fileId = HashRelNormalized(relStr);
 
             char hex[17] = {};
             std::snprintf(hex, sizeof(hex), "%016llx", static_cast<unsigned long long>(fileId));

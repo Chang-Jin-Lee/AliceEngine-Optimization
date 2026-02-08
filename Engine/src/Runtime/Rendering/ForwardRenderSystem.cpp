@@ -1056,6 +1056,11 @@ namespace Alice
         return srv.Get();
     }
 
+    bool ForwardRenderSystem::PreloadTexture(const std::string& path)
+    {
+        return GetOrCreateTexture(path) != nullptr;
+    }
+
     void ForwardRenderSystem::UpdatePerObjectCB(const XMMATRIX& world,
                                                 const XMMATRIX& view,
                                                 const XMMATRIX& projection,

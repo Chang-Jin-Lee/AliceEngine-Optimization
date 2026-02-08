@@ -142,6 +142,29 @@ namespace Alice
 			return true;
 		}
 
+		// 빌드 파일 뽑아내고 Release에 남아있는 파일들 삭제하기
+		void RemovePathIfExists(const std::filesystem::path& path)
+		{
+			namespace fs = std::filesystem;
+			std::error_code ec;
+			if (!fs::exists(path, ec) || ec)
+				return;
+			ec.clear();
+			if (fs::is_directory(path, ec))
+			{
+				fs::remove_all(path, ec);
+			}
+			else
+			{
+				fs::remove(path, ec);
+			}
+			if (ec)
+			{
+				ALICE_LOG_ERRORF("Build Game: cleanup failed. \"%s\" (%s)",
+					path.string().c_str(), ec.message().c_str());
+			}
+		}
+
 		// srcRoot의 모든 파일을 dstCookedRoot/<rel>.alice 로 "암호화 저장"합니다(폴더 구조 유지, 확장자는 .alice로 통일).
 		// - 이미 암호화된 .alice 는 그대로 복사합니다(중복 암호화 방지).
 		// - excludePrefixRel(예: "Resource/")로 시작하는 rel 경로는 스킵할 수 있습니다.
@@ -563,6 +586,14 @@ namespace Alice
 					g_BuildInProgress.store(false);
 					return;
 				}
+
+				// (6) Cleanup: Release 스테이징 파일 정리 (복사 완료 후)
+				RemovePathIfExists(releaseBinDir / "AlicePlayer.exe");
+				RemovePathIfExists(releaseBinDir / "dll");
+				RemovePathIfExists(releaseBinDir / "Cooked");
+				RemovePathIfExists(releaseBinDir / "Metas");
+				RemovePathIfExists(releaseBinDir / "BuildSettings.json");
+				RemovePathIfExists(releaseBinDir / "EngineSettings.json");
 
 				ALICE_LOG_INFO("Build Game: exported to \"%s\" (run: Bin/AlicePlayer.exe)",
 					exportRoot.string().c_str());

@@ -133,6 +133,9 @@ namespace Alice
         /// 절대 경로를 논리 경로로 정규화 (public 유틸)
         static std::filesystem::path NormalizeResourcePathAbsoluteToLogical(const std::filesystem::path& p);
 
+        /// 경로/문자열 해시 (청크/키 계산용)
+        static std::uint64_t HashString64(std::string_view s);
+
     private:
         /// 매우 단순한 XOR 기반 스트림 암·복호화
         void XorCrypt(std::vector<std::uint8_t>& data) const;
@@ -141,7 +144,6 @@ namespace Alice
         static std::filesystem::path NormalizeLegacyDotDot(const std::filesystem::path& p);
         static std::filesystem::path ToAlicePath(std::filesystem::path p);
         static std::uint64_t Fnv1a64Bytes(const std::uint8_t* data, std::size_t size);
-        static std::uint64_t HashString64(std::string_view s);
         static std::uint64_t ComputeBufferHashSampled(const std::vector<std::uint8_t>& data);
 
         std::shared_ptr<const std::vector<std::uint8_t>> LoadResourceChunksByRel(std::string_view resourceRel) const;
