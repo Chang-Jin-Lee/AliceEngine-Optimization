@@ -50,5 +50,8 @@ namespace Alice
         
         // 보스 패턴 추적 (Charge → SoulSwordAttack 전환 감지용)
         int m_prevBossPattern = -1;  // PatternType을 int로 저장 (None = 0)
+        
+        // 그로기 진입 후 Hit SFX 억제 타이머
+        float m_suppressBossHitSfxTimer = 0.0f;
     };
 }

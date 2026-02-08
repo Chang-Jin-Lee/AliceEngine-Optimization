@@ -1,4 +1,4 @@
-#include "AudioPlayerScript.h"
+﻿#include "AudioPlayerScript.h"
 
 #include "AudioEventBusScript.h"
 #include "TempSoundPath.h"
@@ -46,7 +46,7 @@ namespace Alice
         m_currentOther = PlayerOtherState::None;
         m_footstepIndex = 0;
 
-        // 가드/패링 사운드 프리로드 (지연 방지)
+        // 媛???⑤쭅 ?ъ슫???꾨━濡쒕뱶 (吏??諛⑹?)
         PreloadSound(Get_pathGuard());
         PreloadSound(Get_pathParry());
 
@@ -124,7 +124,7 @@ namespace Alice
         const float volume = Get_volume();
         const float pitch = Get_pitch();
         
-        // 히트 위치에서 3D 재생
+        // ?덊듃 ?꾩튂?먯꽌 3D ?ъ깮
         audio->Play3D(L"", key, position, volume, pitch, false);
     }
 
@@ -184,21 +184,9 @@ namespace Alice
             return Get_pathRoll();
         case PlayerMovementState::Run:
         {
-            // Run은 여러 파일 중 인덱스로 선택 (경로 패턴 사용)
             const std::string basePath = Get_pathRun();
             if (basePath.empty())
                 return "";
-            // 경로에서 숫자 부분을 찾아서 교체
-            size_t lastUnderscore = basePath.find_last_of('_');
-            size_t lastDot = basePath.find_last_of('.');
-            if (lastUnderscore != std::string::npos && lastDot != std::string::npos && lastUnderscore < lastDot)
-            {
-                std::string prefix = basePath.substr(0, lastUnderscore + 1);
-                std::string suffix = basePath.substr(lastDot);
-                char buf[256];
-                snprintf(buf, sizeof(buf), "%s%d%s", prefix.c_str(), (m_footstepIndex % 4) + 1, suffix.c_str());
-                return std::string(buf);
-            }
             return basePath;
         }
         case PlayerMovementState::Dash:
@@ -295,8 +283,6 @@ namespace Alice
         if (state == PlayerMovementState::None)
             return;
         std::string path = GetPathForMovementState(state);
-        if (state == PlayerMovementState::Run)
-            m_footstepIndex++;
         if (!path.empty())
             PlayPathInternal(path, state == PlayerMovementState::Run);
     }
@@ -393,3 +379,4 @@ namespace Alice
         }
     }
 }
+

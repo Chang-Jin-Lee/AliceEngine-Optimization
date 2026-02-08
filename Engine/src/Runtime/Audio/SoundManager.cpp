@@ -40,6 +40,7 @@ namespace
     {
         FMOD::Channel* channel = nullptr;
         bool loop = false;
+        float originalVolume = 1.0f;  // 원래 볼륨 저장 (g_VolSFX 적용 전)
     };
 
     // Loop SFX 관리: Key별로 하나의 채널만 유지 (인스턴스 1개)
@@ -131,6 +132,35 @@ namespace
             auto it = std::remove_if(g_ChannelsSFX.begin(), g_ChannelsSFX.end(),
                 [](FMOD::Channel* c) {
                     if (!c) return true;
+                    
+                    // 딜레이가 설정된 채널인지 확인
+                    unsigned long long dspclock_start = 0;
+                    unsigned long long dspclock_end = 0;
+                    if (c->getDelay(&dspclock_start, &dspclock_end) == FMOD_OK && dspclock_start > 0)
+                    {
+                        // 현재 DSP 클럭과 비교
+                        FMOD::ChannelGroup* parent = nullptr;
+                        if (c->getChannelGroup(&parent) == FMOD_OK && parent)
+                        {
+                            unsigned long long parentClock = 0;
+                            unsigned long long dspClock = 0;
+                            if (parent->getDSPClock(&parentClock, &dspClock) == FMOD_OK)
+                            {
+                                // 시작 시간이 아직 안 지났으면 유지
+                                if (dspClock < dspclock_start)
+                                    return false;
+                                
+                                // 시작 시간이 지났으면 재생 중인지 확인
+                                bool playing = false;
+                                if (c->isPlaying(&playing) == FMOD_OK && playing)
+                                    return false; // 재생 중이면 유지
+                                
+                                // 시작 시간이 지났고 재생 중이 아니면 제거
+                                // (재생이 끝났거나 시작 실패)
+                            }
+                        }
+                    }
+                    
                     bool playing = false;
                     FMOD_RESULT r = c->isPlaying(&playing);
                     // 에러가 났거나(유효하지 않음) 재생 중이 아니면 제거 대상
@@ -474,6 +504,23 @@ namespace Alice::Sound
     {
         g_VolSFX = std::clamp(volume, 0.0f, 1.0f);
         if (g_SfxGroup) g_SfxGroup->setVolume(g_VolSFX);
+        
+        // 모든 재생 중인 Loop SFX 채널의 볼륨 업데이트
+        for (auto& [key, entry] : g_SfxChannels)
+        {
+            if (entry.channel)
+            {
+                bool playing = false;
+                if (entry.channel->isPlaying(&playing) == FMOD_OK && playing)
+                {
+                    // 저장된 원래 볼륨에 새로운 g_VolSFX를 적용
+                    entry.channel->setVolume(entry.originalVolume * g_VolSFX);
+                }
+            }
+        }
+        
+        // One-Shot SFX는 그룹 볼륨에 자동으로 영향을 받으므로 별도 처리 불필요
+        // (PlaySFX에서 이미 volume * g_VolSFX로 설정했으므로)
     }
 
     void PauseAll(bool pause)
@@ -668,6 +715,7 @@ namespace Alice::Sound
             {
                 bool playing = false;
                 if (it->second.channel->isPlaying(&playing) == FMOD_OK && playing) {
+                    it->second.originalVolume = volume;  // 원래 볼륨 저장
                     it->second.channel->setVolume(volume * g_VolSFX);
                     it->second.channel->setPitch(pitch);
                     return; 
@@ -680,7 +728,7 @@ namespace Alice::Sound
             if (ch) {
                 ch->setVolume(volume * g_VolSFX);
                 ch->setPitch(pitch);
-                g_SfxChannels[key] = { ch, true };
+                g_SfxChannels[key] = { ch, true, volume };  // 원래 볼륨 저장
             }
         }
         else
@@ -893,7 +941,7 @@ namespace Alice::Sound
         }
         else
         {
-            g_SfxChannels[key] = { ch, true };
+            g_SfxChannels[key] = { ch, true, volume };  // 원래 볼륨 저장
         }
         
         ALICE_LOG_INFO("[SoundManager] PlaySFXDelayed: channel created successfully");
@@ -935,7 +983,10 @@ namespace Alice::Sound
     void SetSfxVolume(const std::wstring& key, float volume)
     {
         if (auto it = g_SfxChannels.find(key); it != g_SfxChannels.end() && it->second.channel)
-            it->second.channel->setVolume(std::clamp(volume, 0.0f, 1.0f) * g_VolSFX);
+        {
+            it->second.originalVolume = std::clamp(volume, 0.0f, 1.0f);  // 원래 볼륨 업데이트
+            it->second.channel->setVolume(it->second.originalVolume * g_VolSFX);
+        }
     }
 
     void SetSfxPitch(const std::wstring& key, float pitch)
@@ -995,7 +1046,7 @@ namespace Alice::Sound
         FMOD_VECTOR p = ToFmod(pos);
         FMOD_VECTOR v = { 0, 0, 0 };
         channel->set3DAttributes(&p, &v);
-        channel->setVolume(std::clamp(volume, 0.0f, 1.0f));
+        channel->setVolume(std::clamp(volume * g_VolSFX, 0.0f, 1.0f));
         channel->setPitch(std::clamp(pitch, 0.5f, 2.0f));
         channel->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
         channel->set3DMinMaxDistance(1.0f, 50.0f); // 기본값
@@ -1035,7 +1086,7 @@ namespace Alice::Sound
             FMOD_VECTOR p = ToFmod(pos);
             FMOD_VECTOR v = { 0, 0, 0 };
             it->second.ch->set3DAttributes(&p, &v);
-            it->second.ch->setVolume(std::clamp(volume, 0.0f, 1.0f));
+            it->second.ch->setVolume(std::clamp(volume * g_VolSFX, 0.0f, 1.0f));
             it->second.ch->set3DMinMaxDistance(std::max(0.1f, minDistance), std::max(minDistance, maxDistance));
         }
     }

@@ -7,6 +7,7 @@
 #include "Runtime/Scripting/IScript.h"
 #include "Runtime/Scripting/ScriptReflection.h"
 #include "Runtime/ECS/Entity.h"
+#include "Runtime/Foundation/Delegate.h"
 #include <memory>
 #include <string>
 #include "C_CombatContracts.h"
@@ -31,6 +32,11 @@ namespace Alice
         Combat::ActionFlags GetBossFlags() const;
         bool IsPlayerRageActive() const;
         float GetPlayerRageRemainingSec() const;
+
+        // Combat resolve delegate: called when a hit is resolved
+        // Parameters: victimId, attackerId, resolveResult, damage, hitPosWS
+        using FOnCombatResolved = Alice::Delegate<EntityId, EntityId, std::uint8_t, float, const DirectX::XMFLOAT3&>;
+        FOnCombatResolved OnCombatResolved;
 
         // Entity resolution (GUID preferred, name fallback when enabled)
         ALICE_PROPERTY(uint64_t, m_playerGuid, 0);
