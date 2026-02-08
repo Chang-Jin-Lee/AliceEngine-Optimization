@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <string>
+#include <vector>
 
 #include "Runtime/Rendering/Components/MaterialComponent.h"
 #include "Runtime/UI/UICurveAsset.h"
@@ -35,4 +36,10 @@ namespace Alice
 	extern std::filesystem::path g_UICurveEditorPath;
 	extern UICurveAsset g_UICurveEditorData;
 	extern int g_UICurveEditorSelected;
+
+	// Preload asset editor state
+	extern bool g_PreloadEditorOpen;
+	extern std::filesystem::path g_PreloadEditorPath;
+	extern std::vector<std::string> g_PreloadEditorItems;
+	extern int g_PreloadEditorSelected;
 }

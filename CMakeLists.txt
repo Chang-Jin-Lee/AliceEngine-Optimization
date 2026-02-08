@@ -124,6 +124,7 @@ set(ENGINE_SOURCES
     ${ALICE_SRC_DIR}/Editor/UI/AliceUIFactory.cpp
     ${ALICE_SRC_DIR}/Editor/AssetEditors/MaterialAssetEditor.cpp
     ${ALICE_SRC_DIR}/Editor/AssetEditors/UICurveAssetEditor.cpp
+    ${ALICE_SRC_DIR}/Editor/AssetEditors/PreloadAssetEditor.cpp
 
     # 코어(ECS 스타일)
     ${ALICE_SRC_DIR}/Runtime/ECS/World.cpp
@@ -159,6 +160,7 @@ set(ENGINE_SOURCES
     ${ALICE_SRC_DIR}/Runtime/Importing/FbxSkeleton.cpp
     ${ALICE_SRC_DIR}/Runtime/Importing/FbxGeometry.cpp
     ${ALICE_SRC_DIR}/Runtime/Importing/FbxAnimation.cpp
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxAsset.cpp
 
     # AnimBlueprint
     ${ALICE_SRC_DIR}/Runtime/Gameplay/Animation/AnimBlueprintAsset.cpp
@@ -301,6 +303,7 @@ set(ENGINE_HEADERS
     ${ALICE_SRC_DIR}/Runtime/Importing/FbxTypes.h
     ${ALICE_SRC_DIR}/Runtime/Importing/FbxGeometry.h
     ${ALICE_SRC_DIR}/Runtime/Importing/FbxAnimation.h
+    ${ALICE_SRC_DIR}/Runtime/Importing/FbxAsset.h
 
     # 렌더링 계층
     ${ALICE_SRC_DIR}/Runtime/Rendering/Camera.h
@@ -430,13 +433,11 @@ set(APP_COMMON_SOURCES
     ${ALICE_SRC_DIR}/Samples/Scenes/SampleScene.cpp
     ${ALICE_SRC_DIR}/Samples/Sandbox/DelayLoadHook.cpp
     ${ALICE_SRC_DIR}/Runtime/Importing/FbxImporter.cpp
-    ${ALICE_SRC_DIR}/Runtime/Importing/FbxAsset.cpp
 )
 
 set(APP_HEADERS
     ${ALICE_SRC_DIR}/Samples/Scenes/SampleScene.h
     ${ALICE_SRC_DIR}/Runtime/Importing/FbxImporter.h
-    ${ALICE_SRC_DIR}/Runtime/Importing/FbxAsset.h
     ${ALICE_SRC_DIR}/Runtime/Gameplay/Animation/SkinnedMeshSystem.h
     ${ALICE_SRC_DIR}/Runtime/Engine/AdvancedAnimSystem.h
 )

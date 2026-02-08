@@ -6,6 +6,7 @@
 #include "Runtime/ECS/ComponentRegistry.h"  // RTTR 등록 코드 포함
 #include "Runtime/Resources/Serialization/JsonRttr.h"
 #include "Runtime/Resources/ResourceManager.h"
+#include "Runtime/Importing/FbxAsset.h"
 
 #include "Runtime/ECS/World.h"
 #include "Runtime/Scripting/Components/ScriptComponent.h"
@@ -77,6 +78,7 @@ namespace Alice
 
             static World* g_DefaultWorld = nullptr;
             static ResourceManager* g_DefaultResources = nullptr;
+            static ResourceManager* ResolvePrefabResourceManager();
 
             // 프로젝트 루트 경로를 구하는 헬퍼 함수
             static std::filesystem::path GetProjectRoot()
@@ -127,6 +129,29 @@ namespace Alice
                 }
 
                 return path;
+            }
+
+            static void ResolveSkinnedMeshPathsForLoad(SkinnedMeshComponent& skinned)
+            {
+                if (skinned.instanceAssetPath.empty() && !skinned.meshAssetPath.empty())
+                {
+                    const std::filesystem::path inferred = std::filesystem::path("Assets/Fbx") / (skinned.meshAssetPath + ".fbxasset");
+                    skinned.instanceAssetPath = inferred.generic_string();
+                }
+
+                if (!skinned.instanceAssetPath.empty())
+                {
+                    ResourceManager* resources = ResolvePrefabResourceManager();
+                    if (resources)
+                    {
+                        FbxInstanceAsset asset{};
+                        if (LoadFbxInstanceAssetAuto(*resources, skinned.instanceAssetPath, asset))
+                        {
+                            if (!asset.meshAssetPath.empty())
+                                skinned.meshAssetPath = asset.meshAssetPath;
+                        }
+                    }
+                }
             }
 
             static std::uint64_t ParseGuidOrZero(const JsonRttr::json& j)
@@ -702,6 +727,8 @@ namespace Alice
                     rttr::instance instTmp = tmp;
                     if (!JsonRttr::FromJsonObject(instTmp, *itSM))
                         return false;
+
+                    ResolveSkinnedMeshPathsForLoad(tmp);
 
                     if (!tmp.meshAssetPath.empty())
                     {

@@ -33,6 +33,14 @@ namespace Alice
 			// 전체 명령어를 " "로 감싸서 공백이나 특수문자 문제를 방지합니다.
 			std::wstring finalCmd = L"cmd.exe /C \"" + command + L"\"";
 
+
+			// 만약 알 수 없이 실패한다면 위의 finalCmd 쪽을 주석시키고 밑의 주석을 풀어보세요.
+			// 전체 명령어를 " "로 감싸서 공백이나 특수문자 문제를 방지합니다.
+			// 실패 시 콘솔이 바로 꺼지지 않도록 pause를 걸고, 원래 에러코드를 반환합니다.
+			//std::wstring finalCmd = L"cmd.exe /C \"";
+			//finalCmd += command;
+			//finalCmd += L" & set _exit=%errorlevel% & if not %_exit%==0 (echo. & echo Press any key to close... & pause >nul) & exit /b %_exit%\"";
+
 			// CreateProcess는 문자열 버퍼를 수정할 수 있어야 하므로 vector에 복사
 			std::vector<wchar_t> cmdBuffer(finalCmd.begin(), finalCmd.end());
 			cmdBuffer.push_back(0); // Null terminator

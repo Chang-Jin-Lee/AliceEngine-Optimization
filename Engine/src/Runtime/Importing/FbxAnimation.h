@@ -41,6 +41,7 @@ public:
 		const std::vector<std::string>* boneNames,
 		const std::vector<DirectX::XMFLOAT4X4>* boneOffsets,
 		const DirectX::XMFLOAT4X4* globalInverse);
+	void CopyPrecomputedFrom(const FbxAnimation& src);
 	void SetType(AnimType t) { m_Type = t; }
 	AnimType GetType() const { return m_Type; }
 
