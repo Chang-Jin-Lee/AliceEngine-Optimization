@@ -18,12 +18,15 @@
 #include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/UITextComponent.h"
 #include "Runtime/UI/UIButtonComponent.h"
+#include "Runtime/UI/UICheckboxComponent.h"
 #include "Runtime/UI/UIGaugeComponent.h"
+#include "Runtime/UI/UISliderComponent.h"
 #include "Runtime/UI/UIEffectComponent.h"
 #include "Runtime/UI/UIAnimationComponent.h"
 #include "Runtime/UI/UIShakeComponent.h"
 #include "Runtime/UI/UIHover3DComponent.h"
 #include "Runtime/UI/UIVitalComponent.h"
+#include "Runtime/UI/UIEmptyGaugeEffectComponent.h"
 #include "Runtime/UI/UICurveAsset.h"
 
 #include "Runtime/ECS/World.h"
@@ -186,6 +189,8 @@ namespace Alice
 		if (!device || !context)
 			return false;
 
+		
+
 		m_device = device;
 		m_context = context;
 		m_resources = resources;
@@ -248,6 +253,23 @@ namespace Alice
 		if (FAILED(m_device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, m_psGray.ReleaseAndGetAddressOf())))
 		{
 			ALICE_LOG_ERRORF("[AliceUI] CreateGrayPixelShader failed.");
+			return false;
+		}
+
+		if (!RegisterShader("GaugeCustom", AliceUIShader::UIGaugeCustomPS))
+		{
+			ALICE_LOG_ERRORF("[AliceUI] Failed to register GaugeCustom shader.");
+			return false;
+		}
+		
+		if (!RegisterShader("Pencil", AliceUIShader::UIPencilPS))
+		{
+			ALICE_LOG_ERRORF("[AliceUI] Failed to register Pencil shader.");
+			return false;
+		}
+		if (!RegisterShader("DieLine", AliceUIShader::UIDieLinePS))
+		{
+			ALICE_LOG_ERRORF("[AliceUI] Failed to register DieLine shader.");
 			return false;
 		}
 
@@ -412,7 +434,7 @@ namespace Alice
 		m_screenLayouts.clear();
 		m_screenRects.clear();
 		m_curveCache.clear();
-
+		
 		m_whiteSRV.Reset();
 		m_vs.Reset();
 		m_psDefault.Reset();
@@ -433,6 +455,8 @@ namespace Alice
 	{
 		if (name.empty() || !pixelShaderSource || !m_device)
 			return false;
+
+		ALICE_LOG_ERRORF("[AliceUI] RegisterShader");
 
 		Microsoft::WRL::ComPtr<ID3DBlob> psBlob;
 		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
@@ -807,6 +831,121 @@ namespace Alice
 			hover.angleY = Lerp(hover.angleY, targetY, lerpT);
 		}
 
+		const bool leftDown = input.IsLeftButtonDown();
+		const bool leftPressed = input.IsMouseButtonPressed(0);
+		const bool leftReleased = input.IsMouseButtonReleased(0);
+
+		for (auto&& [id, slider] : world.GetComponents<UISliderComponent>())
+		{
+			const auto* widget = world.GetComponent<UIWidgetComponent>(id);
+			if (!widget || widget->space != AliceUI::UISpace::Screen || widget->visibility != AliceUI::UIVisibility::Visible)
+			{
+				slider.state = AliceUI::UIButtonState::Normal;
+				slider.dragging = false;
+				slider.wasPressed = false;
+				continue;
+			}
+
+			if (!slider.enabled || !widget->interactable)
+			{
+				slider.state = AliceUI::UIButtonState::Disabled;
+				slider.dragging = false;
+				slider.wasPressed = false;
+				continue;
+			}
+
+			ScreenRect rect{};
+			if (!GetScreenRect(id, rect))
+			{
+				slider.state = AliceUI::UIButtonState::Normal;
+				slider.dragging = false;
+				slider.wasPressed = false;
+				continue;
+			}
+
+			const float rectWidth = std::max(1.0f, rect.maxX - rect.minX);
+			const float rectHeight = std::max(1.0f, rect.maxY - rect.minY);
+			float bgWidth = rectWidth;
+			float bgHeight = rectHeight;
+			if (slider.backgroundSize.x > 0.0f)
+				bgWidth = std::min(bgWidth, slider.backgroundSize.x);
+			if (slider.backgroundSize.y > 0.0f)
+				bgHeight = std::min(bgHeight, slider.backgroundSize.y);
+
+			const float bgMinX = (rect.minX + rect.maxX - bgWidth) * 0.5f;
+			const float bgMinY = (rect.minY + rect.maxY - bgHeight) * 0.5f;
+			const float bgMaxX = bgMinX + bgWidth;
+			const float bgMaxY = bgMinY + bgHeight;
+
+			const bool hovered = (mouseX >= bgMinX && mouseX <= bgMaxX &&
+				mouseY >= bgMinY && mouseY <= bgMaxY);
+
+			auto UpdateSliderValue = [&]()
+			{
+				const float width = std::max(1.0f, bgMaxX - bgMinX);
+				const float height = std::max(1.0f, bgMaxY - bgMinY);
+				float t = 0.0f;
+				switch (slider.direction)
+				{
+				case AliceUI::UIGaugeDirection::LeftToRight:
+					t = (mouseX - bgMinX) / width;
+					break;
+				case AliceUI::UIGaugeDirection::RightToLeft:
+					t = (bgMaxX - mouseX) / width;
+					break;
+				case AliceUI::UIGaugeDirection::TopToBottom:
+					t = (mouseY - bgMinY) / height;
+					break;
+				case AliceUI::UIGaugeDirection::BottomToTop:
+					t = (bgMaxY - mouseY) / height;
+					break;
+				}
+				slider.value = AliceUI::Clamp01(t);
+			};
+
+			if (leftPressed && hovered)
+			{
+				slider.dragging = true;
+				slider.wasPressed = true;
+				UpdateSliderValue();
+			}
+
+			if (slider.dragging)
+			{
+				if (leftDown)
+					UpdateSliderValue();
+				if (leftReleased)
+				{
+					slider.dragging = false;
+					slider.wasPressed = false;
+				}
+			}
+			else if (leftReleased)
+			{
+				slider.wasPressed = false;
+			}
+
+			if (slider.dragging || (hovered && leftDown))
+				slider.state = AliceUI::UIButtonState::Pressed;
+			else if (hovered)
+				slider.state = AliceUI::UIButtonState::Hovered;
+			else
+				slider.state = AliceUI::UIButtonState::Normal;
+
+			slider.value = AliceUI::Clamp01(slider.value);
+
+			if (slider.syncGauge)
+			{
+				if (auto* gauge = world.GetComponent<UIGaugeComponent>(id))
+				{
+					gauge->direction = slider.direction;
+					if (gauge->normalized)
+						gauge->value = slider.value;
+					else
+						gauge->value = gauge->minValue + slider.value * (gauge->maxValue - gauge->minValue);
+				}
+			}
+		}
 		for (auto&& [id, gauge] : world.GetComponents<UIGaugeComponent>())
 		{
 			float target = gauge.normalized ? gauge.value : (gauge.value - gauge.minValue) / std::max(0.0001f, gauge.maxValue - gauge.minValue);
@@ -819,6 +958,21 @@ namespace Alice
 			else
 			{
 				gauge.displayedValue = target;
+			}
+
+			if (gauge.useFillLate)
+			{
+				float fillLateTarget = gauge.normalized ? gauge.fillLateValue : (gauge.fillLateValue - gauge.minValue) / std::max(0.0001f, gauge.maxValue - gauge.minValue);
+				fillLateTarget = AliceUI::Clamp01(fillLateTarget);
+
+				if (gauge.fillLateSmoothing > 0.0f)
+				{
+					gauge.fillLateDisplayedValue = gauge.fillLateDisplayedValue + (fillLateTarget - gauge.fillLateDisplayedValue) * gauge.fillLateSmoothing;
+				}
+				else
+				{
+					gauge.fillLateDisplayedValue = fillLateTarget;
+				}
 			}
 		}
 	}
@@ -894,14 +1048,61 @@ namespace Alice
 				continue;
 
 			const auto* button = world.GetComponent<UIButtonComponent>(id);
+			const auto* checkbox = world.GetComponent<UICheckBoxComponent>(id);
+			const auto* slider = world.GetComponent<UISliderComponent>(id);
 			const auto* gauge = world.GetComponent<UIGaugeComponent>(id);
 			const auto* text = world.GetComponent<UITextComponent>(id);
 			const auto* image = world.GetComponent<UIImageComponent>(id);
+
+			if (slider)
+			{
+				RenderSlider(world, id, layout);
+				if (text)
+					RenderText(world, id, layout);
+				continue;
+			}
 
 
 			if (gauge)
 			{
 				RenderGauge(world, id, layout);
+				if (text)
+					RenderText(world, id, layout);
+				continue;
+			}
+
+			if (checkbox)
+			{
+				DirectX::XMFLOAT4 tint = checkbox->isCheck ? checkbox->pressedTint : checkbox->normalTint;
+				std::string texture = checkbox->isCheck && !checkbox->pressedTexture.empty()
+					? checkbox->pressedTexture
+					: checkbox->normalTexture;
+
+				switch (checkbox->state)
+				{
+				case AliceUI::UIButtonState::Hovered:
+					if (!checkbox->isCheck)
+					{
+						tint = checkbox->hoveredTint;
+						if (!checkbox->hoveredTexture.empty())
+							texture = checkbox->hoveredTexture;
+					}
+					break;
+				case AliceUI::UIButtonState::Pressed:
+					tint = checkbox->pressedTint;
+					if (!checkbox->pressedTexture.empty())
+						texture = checkbox->pressedTexture;
+					break;
+				case AliceUI::UIButtonState::Disabled:
+					tint = checkbox->disabledTint;
+					if (!checkbox->disabledTexture.empty())
+						texture = checkbox->disabledTexture;
+					break;
+				default:
+					break;
+				}
+
+				RenderImage(world, id, layout, tint, texture);
 				if (text)
 					RenderText(world, id, layout);
 				continue;
@@ -980,6 +1181,8 @@ namespace Alice
 			const auto* text = world.GetComponent<UITextComponent>(id);
 			const auto* gauge = world.GetComponent<UIGaugeComponent>(id);
 			const auto* button = world.GetComponent<UIButtonComponent>(id);
+			const auto* checkbox = world.GetComponent<UICheckBoxComponent>(id);
+			const auto* slider = world.GetComponent<UISliderComponent>(id);
 			const auto* shake = world.GetComponent<UIShakeComponent>(id);
 
 			ScreenLayout layout{};
@@ -1031,9 +1234,54 @@ namespace Alice
 				layout.world = layout.world * DirectX::XMMatrixTranslation(shake->offset.x, shake->offset.y, 0.0f);
 			}
 
+			if (slider)
+			{
+				RenderSlider(world, id, layout);
+				if (text)
+					RenderText(world, id, layout);
+				continue;
+			}
+
 			if (gauge)
 			{
 				RenderGauge(world, id, layout);
+				if (text)
+					RenderText(world, id, layout);
+				continue;
+			}
+
+			if (checkbox)
+			{
+				DirectX::XMFLOAT4 tint = checkbox->isCheck ? checkbox->pressedTint : checkbox->normalTint;
+				std::string texture = checkbox->isCheck && !checkbox->pressedTexture.empty()
+					? checkbox->pressedTexture
+					: checkbox->normalTexture;
+
+				switch (checkbox->state)
+				{
+				case AliceUI::UIButtonState::Hovered:
+					if (!checkbox->isCheck)
+					{
+						tint = checkbox->hoveredTint;
+						if (!checkbox->hoveredTexture.empty())
+							texture = checkbox->hoveredTexture;
+					}
+					break;
+				case AliceUI::UIButtonState::Pressed:
+					tint = checkbox->pressedTint;
+					if (!checkbox->pressedTexture.empty())
+						texture = checkbox->pressedTexture;
+					break;
+				case AliceUI::UIButtonState::Disabled:
+					tint = checkbox->disabledTint;
+					if (!checkbox->disabledTexture.empty())
+						texture = checkbox->disabledTexture;
+					break;
+				default:
+					break;
+				}
+
+				RenderImage(world, id, layout, tint, texture);
 				if (text)
 					RenderText(world, id, layout);
 				continue;
@@ -1282,6 +1530,52 @@ namespace Alice
 
 			button.CullInvalidDelegates();
 		}
+
+		for (auto&& [id, checkbox] : world.GetComponents<UICheckBoxComponent>())
+		{
+			const auto* widget = world.GetComponent<UIWidgetComponent>(id);
+			if (!widget || widget->space != AliceUI::UISpace::Screen || widget->visibility != AliceUI::UIVisibility::Visible)
+			{
+				checkbox.state = AliceUI::UIButtonState::Normal;
+				checkbox.wasPressed = false;
+				continue;
+			}
+
+			if (!checkbox.enabled || !widget->interactable)
+			{
+				checkbox.state = AliceUI::UIButtonState::Disabled;
+				checkbox.wasPressed = false;
+				continue;
+			}
+
+			ScreenRect rect{};
+			if (!GetScreenRect(id, rect))
+			{
+				checkbox.state = AliceUI::UIButtonState::Normal;
+				checkbox.wasPressed = false;
+				continue;
+			}
+
+			const bool hovered = (mouseX >= rect.minX && mouseX <= rect.maxX &&
+				mouseY >= rect.minY && mouseY <= rect.maxY);
+
+			if (hovered && leftPressed)
+				checkbox.wasPressed = true;
+
+			if (leftReleased)
+			{
+				if (hovered && checkbox.wasPressed)
+					checkbox.isCheck = !checkbox.isCheck;
+				checkbox.wasPressed = false;
+			}
+
+			if (hovered && leftDown)
+				checkbox.state = AliceUI::UIButtonState::Pressed;
+			else if (hovered)
+				checkbox.state = AliceUI::UIButtonState::Hovered;
+			else
+				checkbox.state = AliceUI::UIButtonState::Normal;
+		}
 	}
 
 	void UIRenderer::RenderImage(const World& world, EntityId id, const ScreenLayout& layout, const DirectX::XMFLOAT4& tintOverride, const std::string& overrideTexture)
@@ -1306,11 +1600,16 @@ namespace Alice
 				texPath = image->texturePath;
 		}
 
-		const DirectX::XMFLOAT4 color(
-			baseColor.x * tintOverride.x,
-			baseColor.y * tintOverride.y,
-			baseColor.z * tintOverride.z,
-			baseColor.w * tintOverride.w);
+		const bool noTexture = texPath.empty();
+		const bool hasTint = (tintOverride.x != 1.0f || tintOverride.y != 1.0f ||
+			tintOverride.z != 1.0f || tintOverride.w != 1.0f);
+		const DirectX::XMFLOAT4 color = (noTexture && hasTint)
+			? tintOverride
+			: DirectX::XMFLOAT4(
+				baseColor.x * tintOverride.x,
+				baseColor.y * tintOverride.y,
+				baseColor.z * tintOverride.z,
+				baseColor.w * tintOverride.w);
 
 		const float originX = layout.pivotBaked ? 0.0f : -layout.pivot.x * layout.size.x;
 		const float originY = layout.pivotBaked ? 0.0f : -layout.pivot.y * layout.size.y;
@@ -1359,7 +1658,19 @@ namespace Alice
 		verts[2].uv = DirectX::XMFLOAT2(uvRect.x, uvRect.w);
 		verts[3].uv = DirectX::XMFLOAT2(uvRect.z, uvRect.w);
 
-		DrawQuad(verts, GetTexture(texPath), GetPixelShader(widget->shaderName), pixel);
+		// ???關履??????紐꾨쫯???熬곣뫖利????(Pencil ???????????????
+		ID3D11ShaderResourceView* pencilTex = nullptr;
+		const auto* pencil = world.GetComponent<UIPencilComponent>(id);
+		if (pencil && !pencil->pencilTexturePath.empty() && widget->shaderName == "Pencil")
+		{
+			pencilTex = GetTexture(pencil->pencilTexturePath);
+		}
+
+		std::string psName = widget->shaderName;
+		if (widget->widgetName == "UI_Die" && (psName.empty() || psName == "Default"))
+			psName = "DieLine";
+		ID3D11PixelShader* ps = GetPixelShader(psName);
+		DrawQuad(verts, GetTexture(texPath), ps, pixel, pencilTex);
 	}
 
 	void UIRenderer::RenderText(const World& world, EntityId id, const ScreenLayout& layout)
@@ -1395,13 +1706,13 @@ namespace Alice
 			ID3D11ShaderResourceView* srv = fontTexture.Get() ? fontTexture.Get() : m_whiteSRV.Get();
 
 			const float scale = text->fontSize / font->lineHeight;
-			const float lineHeight = font->lineHeight * scale + text->lineSpacing;
+			const float scaledLineHeight = font->lineHeight * scale;
+			const float totalLineHeight = scaledLineHeight + text->lineSpacing;
 			const float maxWidth = (text->maxWidth > 0.0f) ? text->maxWidth : (layout.size.x > 0.0f ? layout.size.x : 0.0f);
 			const bool wrap = text->wrap && maxWidth > 0.0f;
 
 			std::vector<float> lineWidths;
 			float lineWidth = 0.0f;
-			float maxLineWidth = 0.0f;
 			int lineCount = 1;
 
 			for (char c : text->text)
@@ -1409,7 +1720,6 @@ namespace Alice
 				if (c == '\n')
 				{
 					lineWidths.push_back(lineWidth);
-					maxLineWidth = std::max(maxLineWidth, lineWidth);
 					lineWidth = 0.0f;
 					++lineCount;
 					continue;
@@ -1423,50 +1733,57 @@ namespace Alice
 				if (wrap && lineWidth + adv > maxWidth && lineWidth > 0.0f)
 				{
 					lineWidths.push_back(lineWidth);
-					maxLineWidth = std::max(maxLineWidth, lineWidth);
 					lineWidth = 0.0f;
 					++lineCount;
 				}
 				lineWidth += adv;
 			}
 			lineWidths.push_back(lineWidth);
-			maxLineWidth = std::max(maxLineWidth, lineWidth);
 
-			const float textWidth = maxLineWidth;
-			const float textHeight = lineCount * lineHeight;
+			const float textHeight = (lineCount * scaledLineHeight) + ((lineCount - 1) * text->lineSpacing);
 
 			const float originX = layout.pivotBaked ? 0.0f : -layout.pivot.x * layout.size.x;
 			const float originY = layout.pivotBaked ? 0.0f : -layout.pivot.y * layout.size.y;
 
-			float baseX = originX;
 			float baseY = originY;
-			if (layout.size.x > 0.0f)
-			{
-				if (text->alignH == AliceUI::UIAlignH::Center)
-					baseX = (layout.size.x - textWidth) * 0.5f;
-				else if (text->alignH == AliceUI::UIAlignH::Right)
-					baseX = (layout.size.x - textWidth);
-			}
-
 			if (layout.size.y > 0.0f)
 			{
 				if (text->alignV == AliceUI::UIAlignV::Center)
-					baseY = (layout.size.y - textHeight) * 0.5f;
+					baseY = originY + (layout.size.y - textHeight) * 0.5f;
 				else if (text->alignV == AliceUI::UIAlignV::Bottom)
-					baseY = (layout.size.y - textHeight);
+					baseY = originY + (layout.size.y - textHeight);
 			}
+
+			auto calcLineX = [&](int idx)
+			{
+				if (idx < 0 || idx >= static_cast<int>(lineWidths.size()))
+					return originX;
+				const float lWidth = lineWidths[idx];
+				if (layout.size.x > 0.0f)
+				{
+					if (text->alignH == AliceUI::UIAlignH::Center)
+						return originX + (layout.size.x - lWidth) * 0.5f;
+					if (text->alignH == AliceUI::UIAlignH::Right)
+						return originX + (layout.size.x - lWidth);
+				}
+				return originX;
+			};
 
 			std::vector<UIVertex> verts;
 			verts.reserve(text->text.size() * 4);
 
-			float x = baseX;
+			int lineIdx = 0;
+			float x = calcLineX(lineIdx);
 			float y = baseY;
+			float currentLineWidth = 0.0f;
 			for (char c : text->text)
 			{
 				if (c == '\n')
 				{
-					x = baseX;
-					y += lineHeight;
+					++lineIdx;
+					x = calcLineX(lineIdx);
+					y += totalLineHeight;
+					currentLineWidth = 0.0f;
 					continue;
 				}
 
@@ -1476,10 +1793,12 @@ namespace Alice
 
 				const UIFontGlyph& g = it->second;
 				const float adv = g.xAdvance * scale;
-				if (wrap && maxWidth > 0.0f && x + adv > baseX + maxWidth && x > baseX)
+				if (wrap && currentLineWidth + adv > maxWidth && currentLineWidth > 0.0f)
 				{
-					x = baseX;
-					y += lineHeight;
+					++lineIdx;
+					x = calcLineX(lineIdx);
+					y += totalLineHeight;
+					currentLineWidth = 0.0f;
 				}
 
 				const float gx = x + g.xOffset * scale;
@@ -1513,9 +1832,18 @@ namespace Alice
 				verts.push_back(v[3]);
 
 				x += adv;
+				currentLineWidth += adv;
 			}
 
-			DrawGlyphs(verts, srv, GetPixelShader(widget->shaderName), pixel);
+			// ???關履??????紐꾨쫯???熬곣뫖利????(Pencil ???????????????
+			ID3D11ShaderResourceView* pencilTex = nullptr;
+			const auto* pencil = world.GetComponent<UIPencilComponent>(id);
+			if (pencil && !pencil->pencilTexturePath.empty() && widget->shaderName == "Pencil")
+			{
+				pencilTex = GetTexture(pencil->pencilTexturePath);
+			}
+
+			DrawGlyphs(verts, srv, GetPixelShader(widget->shaderName), pixel, pencilTex);
 			return;
 		}
 
@@ -1533,14 +1861,14 @@ namespace Alice
 			return;
 
 		const float scale = bakedSize / baked->Size;
-		const float lineHeight = bakedSize + text->lineSpacing;
+		const float scaledLineHeight = bakedSize;
+		const float totalLineHeight = scaledLineHeight + text->lineSpacing;
 
 		const float maxWidth = (text->maxWidth > 0.0f) ? text->maxWidth : (layout.size.x > 0.0f ? layout.size.x : 0.0f);
 		const bool wrap = text->wrap && maxWidth > 0.0f;
 
 		std::vector<float> lineWidths;
 		float lineWidth = 0.0f;
-		float maxLineWidth = 0.0f;
 		int lineCount = 1;
 
 		const char* p = text->text.c_str();
@@ -1556,7 +1884,6 @@ namespace Alice
 			if (cp == '\n')
 			{
 				lineWidths.push_back(lineWidth);
-				maxLineWidth = std::max(maxLineWidth, lineWidth);
 				lineWidth = 0.0f;
 				++lineCount;
 				continue;
@@ -1570,44 +1897,49 @@ namespace Alice
 			if (wrap && lineWidth + adv > maxWidth && lineWidth > 0.0f)
 			{
 				lineWidths.push_back(lineWidth);
-				maxLineWidth = std::max(maxLineWidth, lineWidth);
 				lineWidth = 0.0f;
 				++lineCount;
 			}
 			lineWidth += adv;
 		}
 		lineWidths.push_back(lineWidth);
-		maxLineWidth = std::max(maxLineWidth, lineWidth);
 
-		const float textWidth = maxLineWidth;
-		const float textHeight = lineCount * lineHeight;
+		const float textHeight = (lineCount * scaledLineHeight) + ((lineCount - 1) * text->lineSpacing);
 
 		const float originX = layout.pivotBaked ? 0.0f : -layout.pivot.x * layout.size.x;
 		const float originY = layout.pivotBaked ? 0.0f : -layout.pivot.y * layout.size.y;
 
-		float baseX = originX;
 		float baseY = originY;
-		if (layout.size.x > 0.0f)
-		{
-			if (text->alignH == AliceUI::UIAlignH::Center)
-				baseX = (layout.size.x - textWidth) * 0.5f;
-			else if (text->alignH == AliceUI::UIAlignH::Right)
-				baseX = (layout.size.x - textWidth);
-		}
-
 		if (layout.size.y > 0.0f)
 		{
 			if (text->alignV == AliceUI::UIAlignV::Center)
-				baseY = (layout.size.y - textHeight) * 0.5f;
+				baseY = originY + (layout.size.y - textHeight) * 0.5f;
 			else if (text->alignV == AliceUI::UIAlignV::Bottom)
-				baseY = (layout.size.y - textHeight);
+				baseY = originY + (layout.size.y - textHeight);
 		}
+
+		auto calcLineX = [&](int idx)
+		{
+			if (idx < 0 || idx >= static_cast<int>(lineWidths.size()))
+				return originX;
+			const float lWidth = lineWidths[idx];
+			if (layout.size.x > 0.0f)
+			{
+				if (text->alignH == AliceUI::UIAlignH::Center)
+					return originX + (layout.size.x - lWidth) * 0.5f;
+				if (text->alignH == AliceUI::UIAlignH::Right)
+					return originX + (layout.size.x - lWidth);
+			}
+			return originX;
+		};
 
 		std::vector<UIVertex> verts;
 		verts.reserve(text->text.size() * 4);
 
-		float x = baseX;
+		int lineIdx = 0;
+		float x = calcLineX(lineIdx);
 		float y = baseY;
+		float currentLineWidth = 0.0f;
 		p = text->text.c_str();
 		while (p < end)
 		{
@@ -1619,8 +1951,10 @@ namespace Alice
 
 			if (cp == '\n')
 			{
-				x = baseX;
-				y += lineHeight;
+				++lineIdx;
+				x = calcLineX(lineIdx);
+				y += totalLineHeight;
+				currentLineWidth = 0.0f;
 				continue;
 			}
 
@@ -1630,10 +1964,12 @@ namespace Alice
 				continue;
 
 			const float adv = glyph->AdvanceX * scale;
-			if (wrap && maxWidth > 0.0f && x + adv > baseX + maxWidth && x > baseX)
+			if (wrap && currentLineWidth + adv > maxWidth && currentLineWidth > 0.0f)
 			{
-				x = baseX;
-				y += lineHeight;
+				++lineIdx;
+				x = calcLineX(lineIdx);
+				y += totalLineHeight;
+				currentLineWidth = 0.0f;
 			}
 
 			const float gx0 = x + glyph->X0 * scale;
@@ -1667,27 +2003,168 @@ namespace Alice
 			verts.push_back(v[3]);
 
 			x += adv;
+			currentLineWidth += adv;
 		}
 
-		DrawGlyphs(verts, fontSrv ? fontSrv : m_whiteSRV.Get(), GetPixelShader(widget->shaderName), pixel);
+		// ???關履??????紐꾨쫯???熬곣뫖利????(Pencil ???????????????
+		ID3D11ShaderResourceView* pencilTex = nullptr;
+		const auto* pencil = world.GetComponent<UIPencilComponent>(id);
+		if (pencil && !pencil->pencilTexturePath.empty() && widget->shaderName == "Pencil")
+		{
+			pencilTex = GetTexture(pencil->pencilTexturePath);
+		}
+
+		DrawGlyphs(verts, fontSrv ? fontSrv : m_whiteSRV.Get(), GetPixelShader(widget->shaderName), pixel, pencilTex);
 	}
 
-	void UIRenderer::RenderGauge(const World& world, EntityId id, const ScreenLayout& layout)
+		void UIRenderer::RenderSlider(const World& world, EntityId id, const ScreenLayout& layout)
+{
+	const auto* widget = world.GetComponent<UIWidgetComponent>(id);
+	const auto* slider = world.GetComponent<UISliderComponent>(id);
+	if (!widget || !slider)
+		return;
+
+	const auto* image = world.GetComponent<UIImageComponent>(id);
+	const auto* gauge = world.GetComponent<UIGaugeComponent>(id);
+
+	if (image && (!gauge || !gauge->useBackground))
+		RenderImage(world, id, layout, DirectX::XMFLOAT4(1, 1, 1, 1), "");
+
+	if (gauge)
+		RenderGauge(world, id, layout);
+
+	DirectX::XMFLOAT4 tint = slider->normalTint;
+	std::string texture = slider->normalTexture;
+
+	switch (slider->state)
+	{
+	case AliceUI::UIButtonState::Hovered:
+		tint = slider->hoveredTint;
+		if (!slider->hoveredTexture.empty())
+			texture = slider->hoveredTexture;
+		break;
+	case AliceUI::UIButtonState::Pressed:
+		tint = slider->pressedTint;
+		if (!slider->pressedTexture.empty())
+			texture = slider->pressedTexture;
+		break;
+	case AliceUI::UIButtonState::Disabled:
+		tint = slider->disabledTint;
+		if (!slider->disabledTexture.empty())
+			texture = slider->disabledTexture;
+		break;
+	default:
+		break;
+	}
+
+	UIPixelConstants pixel = BuildPixelConstants(world, id);
+	const float aspect = (layout.size.y > 0.0001f) ? (layout.size.x / layout.size.y) : 1.0f;
+	pixel.gaugeParams2 = DirectX::XMFLOAT4(aspect, 0.0f, 0.0f, 0.0f);
+
+	const float originX = layout.pivotBaked ? 0.0f : -layout.pivot.x * layout.size.x;
+	const float originY = layout.pivotBaked ? 0.0f : -layout.pivot.y * layout.size.y;
+
+	const float trackWidth = (slider->backgroundSize.x > 0.0f) ? std::min(layout.size.x, slider->backgroundSize.x) : layout.size.x;
+	const float trackHeight = (slider->backgroundSize.y > 0.0f) ? std::min(layout.size.y, slider->backgroundSize.y) : layout.size.y;
+	const float trackOriginX = originX + (layout.size.x - trackWidth) * 0.5f;
+	const float trackOriginY = originY + (layout.size.y - trackHeight) * 0.5f;
+
+	float x0 = trackOriginX;
+	float x1 = trackOriginX + trackWidth;
+	float y0 = trackOriginY;
+	float y1 = trackOriginY + trackHeight;
+
+	const float width = trackWidth;
+	const float height = trackHeight;
+	const float handleSize = std::max(1.0f, slider->handleSize);
+
+	if (slider->direction == AliceUI::UIGaugeDirection::LeftToRight ||
+		slider->direction == AliceUI::UIGaugeDirection::RightToLeft)
+	{
+		const float handle = std::min(handleSize, width);
+		const float track = std::max(0.0f, width - handle);
+		float t = (slider->direction == AliceUI::UIGaugeDirection::LeftToRight) ? slider->value : (1.0f - slider->value);
+		t = AliceUI::Clamp01(t);
+		x0 = originX + track * t;
+		x1 = x0 + handle;
+	}
+	else
+	{
+		const float handle = std::min(handleSize, height);
+		const float track = std::max(0.0f, height - handle);
+		float t = (slider->direction == AliceUI::UIGaugeDirection::TopToBottom) ? slider->value : (1.0f - slider->value);
+		t = AliceUI::Clamp01(t);
+		y0 = originY + track * t;
+		y1 = y0 + handle;
+	}
+
+	UIVertex verts[4]{};
+	DirectX::XMFLOAT3 corners[4] = {
+		DirectX::XMFLOAT3(x0, y0, 0),
+		DirectX::XMFLOAT3(x1, y0, 0),
+		DirectX::XMFLOAT3(x0, y1, 0),
+		DirectX::XMFLOAT3(x1, y1, 0)
+	};
+	for (int i = 0; i < 4; ++i)
+	{
+		DirectX::XMVECTOR p = DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&corners[i]), layout.world);
+		DirectX::XMStoreFloat3(&verts[i].position, p);
+		verts[i].color = tint;
+	}
+	verts[0].uv = DirectX::XMFLOAT2(0, 0);
+	verts[1].uv = DirectX::XMFLOAT2(1, 0);
+	verts[2].uv = DirectX::XMFLOAT2(0, 1);
+	verts[3].uv = DirectX::XMFLOAT2(1, 1);
+
+	std::string shaderName = widget->shaderName;
+	if (shaderName == "GaugeCustom")
+		shaderName = "Default";
+
+	ID3D11ShaderResourceView* handleTex = texture.empty() ? nullptr : GetTexture(texture);
+	DrawQuad(verts, handleTex, GetPixelShader(shaderName), pixel);
+}
+
+void UIRenderer::RenderGauge(const World& world, EntityId id, const ScreenLayout& layout)
 	{
 		const auto* widget = world.GetComponent<UIWidgetComponent>(id);
 		const auto* gauge = world.GetComponent<UIGaugeComponent>(id);
 		if (!widget || !gauge)
 			return;
 
-		const UIPixelConstants pixel = BuildPixelConstants(world, id);
+		UIPixelConstants pixel = BuildPixelConstants(world, id);
+		// Previous:
+		// std::string baseShaderName = widget->shaderName;
+		// if (baseShaderName == "GaugeCustom" && !gauge->useCustomShader)
+		// {
+		//     baseShaderName = "Default";
+		// }
+		std::string baseShaderName = widget->shaderName;
+		std::string fillShaderName = baseShaderName;
+		std::string nonFillShaderName = baseShaderName;
+		if (baseShaderName == "GaugeCustom")
+		{
+			if (gauge->useCustomShader)
+			{
+				fillShaderName = "GaugeCustom";
+				nonFillShaderName = "Default";
+			}
+			else
+			{
+				fillShaderName = "Default";
+				nonFillShaderName = "Default";
+			}
+		}
 
 		DirectX::XMFLOAT4 bgColor = gauge->backgroundColor;
 		DirectX::XMFLOAT4 fillColor = gauge->fillColor;
 
 		const float originX = layout.pivotBaked ? 0.0f : -layout.pivot.x * layout.size.x;
 		const float originY = layout.pivotBaked ? 0.0f : -layout.pivot.y * layout.size.y;
+		const float aspect = (layout.size.y > 0.0001f) ? (layout.size.x / layout.size.y) : 1.0f;
+		pixel.gaugeParams2 = DirectX::XMFLOAT4(aspect, 0.0f, 0.0f, 0.0f);
 
 		// Background
+		if (gauge->useBackground)
 		{
 			UIVertex verts[4]{};
 			DirectX::XMFLOAT3 corners[4] = {
@@ -1707,7 +2184,87 @@ namespace Alice
 			verts[2].uv = DirectX::XMFLOAT2(0, 1);
 			verts[3].uv = DirectX::XMFLOAT2(1, 1);
 
-			DrawQuad(verts, GetTexture(gauge->backgroundTexture), GetPixelShader(widget->shaderName), pixel);
+			// Previous:
+			// std::string bgShaderName = (gauge->useCustomShader) ? "GaugeCustom" : baseShaderName;
+			// DrawQuad(verts, GetTexture(gauge->backgroundTexture), GetPixelShader(bgShaderName), pixel);
+			DrawQuad(verts, GetTexture(gauge->backgroundTexture), GetPixelShader(nonFillShaderName), pixel);
+		}
+
+		// FillLate 
+		if (gauge->useFillLate)
+		{
+			float fillLateRatio = gauge->fillLateDisplayedValue;
+			fillLateRatio = AliceUI::Clamp01(fillLateRatio);
+			if (fillLateRatio > 0.0f)
+			{
+				float x0 = originX, x1 = originX + layout.size.x;
+				float y0 = originY, y1 = originY + layout.size.y;
+				float u0 = 0.0f, u1 = 1.0f;
+				float v0 = 0.0f, v1 = 1.0f;
+
+				switch (gauge->direction)
+				{
+				case AliceUI::UIGaugeDirection::LeftToRight:
+					x1 = originX + layout.size.x * fillLateRatio;
+					u1 = fillLateRatio;
+					break;
+				case AliceUI::UIGaugeDirection::RightToLeft:
+					x0 = originX + layout.size.x * (1.0f - fillLateRatio);
+					u0 = 1.0f - fillLateRatio;
+					break;
+				case AliceUI::UIGaugeDirection::BottomToTop:
+					y0 = originY + layout.size.y * (1.0f - fillLateRatio);
+					v0 = 1.0f - fillLateRatio;
+					break;
+				case AliceUI::UIGaugeDirection::TopToBottom:
+					y1 = originY + layout.size.y * fillLateRatio;
+					v1 = fillLateRatio;
+					break;
+				}
+
+				UIVertex verts[4]{};
+				DirectX::XMFLOAT3 corners[4] = {
+					DirectX::XMFLOAT3(x0, y0, 0),
+					DirectX::XMFLOAT3(x1, y0, 0),
+					DirectX::XMFLOAT3(x0, y1, 0),
+					DirectX::XMFLOAT3(x1, y1, 0)
+				};
+				for (int i = 0; i < 4; ++i)
+				{
+					DirectX::XMVECTOR p = DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&corners[i]), layout.world);
+					DirectX::XMStoreFloat3(&verts[i].position, p);
+					verts[i].color = gauge->fillLateColor;
+				}
+				verts[0].uv = DirectX::XMFLOAT2(u0, v0);
+				verts[1].uv = DirectX::XMFLOAT2(u1, v0);
+				verts[2].uv = DirectX::XMFLOAT2(u0, v1);
+				verts[3].uv = DirectX::XMFLOAT2(u1, v1);
+
+				// Previous:
+				// std::string fillLateShaderName = gauge->fillLateShaderName.empty()
+				//     ? baseShaderName
+				//     : gauge->fillLateShaderName;
+				// if (fillLateShaderName == "GaugeCustom" && !gauge->useCustomShader)
+				// {
+				//     fillLateShaderName = "Default";
+				// }
+				std::string fillLateShaderName = gauge->fillLateShaderName.empty()
+				    ? nonFillShaderName
+				    : gauge->fillLateShaderName;
+
+				if (fillLateShaderName == "GaugeCustom")
+				{
+
+				    fillLateShaderName = "Default";
+
+				}
+			
+				ID3D11ShaderResourceView* fillLateTex = gauge->fillLateTexture.empty() 
+					? nullptr 
+					: GetTexture(gauge->fillLateTexture);
+				
+				DrawQuad(verts, fillLateTex, GetPixelShader(fillLateShaderName), pixel);
+			}
 		}
 
 		float ratio = gauge->displayedValue;
@@ -1720,6 +2277,7 @@ namespace Alice
 		float u0 = 0.0f, u1 = 1.0f;
 		float v0 = 0.0f, v1 = 1.0f;
 
+		// Fill ????쇨덧??諭??????????뺢턀??????????(Fill???????影?れ쉬??? ??????????쇨덫??
 		switch (gauge->direction)
 		{
 		case AliceUI::UIGaugeDirection::LeftToRight:
@@ -1758,20 +2316,28 @@ namespace Alice
 		verts[2].uv = DirectX::XMFLOAT2(u0, v1);
 		verts[3].uv = DirectX::XMFLOAT2(u1, v1);
 
-		DrawQuad(verts, GetTexture(gauge->fillTexture), GetPixelShader(widget->shaderName), pixel);
+		// fillTexture???ル봿?? ?????룸????????떔??????nullptr????????떔???(??????떔???뽰떪???????떔??????욍럪???????떔??? ??????떔???뽰???⑤９紐????????떔???
+		ID3D11ShaderResourceView* fillTex = gauge->fillTexture.empty() 
+			? nullptr 
+			: GetTexture(gauge->fillTexture);
+		
+		// Previous:
+		// DrawQuad(verts, fillTex, GetPixelShader(baseShaderName), pixel);
+		// Fill ????쇨덧????????影?れ쉬??? ??????????쇨덫??
+		DrawQuad(verts, fillTex, GetPixelShader(fillShaderName), pixel);
 	}
 
-	void UIRenderer::DrawQuad(const UIVertex* verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel)
+	void UIRenderer::DrawQuad(const UIVertex* verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel, ID3D11ShaderResourceView* texture2)
 	{
 		if (!verts)
 			return;
 
 		UIVertex temp[4] = { verts[0], verts[1], verts[2], verts[3] };
 		std::vector<UIVertex> list(temp, temp + 4);
-		DrawGlyphs(list, texture, ps, pixel);
+		DrawGlyphs(list, texture, ps, pixel, texture2);
 	}
 
-	void UIRenderer::DrawGlyphs(const std::vector<UIVertex>& verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel)
+	void UIRenderer::DrawGlyphs(const std::vector<UIVertex>& verts, ID3D11ShaderResourceView* texture, ID3D11PixelShader* ps, const UIPixelConstants& pixel, ID3D11ShaderResourceView* texture2)
 	{
 		if (verts.empty())
 			return;
@@ -1784,7 +2350,20 @@ namespace Alice
 		m_context->PSSetShader(psToUse, nullptr, 0);
 		ID3D11SamplerState* sampler = m_sampler.Get();
 		m_context->PSSetSamplers(0, 1, &sampler);
+		
+		// ???筌?????????紐꾨쫯??(t0)
 		m_context->PSSetShaderResources(0, 1, &srv);
+		
+		// ???筌?????????紐꾨쫯??(t1) - ???關履??????紐꾨쫯??
+		if (texture2)
+		{
+			m_context->PSSetShaderResources(1, 1, &texture2);
+		}
+		else
+		{
+			ID3D11ShaderResourceView* nullSRV = nullptr;
+			m_context->PSSetShaderResources(1, 1, &nullSRV);
+		}
 
 		// Update pixel constants
 		if (m_cbUIPixel)
@@ -1865,12 +2444,57 @@ namespace Alice
 		UIPixelConstants pixel{};
 		const auto* effect = world.GetComponent<UIEffectComponent>(id);
 		const auto* vital = world.GetComponent<UIVitalComponent>(id);
+		const auto* gauge = world.GetComponent<UIGaugeComponent>(id);
+		const auto* empty = world.GetComponent<UIEmptyGaugeEffectComponent>(id);
+		
+		// 
+		if (gauge)
+		{
+			float direction = 0.0f;
+			switch (gauge->direction)
+			{
+			case AliceUI::UIGaugeDirection::LeftToRight: direction = 0.0f; break;
+			case AliceUI::UIGaugeDirection::RightToLeft: direction = 1.0f; break;
+			case AliceUI::UIGaugeDirection::BottomToTop: direction = 2.0f; break;
+			case AliceUI::UIGaugeDirection::TopToBottom: direction = 3.0f; break;
+			}
+			
+			pixel.gaugeParams = DirectX::XMFLOAT4(
+				gauge->displayedValue,  // fill ratio
+				gauge->useFillLate ? gauge->fillLateDisplayedValue : 0.0f,  // fillLate ratio
+				gauge->useFillLate ? 1.0f : 0.0f,  // useFillLate flag
+				direction  // direction
+			);
+			pixel.gaugeParams2 = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f);
+		}
+
+		if (empty)
+		{
+			pixel.emptyColor = empty->color;
+			pixel.emptyParams = DirectX::XMFLOAT4(
+				empty->enabled ? 1.0f : 0.0f,
+				empty->frequency,
+				empty->speed,
+				empty->intensity);
+		}
+		
+		const auto* pencil = world.GetComponent<UIPencilComponent>(id);
+		if (pencil)
+		{
+			pixel.pencilParams = DirectX::XMFLOAT4(
+				pencil->pencilTileScale,
+				pencil->pencilJitterStrength,
+				pencil->pencilContrast,
+				0.0f);
+		}
+		
 		if (effect)
 		{
 			pixel.outlineColor = effect->outlineColor;
 			pixel.glowColor = effect->glowColor;
 			pixel.vitalColor = effect->vitalColor;
 			pixel.vitalBgColor = effect->vitalBgColor;
+			// UI effect params0 (outline/radial)
 			pixel.params0 = DirectX::XMFLOAT4(effect->outlineThickness, effect->outlineEnabled ? 1.0f : 0.0f, effect->radialEnabled ? 1.0f : 0.0f, effect->radialFill);
 			pixel.params1 = DirectX::XMFLOAT4(effect->radialInner, effect->radialOuter, effect->radialSoftness, effect->radialClockwise ? 1.0f : 0.0f);
 			pixel.params2 = DirectX::XMFLOAT4(effect->radialAngleOffset, effect->radialDim, effect->glowEnabled ? 1.0f : 0.0f, effect->glowStrength);
@@ -1891,6 +2515,24 @@ namespace Alice
 			pixel.params4 = DirectX::XMFLOAT4(1.0f, vital->amplitude, vital->frequency, vital->speed);
 			pixel.params5 = DirectX::XMFLOAT4(vital->thickness, 0.0f, 0.0f, 0.0f);
 		}
+
+		// DieLine 쉐이더: UIDieLineParamsComponent 또는 기본값으로 gParams0/gParams1 전달
+		const auto* widget = world.GetComponent<UIWidgetComponent>(id);
+		if (widget && widget->widgetName == "UI_Die")
+		{
+			const auto* dieParams = world.GetComponent<UIDieLineParamsComponent>(id);
+			if (dieParams)
+			{
+				pixel.params0 = DirectX::XMFLOAT4(dieParams->totalCycle, dieParams->phase1Duration, dieParams->phase2End, dieParams->phase3Duration);
+				pixel.params1 = DirectX::XMFLOAT4(dieParams->startTime, 0.0f, 0.0f, 0.0f);
+			}
+			else
+			{
+				pixel.params0 = DirectX::XMFLOAT4(3.2f, 1.2f, 2.0f, 1.2f);
+				pixel.params1 = DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 0.0f);
+			}
+		}
+
 		return pixel;
 	}
 
@@ -1966,3 +2608,10 @@ namespace Alice
 		return m_psDefault.Get();
 	}
 }
+
+
+
+
+
+
+

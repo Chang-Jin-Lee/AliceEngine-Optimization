@@ -11,6 +11,7 @@
 #include "Runtime/Resources/Serialization/JsonRttr.h"
 #include "Runtime/Resources/ResourceManager.h"
 #include "Runtime/Rendering/SkinnedMeshRegistry.h"
+#include "Runtime/Audio/SoundManager.h"
 #include "Runtime/Foundation/Logger.h"
 
 namespace Alice
@@ -29,6 +30,7 @@ namespace Alice
 
         m_services.input = this;
         m_services.scene = this;
+        m_services.audio = this;
         m_services.skinnedRegistry = m_skinnedRegistry;
         m_services.resources = m_resources;
     }
@@ -213,6 +215,18 @@ namespace Alice
         return m_input->GetMouseScrollDelta();
     }
 
+    void ScriptSystem::SetCursorVisible(bool visible)
+    {
+        if (m_input)
+            m_input->SetCursorVisible(visible);
+    }
+
+    void ScriptSystem::SetCursorLocked(bool locked)
+    {
+        if (m_input)
+            m_input->SetCursorLocked(locked);
+    }
+
     std::string ScriptSystem::GetResolvedPath(const char* filename) const
     {
         if (!filename || !filename[0])
@@ -276,6 +290,68 @@ namespace Alice
         if (p.extension() != ".scene") p += ".scene";
 
         return m_scenes->LoadSceneFileRequest(p);
+    }
+
+    bool ScriptSystem::LoadAuto(const ResourceManager& resources,
+                                const std::wstring& key,
+                                const std::filesystem::path& logicalPath,
+                                Sound::Type type)
+    {
+        return Sound::LoadAuto(resources, key, logicalPath, type);
+    }
+
+    void ScriptSystem::SetBGMVolume(float volume)
+    {
+        Sound::SetBGMVolume(volume);
+    }
+
+    void ScriptSystem::PlayBGM(const std::wstring& key)
+    {
+        Sound::PlayBGM(key);
+    }
+
+    void ScriptSystem::StopBGM()
+    {
+        Sound::StopBGM();
+    }
+
+    void ScriptSystem::PlaySFX(const std::wstring& key, float volume, float pitch, bool loop)
+    {
+        Sound::PlaySFX(key, volume, pitch, loop);
+    }
+
+    void ScriptSystem::StopSfx(const std::wstring& key)
+    {
+        Sound::StopSfx(key);
+    }
+
+    void ScriptSystem::StopAllSFX()
+    {
+        Sound::StopAllSFX();
+    }
+
+    bool ScriptSystem::Play3D(const std::wstring& instanceId,
+                              const std::wstring& key,
+                              const DirectX::XMFLOAT3& pos,
+                              float volume,
+                              float pitch,
+                              bool loop)
+    {
+        return Sound::Play3D(instanceId, key, pos, volume, pitch, loop);
+    }
+
+    void ScriptSystem::Stop3D(const std::wstring& instanceId)
+    {
+        Sound::Stop3D(instanceId);
+    }
+
+    void ScriptSystem::Update3D(const std::wstring& instanceId,
+                                const DirectX::XMFLOAT3& pos,
+                                float volume,
+                                float minDistance,
+                                float maxDistance)
+    {
+        Sound::Update3D(instanceId, pos, volume, minDistance, maxDistance);
     }
 
     void ScriptSystem::EnsureServicesBound(World& world)
@@ -473,6 +549,9 @@ namespace Alice
             if (!m_pendingSceneFile.empty())
             {
                 const std::string path = std::exchange(m_pendingSceneFile, {});
+                // Stop any playing audio before loading a new scene file.
+                Sound::StopBGM();
+                Sound::StopAllSFX();
                 const bool ok = (m_resources)
                     ? SceneFile::LoadAuto(world, *m_resources, std::filesystem::path(path))
                     : SceneFile::Load(world, std::filesystem::path(path));

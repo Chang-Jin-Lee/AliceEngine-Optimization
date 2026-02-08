@@ -107,7 +107,7 @@
                     "z": 1.0
                 },
                 "preserveAspect": true,
-                "texturePath": "Resource/Test/Image/Hanako.png",
+                "texturePath": "Resource/Image/Hanako.png",
                 "uvRect": {
                     "w": 1.0,
                     "x": 0.0,
@@ -252,7 +252,7 @@
                     "z": 1.0
                 },
                 "preserveAspect": true,
-                "texturePath": "Resource/Test/Image/Yuuka.png",
+                "texturePath": "Resource/Image/Yuuka.png",
                 "uvRect": {
                     "w": 1.0,
                     "x": 0.0,
@@ -324,7 +324,7 @@
                 }
             },
             "UIButton": {
-                "disabledTexture": "Resource/Test/Image/Hanako_Specular.png",
+                "disabledTexture": "Resource/Image/Hanako_Specular.png",
                 "disabledTint": {
                     "w": 1.0,
                     "x": 0.4000000059604645,
@@ -332,21 +332,21 @@
                     "z": 0.4000000059604645
                 },
                 "enabled": true,
-                "hoveredTexture": "Resource/Test/Image/Hanako_Normal.png",
+                "hoveredTexture": "Resource/Image/Hanako_Normal.png",
                 "hoveredTint": {
                     "w": 1.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
                 },
-                "normalTexture": "Resource/Test/Image/Hanako_Specular.png",
+                "normalTexture": "Resource/Image/Hanako_Specular.png",
                 "normalTint": {
                     "w": 1.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
                 },
-                "pressedTexture": "Resource/Test/Image/Hanako.png",
+                "pressedTexture": "Resource/Image/Hanako.png",
                 "pressedTint": {
                     "w": 1.0,
                     "x": 0.8500000238418579,
@@ -496,7 +496,7 @@
                     "z": 1.0
                 },
                 "preserveAspect": true,
-                "texturePath": "Resource/Test/Image/Yuuka_Specular.png",
+                "texturePath": "Resource/Image/Yuuka_Specular.png",
                 "uvRect": {
                     "w": 1.0,
                     "x": 0.0,
@@ -575,7 +575,7 @@
                     "z": 1.0
                 },
                 "preserveAspect": true,
-                "texturePath": "Resource/Test/Image/Hanako_Normal.png",
+                "texturePath": "Resource/Image/Hanako_Normal.png",
                 "uvRect": {
                     "w": 1.0,
                     "x": 0.0,
@@ -706,7 +706,7 @@
                     "y": 0.10000000149011612,
                     "z": 0.10000000149011612
                 },
-                "backgroundTexture": "Resource/Test/Image/Hanako_Specular.png",
+                "backgroundTexture": "Resource/Image/Hanako_Specular.png",
                 "direction": "LeftToRight",
                 "fillColor": {
                     "w": 1.0,
@@ -714,7 +714,7 @@
                     "y": 0.8999999761581421,
                     "z": 0.30000001192092896
                 },
-                "fillTexture": "Resource/Test/Image/Hanako_Normal.png",
+                "fillTexture": "Resource/Image/Hanako_Normal.png",
                 "maxValue": 1.0,
                 "minValue": 0.0,
                 "normalized": true,
@@ -986,7 +986,7 @@
                     "z": 1.0
                 },
                 "preserveAspect": true,
-                "texturePath": "Resource/Test/Image/Yuuka.png",
+                "texturePath": "Resource/Image/Yuuka.png",
                 "uvRect": {
                     "w": 1.0,
                     "x": 0.0,
