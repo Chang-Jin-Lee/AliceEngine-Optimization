@@ -34,9 +34,11 @@ namespace Alice
         float GetPlayerRageRemainingSec() const;
 
         // Combat resolve delegate: called when a hit is resolved
-        // Parameters: victimId, attackerId, resolveResult, damage, hitPosWS
-        using FOnCombatResolved = Alice::Delegate<EntityId, EntityId, std::uint8_t, float, const DirectX::XMFLOAT3&>;
+        // Parameters: victimId, attackerId, resolveResult, damage, hitPosWS, hitNormalWS
+        using FOnCombatResolved = Alice::Delegate<EntityId, EntityId, std::uint8_t, float, const DirectX::XMFLOAT3&, const DirectX::XMFLOAT3&>;
         FOnCombatResolved OnCombatResolved;
+        // Single-cast Delegate safety: dedicated channel for VFX bridge subscribers.
+        FOnCombatResolved OnCombatResolvedVfx;
 
         // Entity resolution (GUID preferred, name fallback when enabled)
         ALICE_PROPERTY(uint64_t, m_playerGuid, 0);
