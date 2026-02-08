@@ -554,12 +554,13 @@ namespace Alice
                     vfx->overrideLoop = false;
                     vfx->loop = true;
                     vfx->sizeScale = 0.025f;
-                    vfx->intensityScale = 0.0f;
+                    vfx->intensityScale = 2.0f;
                     vfx->spawnRateScale = spawnRateScale;
                     vfx->enableTrails = true;
                     vfx->emitNewParticles = false;
-                    vfx->colorTint = XMFLOAT3(1.0f, 1.0f, 1.0f);
-                    vfx->colorScale = 1.0f;
+                    // Eye move trail only: force pure red so it does not read as purple.
+                    vfx->colorTint = XMFLOAT3(1.0f, 0.0f, 0.0f);
+                    vfx->colorScale = 5.0f;
                     vfx->alphaScale = 1.0f;
                 }
 
@@ -616,9 +617,10 @@ namespace Alice
                     unityVfx->loop = true;
                     unityVfx->sizeScale = 2.00f;
                     unityVfx->speedScale = 6.445f;
-                    unityVfx->intensityScale = 0.2f;
-                    unityVfx->colorScale = 0.4f;
-                    unityVfx->colorTint = XMFLOAT3(1.0f, 1.0f, 1.0f);
+                    // Eye dust trail too: keep it red to match eye move trail.
+                    unityVfx->intensityScale = 2.0f;
+                    unityVfx->colorScale = 2.0f;
+                    unityVfx->colorTint = XMFLOAT3(1.0f, 0.0f, 0.0f);
                     unityVfx->spawnRateScale = 1.0f;
                     unityVfx->enableTrails = true;
                     unityVfx->emitNewParticles = false;
