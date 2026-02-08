@@ -40,6 +40,8 @@ namespace Alice::Combat
         float m_attackFallbackDurationSec = 0.8f;
         float m_dodgeMoveTimer = 0.0f;
         bool m_dodgeMoveStopped = false;
+        bool m_parrySuccessLatched = false;
+        bool m_guardReentryRequiresRelease = false;
 
         void Enter(ActionState next, bool force = false);
     };

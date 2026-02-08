@@ -32,13 +32,25 @@ namespace Alice
         ALICE_PROPERTY(std::string, playerEntityName, "Player(Tia)");
         ALICE_PROPERTY(std::string, bossEntityName, "Boss");
         ALICE_PROPERTY(std::string, weaponTraceEntityName, "W_Target");
-        ALICE_PROPERTY(std::string, weaponBasisEntityName, "W_Core");
-        ALICE_PROPERTY(std::string, weaponSocketOwnerName, "EGO_Core");
-        ALICE_PROPERTY(std::string, weaponSocketName, "CombinedSpot");
 
         // Prefab paths
         ALICE_PROPERTY(std::string, slashPrefabPath, "Assets/Prefabs/(01)White_Attack_SlashC.prefab");
+        ALICE_PROPERTY(bool, useAttackDriverSlotSignals, true);
+        ALICE_PROPERTY(bool, useSlashStepPrefabs, false);
+        ALICE_PROPERTY(std::string, slashStepPrefabPath1, "");
+        ALICE_PROPERTY(std::string, slashStepPrefabPath2, "");
+        ALICE_PROPERTY(std::string, slashStepPrefabPath3, "");
+        ALICE_PROPERTY(std::string, slashStepPrefabPath4, "");
+        ALICE_PROPERTY(std::string, slashStepPrefabPath5, "");
+        ALICE_PROPERTY(std::string, slashStepPrefabPath6, "");
         ALICE_PROPERTY(std::string, hitPrefabPath, "Assets/Prefabs/(01)White_HIT.prefab");
+        ALICE_PROPERTY(bool, useHitSlotPrefabs, false);
+        ALICE_PROPERTY(std::string, hitSlotPrefabPath1, "");
+        ALICE_PROPERTY(std::string, hitSlotPrefabPath2, "");
+        ALICE_PROPERTY(std::string, hitSlotPrefabPath3, "");
+        ALICE_PROPERTY(std::string, hitSlotPrefabPath4, "");
+        ALICE_PROPERTY(std::string, hitSlotPrefabPath5, "");
+        ALICE_PROPERTY(std::string, hitSlotPrefabPath6, "");
 
         // Pool settings
         ALICE_PROPERTY(int, slashPoolSize, 8);
@@ -48,9 +60,38 @@ namespace Alice
         // Lifetime (sec)
         ALICE_PROPERTY(float, slashLifeTimeSec, 0.8f);
         ALICE_PROPERTY(float, hitLifeTimeSec, 0.6f);
+        ALICE_PROPERTY(bool, enableHeavyFadeOut, true);
+        ALICE_PROPERTY(int, heavyAttackSlotIndex, 4);
+        ALICE_PROPERTY(float, heavyFadeDurationSec, 1.0f);
         ALICE_PROPERTY(float, slashSpawnPhase, 0.16666667f);
-        ALICE_PROPERTY(float, slashAnchorPlayerYOffset, 0.6f);
-        ALICE_PROPERTY(float, slashAnchorPlayerForwardOffset, 0.5f);
+        ALICE_PROPERTY(float, slashAnchorPlayerYOffset, 0.0f);
+        ALICE_PROPERTY(float, slashAnchorPlayerForwardOffset, 0.0f);
+        ALICE_PROPERTY(bool, useSlashSlotTransformTuning, true);
+        ALICE_PROPERTY(DirectX::XMFLOAT3, slashSlotAnchorOffsetLocal1, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, slashSlotAnchorOffsetLocal2, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, slashSlotAnchorOffsetLocal3, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, slashSlotAnchorOffsetLocal4, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, slashSlotAnchorOffsetLocal5, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, slashSlotAnchorOffsetLocal6, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, slashSlotRotationOffsetDeg1, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, slashSlotRotationOffsetDeg2, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, slashSlotRotationOffsetDeg3, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, slashSlotRotationOffsetDeg4, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, slashSlotRotationOffsetDeg5, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, slashSlotRotationOffsetDeg6, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(float, slashSlotScaleMul1, 1.0f);
+        ALICE_PROPERTY(float, slashSlotScaleMul2, 1.0f);
+        ALICE_PROPERTY(float, slashSlotScaleMul3, 1.0f);
+        ALICE_PROPERTY(float, slashSlotScaleMul4, 1.0f);
+        ALICE_PROPERTY(float, slashSlotScaleMul5, 1.0f);
+        ALICE_PROPERTY(float, slashSlotScaleMul6, 1.0f);
+        ALICE_PROPERTY(bool, useHitSlotLifeTimes, true);
+        ALICE_PROPERTY(float, hitSlotLifeTimeSec1, 0.0f);
+        ALICE_PROPERTY(float, hitSlotLifeTimeSec2, 0.0f);
+        ALICE_PROPERTY(float, hitSlotLifeTimeSec3, 0.0f);
+        ALICE_PROPERTY(float, hitSlotLifeTimeSec4, 0.0f);
+        ALICE_PROPERTY(float, hitSlotLifeTimeSec5, 0.0f);
+        ALICE_PROPERTY(float, hitSlotLifeTimeSec6, 0.0f);
 
         // Spawn tuning
         ALICE_PROPERTY(DirectX::XMFLOAT3, slashOffsetLocal, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
@@ -67,11 +108,16 @@ namespace Alice
         {
             EntityId id = InvalidEntityId;
             float remainingSec = 0.0f;
+            float totalSec = 0.0f;
+            bool fadeOut = false;
+            EntityId freezeAnchor = InvalidEntityId;
         };
 
         void ResolveSessionAndActors(bool logWarnings);
         void TryBindResolveDelegate();
         void UnbindResolveDelegateSafe();
+        bool IsSlashWindowActive();
+        void DetachActiveSlashInstances();
         void UpdatePathCacheAndPools();
         void UpdateSocketTracking();
         void UpdateActive(float deltaTime);
@@ -79,14 +125,14 @@ namespace Alice
         bool ProcessSlashFromTraceSignals(bool allowSpawn);
         void CollectPlayerTraceEntities(std::vector<EntityId>& out) const;
 
-        void SpawnSlashFromAttackWindow();
-        void SpawnHitFromResolve(const DirectX::XMFLOAT3& hitPos, const DirectX::XMFLOAT3& hitNormal);
+        void SpawnSlashFromAttackWindow(int attackSlotIndex = -1);
+        void SpawnHitFromResolve(const DirectX::XMFLOAT3& hitPos,
+                                 int attackSlotIndex = -1);
         void OnCombatResolve(EntityId victimId,
                              EntityId attackerId,
                              std::uint8_t resolveResult,
                              float damage,
-                             const DirectX::XMFLOAT3& hitPos,
-                             const DirectX::XMFLOAT3& hitNormal);
+                             const DirectX::XMFLOAT3& hitPos);
 
         void PrewarmSlot(int slot);
         void ClearSlot(int slot);
@@ -98,36 +144,62 @@ namespace Alice
 
         bool TryGetTracePointWorld(DirectX::XMFLOAT3& outPos);
         bool TryGetTracePoseWorld(DirectX::XMFLOAT3& outPos, DirectX::XMFLOAT3& outForward, DirectX::XMFLOAT3& outUp);
-        bool TryGetWeaponBasisPose(DirectX::XMFLOAT3& outPos, DirectX::XMFLOAT4& outRot);
-        bool TryGetWeaponBasisWorld(DirectX::XMFLOAT3& outPos, DirectX::XMFLOAT3& outForward);
-        bool TryGetSocketWorld(DirectX::XMFLOAT3& outPos, DirectX::XMFLOAT3& outForward);
+        bool TryGetAttackDirectionWorld(DirectX::XMFLOAT3& outForward);
+        int ResolveSlashSlotForAttackSlotIndex(int attackSlotIndex) const;
+        int ResolveHitSlotForAttackSlotIndex(int attackSlotIndex) const;
+        int ResolveCurrentAttackSlotIndexFromDriverMask() const;
         DirectX::XMFLOAT3 GetPlayerPosition();
         DirectX::XMFLOAT3 GetPlayerForward();
         float ResolvePlayerAttackDurationSec() const;
+        void ApplySpawnTransformTuned(int slot,
+                                      EntityId id,
+                                      const DirectX::XMFLOAT3& anchorPos,
+                                      const DirectX::XMFLOAT3& forward,
+                                      const DirectX::XMFLOAT3& upHint,
+                                      const DirectX::XMFLOAT3& localOffset,
+                                      const DirectX::XMFLOAT3& rotationOffsetDeg,
+                                      float scaleMul);
         void ApplySpawnTransform(int slot,
                                  EntityId id,
                                  const DirectX::XMFLOAT3& anchorPos,
                                  const DirectX::XMFLOAT3& forward,
                                  const DirectX::XMFLOAT3& upHint);
-        void ApplySpawnTransformFromRotation(int slot,
-                                             EntityId id,
-                                             const DirectX::XMFLOAT3& anchorPos,
-                                             const DirectX::XMFLOAT4& worldRot);
 
         void SetEntityActiveRecursive(World& world, EntityId id, bool active, bool triggerOneShot) const;
+        void SetEntityAlphaRecursive(World& world, EntityId id, float alpha) const;
+        void SetEntityLoopModeRecursive(World& world, EntityId id, bool loopEnabled) const;
 
         std::string GetPrefabPath(int slot) const;
         int GetPoolSizeSafe(int slot) const;
         float GetLifeTimeSafe(int slot) const;
+        bool IsHeavyAttackSlotIndex(int attackSlotIndex) const;
+        float ResolveSpawnLifetimeSec(int slot, int attackSlotIndex) const;
         float GetScaleMulSafe(int slot) const;
         DirectX::XMFLOAT3 GetOffsetLocal(int slot) const;
         DirectX::XMFLOAT3 GetRotationOffsetDeg(int slot) const;
+        DirectX::XMFLOAT3 GetSlashSlotAnchorOffsetLocal(int attackSlotIndex) const;
+        DirectX::XMFLOAT3 GetSlashSlotRotationOffsetDeg(int attackSlotIndex) const;
+        float GetSlashSlotScaleMul(int attackSlotIndex) const;
 
         enum : int
         {
-            SlashSlot = 0,
-            HitSlot = 1,
-            SlotCount = 2
+            SlashDefaultSlot = 0,
+            SlashStep1Slot = 1,
+            SlashStep2Slot = 2,
+            SlashStep3Slot = 3,
+            SlashStep4Slot = 4,
+            SlashStep5Slot = 5,
+            SlashStep6Slot = 6,
+            HitDefaultSlot = 7,
+            HitSlot = HitDefaultSlot,
+            HitStep1Slot = 8,
+            HitStep2Slot = 9,
+            HitStep3Slot = 10,
+            HitStep4Slot = 11,
+            HitStep5Slot = 12,
+            HitStep6Slot = 13,
+            SlotCount = 14,
+            SlashStepSlotCount = 6
         };
 
         C_CombatSessionComponent* m_session = nullptr;
@@ -141,6 +213,9 @@ namespace Alice
         std::array<std::string, SlotCount> m_cachedPaths{};
         std::array<std::unordered_map<EntityId, DirectX::XMFLOAT3>, SlotCount> m_cachedBaseScales{};
         std::unordered_map<EntityId, std::uint32_t> m_traceAttackInstanceSeen{};
+        std::uint32_t m_prevAttackTraceMask = 0u;
+        int m_lastAttackSlotIndex = -1;
+        bool m_prevSlashWindowActive = false;
 
         bool m_prevPlayerHitActive = false;
         bool m_prevIsLightAttack = false;
@@ -149,6 +224,7 @@ namespace Alice
         DirectX::XMFLOAT3 m_currSocketPos{ 0.0f, 0.0f, 0.0f };
         bool m_attackTraceActive = false;
         int m_attackTraceComboIndex = -1;
+        int m_slashSignalOrdinalInAttack = 0;
         bool m_slashSpawnedThisAttack = false;
         float m_attackElapsedSec = 0.0f;
         float m_attackDurationSec = 0.0f;
@@ -160,9 +236,6 @@ namespace Alice
         bool m_warnedMissingPlayer = false;
         bool m_warnedMissingBoss = false;
         bool m_warnedMissingTracePoint = false;
-        bool m_warnedMissingWeaponBasis = false;
-        bool m_warnedMissingSocketOwner = false;
-        bool m_warnedMissingSocket = false;
         bool m_warnedMissingSlashPrefabPath = false;
         bool m_warnedMissingHitPrefabPath = false;
         bool m_warnedSlashInstantiateFailed = false;

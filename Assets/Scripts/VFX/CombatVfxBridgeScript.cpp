@@ -8,11 +8,8 @@
 #include "Runtime/ECS/GameObject.h"
 #include "Runtime/ECS/World.h"
 #include "Runtime/Foundation/Logger.h"
-#include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
 #include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
 #include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
-#include "Runtime/Gameplay/Sockets/SocketComponent.h"
-#include "Runtime/Gameplay/Sockets/SocketPoseOutputComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
 #include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/Resources/Prefab.h"
@@ -31,6 +28,15 @@ namespace Alice
         using namespace DirectX;
 
         constexpr float kVectorEpsilonSq = 1e-6f;
+
+        int ClampInt(int v, int minV, int maxV)
+        {
+            if (v < minV)
+                return minV;
+            if (v > maxV)
+                return maxV;
+            return v;
+        }
 
         struct Basis
         {
@@ -58,82 +64,6 @@ namespace Alice
                     return static_cast<C_CombatSessionComponent*>(sc.instance.get());
             }
             return nullptr;
-        }
-
-        bool TryGetSocketWorldMatrixOnEntity(World& world, EntityId owner, const std::string& socketName, XMMATRIX& out)
-        {
-            if (auto* poses = world.GetComponent<SocketPoseOutputComponent>(owner))
-            {
-                for (const auto& p : poses->poses)
-                {
-                    if (p.name == socketName)
-                    {
-                        out = XMLoadFloat4x4(&p.world);
-                        return true;
-                    }
-                }
-            }
-
-            if (auto* adv = world.GetComponent<AdvancedAnimationComponent>(owner))
-            {
-                for (const auto& s : adv->sockets)
-                {
-                    if (s.name == socketName)
-                    {
-                        out = XMLoadFloat4x4(&s.worldMatrix);
-                        return true;
-                    }
-                }
-                for (const auto& s : adv->sockets)
-                {
-                    if (s.parentBone == socketName)
-                    {
-                        out = XMLoadFloat4x4(&s.worldMatrix);
-                        return true;
-                    }
-                }
-            }
-
-            if (auto* sc = world.GetComponent<SocketComponent>(owner))
-            {
-                for (const auto& s : sc->sockets)
-                {
-                    if (s.name == socketName)
-                    {
-                        out = XMLoadFloat4x4(&s.world);
-                        return true;
-                    }
-                }
-                for (const auto& s : sc->sockets)
-                {
-                    if (s.parentBone == socketName)
-                    {
-                        out = XMLoadFloat4x4(&s.world);
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        bool TryGetSocketWorldMatrixRecursive(World& world, EntityId owner, const std::string& socketName, XMMATRIX& out)
-        {
-            if (TryGetSocketWorldMatrixOnEntity(world, owner, socketName, out))
-                return true;
-
-            std::vector<EntityId> stack = world.GetChildren(owner);
-            for (size_t i = 0; i < stack.size(); ++i)
-            {
-                const EntityId child = stack[i];
-                if (TryGetSocketWorldMatrixOnEntity(world, child, socketName, out))
-                    return true;
-
-                auto kids = world.GetChildren(child);
-                if (!kids.empty())
-                    stack.insert(stack.end(), kids.begin(), kids.end());
-            }
-            return false;
         }
 
         float LengthSq(const XMFLOAT3& v)
@@ -173,11 +103,6 @@ namespace Alice
             XMFLOAT3 out{};
             XMStoreFloat3(&out, XMVector3Normalize(XMLoadFloat3(&v)));
             return out;
-        }
-
-        XMFLOAT3 DegToRad(const XMFLOAT3& deg)
-        {
-            return XMFLOAT3(XMConvertToRadians(deg.x), XMConvertToRadians(deg.y), XMConvertToRadians(deg.z));
         }
 
         XMFLOAT3 QuaternionToYPR_Rad(FXMVECTOR q)
@@ -223,21 +148,6 @@ namespace Alice
             return basis;
         }
 
-        Basis BuildBasisFromQuaternion(const XMFLOAT4& rotQ)
-        {
-            XMFLOAT4 q = rotQ;
-            if ((q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w) <= kVectorEpsilonSq)
-                q = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-
-            XMFLOAT4X4 m{};
-            XMStoreFloat4x4(&m, XMMatrixRotationQuaternion(XMLoadFloat4(&q)));
-
-            Basis basis{};
-            basis.right = NormalizeOrFallback(XMFLOAT3(m._11, m._12, m._13), XMFLOAT3(1.0f, 0.0f, 0.0f));
-            basis.up = NormalizeOrFallback(XMFLOAT3(m._21, m._22, m._23), XMFLOAT3(0.0f, 1.0f, 0.0f));
-            basis.forward = NormalizeOrFallback(XMFLOAT3(m._31, m._32, m._33), XMFLOAT3(0.0f, 0.0f, 1.0f));
-            return basis;
-        }
 
         XMFLOAT3 RotateLocalOffset(const XMFLOAT3& local, const Basis& basis)
         {
@@ -245,6 +155,49 @@ namespace Alice
             const XMFLOAT3 yTerm = Mul(basis.up, local.y);
             const XMFLOAT3 zTerm = Mul(basis.forward, local.z);
             return Add(Add(xTerm, yTerm), zTerm);
+        }
+
+        XMFLOAT3 RotateAroundAxis(const XMFLOAT3& v, const XMFLOAT3& axis, float rad)
+        {
+            if (std::abs(rad) <= 1e-6f)
+                return v;
+
+            const XMVECTOR q = XMQuaternionRotationAxis(XMLoadFloat3(&axis), rad);
+            XMFLOAT3 out{};
+            XMStoreFloat3(&out, XMVector3Rotate(XMLoadFloat3(&v), q));
+            return out;
+        }
+
+        Basis ApplyEulerOffsetDegLocal(const Basis& input, const XMFLOAT3& offsetDeg)
+        {
+            Basis out = input;
+
+            const float pitch = XMConvertToRadians(offsetDeg.x);
+            const float yaw = XMConvertToRadians(offsetDeg.y);
+            const float roll = XMConvertToRadians(offsetDeg.z);
+
+            if (std::abs(pitch) > 1e-6f)
+            {
+                const XMFLOAT3 axis = NormalizeOrFallback(out.right, XMFLOAT3(1.0f, 0.0f, 0.0f));
+                out.up = RotateAroundAxis(out.up, axis, pitch);
+                out.forward = RotateAroundAxis(out.forward, axis, pitch);
+            }
+
+            if (std::abs(yaw) > 1e-6f)
+            {
+                const XMFLOAT3 axis = NormalizeOrFallback(out.up, XMFLOAT3(0.0f, 1.0f, 0.0f));
+                out.right = RotateAroundAxis(out.right, axis, yaw);
+                out.forward = RotateAroundAxis(out.forward, axis, yaw);
+            }
+
+            if (std::abs(roll) > 1e-6f)
+            {
+                const XMFLOAT3 axis = NormalizeOrFallback(out.forward, XMFLOAT3(0.0f, 0.0f, 1.0f));
+                out.right = RotateAroundAxis(out.right, axis, roll);
+                out.up = RotateAroundAxis(out.up, axis, roll);
+            }
+
+            return BuildBasis(out.forward, out.up);
         }
 
         XMFLOAT3 RotationRadFromBasis(const Basis& basis)
@@ -257,6 +210,21 @@ namespace Alice
 
             return QuaternionToYPR_Rad(XMQuaternionRotationMatrix(rot));
         }
+
+        bool DecomposeWorldMatrix(const XMMATRIX& worldMatrix, XMFLOAT3& outPos, XMFLOAT3& outRotRad, XMFLOAT3& outScale)
+        {
+            XMVECTOR scale{};
+            XMVECTOR rotQ{};
+            XMVECTOR trans{};
+            if (!XMMatrixDecompose(&scale, &rotQ, &trans, worldMatrix))
+                return false;
+
+            XMStoreFloat3(&outPos, trans);
+            XMStoreFloat3(&outScale, scale);
+            outRotRad = QuaternionToYPR_Rad(rotQ);
+            return true;
+        }
+
     }
 
     using namespace DirectX;
@@ -279,7 +247,11 @@ namespace Alice
         {
             m_prevIsLightAttack = false;
             m_prevPlayerHitActive = false;
+            m_slashSignalOrdinalInAttack = 0;
         }
+        m_prevAttackTraceMask = 0u;
+        m_lastAttackSlotIndex = -1;
+        m_prevSlashWindowActive = IsSlashWindowActive();
 
         UpdatePathCacheAndPools();
         UpdateSocketTracking();
@@ -292,6 +264,10 @@ namespace Alice
         TryBindResolveDelegate();
         UpdatePathCacheAndPools();
         UpdateSocketTracking();
+
+        const bool slashWindowActive = IsSlashWindowActive();
+        if (m_prevSlashWindowActive && !slashWindowActive)
+            DetachActiveSlashInstances();
 
         if (m_session)
         {
@@ -312,6 +288,8 @@ namespace Alice
             {
                 m_attackTraceActive = true;
                 m_attackTraceComboIndex = comboIndex;
+                m_slashSignalOrdinalInAttack = 0;
+                m_lastAttackSlotIndex = -1;
                 m_slashSpawnedThisAttack = false;
                 m_attackElapsedSec = 0.0f;
                 m_attackDurationSec = ResolvePlayerAttackDurationSec();
@@ -344,8 +322,12 @@ namespace Alice
 
             if (!isLightAttack)
             {
+                DetachActiveSlashInstances();
                 m_attackTraceActive = false;
                 m_attackTraceComboIndex = -1;
+                m_slashSignalOrdinalInAttack = 0;
+                m_prevAttackTraceMask = 0u;
+                m_lastAttackSlotIndex = -1;
                 m_slashSpawnedThisAttack = false;
                 m_attackElapsedSec = 0.0f;
                 m_attackDurationSec = 0.0f;
@@ -354,18 +336,25 @@ namespace Alice
 
             m_prevIsLightAttack = isLightAttack;
             m_prevPlayerHitActive = playerFlags.hitActive;
+            m_prevSlashWindowActive = isLightAttack ? slashWindowActive : false;
         }
         else
         {
+            if (m_prevSlashWindowActive)
+                DetachActiveSlashInstances();
             m_prevIsLightAttack = false;
             m_prevPlayerHitActive = false;
             m_attackTraceActive = false;
             m_attackTraceComboIndex = -1;
+            m_slashSignalOrdinalInAttack = 0;
+            m_prevAttackTraceMask = 0u;
+            m_lastAttackSlotIndex = -1;
             m_slashSpawnedThisAttack = false;
             m_attackElapsedSec = 0.0f;
             m_attackDurationSec = 0.0f;
             m_hasAttackStartPos = false;
             m_traceAttackInstanceSeen.clear();
+            m_prevSlashWindowActive = false;
         }
 
         UpdateActive(deltaTime);
@@ -382,11 +371,15 @@ namespace Alice
         m_hasPrevSocketPos = false;
         m_attackTraceActive = false;
         m_attackTraceComboIndex = -1;
+        m_slashSignalOrdinalInAttack = 0;
+        m_prevAttackTraceMask = 0u;
+        m_lastAttackSlotIndex = -1;
         m_slashSpawnedThisAttack = false;
         m_attackElapsedSec = 0.0f;
         m_attackDurationSec = 0.0f;
         m_hasAttackStartPos = false;
         m_traceAttackInstanceSeen.clear();
+        m_prevSlashWindowActive = false;
     }
 
     void CombatVfxBridgeScript::OnDestroy()
@@ -472,6 +465,108 @@ namespace Alice
         m_resolveBound = false;
     }
 
+    bool CombatVfxBridgeScript::IsSlashWindowActive()
+    {
+        World* world = GetWorld();
+        if (!world || m_playerId == InvalidEntityId)
+            return false;
+
+        if (Get_useAttackDriverSlotSignals())
+        {
+            const auto* driver = world->GetComponent<AttackDriverComponent>(m_playerId);
+            return (driver != nullptr) && (driver->attackTraceMaskActive != 0u);
+        }
+
+        if (!m_session)
+            return false;
+
+        const Combat::ActionFlags flags = m_session->GetPlayerFlags();
+        return flags.hitActive;
+    }
+
+    void CombatVfxBridgeScript::DetachActiveSlashInstances()
+    {
+        World* world = GetWorld();
+        if (!world)
+            return;
+
+        for (int slot = SlashDefaultSlot; slot <= SlashStep6Slot; ++slot)
+        {
+            for (ActiveInstance& inst : m_active[slot])
+            {
+                if (inst.id == InvalidEntityId)
+                    continue;
+                TransformComponent* tr = world->GetComponent<TransformComponent>(inst.id);
+                if (!tr)
+                    continue;
+
+                // Slash is spawned under player. Once detached to a freeze anchor,
+                // parent is no longer player and this block won't run again.
+                const EntityId oldParent = tr->parent;
+                if (oldParent == InvalidEntityId || oldParent != m_playerId)
+                    continue;
+
+                const EntityId anchor = world->CreateEmpty();
+                if (anchor == InvalidEntityId)
+                {
+                    world->SetParent(inst.id, InvalidEntityId, true);
+                    continue;
+                }
+
+                world->SetEntityName(anchor, "__CombatVfxFreezeAnchor");
+                world->SetParent(anchor, InvalidEntityId, false);
+
+                bool anchorPoseReady = false;
+                if (const auto* parentTr = world->GetComponent<TransformComponent>(oldParent))
+                {
+                    if (parentTr->parent == InvalidEntityId)
+                    {
+                        if (auto* anchorTr = world->GetComponent<TransformComponent>(anchor))
+                        {
+                            anchorTr->position = parentTr->position;
+                            anchorTr->rotation = parentTr->rotation;
+                            anchorTr->scale = parentTr->scale;
+                            world->MarkTransformDirty(anchor);
+                            anchorPoseReady = true;
+                        }
+                    }
+                }
+
+                if (!anchorPoseReady)
+                {
+                    XMFLOAT3 worldPos{};
+                    XMFLOAT3 worldRot{};
+                    XMFLOAT3 worldScale{};
+                    const XMMATRIX parentWorld = world->ComputeWorldMatrix(oldParent);
+                    if (DecomposeWorldMatrix(parentWorld, worldPos, worldRot, worldScale))
+                    {
+                        if (auto* anchorTr = world->GetComponent<TransformComponent>(anchor))
+                        {
+                            anchorTr->position = worldPos;
+                            anchorTr->rotation = worldRot;
+                            anchorTr->scale = worldScale;
+                            world->MarkTransformDirty(anchor);
+                            anchorPoseReady = true;
+                        }
+                    }
+                }
+
+                if (!anchorPoseReady)
+                {
+                    world->DestroyEntity(anchor);
+                    world->SetParent(inst.id, InvalidEntityId, true);
+                    continue;
+                }
+
+                world->SetParent(inst.id, anchor, false);
+
+                if (inst.freezeAnchor != InvalidEntityId && inst.freezeAnchor != anchor)
+                    world->DestroyEntity(inst.freezeAnchor);
+                inst.freezeAnchor = anchor;
+            }
+        }
+    }
+
     void CombatVfxBridgeScript::UpdatePathCacheAndPools()
     {
         for (int slot = 0; slot < SlotCount; ++slot)
@@ -488,7 +583,7 @@ namespace Alice
 
             if (path.empty())
             {
-                if (slot == SlashSlot && !m_warnedMissingSlashPrefabPath)
+                if (slot == SlashDefaultSlot && !m_warnedMissingSlashPrefabPath)
                 {
                     ALICE_LOG_WARN("[CombatVfxBridge] slashPrefabPath is empty.");
                     m_warnedMissingSlashPrefabPath = true;
@@ -506,10 +601,9 @@ namespace Alice
     {
         XMFLOAT3 trackPos{};
         XMFLOAT3 trackForward{};
+        XMFLOAT3 trackUp{};
 
-        bool hasTrackingPose = TryGetWeaponBasisWorld(trackPos, trackForward);
-        if (!hasTrackingPose)
-            hasTrackingPose = TryGetSocketWorld(trackPos, trackForward);
+        const bool hasTrackingPose = TryGetTracePoseWorld(trackPos, trackForward, trackUp);
 
         if (!hasTrackingPose)
         {
@@ -531,6 +625,7 @@ namespace Alice
 
     void CombatVfxBridgeScript::UpdateActive(float deltaTime)
     {
+        World* world = GetWorld();
         for (int slot = 0; slot < SlotCount; ++slot)
         {
             auto& activeList = m_active[slot];
@@ -544,9 +639,18 @@ namespace Alice
                 }
 
                 inst.remainingSec -= deltaTime;
+                if (inst.fadeOut && inst.totalSec > 0.0f && world)
+                {
+                    const float alpha = std::clamp(inst.remainingSec / inst.totalSec, 0.0f, 1.0f);
+                    SetEntityAlphaRecursive(*world, inst.id, alpha);
+                }
+
                 if (inst.remainingSec <= 0.0f)
                 {
                     Release(slot, inst.id);
+                    if (world && inst.freezeAnchor != InvalidEntityId)
+                        world->DestroyEntity(inst.freezeAnchor);
+                    inst.freezeAnchor = InvalidEntityId;
                     activeList.erase(activeList.begin() + static_cast<std::ptrdiff_t>(i));
                     continue;
                 }
@@ -558,12 +662,15 @@ namespace Alice
 
     void CombatVfxBridgeScript::DeactivateAllActive()
     {
+        World* world = GetWorld();
         for (int slot = 0; slot < SlotCount; ++slot)
         {
             for (const ActiveInstance& inst : m_active[slot])
             {
                 if (inst.id != InvalidEntityId)
                     Release(slot, inst.id);
+                if (world && inst.freezeAnchor != InvalidEntityId)
+                    world->DestroyEntity(inst.freezeAnchor);
             }
             m_active[slot].clear();
         }
@@ -628,6 +735,35 @@ namespace Alice
         if (!world || m_playerId == InvalidEntityId)
             return false;
 
+        if (Get_useAttackDriverSlotSignals())
+        {
+            const auto* driver = world->GetComponent<AttackDriverComponent>(m_playerId);
+            if (!driver)
+            {
+                m_prevAttackTraceMask = 0u;
+                return false;
+            }
+
+            const std::uint32_t currentMask = driver->attackTraceMaskActive;
+            const std::uint32_t risingMask = currentMask & ~m_prevAttackTraceMask;
+            m_prevAttackTraceMask = currentMask;
+
+            if (allowSpawn && risingMask != 0u)
+            {
+                for (int bit = 0; bit < 32; ++bit)
+                {
+                    const std::uint32_t bitMask = (1u << bit);
+                    if ((risingMask & bitMask) == 0u)
+                        continue;
+
+                    const int attackSlotIndex = bit + 1; // bit0 -> slot1
+                    m_lastAttackSlotIndex = attackSlotIndex;
+                    SpawnSlashFromAttackWindow(attackSlotIndex);
+                }
+            }
+            return true;
+        }
+
         std::vector<EntityId> traces;
         CollectPlayerTraceEntities(traces);
         if (traces.empty())
@@ -666,71 +802,136 @@ namespace Alice
         return true;
     }
 
-    void CombatVfxBridgeScript::SpawnSlashFromAttackWindow()
+    void CombatVfxBridgeScript::SpawnSlashFromAttackWindow(int attackSlotIndex)
     {
-        const EntityId id = Acquire(SlashSlot);
-        if (id == InvalidEntityId)
-            return;
-
-        XMFLOAT3 anchorPos = GetPlayerPosition();
-        anchorPos.y += Get_slashAnchorPlayerYOffset();
-        const XMFLOAT3 playerForward = GetPlayerForward();
-        const XMFLOAT3 forwardOffset = Mul(playerForward, Get_slashAnchorPlayerForwardOffset());
-        anchorPos = Add(anchorPos, forwardOffset);
-
-        XMFLOAT3 basisPos{};
-        XMFLOAT4 basisRot{};
-        const bool hasBasisPose = TryGetWeaponBasisPose(basisPos, basisRot);
-        if (hasBasisPose)
+        int resolvedAttackSlotIndex = attackSlotIndex;
+        int slashSlot = SlashDefaultSlot;
+        if (resolvedAttackSlotIndex > 0)
         {
-            ApplySpawnTransformFromRotation(SlashSlot, id, anchorPos, basisRot);
-            m_active[SlashSlot].push_back({ id, GetLifeTimeSafe(SlashSlot) });
-            return;
-        }
-
-        XMFLOAT3 tracePos{};
-        XMFLOAT3 traceForward{};
-        XMFLOAT3 traceUp{};
-        const bool hasTracePose = TryGetTracePoseWorld(tracePos, traceForward, traceUp);
-        if (hasTracePose && m_hasAttackStartPos)
-        {
-            const XMFLOAT3 delta = Sub(tracePos, m_attackStartPos);
-            const XMFLOAT3 attackDir = NormalizeOrFallback(delta, traceForward);
-            const XMFLOAT3 upHint = NormalizeOrFallback(traceUp, m_attackStartUp);
-            ApplySpawnTransform(SlashSlot, id, anchorPos, attackDir, upHint);
+            slashSlot = ResolveSlashSlotForAttackSlotIndex(resolvedAttackSlotIndex);
         }
         else
         {
-            XMFLOAT3 socketPos{};
-            XMFLOAT3 socketForward{};
-            const bool hasSocket = TryGetSocketWorld(socketPos, socketForward);
-            const XMFLOAT3 attackDir = hasSocket ? socketForward : GetPlayerForward();
-            ApplySpawnTransform(SlashSlot, id, anchorPos, attackDir, XMFLOAT3(0.0f, 1.0f, 0.0f));
+            const int slashSignalOrdinal = (std::max)(1, m_slashSignalOrdinalInAttack + 1);
+            m_slashSignalOrdinalInAttack = slashSignalOrdinal;
+            m_lastAttackSlotIndex = slashSignalOrdinal;
+            resolvedAttackSlotIndex = slashSignalOrdinal;
+            slashSlot = ResolveSlashSlotForAttackSlotIndex(slashSignalOrdinal);
         }
 
-        m_active[SlashSlot].push_back({ id, GetLifeTimeSafe(SlashSlot) });
-    }
-
-    void CombatVfxBridgeScript::SpawnHitFromResolve(const DirectX::XMFLOAT3& hitPos, const DirectX::XMFLOAT3& hitNormal)
-    {
-        const EntityId id = Acquire(HitSlot);
+        const EntityId id = Acquire(slashSlot);
         if (id == InvalidEntityId)
             return;
 
-        const XMFLOAT3 playerPos = GetPlayerPosition();
-        const XMFLOAT3 toPlayer = NormalizeOrFallback(Sub(playerPos, hitPos), GetPlayerForward());
-        const XMFLOAT3 forward = Mul(toPlayer, -1.0f); // local -Z points to player by default
+        XMFLOAT3 slashOffsetLocal = Get_slashOffsetLocal();
+        XMFLOAT3 slashRotationOffsetDeg = Get_slashRotationOffsetDeg();
+        float slashScaleMul = GetScaleMulSafe(slashSlot);
+        if (Get_useSlashSlotTransformTuning() && resolvedAttackSlotIndex > 0)
+        {
+            slashRotationOffsetDeg = Add(slashRotationOffsetDeg, GetSlashSlotRotationOffsetDeg(resolvedAttackSlotIndex));
+            slashScaleMul *= GetSlashSlotScaleMul(resolvedAttackSlotIndex);
+        }
 
-        ApplySpawnTransform(HitSlot, id, hitPos, forward, hitNormal);
-        m_active[HitSlot].push_back({ id, GetLifeTimeSafe(HitSlot) });
+        XMFLOAT3 anchorLocal(0.0f, Get_slashAnchorPlayerYOffset(), Get_slashAnchorPlayerForwardOffset());
+        if (Get_useSlashSlotTransformTuning() && resolvedAttackSlotIndex > 0)
+            anchorLocal = GetSlashSlotAnchorOffsetLocal(resolvedAttackSlotIndex);
+
+        World* world = GetWorld();
+        if (!world)
+        {
+            Release(slashSlot, id);
+            return;
+        }
+
+        const bool heavyFade = Get_enableHeavyFadeOut() && IsHeavyAttackSlotIndex(resolvedAttackSlotIndex);
+        const float lifeSec = ResolveSpawnLifetimeSec(slashSlot, resolvedAttackSlotIndex);
+        if (heavyFade)
+            SetEntityLoopModeRecursive(*world, id, true);
+        SetEntityAlphaRecursive(*world, id, 1.0f);
+
+        if (m_playerId != InvalidEntityId)
+            world->SetParent(id, m_playerId, false);
+        else
+            world->SetParent(id, InvalidEntityId, false);
+
+        TransformComponent* tr = world->GetComponent<TransformComponent>(id);
+        if (!tr)
+        {
+            Release(slashSlot, id);
+            return;
+        }
+
+        const XMFLOAT3 localPos = Add(anchorLocal, slashOffsetLocal);
+        tr->position = localPos;
+        tr->rotation = XMFLOAT3(
+            XMConvertToRadians(slashRotationOffsetDeg.x),
+            XMConvertToRadians(slashRotationOffsetDeg.y),
+            XMConvertToRadians(slashRotationOffsetDeg.z));
+
+        XMFLOAT3 baseScale = tr->scale;
+        const auto itScale = m_cachedBaseScales[slashSlot].find(id);
+        if (itScale != m_cachedBaseScales[slashSlot].end())
+            baseScale = itScale->second;
+        const float safeScaleMul = (std::max)(0.0f, slashScaleMul);
+        tr->scale = XMFLOAT3(baseScale.x * safeScaleMul, baseScale.y * safeScaleMul, baseScale.z * safeScaleMul);
+        world->MarkTransformDirty(id);
+
+        m_active[slashSlot].push_back({ id, lifeSec, lifeSec, heavyFade, InvalidEntityId });
+    }
+
+    void CombatVfxBridgeScript::SpawnHitFromResolve(const DirectX::XMFLOAT3& hitPos,
+                                                    int attackSlotIndex)
+    {
+        const int hitSlot = ResolveHitSlotForAttackSlotIndex(attackSlotIndex);
+        const EntityId id = Acquire(hitSlot);
+        if (id == InvalidEntityId)
+            return;
+
+        World* world = GetWorld();
+        if (!world)
+        {
+            Release(hitSlot, id);
+            return;
+        }
+
+        const bool heavyFade = Get_enableHeavyFadeOut() && IsHeavyAttackSlotIndex(attackSlotIndex);
+        const float lifeSec = ResolveSpawnLifetimeSec(hitSlot, attackSlotIndex);
+        if (heavyFade)
+            SetEntityLoopModeRecursive(*world, id, true);
+        SetEntityAlphaRecursive(*world, id, 1.0f);
+
+        XMFLOAT3 forward = NormalizeOrFallback(GetPlayerForward(), XMFLOAT3(0.0f, 0.0f, 1.0f));
+        XMFLOAT3 upHint(0.0f, 1.0f, 0.0f);
+        if (m_playerId != InvalidEntityId)
+        {
+            XMFLOAT4X4 wm{};
+            XMStoreFloat4x4(&wm, world->ComputeWorldMatrix(m_playerId));
+            forward = NormalizeOrFallback(XMFLOAT3(wm._31, wm._32, wm._33), forward);
+            upHint = NormalizeOrFallback(XMFLOAT3(wm._21, wm._22, wm._23), XMFLOAT3(0.0f, 1.0f, 0.0f));
+        }
+        if (LengthSq(Cross(upHint, forward)) <= kVectorEpsilonSq)
+            upHint = XMFLOAT3(0.0f, 0.0f, 1.0f);
+
+        XMFLOAT3 slashRotationOffsetDeg = Get_slashRotationOffsetDeg();
+        if (Get_useSlashSlotTransformTuning() && attackSlotIndex > 0)
+            slashRotationOffsetDeg = Add(slashRotationOffsetDeg, GetSlashSlotRotationOffsetDeg(attackSlotIndex));
+
+        ApplySpawnTransformTuned(hitSlot,
+                                 id,
+                                 hitPos,
+                                 forward,
+                                 upHint,
+                                 GetOffsetLocal(hitSlot),
+                                 slashRotationOffsetDeg,
+                                 GetScaleMulSafe(hitSlot));
+        m_active[hitSlot].push_back({ id, lifeSec, lifeSec, heavyFade, InvalidEntityId });
     }
 
     void CombatVfxBridgeScript::OnCombatResolve(EntityId victimId,
                                                 EntityId attackerId,
                                                 std::uint8_t resolveResult,
                                                 float damage,
-                                                const DirectX::XMFLOAT3& hitPos,
-                                                const DirectX::XMFLOAT3& hitNormal)
+                                                const DirectX::XMFLOAT3& hitPos)
     {
         (void)damage;
 
@@ -743,7 +944,12 @@ namespace Alice
         if (resolveResult != static_cast<std::uint8_t>(Combat::ResolveResult::Hit))
             return;
 
-        SpawnHitFromResolve(hitPos, hitNormal);
+        int attackSlotIndex = ResolveCurrentAttackSlotIndexFromDriverMask();
+        if (attackSlotIndex <= 0)
+            attackSlotIndex = m_lastAttackSlotIndex;
+        else
+            m_lastAttackSlotIndex = attackSlotIndex;
+        SpawnHitFromResolve(hitPos, attackSlotIndex);
     }
 
     void CombatVfxBridgeScript::PrewarmSlot(int slot)
@@ -777,6 +983,8 @@ namespace Alice
         {
             if (inst.id != InvalidEntityId)
                 world->DestroyEntity(inst.id);
+            if (inst.freezeAnchor != InvalidEntityId)
+                world->DestroyEntity(inst.freezeAnchor);
         }
         m_active[slot].clear();
 
@@ -807,12 +1015,12 @@ namespace Alice
             const int cap = GetPoolSizeSafe(slot);
             if (cap > 0 && static_cast<int>(m_active[slot].size()) >= cap)
             {
-                if (slot == SlashSlot && !m_warnedSlashPoolCapReached)
+                if (slot < HitDefaultSlot && !m_warnedSlashPoolCapReached)
                 {
                     ALICE_LOG_WARN("[CombatVfxBridge] Slash pool cap reached (%d). Increase slashPoolSize if needed.", cap);
                     m_warnedSlashPoolCapReached = true;
                 }
-                if (slot == HitSlot && !m_warnedHitPoolCapReached)
+                if (slot >= HitDefaultSlot && !m_warnedHitPoolCapReached)
                 {
                     ALICE_LOG_WARN("[CombatVfxBridge] Hit pool cap reached (%d). Increase hitPoolSize if needed.", cap);
                     m_warnedHitPoolCapReached = true;
@@ -828,6 +1036,7 @@ namespace Alice
 
         world->SetParent(id, InvalidEntityId, false);
         SetEntityActiveRecursive(*world, id, true, true);
+        SetEntityAlphaRecursive(*world, id, 1.0f);
         return id;
     }
 
@@ -837,6 +1046,8 @@ namespace Alice
         if (!world || id == InvalidEntityId)
             return;
 
+        SetEntityAlphaRecursive(*world, id, 1.0f);
+        SetEntityLoopModeRecursive(*world, id, false);
         SetEntityActiveRecursive(*world, id, false, false);
         if (Get_organizePoolUnderRoot())
         {
@@ -861,12 +1072,12 @@ namespace Alice
         const EntityId id = Prefab::InstantiateFromFileAuto(path);
         if (id == InvalidEntityId)
         {
-            if (slot == SlashSlot && !m_warnedSlashInstantiateFailed)
+            if (slot < HitDefaultSlot && !m_warnedSlashInstantiateFailed)
             {
                 ALICE_LOG_WARN("[CombatVfxBridge] Failed to instantiate slash prefab: %s", path.c_str());
                 m_warnedSlashInstantiateFailed = true;
             }
-            if (slot == HitSlot && !m_warnedHitInstantiateFailed)
+            if (slot >= HitDefaultSlot && !m_warnedHitInstantiateFailed)
             {
                 ALICE_LOG_WARN("[CombatVfxBridge] Failed to instantiate hit prefab: %s", path.c_str());
                 m_warnedHitInstantiateFailed = true;
@@ -990,111 +1201,101 @@ namespace Alice
         return true;
     }
 
-    bool CombatVfxBridgeScript::TryGetWeaponBasisPose(DirectX::XMFLOAT3& outPos, DirectX::XMFLOAT4& outRot)
+    bool CombatVfxBridgeScript::TryGetAttackDirectionWorld(DirectX::XMFLOAT3& outForward)
     {
-        World* world = GetWorld();
-        if (!world)
-            return false;
-
-        const std::string basisName = Get_weaponBasisEntityName();
-        if (basisName.empty())
-            return false;
-
-        GameObject basisGo = world->FindGameObject(basisName);
-        if (!basisGo.IsValid())
+        if (m_hasPrevSocketPos)
         {
-            if (!m_warnedMissingWeaponBasis)
+            const XMFLOAT3 delta = Sub(m_currSocketPos, m_prevSocketPos);
+            if (LengthSq(delta) > kVectorEpsilonSq)
             {
-                ALICE_LOG_WARN("[CombatVfxBridge] Missing weapon basis entity: '%s'", basisName.c_str());
-                m_warnedMissingWeaponBasis = true;
+                outForward = NormalizeOrFallback(delta, GetPlayerForward());
+                return true;
             }
-            return false;
         }
 
-        const XMMATRIX worldM = world->ComputeWorldMatrix(basisGo.id());
-        XMVECTOR s{};
-        XMVECTOR r{};
-        XMVECTOR t{};
-        if (!XMMatrixDecompose(&s, &r, &t, worldM))
-            return false;
-
-        XMStoreFloat3(&outPos, t);
-        XMStoreFloat4(&outRot, r);
-        return true;
-    }
-
-    bool CombatVfxBridgeScript::TryGetWeaponBasisWorld(DirectX::XMFLOAT3& outPos, DirectX::XMFLOAT3& outForward)
-    {
-        XMFLOAT4 basisRot{};
-        if (!TryGetWeaponBasisPose(outPos, basisRot))
-            return false;
-
-        const Basis basis = BuildBasisFromQuaternion(basisRot);
-        const XMFLOAT3 forwardFromBasis = basis.forward;
-        outForward = NormalizeOrFallback(forwardFromBasis, GetPlayerForward());
-        return true;
-    }
-
-    bool CombatVfxBridgeScript::TryGetSocketWorld(DirectX::XMFLOAT3& outPos, DirectX::XMFLOAT3& outForward)
-    {
-        World* world = GetWorld();
-        if (!world)
-            return false;
-
-        std::string ownerName = Get_weaponSocketOwnerName();
-        if (ownerName.empty())
-            ownerName = Get_playerEntityName();
-        if (ownerName.empty() && m_session)
-            ownerName = m_session->Get_m_playerName();
-
-        if (ownerName.empty())
-            return false;
-
-        GameObject ownerGo = world->FindGameObject(ownerName);
-        if (!ownerGo.IsValid())
+        XMFLOAT3 tracePos{};
+        XMFLOAT3 traceForward{};
+        XMFLOAT3 traceUp{};
+        if (TryGetTracePoseWorld(tracePos, traceForward, traceUp))
         {
-            if (!m_warnedMissingSocketOwner)
-            {
-                ALICE_LOG_WARN("[CombatVfxBridge] Missing weapon socket owner: '%s'", ownerName.c_str());
-                m_warnedMissingSocketOwner = true;
-            }
-            return false;
-        }
-
-        DirectX::XMFLOAT4X4 ownerWorld{};
-        XMStoreFloat4x4(&ownerWorld, world->ComputeWorldMatrix(ownerGo.id()));
-        const XMFLOAT3 ownerPos(ownerWorld._41, ownerWorld._42, ownerWorld._43);
-        const XMFLOAT3 ownerForward = NormalizeOrFallback(XMFLOAT3(ownerWorld._31, ownerWorld._32, ownerWorld._33), GetPlayerForward());
-
-        if (Get_weaponSocketName().empty())
-        {
-            outPos = ownerPos;
-            outForward = ownerForward;
+            outForward = NormalizeOrFallback(traceForward, GetPlayerForward());
             return true;
         }
 
-        XMMATRIX socketWorldM = XMMatrixIdentity();
-        if (!TryGetSocketWorldMatrixRecursive(*world, ownerGo.id(), Get_weaponSocketName(), socketWorldM))
+        outForward = GetPlayerForward();
+        return false;
+    }
+
+    int CombatVfxBridgeScript::ResolveSlashSlotForAttackSlotIndex(int attackSlotIndex) const
+    {
+        if (!Get_useSlashStepPrefabs())
+            return SlashDefaultSlot;
+
+        const int clamped = ClampInt(attackSlotIndex, 1, SlashStepSlotCount);
+        switch (clamped)
         {
-            if (!m_warnedMissingSocket)
-            {
-                ALICE_LOG_WARN("[CombatVfxBridge] Missing socket '%s' on owner '%s'",
-                    Get_weaponSocketName().c_str(), ownerName.c_str());
-                m_warnedMissingSocket = true;
-            }
-
-            // Fallback to owner world when socket name is wrong/missing.
-            outPos = ownerPos;
-            outForward = ownerForward;
-            return true;
+        case 1:
+            return Get_slashStepPrefabPath1().empty() ? SlashDefaultSlot : SlashStep1Slot;
+        case 2:
+            return Get_slashStepPrefabPath2().empty() ? SlashDefaultSlot : SlashStep2Slot;
+        case 3:
+            return Get_slashStepPrefabPath3().empty() ? SlashDefaultSlot : SlashStep3Slot;
+        case 4:
+            return Get_slashStepPrefabPath4().empty() ? SlashDefaultSlot : SlashStep4Slot;
+        case 5:
+            return Get_slashStepPrefabPath5().empty() ? SlashDefaultSlot : SlashStep5Slot;
+        case 6:
+            return Get_slashStepPrefabPath6().empty() ? SlashDefaultSlot : SlashStep6Slot;
+        default:
+            return SlashDefaultSlot;
         }
+    }
 
-        DirectX::XMFLOAT4X4 socketWorld{};
-        XMStoreFloat4x4(&socketWorld, socketWorldM);
-        outPos = XMFLOAT3(socketWorld._41, socketWorld._42, socketWorld._43);
-        const XMFLOAT3 socketForward(socketWorld._31, socketWorld._32, socketWorld._33);
-        outForward = NormalizeOrFallback(socketForward, ownerForward);
-        return true;
+    int CombatVfxBridgeScript::ResolveHitSlotForAttackSlotIndex(int attackSlotIndex) const
+    {
+        if (!Get_useHitSlotPrefabs())
+            return HitDefaultSlot;
+
+        const int clamped = ClampInt(attackSlotIndex, 1, SlashStepSlotCount);
+        switch (clamped)
+        {
+        case 1:
+            return Get_hitSlotPrefabPath1().empty() ? HitDefaultSlot : HitStep1Slot;
+        case 2:
+            return Get_hitSlotPrefabPath2().empty() ? HitDefaultSlot : HitStep2Slot;
+        case 3:
+            return Get_hitSlotPrefabPath3().empty() ? HitDefaultSlot : HitStep3Slot;
+        case 4:
+            return Get_hitSlotPrefabPath4().empty() ? HitDefaultSlot : HitStep4Slot;
+        case 5:
+            return Get_hitSlotPrefabPath5().empty() ? HitDefaultSlot : HitStep5Slot;
+        case 6:
+            return Get_hitSlotPrefabPath6().empty() ? HitDefaultSlot : HitStep6Slot;
+        default:
+            return HitDefaultSlot;
+        }
+    }
+
+    int CombatVfxBridgeScript::ResolveCurrentAttackSlotIndexFromDriverMask() const
+    {
+        World* world = GetWorld();
+        if (!world || m_playerId == InvalidEntityId)
+            return -1;
+
+        const auto* driver = world->GetComponent<AttackDriverComponent>(m_playerId);
+        if (!driver)
+            return -1;
+
+        const std::uint32_t mask = driver->attackTraceMaskActive;
+        if (mask == 0u)
+            return -1;
+
+        for (int bit = 0; bit < 32; ++bit)
+        {
+            if ((mask & (1u << bit)) != 0u)
+                return bit + 1; // bit0 -> slot1
+        }
+        return -1;
     }
 
     DirectX::XMFLOAT3 CombatVfxBridgeScript::GetPlayerPosition()
@@ -1136,11 +1337,14 @@ namespace Alice
         return (std::max)(0.0f, duration);
     }
 
-    void CombatVfxBridgeScript::ApplySpawnTransform(int slot,
-                                                    EntityId id,
-                                                    const DirectX::XMFLOAT3& anchorPos,
-                                                    const DirectX::XMFLOAT3& forward,
-                                                    const DirectX::XMFLOAT3& upHint)
+    void CombatVfxBridgeScript::ApplySpawnTransformTuned(int slot,
+                                                         EntityId id,
+                                                         const DirectX::XMFLOAT3& anchorPos,
+                                                         const DirectX::XMFLOAT3& forward,
+                                                         const DirectX::XMFLOAT3& upHint,
+                                                         const DirectX::XMFLOAT3& localOffset,
+                                                         const DirectX::XMFLOAT3& rotationOffsetDeg,
+                                                         float scaleMul)
     {
         World* world = GetWorld();
         if (!world || id == InvalidEntityId)
@@ -1151,61 +1355,37 @@ namespace Alice
             return;
 
         const Basis basis = BuildBasis(forward, upHint);
-        const XMFLOAT3 localOffset = GetOffsetLocal(slot);
         const XMFLOAT3 worldOffset = RotateLocalOffset(localOffset, basis);
-
         tr->position = Add(anchorPos, worldOffset);
 
-        XMFLOAT3 rotRad = RotationRadFromBasis(basis);
-        const XMFLOAT3 rotOffsetRad = DegToRad(GetRotationOffsetDeg(slot));
-        rotRad.x += rotOffsetRad.x;
-        rotRad.y += rotOffsetRad.y;
-        rotRad.z += rotOffsetRad.z;
-        tr->rotation = rotRad;
+        const Basis rotatedBasis = ApplyEulerOffsetDegLocal(basis, rotationOffsetDeg);
+        tr->rotation = RotationRadFromBasis(rotatedBasis);
 
         XMFLOAT3 baseScale = tr->scale;
         const auto itScale = m_cachedBaseScales[slot].find(id);
         if (itScale != m_cachedBaseScales[slot].end())
             baseScale = itScale->second;
 
-        const float scaleMul = GetScaleMulSafe(slot);
-        tr->scale = XMFLOAT3(baseScale.x * scaleMul, baseScale.y * scaleMul, baseScale.z * scaleMul);
+        const float safeScaleMul = (std::max)(0.0f, scaleMul);
+        tr->scale = XMFLOAT3(baseScale.x * safeScaleMul, baseScale.y * safeScaleMul, baseScale.z * safeScaleMul);
         world->MarkTransformDirty(id);
     }
 
-    void CombatVfxBridgeScript::ApplySpawnTransformFromRotation(int slot,
-                                                                EntityId id,
-                                                                const DirectX::XMFLOAT3& anchorPos,
-                                                                const DirectX::XMFLOAT4& worldRot)
+    void CombatVfxBridgeScript::ApplySpawnTransform(int slot,
+                                                    EntityId id,
+                                                    const DirectX::XMFLOAT3& anchorPos,
+                                                    const DirectX::XMFLOAT3& forward,
+                                                    const DirectX::XMFLOAT3& upHint)
     {
-        World* world = GetWorld();
-        if (!world || id == InvalidEntityId)
-            return;
-
-        TransformComponent* tr = world->GetComponent<TransformComponent>(id);
-        if (!tr)
-            return;
-
-        const Basis basis = BuildBasisFromQuaternion(worldRot);
-        const XMFLOAT3 localOffset = GetOffsetLocal(slot);
-        const XMFLOAT3 worldOffset = RotateLocalOffset(localOffset, basis);
-        tr->position = Add(anchorPos, worldOffset);
-
-        XMFLOAT3 rotRad = QuaternionToYPR_Rad(XMLoadFloat4(&worldRot));
-        const XMFLOAT3 rotOffsetRad = DegToRad(GetRotationOffsetDeg(slot));
-        rotRad.x += rotOffsetRad.x;
-        rotRad.y += rotOffsetRad.y;
-        rotRad.z += rotOffsetRad.z;
-        tr->rotation = rotRad;
-
-        XMFLOAT3 baseScale = tr->scale;
-        const auto itScale = m_cachedBaseScales[slot].find(id);
-        if (itScale != m_cachedBaseScales[slot].end())
-            baseScale = itScale->second;
-
-        const float scaleMul = GetScaleMulSafe(slot);
-        tr->scale = XMFLOAT3(baseScale.x * scaleMul, baseScale.y * scaleMul, baseScale.z * scaleMul);
-        world->MarkTransformDirty(id);
+        ApplySpawnTransformTuned(
+            slot,
+            id,
+            anchorPos,
+            forward,
+            upHint,
+            GetOffsetLocal(slot),
+            GetRotationOffsetDeg(slot),
+            GetScaleMulSafe(slot));
     }
 
     void CombatVfxBridgeScript::SetEntityActiveRecursive(World& world, EntityId id, bool active, bool triggerOneShot) const
@@ -1244,41 +1424,170 @@ namespace Alice
             SetEntityActiveRecursive(world, child, active, triggerOneShot);
     }
 
+    void CombatVfxBridgeScript::SetEntityAlphaRecursive(World& world, EntityId id, float alpha) const
+    {
+        if (id == InvalidEntityId)
+            return;
+
+        const float clampedAlpha = std::clamp(alpha, 0.0f, 1.0f);
+        if (auto* vfx = world.GetComponent<UnityVfxComponent>(id))
+            vfx->alphaScale = clampedAlpha;
+
+        const auto children = world.GetChildren(id);
+        for (EntityId child : children)
+            SetEntityAlphaRecursive(world, child, clampedAlpha);
+    }
+
+    void CombatVfxBridgeScript::SetEntityLoopModeRecursive(World& world, EntityId id, bool loopEnabled) const
+    {
+        if (id == InvalidEntityId)
+            return;
+
+        if (auto* vfx = world.GetComponent<UnityVfxComponent>(id))
+        {
+            vfx->overrideLoop = true;
+            vfx->loop = loopEnabled;
+            if (loopEnabled)
+                vfx->emitNewParticles = true;
+        }
+
+        const auto children = world.GetChildren(id);
+        for (EntityId child : children)
+            SetEntityLoopModeRecursive(world, child, loopEnabled);
+    }
+
     std::string CombatVfxBridgeScript::GetPrefabPath(int slot) const
     {
         switch (slot)
         {
-        case SlashSlot: return Get_slashPrefabPath();
-        case HitSlot: return Get_hitPrefabPath();
+        case SlashDefaultSlot: return Get_slashPrefabPath();
+        case SlashStep1Slot: return Get_slashStepPrefabPath1();
+        case SlashStep2Slot: return Get_slashStepPrefabPath2();
+        case SlashStep3Slot: return Get_slashStepPrefabPath3();
+        case SlashStep4Slot: return Get_slashStepPrefabPath4();
+        case SlashStep5Slot: return Get_slashStepPrefabPath5();
+        case SlashStep6Slot: return Get_slashStepPrefabPath6();
+        case HitDefaultSlot: return Get_hitPrefabPath();
+        case HitStep1Slot: return Get_hitSlotPrefabPath1();
+        case HitStep2Slot: return Get_hitSlotPrefabPath2();
+        case HitStep3Slot: return Get_hitSlotPrefabPath3();
+        case HitStep4Slot: return Get_hitSlotPrefabPath4();
+        case HitStep5Slot: return Get_hitSlotPrefabPath5();
+        case HitStep6Slot: return Get_hitSlotPrefabPath6();
         default: return std::string();
         }
     }
 
     int CombatVfxBridgeScript::GetPoolSizeSafe(int slot) const
     {
-        const int size = (slot == SlashSlot) ? Get_slashPoolSize() : Get_hitPoolSize();
+        const bool isHitSlot = (slot >= HitDefaultSlot);
+        const int size = isHitSlot ? Get_hitPoolSize() : Get_slashPoolSize();
         return (std::max)(0, size);
     }
 
     float CombatVfxBridgeScript::GetLifeTimeSafe(int slot) const
     {
-        const float v = (slot == SlashSlot) ? Get_slashLifeTimeSec() : Get_hitLifeTimeSec();
+        const bool isHitSlot = (slot >= HitDefaultSlot);
+        float v = isHitSlot ? Get_hitLifeTimeSec() : Get_slashLifeTimeSec();
+
+        if (isHitSlot && Get_useHitSlotLifeTimes())
+        {
+            const auto resolveHitSlotLife = [&](int hitSlot) -> float
+            {
+                switch (hitSlot)
+                {
+                case HitStep1Slot: return Get_hitSlotLifeTimeSec1();
+                case HitStep2Slot: return Get_hitSlotLifeTimeSec2();
+                case HitStep3Slot: return Get_hitSlotLifeTimeSec3();
+                case HitStep4Slot: return Get_hitSlotLifeTimeSec4();
+                case HitStep5Slot: return Get_hitSlotLifeTimeSec5();
+                case HitStep6Slot: return Get_hitSlotLifeTimeSec6();
+                default: return 0.0f;
+                }
+            };
+
+            const float slotLife = resolveHitSlotLife(slot);
+            if (slotLife > 0.0f)
+                v = slotLife;
+        }
+
         return (v > 0.0f) ? v : 0.01f;
+    }
+
+    bool CombatVfxBridgeScript::IsHeavyAttackSlotIndex(int attackSlotIndex) const
+    {
+        return (attackSlotIndex > 0) && (attackSlotIndex == Get_heavyAttackSlotIndex());
+    }
+
+    float CombatVfxBridgeScript::ResolveSpawnLifetimeSec(int slot, int attackSlotIndex) const
+    {
+        if (Get_enableHeavyFadeOut() && IsHeavyAttackSlotIndex(attackSlotIndex))
+            return (std::max)(0.01f, Get_heavyFadeDurationSec());
+        return GetLifeTimeSafe(slot);
     }
 
     float CombatVfxBridgeScript::GetScaleMulSafe(int slot) const
     {
-        const float v = (slot == SlashSlot) ? Get_slashScaleMul() : Get_hitScaleMul();
+        const bool isHitSlot = (slot >= HitDefaultSlot);
+        const float v = isHitSlot ? Get_hitScaleMul() : Get_slashScaleMul();
         return (v >= 0.0f) ? v : 0.0f;
     }
 
     DirectX::XMFLOAT3 CombatVfxBridgeScript::GetOffsetLocal(int slot) const
     {
-        return (slot == SlashSlot) ? Get_slashOffsetLocal() : Get_hitOffsetLocal();
+        const bool isHitSlot = (slot >= HitDefaultSlot);
+        return isHitSlot ? Get_hitOffsetLocal() : Get_slashOffsetLocal();
     }
 
     DirectX::XMFLOAT3 CombatVfxBridgeScript::GetRotationOffsetDeg(int slot) const
     {
-        return (slot == SlashSlot) ? Get_slashRotationOffsetDeg() : Get_hitRotationOffsetDeg();
+        const bool isHitSlot = (slot >= HitDefaultSlot);
+        return isHitSlot ? Get_hitRotationOffsetDeg() : Get_slashRotationOffsetDeg();
     }
+
+    DirectX::XMFLOAT3 CombatVfxBridgeScript::GetSlashSlotAnchorOffsetLocal(int attackSlotIndex) const
+    {
+        const int clamped = ClampInt(attackSlotIndex, 1, SlashStepSlotCount);
+        switch (clamped)
+        {
+        case 1: return Get_slashSlotAnchorOffsetLocal1();
+        case 2: return Get_slashSlotAnchorOffsetLocal2();
+        case 3: return Get_slashSlotAnchorOffsetLocal3();
+        case 4: return Get_slashSlotAnchorOffsetLocal4();
+        case 5: return Get_slashSlotAnchorOffsetLocal5();
+        case 6: return Get_slashSlotAnchorOffsetLocal6();
+        default: return XMFLOAT3(0.0f, Get_slashAnchorPlayerYOffset(), Get_slashAnchorPlayerForwardOffset());
+        }
+    }
+
+    DirectX::XMFLOAT3 CombatVfxBridgeScript::GetSlashSlotRotationOffsetDeg(int attackSlotIndex) const
+    {
+        const int clamped = ClampInt(attackSlotIndex, 1, SlashStepSlotCount);
+        switch (clamped)
+        {
+        case 1: return Get_slashSlotRotationOffsetDeg1();
+        case 2: return Get_slashSlotRotationOffsetDeg2();
+        case 3: return Get_slashSlotRotationOffsetDeg3();
+        case 4: return Get_slashSlotRotationOffsetDeg4();
+        case 5: return Get_slashSlotRotationOffsetDeg5();
+        case 6: return Get_slashSlotRotationOffsetDeg6();
+        default: return XMFLOAT3(0.0f, 0.0f, 0.0f);
+        }
+    }
+
+    float CombatVfxBridgeScript::GetSlashSlotScaleMul(int attackSlotIndex) const
+    {
+        const int clamped = ClampInt(attackSlotIndex, 1, SlashStepSlotCount);
+        switch (clamped)
+        {
+        case 1: return Get_slashSlotScaleMul1();
+        case 2: return Get_slashSlotScaleMul2();
+        case 3: return Get_slashSlotScaleMul3();
+        case 4: return Get_slashSlotScaleMul4();
+        case 5: return Get_slashSlotScaleMul5();
+        case 6: return Get_slashSlotScaleMul6();
+        default: return 1.0f;
+        }
+    }
+
 }
