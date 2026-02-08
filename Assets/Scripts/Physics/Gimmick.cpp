@@ -489,11 +489,12 @@ namespace Alice
             // Match UnityExportVfxDemo_01.scene "(Opt)Effect_06_PortalEffect_2"
             vfx->overrideLoop = false;
             vfx->loop = true;
-            vfx->sizeScale = 0.05f;
+            vfx->sizeScale = 0.025f;
             vfx->intensityScale = 0.0f;
             vfx->spawnRateScale = spawnRateScale;
             vfx->enableTrails = true;
             vfx->emitNewParticles = false;
+            vfx->alphaScale = 1.0f;
         }
     }
 
@@ -538,8 +539,9 @@ namespace Alice
                 }
             }
 
+            bool moving = false;
             bool shouldEmit = false;
-            if (hasTrail && pullPhaseActive && activeTransform)
+            if (activate)
             {
                 if (shard.prevPosValid)
                 {
@@ -549,11 +551,12 @@ namespace Alice
                         shardTr->position.z - shard.prevPos.z
                     };
                     const float speed = Length(delta) / safeDt;
-                    shouldEmit = (speed >= minSpeed);
+                    moving = (speed >= minSpeed);
                 }
 
                 shard.prevPos = shardTr->position;
                 shard.prevPosValid = true;
+                shouldEmit = moving;
             }
             else
             {
@@ -585,6 +588,7 @@ namespace Alice
             {
                 vfx->enabled = false;
                 vfx->emitNewParticles = false;
+                vfx->alphaScale = 1.0f;
                 vfx->playId += 1;
             }
 
@@ -852,11 +856,18 @@ namespace Alice
         {
             m_magnetizeInitialized = true;
 
+            const float heightJitterRange = std::max(0.0f, m_captureOrbitHeightJitter);
+            std::uniform_real_distribution<float> heightOffsetDist(-heightJitterRange, heightJitterRange);
+            const float pullStartHeightJitterRange = std::max(0.0f, m_capturePullStartHeightJitter);
+            std::uniform_real_distribution<float> pullStartHeightOffsetDist(-pullStartHeightJitterRange, pullStartHeightJitterRange);
+
             float maxPullDistance = 0.0f;
             for (auto& shard : m_shards)
             {
                 if (shard.captured)
                     continue;
+                shard.orbitHeightOffset = (heightJitterRange > 0.0f) ? heightOffsetDist(m_rng) : 0.0f;
+                shard.pullStartHeightOffset = (pullStartHeightJitterRange > 0.0f) ? pullStartHeightOffsetDist(m_rng) : 0.0f;
                 if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
                 {
                     XMFLOAT3 delta{ tr->position.x - eyePos.x, tr->position.y - eyePos.y, tr->position.z - eyePos.z };
@@ -864,7 +875,7 @@ namespace Alice
                     XMFLOAT3 baseDir = Normalize(delta);
                     float scaledRadius = std::max(m_orbitMinRadius, radius * m_orbitRadiusScale);
                     XMFLOAT3 targetPos{ eyePos.x + baseDir.x * scaledRadius,
-                                        eyePos.y + baseDir.y * scaledRadius,
+                                        eyePos.y + baseDir.y * scaledRadius + shard.orbitHeightOffset,
                                         eyePos.z + baseDir.z * scaledRadius };
                     XMFLOAT3 pullDelta{ targetPos.x - tr->position.x,
                                         targetPos.y - tr->position.y,
@@ -917,7 +928,7 @@ namespace Alice
                     shard.orbitAngle = 0.0f;
 
                     XMFLOAT3 targetPos{ eyePos.x + baseDir.x * scaledRadius,
-                                        eyePos.y + baseDir.y * scaledRadius,
+                                        eyePos.y + baseDir.y * scaledRadius + shard.orbitHeightOffset,
                                         eyePos.z + baseDir.z * scaledRadius };
                     XMFLOAT3 pullDelta{ targetPos.x - shard.pullStartPos.x,
                                         targetPos.y - shard.pullStartPos.y,
@@ -1174,6 +1185,8 @@ namespace Alice
             shard.orbitAngularStartSpeed = 0.0f;
             shard.orbitBlendTimer = 0.0f;
             shard.orbitBlending = false;
+            shard.orbitHeightOffset = 0.0f;
+            shard.pullStartHeightOffset = 0.0f;
             shard.prevPos = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
             shard.prevPosValid = false;
         }
@@ -1402,7 +1415,7 @@ namespace Alice
             const float radius = std::max(m_orbitMinRadius, shard.orbitRadius);
             XMFLOAT3 rotatedDir = RotateAroundAxis(shard.orbitBaseDir, shard.orbitAxis, shard.orbitAngle);
             XMFLOAT3 offset{ rotatedDir.x * radius, rotatedDir.y * radius, rotatedDir.z * radius };
-            XMFLOAT3 targetPos{ eyePos.x + offset.x, eyePos.y + offset.y, eyePos.z + offset.z };
+            XMFLOAT3 targetPos{ eyePos.x + offset.x, eyePos.y + offset.y + shard.orbitHeightOffset, eyePos.z + offset.z };
 
             if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
             {
@@ -1411,8 +1424,9 @@ namespace Alice
                     shard.pullTimer += dt;
                     float t = (shard.pullDuration > 0.0f) ? std::min(1.0f, shard.pullTimer / shard.pullDuration) : 1.0f;
                     float smoothT = SmoothStep(t);
+                    const float startHeightBias = shard.pullStartHeightOffset * (1.0f - smoothT);
                     tr->position.x = shard.pullStartPos.x + (targetPos.x - shard.pullStartPos.x) * smoothT;
-                    tr->position.y = shard.pullStartPos.y + (targetPos.y - shard.pullStartPos.y) * smoothT;
+                    tr->position.y = shard.pullStartPos.y + (targetPos.y - shard.pullStartPos.y) * smoothT + startHeightBias;
                     tr->position.z = shard.pullStartPos.z + (targetPos.z - shard.pullStartPos.z) * smoothT;
                     if (t >= 1.0f)
                     {
@@ -1420,7 +1434,11 @@ namespace Alice
                         shard.orbitBlending = true;
                         shard.orbitBlendTimer = 0.0f;
 
-                        XMFLOAT3 toEye{ tr->position.x - eyePos.x, tr->position.y - eyePos.y, tr->position.z - eyePos.z };
+                        XMFLOAT3 toEye{
+                            tr->position.x - eyePos.x,
+                            (tr->position.y - shard.orbitHeightOffset) - eyePos.y,
+                            tr->position.z - eyePos.z
+                        };
                         float newRadius = Length(toEye);
                         shard.orbitRadius = std::max(m_orbitMinRadius, newRadius);
                         shard.orbitBaseDir = Normalize(toEye);

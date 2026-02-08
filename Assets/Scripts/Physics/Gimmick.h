@@ -55,6 +55,8 @@ namespace Alice
         ALICE_PROPERTY(float, m_capturePullTargetDuration, 0.0f); // 포획 단계 총 시간(0이면 자동 계산)
         ALICE_PROPERTY(float, m_capturePullMinDuration, 0.08f); // 포획 최소 시간
         ALICE_PROPERTY(float, m_capturePullMaxDuration, 0.6f); // 포획 최대 시간
+        ALICE_PROPERTY(float, m_capturePullStartHeightJitter, 1.0f); // 포획 시작 구간 Y 오프셋 랜덤 범위
+        ALICE_PROPERTY(float, m_captureOrbitHeightJitter, 1.0f); // 포획/공전 시 파편별 Y 오프셋 랜덤 범위
         ALICE_PROPERTY(std::string, m_enemyName, "Enemy"); // 디버그: Enemy 무기 트레이스 토글 대상
         ALICE_PROPERTY(std::string, m_guardBreakOwnerName, "Enemy"); // 가드브레이크 감지 대상
         ALICE_PROPERTY(float, m_breakScatterDurationSec, 2.0f); // 파괴 후 흩뿌려진 상태 유지 시간
@@ -98,6 +100,8 @@ namespace Alice
             float orbitAngularStartSpeed = 0.0f;
             float orbitBlendTimer = 0.0f;
             bool orbitBlending = false;
+            float orbitHeightOffset = 0.0f;
+            float pullStartHeightOffset = 0.0f;
             DirectX::XMFLOAT3 prevPos{ 0.0f, 0.0f, 0.0f };
             bool prevPosValid = false;
             EntityId trailVfxId = InvalidEntityId;
