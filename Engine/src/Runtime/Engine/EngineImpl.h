@@ -101,6 +101,11 @@ namespace Alice
 		std::uint32_t m_width = 1600;
 		std::uint32_t m_height = 900;
 
+		bool m_borderlessFullscreen = false;
+		RECT m_windowedRect{ 0,0,0,0 };
+		DWORD m_windowedStyle = 0;
+		DWORD m_windowedExStyle = 0;
+
 		bool m_isRunning = false;            // 엔진 자체가 실행중인지 판단
 		bool m_isPlaying = false;            // 재생 / 일시정지 상태 (에디터 모드에서만 사용)
 		bool m_editorMode = true;             // true: 에디터, false: 게임 전용
@@ -197,6 +202,7 @@ namespace Alice
 		// Initialize helpers
 		bool InitializeAll(Engine& owner, HINSTANCE hInstance, int nCmdShow);
 		void InitializeMainThreadAndRegistry();
+		void ToggleBorderlessFullscreen();
 		void InitializeDllSearchPath(const std::filesystem::path& exeDir);
 		std::filesystem::path InitializeResolveExeDir();
 		void ApplyEditorModeFromExeName(const std::filesystem::path& exeDir);

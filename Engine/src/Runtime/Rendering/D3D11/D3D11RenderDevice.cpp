@@ -67,6 +67,15 @@ namespace Alice
             return false;
         }
 
+        // Alt+Enter 기본 동작 비활성화 (Borderless Fullscreen 제어용)
+        {
+            Microsoft::WRL::ComPtr<IDXGIFactory> factory;
+            if (SUCCEEDED(m_swapChain->GetParent(IID_PPV_ARGS(&factory))) && factory)
+            {
+                factory->MakeWindowAssociation(window, DXGI_MWA_NO_ALT_ENTER);
+            }
+        }
+
         // 5) HDR인 경우 색 공간 설정
         if (isHDRSupported)
         {

@@ -82,6 +82,49 @@ namespace Alice
 
 	}
 
+	void Engine::Impl::ToggleBorderlessFullscreen()
+	{
+		if (!m_hWnd)
+			return;
+
+		if (!m_borderlessFullscreen)
+		{
+			m_windowedStyle = GetWindowLongW(m_hWnd, GWL_STYLE);
+			m_windowedExStyle = GetWindowLongW(m_hWnd, GWL_EXSTYLE);
+			GetWindowRect(m_hWnd, &m_windowedRect);
+
+			MONITORINFO mi{ sizeof(mi) };
+			if (GetMonitorInfoW(MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST), &mi))
+			{
+				SetWindowLongW(m_hWnd, GWL_STYLE, (m_windowedStyle & ~WS_OVERLAPPEDWINDOW) | WS_POPUP);
+				SetWindowLongW(m_hWnd, GWL_EXSTYLE, m_windowedExStyle);
+				SetWindowPos(
+					m_hWnd,
+					HWND_TOP,
+					mi.rcMonitor.left,
+					mi.rcMonitor.top,
+					mi.rcMonitor.right - mi.rcMonitor.left,
+					mi.rcMonitor.bottom - mi.rcMonitor.top,
+					SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+				m_borderlessFullscreen = true;
+			}
+		}
+		else
+		{
+			SetWindowLongW(m_hWnd, GWL_STYLE, m_windowedStyle);
+			SetWindowLongW(m_hWnd, GWL_EXSTYLE, m_windowedExStyle);
+			SetWindowPos(
+				m_hWnd,
+				HWND_NOTOPMOST,
+				m_windowedRect.left,
+				m_windowedRect.top,
+				m_windowedRect.right - m_windowedRect.left,
+				m_windowedRect.bottom - m_windowedRect.top,
+				SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+			m_borderlessFullscreen = false;
+		}
+	}
+
 	LRESULT Engine::Impl::HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		auto ReleaseMouseLockOnDeactivate = [&]()
@@ -127,6 +170,18 @@ namespace Alice
 		case WM_SETFOCUS:
 			m_inputSystem.NotifyAppActivated(true);
 			return 0;
+
+		case WM_SYSKEYDOWN:
+			if (wParam == VK_RETURN && (HIWORD(lParam) & KF_ALTDOWN))
+			{
+				ToggleBorderlessFullscreen();
+				if (m_inputSystem.IsCursorLocked())
+				{
+					m_inputSystem.SetCursorLocked(true);
+				}
+				return 0;
+			}
+			break;
 
 		case WM_DESTROY:
 			// 종료
