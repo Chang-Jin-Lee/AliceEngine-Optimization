@@ -232,7 +232,8 @@ namespace Alice
 			gizmo,
 			m_selectedEntity,
 			m_debugDraw,
-			true
+			true,
+			&m_skinnedMeshRegistry
 		);
 
 		// 나머지 디버그 요소 (항상 보이도록 오버레이)

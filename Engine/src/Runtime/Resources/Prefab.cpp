@@ -50,6 +50,7 @@
 #include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/UITextComponent.h"
 #include "Runtime/UI/UIButtonComponent.h"
+#include "Runtime/UI/UICheckboxComponent.h"
 #include "Runtime/UI/UIGaugeComponent.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -428,7 +429,10 @@ namespace Alice
                 if (const auto* advAnim = world.GetComponent<AdvancedAnimationComponent>(entity); advAnim)
                 {
                     rttr::instance inst = const_cast<AdvancedAnimationComponent&>(*advAnim);
-                    outEntity["AdvancedAnimation"] = JsonRttr::ToJsonObject(inst);
+                    JsonRttr::json obj = JsonRttr::ToJsonObject(inst);
+                    obj["rootBoneLock"] = advAnim->rootBoneLock;
+                    obj["rootMotionDriveCct"] = advAnim->rootMotionDriveCct;
+                    outEntity["AdvancedAnimation"] = obj;
                 }
 
                 // Camera
@@ -567,6 +571,7 @@ namespace Alice
                     outEntity["UIGauge"] = JsonRttr::ToJsonObject(inst);
                 }
 
+            
                 // Point Light
                 if (const auto* point = world.GetComponent<PointLightComponent>(entity); point)
                 {
@@ -757,6 +762,20 @@ namespace Alice
                     rttr::instance inst = aa;
                     if (!JsonRttr::FromJsonObject(inst, *itAA))
                         return false;
+                    if (auto it = itAA->find("rootBoneLock"); it != itAA->end())
+                    {
+                        if (it->is_boolean())
+                            aa.rootBoneLock = it->get<bool>();
+                        else if (it->is_number())
+                            aa.rootBoneLock = (it->get<double>() != 0.0);
+                    }
+                    if (auto it = itAA->find("rootMotionDriveCct"); it != itAA->end())
+                    {
+                        if (it->is_boolean())
+                            aa.rootMotionDriveCct = it->get<bool>();
+                        else if (it->is_number())
+                            aa.rootMotionDriveCct = (it->get<double>() != 0.0);
+                    }
                 }
 
                 // Camera
@@ -905,6 +924,8 @@ namespace Alice
                     if (!JsonRttr::FromJsonObject(inst, *itUIWidget))
                         return false;
                 }
+
+
                 auto itUITransform = root.find("UITransform");
                 if (itUITransform != root.end() && itUITransform->is_object())
                 {
@@ -965,7 +986,6 @@ namespace Alice
                     if (!JsonRttr::FromJsonObject(inst, *itSL))
                         return false;
                 }
-
                 // Rect Light
                 auto itRL = root.find("RectLight");
                 if (itRL != root.end() && itRL->is_object())

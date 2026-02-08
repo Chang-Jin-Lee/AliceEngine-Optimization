@@ -1,5 +1,6 @@
 #pragma once
-
+#include <fmod.hpp>
+#include <fmod_errors.h>
 #include <string>
 #include <filesystem>
 #include <DirectXMath.h>
@@ -20,7 +21,7 @@ namespace Alice::Sound
 
     bool Initialize();
     void Shutdown();
-    void Update();
+    void Update(float deltaTime);
 
     bool Load(const std::wstring& key, const std::wstring& path, Type type);
     bool LoadAuto(const ResourceManager& resources,
@@ -35,9 +36,10 @@ namespace Alice::Sound
     void PauseAll(bool pause);
 
     // BGM
-    void PlayBGM(const std::wstring& key, float fadeTime = 0.0f);
+    constexpr float kDefaultBgmFadeTime = 0.5f;
+    void PlayBGM(const std::wstring& key, float fadeTime = kDefaultBgmFadeTime);
     void PauseBGM(bool pause);
-    void StopBGM(float fadeTime = 0.0f);
+    void StopBGM(float fadeTime = kDefaultBgmFadeTime);
     bool IsBGMPlaying();
     bool IsBGMPaused();
     bool SetBGMTimeSeconds(float sec);
@@ -49,6 +51,7 @@ namespace Alice::Sound
     // - loop=true: 핸들(ChannelID)을 반환하여 제어 가능하게 함
     // - loop=false: Fire-and-forget (중첩 재생 가능)
     void PlaySFX(const std::wstring& key, float volume = 1.0f, float pitch = 1.0f, bool loop = false);
+    FMOD::Channel* PlaySFXDelayed(const std::wstring& key, float delaySeconds, float volume = 1.0f, float pitch = 1.0f, bool loop = false);
     bool IsSfxPlaying(const std::wstring& key);
     void StopSfx(const std::wstring& key);
     void StopAllSFX();

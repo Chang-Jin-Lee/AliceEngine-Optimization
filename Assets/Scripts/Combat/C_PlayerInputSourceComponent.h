@@ -30,9 +30,9 @@ namespace Alice
         ALICE_PROPERTY(int, m_keyAttack, static_cast<int>(KeyCode::J));
         ALICE_PROPERTY(int, m_keyDodge, static_cast<int>(KeyCode::Space));
         ALICE_PROPERTY(int, m_keyGuard, static_cast<int>(KeyCode::K));
-        ALICE_PROPERTY(int, m_keyItem, static_cast<int>(KeyCode::Z));
+        ALICE_PROPERTY(int, m_keyItem, static_cast<int>(KeyCode::R));
         ALICE_PROPERTY(int, m_keyInteract, static_cast<int>(KeyCode::F));
-        ALICE_PROPERTY(int, m_keyRage, static_cast<int>(KeyCode::E));
+        ALICE_PROPERTY(int, m_keyRage, static_cast<int>(KeyCode::Q));
         ALICE_PROPERTY(bool, m_useMouseAttack, true);
         ALICE_PROPERTY(bool, m_useMouseLockOn, true);
         ALICE_PROPERTY(int, m_mouseAttackButton, static_cast<int>(MouseCode::Left));

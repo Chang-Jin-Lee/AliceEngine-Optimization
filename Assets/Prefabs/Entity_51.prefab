@@ -1,0 +1,467 @@
+{
+    "entities": [
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Boss_Animaition_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 11,
+                "playing": false,
+                "speed": 1.0800000429153442,
+                "timeSec": 0.7300000190734863
+            },
+            "SkinnedMesh": {
+                "boneCount": 65,
+                "instanceAssetPath": "Assets/Fbx/Boss_Animaition.fbxasset",
+                "meshAssetPath": "Boss_Animaition"
+            },
+            "Socket": {
+                "sockets": [
+                    {
+                        "name": "HAND",
+                        "parentBone": "mixamorig:RightHand",
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        }
+                    }
+                ]
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -10.0,
+                    "y": 0.0,
+                    "z": 5.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 100.0,
+                    "y": 100.0,
+                    "z": 100.0
+                },
+                "visible": true
+            },
+            "guid": "6938631727056854653",
+            "name": "Dummy"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "WeaponTrace": {
+                "active": false,
+                "attackInstanceId": 0,
+                "baseDamage": 10.0,
+                "debugDraw": true,
+                "debugPathGridSteps": 6,
+                "debugPathGuide": true,
+                "debugPathMarkerRadius": 0.05000000074505806,
+                "guardBreakPushbackDuration": 0.25,
+                "guardBreakPushbackSpeed": 3.0,
+                "guardBreakWeakSec": 1.5,
+                "guardDurabilityCost": 0.0,
+                "guardLockSec": 0.25,
+                "ownerGuid": "11831490326238347819",
+                "ownerNameDebug": "Boss",
+                "parryGroggyGain": 10.0,
+                "parryLockSec": 0.0,
+                "queryLayerBits": 0,
+                "shapes": [
+                    {
+                        "activeEndNorm": 1.0,
+                        "activeStartNorm": 0.27000001072883606,
+                        "boxHalfExtents": {
+                            "x": 0.05000000074505806,
+                            "y": 0.05000000074505806,
+                            "z": 0.20000000298023224
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "Shape",
+                        "pathControlLocalPos": {
+                            "x": -1.9199999570846558,
+                            "y": 1.2899999618530273,
+                            "z": -0.6700000166893005
+                        },
+                        "pathEnabled": true,
+                        "pathEndLocalPos": {
+                            "x": -0.1599999964237213,
+                            "y": 1.0199999809265137,
+                            "z": -1.2300000190734863
+                        },
+                        "pathMode": "QuadraticBezier",
+                        "pathStartLocalPos": {
+                            "x": 0.0,
+                            "y": 1.1299999952316284,
+                            "z": 0.0
+                        },
+                        "radius": 0.5,
+                        "type": "Sphere"
+                    }
+                ],
+                "subSteps": 1,
+                "targetLayerBits": 0,
+                "teamId": 1,
+                "traceBasisGuid": "0"
+            },
+            "_parentGuid": "6938631727056854653",
+            "guid": "16405204166734133664",
+            "name": "Attack_Kick"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "WeaponTrace": {
+                "active": false,
+                "attackInstanceId": 0,
+                "baseDamage": 10.0,
+                "debugDraw": true,
+                "debugPathGridSteps": 6,
+                "debugPathGuide": true,
+                "debugPathMarkerRadius": 0.05000000074505806,
+                "guardBreakPushbackDuration": 0.25,
+                "guardBreakPushbackSpeed": 3.0,
+                "guardBreakWeakSec": 1.5,
+                "guardDurabilityCost": 0.0,
+                "guardLockSec": 0.25,
+                "ownerGuid": "11831490326238347819",
+                "ownerNameDebug": "Boss",
+                "parryGroggyGain": 10.0,
+                "parryLockSec": 0.0,
+                "queryLayerBits": 0,
+                "shapes": [
+                    {
+                        "activeEndNorm": 1.0,
+                        "activeStartNorm": 0.0,
+                        "boxHalfExtents": {
+                            "x": 0.05000000074505806,
+                            "y": 0.05000000074505806,
+                            "z": 0.20000000298023224
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "Shape",
+                        "pathControlLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathEnabled": false,
+                        "pathEndLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathMode": "Linear",
+                        "pathStartLocalPos": {
+                            "x": -2.069999933242798,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "radius": 5.079999923706055,
+                        "type": "Sphere"
+                    }
+                ],
+                "subSteps": 1,
+                "targetLayerBits": 0,
+                "teamId": 1,
+                "traceBasisGuid": "0"
+            },
+            "_parentGuid": "6938631727056854653",
+            "guid": "2174643288750600930",
+            "name": "Attack_A"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "WeaponTrace": {
+                "active": false,
+                "attackInstanceId": 0,
+                "baseDamage": 10.0,
+                "debugDraw": true,
+                "debugPathGridSteps": 6,
+                "debugPathGuide": true,
+                "debugPathMarkerRadius": 0.05000000074505806,
+                "guardBreakPushbackDuration": 0.25,
+                "guardBreakPushbackSpeed": 3.0,
+                "guardBreakWeakSec": 1.5,
+                "guardDurabilityCost": 0.0,
+                "guardLockSec": 0.25,
+                "ownerGuid": "11831490326238347819",
+                "ownerNameDebug": "Boss",
+                "parryGroggyGain": 10.0,
+                "parryLockSec": 0.0,
+                "queryLayerBits": 0,
+                "shapes": [],
+                "subSteps": 1,
+                "targetLayerBits": 0,
+                "teamId": 1,
+                "traceBasisGuid": "0"
+            },
+            "_parentGuid": "6938631727056854653",
+            "guid": "2563689005812286452",
+            "name": "Attack_BC"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "WeaponTrace": {
+                "active": false,
+                "attackInstanceId": 0,
+                "baseDamage": 10.0,
+                "debugDraw": true,
+                "debugPathGridSteps": 6,
+                "debugPathGuide": true,
+                "debugPathMarkerRadius": 0.05000000074505806,
+                "guardBreakPushbackDuration": 0.25,
+                "guardBreakPushbackSpeed": 3.0,
+                "guardBreakWeakSec": 1.5,
+                "guardDurabilityCost": 0.0,
+                "guardLockSec": 0.25,
+                "ownerGuid": "11831490326238347819",
+                "ownerNameDebug": "Boss",
+                "parryGroggyGain": 10.0,
+                "parryLockSec": 0.0,
+                "queryLayerBits": 0,
+                "shapes": [],
+                "subSteps": 1,
+                "targetLayerBits": 0,
+                "teamId": 1,
+                "traceBasisGuid": "0"
+            },
+            "_parentGuid": "6938631727056854653",
+            "guid": "6863112690193983802",
+            "name": "Attack_ABC"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "WeaponTrace": {
+                "active": false,
+                "attackInstanceId": 0,
+                "baseDamage": 10.0,
+                "debugDraw": true,
+                "debugPathGridSteps": 6,
+                "debugPathGuide": true,
+                "debugPathMarkerRadius": 0.05000000074505806,
+                "guardBreakPushbackDuration": 0.25,
+                "guardBreakPushbackSpeed": 3.0,
+                "guardBreakWeakSec": 1.5,
+                "guardDurabilityCost": 0.0,
+                "guardLockSec": 0.25,
+                "ownerGuid": "11831490326238347819",
+                "ownerNameDebug": "Boss",
+                "parryGroggyGain": 10.0,
+                "parryLockSec": 0.0,
+                "queryLayerBits": 0,
+                "shapes": [],
+                "subSteps": 1,
+                "targetLayerBits": 0,
+                "teamId": 1,
+                "traceBasisGuid": "0"
+            },
+            "_parentGuid": "6938631727056854653",
+            "guid": "16524424592176446637",
+            "name": "Attack_Charging"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "WeaponTrace": {
+                "active": false,
+                "attackInstanceId": 0,
+                "baseDamage": 10.0,
+                "debugDraw": true,
+                "debugPathGridSteps": 6,
+                "debugPathGuide": true,
+                "debugPathMarkerRadius": 0.05000000074505806,
+                "guardBreakPushbackDuration": 0.25,
+                "guardBreakPushbackSpeed": 3.0,
+                "guardBreakWeakSec": 1.5,
+                "guardDurabilityCost": 0.0,
+                "guardLockSec": 0.25,
+                "ownerGuid": "11831490326238347819",
+                "ownerNameDebug": "Boss",
+                "parryGroggyGain": 10.0,
+                "parryLockSec": 0.0,
+                "queryLayerBits": 0,
+                "shapes": [],
+                "subSteps": 1,
+                "targetLayerBits": 0,
+                "teamId": 1,
+                "traceBasisGuid": "0"
+            },
+            "_parentGuid": "6938631727056854653",
+            "guid": "15197116109027465385",
+            "name": "Attack_Dash"
+        }
+    ],
+    "rootGuid": "6938631727056854653",
+    "version": 2
+}

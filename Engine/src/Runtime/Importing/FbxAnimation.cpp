@@ -134,7 +134,7 @@ static void RebuildChannelMapIfNeeded(const aiScene* scene, int currentClip, con
 {
     if (!scene || currentClip < 0 || (size_t)currentClip >= scene->mNumAnimations) return;
     std::fill(out.begin(), out.end(), nullptr);
-    const aiAnimation* anim = scene->mAnimations[currentClip];
+     const aiAnimation* anim = scene->mAnimations[currentClip];
     for (unsigned i = 0; i < anim->mNumChannels; ++i)
     {
         const aiNodeAnim* ch = anim->mChannels[i];

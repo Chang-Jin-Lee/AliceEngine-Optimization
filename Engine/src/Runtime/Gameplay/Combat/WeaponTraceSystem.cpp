@@ -90,22 +90,66 @@ namespace Alice
 			return R * T;
 		}
 
-		DirectX::XMMATRIX BuildShapeLocalMatrix(const WeaponTraceShape& shape)
+		float ToShapePathPhase(float globalPhase)
+		{
+			return std::clamp(globalPhase, 0.0f, 1.0f);
+		}
+
+		bool ResolveShapeStepPathPhase(float globalPhase0,
+		                               float globalPhase1,
+		                               float& outPathPhase0,
+		                               float& outPathPhase1)
+		{
+			outPathPhase0 = ToShapePathPhase(globalPhase0);
+			outPathPhase1 = ToShapePathPhase(globalPhase1);
+			return true;
+		}
+
+		DirectX::XMFLOAT3 ResolveShapeLocalPos(const WeaponTraceShape& shape, float phase)
+		{
+			if (!shape.pathEnabled)
+				return shape.localPos;
+
+			const float t = std::clamp(phase, 0.0f, 1.0f);
+			switch (shape.pathMode)
+			{
+			case WeaponTracePathMode::QuadraticBezier:
+			{
+				const float omt = 1.0f - t;
+				const float w0 = omt * omt;
+				const float w1 = 2.0f * omt * t;
+				const float w2 = t * t;
+				return DirectX::XMFLOAT3(
+					(w0 * shape.pathStartLocalPos.x) + (w1 * shape.pathControlLocalPos.x) + (w2 * shape.pathEndLocalPos.x),
+					(w0 * shape.pathStartLocalPos.y) + (w1 * shape.pathControlLocalPos.y) + (w2 * shape.pathEndLocalPos.y),
+					(w0 * shape.pathStartLocalPos.z) + (w1 * shape.pathControlLocalPos.z) + (w2 * shape.pathEndLocalPos.z));
+			}
+			case WeaponTracePathMode::Linear:
+			default:
+				return DirectX::XMFLOAT3(
+					shape.pathStartLocalPos.x + ((shape.pathEndLocalPos.x - shape.pathStartLocalPos.x) * t),
+					shape.pathStartLocalPos.y + ((shape.pathEndLocalPos.y - shape.pathStartLocalPos.y) * t),
+					shape.pathStartLocalPos.z + ((shape.pathEndLocalPos.z - shape.pathStartLocalPos.z) * t));
+			}
+		}
+
+		DirectX::XMMATRIX BuildShapeLocalMatrix(const WeaponTraceShape& shape, const DirectX::XMFLOAT3& localPos)
 		{
 			using namespace DirectX;
 			const float rx = XMConvertToRadians(shape.localRotDeg.x);
 			const float ry = XMConvertToRadians(shape.localRotDeg.y);
 			const float rz = XMConvertToRadians(shape.localRotDeg.z);
 			const XMMATRIX R = XMMatrixRotationRollPitchYaw(rx, ry, rz);
-			const XMMATRIX T = XMMatrixTranslation(shape.localPos.x, shape.localPos.y, shape.localPos.z);
+			const XMMATRIX T = XMMatrixTranslation(localPos.x, localPos.y, localPos.z);
 			return R * T;
 		}
 
-		bool ComputeShapeWorldPose(const WeaponTraceShape& shape, const DirectX::XMMATRIX& basisWorld,
+		bool ComputeShapeWorldPose(const WeaponTraceShape& shape, const DirectX::XMMATRIX& basisWorld, float phase,
 			DirectX::XMFLOAT3& outCenter, DirectX::XMFLOAT4& outRot)
 		{
 			using namespace DirectX;
-			const XMMATRIX local = BuildShapeLocalMatrix(shape);
+			const DirectX::XMFLOAT3 localPos = ResolveShapeLocalPos(shape, phase);
+			const XMMATRIX local = BuildShapeLocalMatrix(shape, localPos);
 			const XMMATRIX world = local * basisWorld;
 			XMVECTOR s, r, t;
 			if (!XMMatrixDecompose(&s, &r, &t, world))
@@ -117,7 +161,7 @@ namespace Alice
 		}
 	}
 
-	void WeaponTraceSystem::Update(World& world, float /*dtSec*/, std::vector<CombatHitEvent>* outHits)
+	void WeaponTraceSystem::Update(World& world, float dtSec, std::vector<CombatHitEvent>* outHits)
 	{
 		auto* physics = world.GetPhysicsWorld();
 		if (!physics)
@@ -131,6 +175,7 @@ namespace Alice
 
 		for (auto&& [eid, trace] : traces)
 		{
+			trace.debugSweepSegments.clear();
 			if (!trace.active)
 			{
 				trace.hasPrevBasis = false;
@@ -138,8 +183,22 @@ namespace Alice
 				trace.prevCentersWS.clear();
 				trace.prevRotsWS.clear();
 				trace.hitVictims.clear();
+				trace.activeElapsedSec = 0.0f;
+				trace.activeWindowDurationSec = 0.0f;
 				continue;
 			}
+
+			const float frameStartElapsedSec = trace.activeElapsedSec;
+			const float safeDtSec = std::max(0.0f, dtSec);
+			trace.activeElapsedSec = std::max(0.0f, trace.activeElapsedSec + safeDtSec);
+			const float frameEndElapsedSec = trace.activeElapsedSec;
+			auto ResolvePhase = [&](float elapsedSec) -> float {
+				if (trace.activeWindowDurationSec <= 0.0f)
+					return 1.0f;
+				return std::clamp(elapsedSec / trace.activeWindowDurationSec, 0.0f, 1.0f);
+			};
+			const float framePhaseStart = ResolvePhase(frameStartElapsedSec);
+			const float framePhaseEnd = ResolvePhase(frameEndElapsedSec);
 
 			const EntityId owner = ResolveOwner(world, trace, eid);
 			const EntityId basis = ResolveTraceBasis(world, trace, eid);
@@ -159,6 +218,10 @@ namespace Alice
 				trace.prevRotsWS.assign(shapeCount, DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 				trace.hasPrevShapes = false;
 			}
+			if (trace.debugDraw)
+			{
+				trace.debugSweepSegments.reserve(shapeCount * std::max(1u, trace.subSteps));
+			}
 
 			DirectX::XMFLOAT3 currBasisPos{};
 			DirectX::XMFLOAT4 currBasisRot{};
@@ -170,7 +233,8 @@ namespace Alice
 			const DirectX::XMMATRIX currBasisWorld = BuildBasisWorldMatrix(currBasisPos, currBasisRot);
 			for (size_t i = 0; i < shapeCount; ++i)
 			{
-				if (!ComputeShapeWorldPose(trace.shapes[i], currBasisWorld, currCenters[i], currRots[i]))
+				const float shapePhase = ToShapePathPhase(framePhaseEnd);
+				if (!ComputeShapeWorldPose(trace.shapes[i], currBasisWorld, shapePhase, currCenters[i], currRots[i]))
 				{
 					currCenters[i] = (trace.hasPrevShapes && i < trace.prevCentersWS.size())
 						? trace.prevCentersWS[i]
@@ -231,11 +295,17 @@ namespace Alice
 
 				const DirectX::XMMATRIX basisStartWorld = BuildBasisWorldMatrix(basisStartPos, basisStartRot);
 				const DirectX::XMMATRIX basisEndWorld = BuildBasisWorldMatrix(basisEndPos, basisEndRot);
+				const float phase0 = framePhaseStart + ((framePhaseEnd - framePhaseStart) * t0);
+				const float phase1 = framePhaseStart + ((framePhaseEnd - framePhaseStart) * t1);
 
 				for (size_t i = 0; i < shapeCount; ++i)
 				{
 					const WeaponTraceShape& shape = trace.shapes[i];
 					if (!shape.enabled)
+						continue;
+					float shapePhase0 = 0.0f;
+					float shapePhase1 = 0.0f;
+					if (!ResolveShapeStepPathPhase(phase0, phase1, shapePhase0, shapePhase1))
 						continue;
 
 					DirectX::XMFLOAT3 startCenter{};
@@ -243,10 +313,20 @@ namespace Alice
 					DirectX::XMFLOAT3 endCenter{};
 					DirectX::XMFLOAT4 endRot{};
 
-					if (!ComputeShapeWorldPose(shape, basisStartWorld, startCenter, startRot))
+					if (!ComputeShapeWorldPose(shape, basisStartWorld, shapePhase0, startCenter, startRot))
 						continue;
-					if (!ComputeShapeWorldPose(shape, basisEndWorld, endCenter, endRot))
+					if (!ComputeShapeWorldPose(shape, basisEndWorld, shapePhase1, endCenter, endRot))
 						continue;
+					if (trace.debugDraw)
+					{
+						WeaponTraceDebugSweepSegment dbgSeg{};
+						dbgSeg.shapeIndex = static_cast<std::uint32_t>(i);
+						dbgSeg.startCenterWS = startCenter;
+						dbgSeg.startRotWS = startRot;
+						dbgSeg.endCenterWS = endCenter;
+						dbgSeg.endRotWS = endRot;
+						trace.debugSweepSegments.push_back(dbgSeg);
+					}
 
                     const char* typeName = (shape.type == WeaponTraceShapeType::Sphere)
                         ? "Sphere"
@@ -277,17 +357,20 @@ namespace Alice
 								? hurt->ownerGuid
 								: static_cast<std::uint64_t>(hitEntity);
 
-                        if (trace.hitVictims.find(victimGuid) != trace.hitVictims.end())
+                        const EntityId victimOwner = (hurt->ownerGuid != 0)
+                            ? world.FindEntityByGuid(hurt->ownerGuid)
+                            : (hurt->ownerCached != InvalidEntityId ? hurt->ownerCached : hitEntity);
+
+                        auto hitIt = trace.hitVictims.find(victimGuid);
+                        if (hitIt != trace.hitVictims.end())
+                        {
                             return;
+                        }
 
 							trace.hitVictims.insert(victimGuid);
 
                         if (outHits)
                         {
-                            const EntityId victimOwner = (hurt->ownerGuid != 0)
-                                ? world.FindEntityByGuid(hurt->ownerGuid)
-                                : (hurt->ownerCached != InvalidEntityId ? hurt->ownerCached : hitEntity);
-
                             // SFX/VFX hook (raw hit detection):
                             // This is the earliest point with hitPosWS/hitNormalWS.
                             // Prefer spawning impact effects in CombatSession after resolve
