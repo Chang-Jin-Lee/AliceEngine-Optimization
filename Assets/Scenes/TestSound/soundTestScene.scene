@@ -1,0 +1,277 @@
+{
+    "entities": [
+        {
+            "AudioListener": {
+                "primary": true
+            },
+            "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
+                "aspectOverride": 0.0,
+                "primary": false,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -18.3148136138916,
+                    "y": 0.7200576066970825,
+                    "z": -5.029544830322266
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "6099752681963205762",
+            "name": "Camera1"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "AudioEventBusScript",
+                    "props": {}
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -11.177740097045898,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "15299924456850410430",
+            "name": "AudioBus"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "AudioBGMScript",
+                    "props": {
+                        "bgmPath": "Resource/Sound/SFX/BGM/BGM_Title.mp3",
+                        "busEntityName": "AudioBus",
+                        "playOnStart": true,
+                        "useBus": true,
+                        "volume": 0.5
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -7.772986888885498,
+                    "y": 0.0,
+                    "z": 0.16166937351226807
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "17226712890010906155",
+            "name": "AudioBGM"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "AudioPlayerScript",
+                    "props": {
+                        "busEntityName": "AudioBus",
+                        "is3D": true,
+                        "loop": false,
+                        "maxDistance": 50.0,
+                        "minDistance": 1.0,
+                        "pitch": 1.0,
+                        "sfxPath1": "Resource/Sound/Attack.mp3",
+                        "sfxPath2": "Resource/Sound/Jump.mp3",
+                        "sfxPath3": "Resource/Sound/Hit.wav",
+                        "sfxPath4": "Resource/Sound/Coin.wav",
+                        "sfxPath5": "Resource/Sound/Explosion.wav",
+                        "useBus": true,
+                        "volume": 1.0
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -4.775717735290527,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "11177436472043515517",
+            "name": "AudioPlayer"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "AudioBossScript",
+                    "props": {
+                        "busEntityName": "AudioBus",
+                        "is3D": true,
+                        "loop": false,
+                        "maxDistance": 50.0,
+                        "minDistance": 1.0,
+                        "pitch": 1.0,
+                        "sfxPath1": "Resource/Sound/Attack.mp3",
+                        "sfxPath2": "Resource/Sound/Jump.mp3",
+                        "sfxPath3": "Resource/Sound/Hit.wav",
+                        "sfxPath4": "Resource/Sound/Coin.wav",
+                        "sfxPath5": "Resource/Sound/Explosion.wav",
+                        "useBus": true,
+                        "volume": 1.0
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -2.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "8882927079477649066",
+            "name": "AudioBoss"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "DSoundScript",
+                    "props": {
+                        "aPath": "Boss/공격 3/Boss_Attack_03.wav",
+                        "bPath": "Player/구르기/Player_Rolling_01.mp3",
+                        "busEntityName": "AudioBus",
+                        "cPath": "Player/공격 3/Player_Attack_03.wav",
+                        "dPath": "Boss/피격/Boss_Hit_01.wav",
+                        "fPath": "BGM/BGM_Title.mp3",
+                        "gPath": "BGM/BGM_Tutorial_01.mp3",
+                        "hPath": "BGM/BGM_Boss_FirstPhase_01.mp3",
+                        "jPath": "BGM/BGM_Boss_SecondPhase_01.mp3",
+                        "mPath": "Boss/공격 2/Boss_Attack_02.wav",
+                        "nPath": "Boss/공격 1/Boss_Attack_01.mp3",
+                        "sPath": "Boss/포효/Boss_Roaring_01.mp3",
+                        "vPath": "Player/강공격/Player_HeavyAttack_01.mp3",
+                        "xPath": "Player/공격 2/Player_Attack_02.wav",
+                        "zPath": "Player/공격 1/Player_Attack_01.wav"
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "SceneChangekPressScript",
+                    "props": {
+                        "changeKey": 20,
+                        "targetScenePath": "Assets/Scenes/UI/DeadScene.scene"
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 3.675037145614624,
+                    "y": 0.0,
+                    "z": 0.13760268688201904
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "5591873112691894352",
+            "name": "SoundInput"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "AnimSoundBindingScript",
+                    "props": {
+                        "clipName1": "",
+                        "clipName2": "",
+                        "notifyTime1": 0.0,
+                        "notifyTime2": 0.0,
+                        "pitch": 1.0,
+                        "soundPath1": "",
+                        "soundPath2": "",
+                        "targetEntityName1": "",
+                        "targetEntityName2": "",
+                        "volume": 1.0
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                "rotation": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                "scale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                "visible": true
+            },
+            "guid": "16000000000000000001",
+            "name": "AnimSoundBinding"
+        }
+    ],
+    "sceneName": "soundTestScene",
+    "version": 1
+}

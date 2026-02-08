@@ -4147,6 +4147,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			// - If you need attacker/weapon position, fetch sockets from AdvancedAnimationComponent here.
 			// - For footsteps/attack whoosh, use anim notifies (AdvancedAnimationComponent::AddNotify).
 
+			// Notify external scripts about resolve result
+			if (OnCombatResolved.IsBound() && resolveResult != Combat::ResolveResult::None)
+			{
+				OnCombatResolved.Execute(hit.victimOwner, hit.attackerOwner, 
+					static_cast<std::uint8_t>(resolveResult), hit.damage, hit.hitPosWS);
+			}
+
 			if (m_enableCombatLogs)
 			{
 				const std::string attackerName = GetEntityLabel(world, attacker.id);

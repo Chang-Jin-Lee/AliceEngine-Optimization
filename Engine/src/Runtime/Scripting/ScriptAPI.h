@@ -1,7 +1,14 @@
 ﻿#pragma once
 
 #include "Runtime/Input/InputTypes.h"
+#include <filesystem>
+#include <string>
 #include <utility>
+
+namespace DirectX
+{
+    struct XMFLOAT3;
+}
 
 namespace Alice 
 {
@@ -9,6 +16,10 @@ namespace Alice
     class ResourceManager;
     class SkinnedMeshRegistry;
     class InputSystem;
+    namespace Sound
+    {
+        enum class Type : int;
+    }
 
     /// 스크립트에서 사용하는 입력 API (GetKeyDown 등)
     class IScriptInput
@@ -37,6 +48,11 @@ namespace Alice
         // 마우스 스크롤 델타 (스크롤 이동량)
         // - 양수: 위로 스크롤, 음수: 아래로 스크롤
         virtual float GetMouseScrollDelta() const = 0;
+
+
+        // 커서 표시/잠금 (UI 씬 등에서 복원용)
+        virtual void SetCursorVisible(bool visible) = 0;
+        virtual void SetCursorLocked(bool locked) = 0;
     };
 
     /// 스크립트에서 사용하는 씬 전환 API (즉시 로드 대신 "요청" → 프레임 끝에 처리)
@@ -49,10 +65,40 @@ namespace Alice
         virtual bool LoadSceneFileRequest(const char* scenePathUtf8) = 0; // .scene 파일 로드 요청 (SceneManager::RequestLoadSceneFile)
     };
 
+    /// 스크립트에서 사용하는 사운드 API (엔진 SoundManager 경유)
+    class IScriptAudio
+    {
+    public:
+        virtual ~IScriptAudio() = default;
+        virtual bool LoadAuto(const ResourceManager& resources,
+                              const std::wstring& key,
+                              const std::filesystem::path& logicalPath,
+                              Sound::Type type) = 0;
+        virtual void SetBGMVolume(float volume) = 0;
+        virtual void PlayBGM(const std::wstring& key) = 0;
+        virtual void StopBGM() = 0;
+        virtual void PlaySFX(const std::wstring& key, float volume, float pitch, bool loop) = 0;
+        virtual void StopSfx(const std::wstring& key) = 0;
+        virtual void StopAllSFX() = 0;
+        virtual bool Play3D(const std::wstring& instanceId,
+                            const std::wstring& key,
+                            const DirectX::XMFLOAT3& pos,
+                            float volume,
+                            float pitch,
+                            bool loop) = 0;
+        virtual void Stop3D(const std::wstring& instanceId) = 0;
+        virtual void Update3D(const std::wstring& instanceId,
+                              const DirectX::XMFLOAT3& pos,
+                              float volume,
+                              float minDistance,
+                              float maxDistance) = 0;
+    };
+
     struct ScriptServices 
     {
         IScriptInput*        input { nullptr };
         IScriptScene*        scene { nullptr };
+        IScriptAudio*        audio { nullptr };
         SkinnedMeshRegistry* skinnedRegistry { nullptr };
         ResourceManager*     resources { nullptr };
     };

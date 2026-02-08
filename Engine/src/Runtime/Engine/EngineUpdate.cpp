@@ -87,6 +87,9 @@ namespace Alice
 			if (m_sceneManager && m_sceneManager->HasPendingSceneChange())
 				m_sceneManager->CommitPendingSceneChange(m_world);
 
+			// 씬 로드/전환 시 UI 시간(gTime.x) 리셋 → DieLine 등 시간 기반 쉐이더가 다시 정상 재생되도록
+			m_aliceUIRenderer.ResetTime();
+
 			sceneChangedThisFrame = true;
 			m_skipPhysicsNextFrame = true;
 		}
@@ -107,6 +110,7 @@ namespace Alice
 		{
 			m_skipPhysicsNextFrame = true;
 			m_physAccum = 0.0f;
+			m_aliceUIRenderer.ResetTime();
 		}
 	}
 
