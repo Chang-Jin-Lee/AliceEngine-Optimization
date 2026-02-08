@@ -17,6 +17,7 @@
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
+#include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
 #include "ThirdParty/json/json.hpp"
 
 #include "imgui.h"
@@ -232,6 +233,19 @@ namespace Alice
 				{
 					EntityId e = world.CreateRectLight();
 					PushCommand(std::make_unique<CreateEntityCommand>(e, "Rect Light"));
+					selectedEntity = e;
+					g_SceneDirty = true;
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Post-processing"))
+			{
+				if (ImGui::MenuItem("Post Process Volume"))
+				{
+					EntityId e = world.CreateEmpty();
+					world.AddComponent<PostProcessVolumeComponent>(e);
+					PushCommand(std::make_unique<CreateEntityCommand>(e, "Post Process Volume"));
 					selectedEntity = e;
 					g_SceneDirty = true;
 					ImGui::CloseCurrentPopup();
