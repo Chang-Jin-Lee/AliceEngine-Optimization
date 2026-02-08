@@ -616,8 +616,8 @@ namespace Alice
 		{
 			namespace fs = std::filesystem;
 
-			static int   s_Width = 1280;
-			static int   s_Height = 720;
+			static int   s_Width = 1920;
+			static int   s_Height = 1080;
 			static bool  s_ScanScenesOnce = true;
 			static std::vector<fs::path> s_ScenePaths;
 			static std::vector<bool>     s_SceneSelected;
