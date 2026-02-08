@@ -355,6 +355,8 @@ namespace Alice
 		int& pvdPort,
 		bool& isDebugDraw)
 	{
+		m_isPlayingPtr = &isPlaying;
+
 		// 매 프레임 Default PostProcess Settings를 RenderSystem에 전달
 		deferred.SetDefaultPostProcessSettings(m_defaultPostProcessSettings);
 		// ForwardRenderSystem에도 동일한 함수가 필요하면 추가
