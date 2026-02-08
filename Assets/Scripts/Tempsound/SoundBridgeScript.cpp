@@ -341,10 +341,11 @@ namespace Alice
         }
     }
 
-    void SoundBridgeScript::OnCombatResolve(EntityId victimId, EntityId attackerId, std::uint8_t resolveResult, float damage, const DirectX::XMFLOAT3& hitPos)
+    void SoundBridgeScript::OnCombatResolve(EntityId victimId, EntityId attackerId, std::uint8_t resolveResult, float damage, const DirectX::XMFLOAT3& hitPos, const DirectX::XMFLOAT3& hitNormal)
     {
         (void)damage;
         (void)attackerId;
+        (void)hitNormal;
         
         World* world = GetWorld();
         if (!world)

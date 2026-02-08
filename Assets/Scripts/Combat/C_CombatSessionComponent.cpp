@@ -598,6 +598,9 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 	void C_CombatSessionComponent::OnDisable()
 	{
+		OnCombatResolved.Unbind();
+		OnCombatResolvedVfx.Unbind();
+
 		if (m_state)
 			m_state->Init();
 
@@ -4195,10 +4198,19 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			// - For footsteps/attack whoosh, use anim notifies (AdvancedAnimationComponent::AddNotify).
 
 			// Notify external scripts about resolve result
-			if (OnCombatResolved.IsBound() && resolveResult != Combat::ResolveResult::None)
+			if (resolveResult != Combat::ResolveResult::None)
 			{
-				OnCombatResolved.Execute(hit.victimOwner, hit.attackerOwner, 
-					static_cast<std::uint8_t>(resolveResult), hit.damage, hit.hitPosWS);
+				if (OnCombatResolved.IsBound())
+				{
+					OnCombatResolved.Execute(hit.victimOwner, hit.attackerOwner,
+						static_cast<std::uint8_t>(resolveResult), hit.damage, hit.hitPosWS, hit.hitNormalWS);
+				}
+
+				if (OnCombatResolvedVfx.IsBound())
+				{
+					OnCombatResolvedVfx.Execute(hit.victimOwner, hit.attackerOwner,
+						static_cast<std::uint8_t>(resolveResult), hit.damage, hit.hitPosWS, hit.hitNormalWS);
+				}
 			}
 
 			if (m_enableCombatLogs)

@@ -576,6 +576,14 @@ namespace Alice
             XMMATRIX entityWorld = world.ComputeWorldMatrix(entityId);
             XMMATRIX entityWorldNoTrans = entityWorld;
             entityWorldNoTrans.r[3] = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+            XMMATRIX entityRotOnly = XMMatrixIdentity();
+            {
+                XMVECTOR s{}, r{}, t{};
+                if (XMMatrixDecompose(&s, &r, &t, entityWorld))
+                    entityRotOnly = XMMatrixRotationQuaternion(r);
+                else
+                    entityRotOnly = entityWorldNoTrans;
+            }
             const float entityScale =
                 (XMVectorGetX(XMVector3Length(entityWorld.r[0])) +
                  XMVectorGetX(XMVector3Length(entityWorld.r[1])) +
@@ -1191,6 +1199,8 @@ namespace Alice
                         XMMATRIX RParticle = XMMatrixRotationRollPitchYaw(p.rotation3.x, p.rotation3.y, p.rotation3.z);
                         XMMATRIX REmitter = XMMatrixRotationQuaternion(XMLoadFloat4(&def.localRot));
                         XMMATRIX R = RParticle * REmitter;
+                        if (def.space == SimulationSpace::Local)
+                            R = R * entityRotOnly;
                         XMMATRIX T = XMMatrixTranslationFromVector(worldPos);
                         cb.world = XMMatrixTranspose(S * R * T);
 

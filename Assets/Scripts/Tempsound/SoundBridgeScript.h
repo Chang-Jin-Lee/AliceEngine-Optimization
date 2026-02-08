@@ -36,7 +36,7 @@ namespace Alice
         //C_CombatSessionComponent* FindSession();
         //AudioEventBusScript* FindBus();
         void OnCombatStateEntered(EntityId entityId, std::uint8_t prevState, std::uint8_t curState, const void* flagsPtr);
-        void OnCombatResolve(EntityId victimId, EntityId attackerId, std::uint8_t resolveResult, float damage, const DirectX::XMFLOAT3& hitPos);
+        void OnCombatResolve(EntityId victimId, EntityId attackerId, std::uint8_t resolveResult, float damage, const DirectX::XMFLOAT3& hitPos, const DirectX::XMFLOAT3& hitNormal);
         void OnPhase2Entered();
         
         // 보스 패턴의 실제 애니메이션 재생 시간 계산 (속도 반영)
