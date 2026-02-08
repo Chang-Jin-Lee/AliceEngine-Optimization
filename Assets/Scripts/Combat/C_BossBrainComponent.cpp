@@ -130,6 +130,7 @@ namespace Alice
 
         const float dt = std::max(0.0f, deltaTime);
         m_stateTimer += dt;
+        m_faceTargetSuppressTimer = std::max(0.0f, m_faceTargetSuppressTimer - dt);
         m_attackCooldownTimer = std::max(0.0f, m_attackCooldownTimer - dt);
         m_blockedCooldownTimer = std::max(0.0f, m_blockedCooldownTimer - dt);
 
@@ -204,6 +205,15 @@ namespace Alice
                     {
                         m_patrolDirection = RandomSign();
                         m_traceEnterDist = dist;
+                        const float traceMinHoldSec = std::max(0.0f, m_traceMaxHoldMinSec);
+                        const float traceMaxHoldSec = std::max(traceMinHoldSec, m_traceMaxHoldMaxSec);
+                        m_traceTargetSec = (traceMaxHoldSec > 0.0f)
+                            ? RandomRange(traceMinHoldSec, traceMaxHoldSec)
+                            : std::max(0.0f, m_traceDelaySec);
+                    }
+                    else
+                    {
+                        m_traceTargetSec = 0.0f;
                     }
                     if (next != BrainState::Idle)
                         m_idleTargetSec = 0.0f;
@@ -405,6 +415,7 @@ namespace Alice
                         return;
                     m_intentActive = true;
                     m_intentCompleted = false;
+                    m_intentFollowupUsed = false;
                     m_intentRoot = root;
                     m_followupQueue.clear();
                 };
@@ -412,6 +423,7 @@ namespace Alice
                 {
                     m_intentActive = false;
                     m_intentCompleted = true;
+                    m_intentFollowupUsed = false;
                     m_intentRoot = PatternType::None;
                     m_followupQueue.clear();
                 };
@@ -558,7 +570,9 @@ namespace Alice
                 {
                     m_activePattern = PatternType::None;
                     m_attackIssued = false;
+                    m_faceTargetSuppressTimer = std::max(m_faceTargetSuppressTimer, std::max(0.0f, m_actionDelaySec));
                     m_attackCooldownTimer = std::max(0.0f, m_attackCooldown);
+                    m_idleTargetSec = std::max(0.0f, m_actionDelaySec);
                     EnterState(BrainState::Idle);
                 }
             }
@@ -613,7 +627,7 @@ namespace Alice
                 {
                     AttackOutcome outcome = m_attackOutcomeSet ? m_attackOutcome : AttackOutcome::Evaded;
                     PatternType followUp = PatternType::None;
-                    if (m_intentActive && m_phase2Active && outcome == AttackOutcome::Evaded)
+                    if (m_intentActive && !m_intentFollowupUsed && m_phase2Active && outcome == AttackOutcome::Evaded)
                     {
                         switch (m_lastAttackPattern)
                         {
@@ -633,6 +647,7 @@ namespace Alice
                     m_decision.sectorLocked = false;
                     m_decision.sectorLockedSec = 0.0f;
                     m_decision.lockedSector = Sector::Unknown;
+                    m_faceTargetSuppressTimer = std::max(m_faceTargetSuppressTimer, std::max(0.0f, m_actionDelaySec));
 
                     if (m_deactivateAfterCurrentAttack)
                     {
@@ -654,6 +669,7 @@ namespace Alice
                     {
                         m_activePattern = PatternType::None;
                         m_forceWalkAfterAttack = false;
+                        m_intentFollowupUsed = true;
                         PushFollowupFront(followUp);
                         EnterState(BrainState::Orbit);
                     }
@@ -679,6 +695,7 @@ namespace Alice
                         }
                         else
                         {
+                            m_idleTargetSec = std::max(0.0f, m_actionDelaySec);
                             EnterState(BrainState::Idle);
                         }
                     }
@@ -688,15 +705,30 @@ namespace Alice
             {
                 const bool rangedReady = (m_rangedCooldownSec <= 0.0f)
                     || (m_decision.timeSinceRangedSec >= m_rangedCooldownSec);
-                const float traceHoldSec = (m_traceDelaySec > 0.0f) ? m_traceDelaySec : 5.0f;
+                const float rangedTraceMinDist = std::max(0.0f, GetPatternMinRange(PatternType::Ranged));
+                if (m_traceTargetSec <= 0.0f)
+                {
+                    const float traceMinHoldSec = std::max(0.0f, m_traceMaxHoldMinSec);
+                    const float traceMaxHoldSec = std::max(traceMinHoldSec, m_traceMaxHoldMaxSec);
+                    m_traceTargetSec = (traceMaxHoldSec > 0.0f)
+                        ? RandomRange(traceMinHoldSec, traceMaxHoldSec)
+                        : std::max(0.0f, m_traceDelaySec);
+                }
+                const float traceHoldSec = std::max(0.0f, m_traceTargetSec);
                 const float traceFarThreshold = m_traceEnterDist + 2.0f;
                 const float traceNearThreshold = std::max(0.0f, m_traceEnterDist - 1.0f);
                 const bool traceFar = (dist >= traceFarThreshold);
                 const bool traceNear = (dist <= traceNearThreshold);
                 const bool traceTimeReady = (traceHoldSec <= 0.0f) || (m_stateTimer >= traceHoldSec);
                 bool allowDecision = traceNear || traceTimeReady;
+                const bool traceAttackRangeReady = (dist <= meleeRange);
+                if (traceAttackRangeReady)
+                    allowDecision = true;
 
-                if (traceFar && rangedReady && PeekQueuedPattern() == PatternType::None)
+                if (traceFar
+                    && dist >= rangedTraceMinDist
+                    && rangedReady
+                    && PeekQueuedPattern() == PatternType::None)
                 {
                     PushQueuedPattern(PatternType::Ranged);
                     m_forceWalkAfterAttack = true;
@@ -744,16 +776,17 @@ namespace Alice
                 }
 
                 PatternType pending = PeekPendingPattern();
-                if (pending != PatternType::None && allowDecision)
+                if (pending != PatternType::None)
                 {
-                    if (pending == PatternType::Dash || IsPatternInRange(pending))
+                    const bool pendingInRange = (pending == PatternType::Dash) || IsPatternInRange(pending);
+                    if (pendingInRange)
                     {
                         if (pending == PatternType::Ranged)
                             m_forceWalkAfterAttack = true;
                         m_activePattern = PopPendingPattern();
                         BeginAttack(m_activePattern);
                     }
-                    else
+                    else if (allowDecision)
                     {
                         EnterState(BrainState::Approach);
                     }
@@ -816,14 +849,32 @@ namespace Alice
             }
             else if (m_state == BrainState::Idle)
             {
-                if (m_attackCooldownTimer <= 0.0f)
-                    EnterState(BrainState::Orbit);
+                const float idleRetreatTriggerDist = std::max(0.0f, m_idleRetreatTriggerDist);
+                const float idleRetreatStepDist = std::max(0.0f, m_idleRetreatStepDist);
+                if (idleRetreatTriggerDist > 0.0f
+                    && idleRetreatStepDist > 0.0f
+                    && dist <= idleRetreatTriggerDist)
+                {
+                    StartRetreat(dist + idleRetreatStepDist);
+                }
+                else
+                {
+                    const float idleHoldSec = std::max(0.0f, m_idleTargetSec);
+                    if ((idleHoldSec <= 0.0f || m_stateTimer >= idleHoldSec)
+                        && m_attackCooldownTimer <= 0.0f)
+                        EnterState(BrainState::Orbit);
+                }
             }
 
             if (m_state == BrainState::Orbit)
             {
                 if (hasDir)
                     intent.move = { right.x * static_cast<float>(m_patrolDirection), right.y * static_cast<float>(m_patrolDirection) };
+            }
+            else if (m_state == BrainState::Retreat)
+            {
+                if (hasDir)
+                    intent.move = { -toTarget.x, -toTarget.y };
             }
             else if (m_state == BrainState::Approach || m_state == BrainState::Chase)
             {
@@ -832,7 +883,8 @@ namespace Alice
             }
 
             // runHeld is ignored for boss intents
-            m_wantsFaceTarget = (m_state != BrainState::Gimmick);
+            m_wantsFaceTarget = (m_state != BrainState::Gimmick)
+                && ((m_state == BrainState::Attack) || m_faceTargetSuppressTimer <= 0.0f);
 
             if (m_intentActive && m_state != BrainState::Attack
                 && m_activePattern == PatternType::None
@@ -1104,6 +1156,7 @@ namespace Alice
             m_activePattern = PatternType::None;
             m_attackIssued = false;
             m_chargeTimer = 0.0f;
+            m_faceTargetSuppressTimer = std::max(m_faceTargetSuppressTimer, std::max(0.0f, m_actionDelaySec));
             m_attackCooldownTimer = std::max(0.0f, m_attackCooldown);
             m_decision.sectorLocked = false;
             m_decision.sectorLockedSec = 0.0f;
@@ -1163,7 +1216,8 @@ namespace Alice
         }
         m_lastDistance = dist;
 
-        m_wantsFaceTarget = (m_state != BrainState::Gimmick);
+        m_wantsFaceTarget = (m_state != BrainState::Gimmick)
+            && ((m_state == BrainState::Attack) || m_faceTargetSuppressTimer <= 0.0f);
 
         std::string label = GetStateLabel(m_state);
         if (m_state == BrainState::Orbit)
@@ -1482,6 +1536,7 @@ namespace Alice
     {
         m_intentActive = false;
         m_intentCompleted = true;
+        m_intentFollowupUsed = false;
         m_intentRoot = PatternType::None;
         m_followupQueue.clear();
         m_forceWalkAfterAttack = false;
@@ -1515,6 +1570,8 @@ namespace Alice
         m_decision.sectorLockedSec = 0.0f;
         m_decision.lockedSector = Sector::Unknown;
         m_retreatTargetDist = 0.0f;
+        m_traceTargetSec = 0.0f;
+        m_faceTargetSuppressTimer = 0.0f;
         m_deactivateAfterCurrentAttack = false;
         // In standby, boss should ignore player presence and keep current forward.
         m_wantsFaceTarget = false;
@@ -1656,6 +1713,7 @@ namespace Alice
         m_attackCycleIndex = 0;
         m_patrolDirection = m_startPatrolRight ? 1 : -1;
         m_stateTimer = 0.0f;
+        m_faceTargetSuppressTimer = 0.0f;
         m_attackCooldownTimer = 0.0f;
         m_blockedCooldownTimer = 0.0f;
         m_stuckTimer = 0.0f;
@@ -1687,12 +1745,14 @@ namespace Alice
         m_retreatTargetDist = 0.0f;
         m_debugLabel = m_brainActivated ? "Idle" : "Standby | Idle | Inactive";
         m_traceEnterDist = 0.0f;
+        m_traceTargetSec = 0.0f;
         m_lastPattern = PatternType::None;
         m_lastAttackPattern = PatternType::None;
         m_attackOutcome = AttackOutcome::None;
         m_attackOutcomeSet = false;
         m_intentActive = false;
         m_intentCompleted = true;
+        m_intentFollowupUsed = false;
         m_intentRoot = PatternType::None;
         m_followupQueue.clear();
     }
