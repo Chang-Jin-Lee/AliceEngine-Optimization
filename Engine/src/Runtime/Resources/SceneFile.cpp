@@ -6,6 +6,7 @@
 #include "Runtime/ECS/ComponentRegistry.h"  // RTTR 등록 코드 포함
 #include "Runtime/Resources/Serialization/JsonRttr.h"
 #include "Runtime/Resources/ResourceManager.h"
+#include "Runtime/Importing/FbxAsset.h"
 #include "Runtime/Audio/SoundManager.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/Foundation/ThreadSafety.h"
@@ -95,6 +96,25 @@ namespace Alice
             static std::mt19937_64 rng{ std::random_device{}() };
             static std::uniform_int_distribution<std::uint64_t> dist;
             return dist(rng);
+        }
+
+        void ResolveSkinnedMeshPathsForLoad(SkinnedMeshComponent& skinned)
+        {
+            if (skinned.instanceAssetPath.empty() && !skinned.meshAssetPath.empty())
+            {
+                const std::filesystem::path inferred = std::filesystem::path("Assets/Fbx") / (skinned.meshAssetPath + ".fbxasset");
+                skinned.instanceAssetPath = inferred.generic_string();
+            }
+
+            if (!skinned.instanceAssetPath.empty())
+            {
+                FbxInstanceAsset asset{};
+                if (LoadFbxInstanceAssetAuto(ResourceManager::Get(), skinned.instanceAssetPath, asset))
+                {
+                    if (!asset.meshAssetPath.empty())
+                        skinned.meshAssetPath = asset.meshAssetPath;
+                }
+            }
         }
 
         // GUID 파싱 (JSON string 또는 number)
@@ -1104,6 +1124,8 @@ namespace Alice
                 SkinnedMeshComponent tmp;
                 rttr::instance instTmp = tmp;
                 if (!JsonRttr::FromJsonObject(instTmp, *itSM)) return false;
+
+                ResolveSkinnedMeshPathsForLoad(tmp);
 
                 if (!tmp.meshAssetPath.empty())
                 {

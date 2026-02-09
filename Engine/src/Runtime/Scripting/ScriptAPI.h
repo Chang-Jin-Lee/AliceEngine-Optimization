@@ -53,6 +53,11 @@ namespace Alice
         // 커서 표시/잠금 (UI 씬 등에서 복원용)
         virtual void SetCursorVisible(bool visible) = 0;
         virtual void SetCursorLocked(bool locked) = 0;
+
+        // 앱 활성 상태 (Alt+Tab 등 포커스 변화 감지)
+        virtual bool IsAppActive() const = 0;
+        virtual bool ConsumeAppDeactivated() = 0;
+        virtual bool ConsumeAppActivated() = 0;
     };
 
     /// 스크립트에서 사용하는 씬 전환 API (즉시 로드 대신 "요청" → 프레임 끝에 처리)

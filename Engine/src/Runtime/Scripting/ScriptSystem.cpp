@@ -227,6 +227,21 @@ namespace Alice
             m_input->SetCursorLocked(locked);
     }
 
+    bool ScriptSystem::IsAppActive() const
+    {
+        return m_input ? m_input->IsAppActive() : true;
+    }
+
+    bool ScriptSystem::ConsumeAppDeactivated()
+    {
+        return m_input ? m_input->ConsumeAppDeactivated() : false;
+    }
+
+    bool ScriptSystem::ConsumeAppActivated()
+    {
+        return m_input ? m_input->ConsumeAppActivated() : false;
+    }
+
     std::string ScriptSystem::GetResolvedPath(const char* filename) const
     {
         if (!filename || !filename[0])

@@ -54,6 +54,9 @@ namespace Alice
 
 	int Engine::Run()
 	{
+		if (pImpl->m_initCanceled)
+			return 0;
+
 		// 타이머 초기화
 		pImpl->m_isRunning = true;
 		pImpl->m_timer.Reset();

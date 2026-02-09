@@ -3,6 +3,7 @@
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "",
                 "color": {
@@ -10,6 +11,8 @@
                     "y": 0.038610219955444336,
                     "z": 1.0
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 1.0,
                 "normalStrength": 1.0,
                 "outlineColor": {
@@ -20,14 +23,20 @@
                 "outlineWidth": -0.15000000596046448,
                 "roughness": 0.0,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "Transform": {
@@ -46,13 +55,15 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
             "guid": "8391382352650265924"
         },
         {
             "Material": {
                 "albedoTexturePath": "",
+                "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "",
                 "color": {
@@ -60,6 +71,8 @@
                     "y": 0.15444016456604004,
                     "z": 1.0
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.5049999952316284,
                 "normalStrength": 1.0,
                 "outlineColor": {
@@ -70,14 +83,20 @@
                 "outlineWidth": -0.5299999713897705,
                 "roughness": 0.0,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "Transform": {
@@ -96,7 +115,8 @@
                     "x": 47.62660598754883,
                     "y": 0.5068082213401794,
                     "z": 20.796457290649414
-                }
+                },
+                "visible": true
             },
             "guid": "10678209540132580737",
             "name": "Entity2"
@@ -107,7 +127,7 @@
                     "enabled": true,
                     "name": "SceneSwitchExample",
                     "props": {
-                        "targetSceneA": "Assets/Scenes/SceneChange/SceneChange1.scene",
+                        "targetSceneA": "Assets/Scenes/Camera/3DCameraScene.scene",
                         "targetSceneB": ""
                     }
                 }
@@ -128,7 +148,8 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
             "guid": "12627764042847929771",
             "name": "GameObject3"
@@ -158,7 +179,8 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
             "guid": "3636309116445919589",
             "name": "Camera1"

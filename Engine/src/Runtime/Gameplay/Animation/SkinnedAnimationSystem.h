@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <cmath>
 
 #include <DirectXMath.h>
 
@@ -72,6 +73,8 @@ namespace Alice
                     rt = Runtime{};
                     rt.meshKey = skinned.meshAssetPath;
                     rt.anim.InitMetadata(mesh->sourceModel->GetScenePtr());
+                    if (auto pre = m_registry.GetPrecomputedAnimation(rt.meshKey))
+                        rt.anim.CopyPrecomputedFrom(*pre);
 
                     // 공유 컨텍스트 바인딩(+프리컴퓨트)
                     rt.anim.SetSharedContext(
@@ -100,6 +103,13 @@ namespace Alice
                 // 시간 진행(엔티티 단위)
                 if (animComp->playing && dtSec > 0.0)
                     animComp->timeSec += dtSec * (double)animComp->speed;
+
+                // 클립 끝에 도달하면 0으로 롤오버 (루프)
+                const double clipDur = rt.anim.GetClipDurationSec(animComp->clipIndex);
+                if (clipDur > 0.0 && animComp->timeSec >= clipDur)
+                {
+                    animComp->timeSec = std::fmod(animComp->timeSec, clipDur);
+                }
 
                 rt.anim.SetCurrentIndex(animComp->clipIndex);
                 rt.anim.SetTimeSec(animComp->timeSec);

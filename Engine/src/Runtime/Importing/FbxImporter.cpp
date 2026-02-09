@@ -38,6 +38,84 @@ namespace Alice
             for (char& c : s) c = ToLowerChar(static_cast<unsigned char>(c));
         }
 
+        inline std::string NormalizeLogicalKey(std::string s)
+        {
+            std::replace(s.begin(), s.end(), '\\', '/');
+            if (s.rfind("./", 0) == 0)
+                s = s.substr(2);
+            std::filesystem::path p(s);
+            std::string normalized = p.lexically_normal().generic_string();
+            if (normalized.rfind("./", 0) == 0)
+                normalized = normalized.substr(2);
+            ToLowerInPlace(normalized);
+            return normalized;
+        }
+
+        inline std::string MakeMeshKeyHashSuffix(std::string_view normalizedLower)
+        {
+            const std::uint64_t h = ResourceManager::HashString64(normalizedLower);
+            char hex[17] = {};
+            std::snprintf(hex, sizeof(hex), "%016llx", static_cast<unsigned long long>(h));
+            return std::string(hex, hex + 8);
+        }
+
+        inline std::string ResolveUniqueMeshKey(ResourceManager& rm,
+                                               SkinnedMeshRegistry* registry,
+                                               const std::string& baseName,
+                                               const std::filesystem::path& logicalPath)
+        {
+            if (baseName.empty())
+                return baseName;
+
+            const std::string logicalKey = NormalizeLogicalKey(logicalPath.generic_string());
+            if (logicalKey.empty())
+                return baseName;
+
+            namespace fs = std::filesystem;
+            bool collision = false;
+
+            const fs::path fbxAssetLogical = fs::path("Assets/Fbx") / (baseName + ".fbxasset");
+            FbxInstanceAsset existing;
+            bool hasExistingAsset = false;
+
+            if (rm.IsGameMode())
+            {
+                hasExistingAsset = LoadFbxInstanceAssetAuto(rm, fbxAssetLogical, existing);
+            }
+            else
+            {
+                const fs::path fbxAssetPath = rm.Resolve(fbxAssetLogical);
+                std::error_code ec;
+                if (fs::exists(fbxAssetPath, ec))
+                {
+                    if (LoadFbxInstanceAsset(fbxAssetPath, existing))
+                    {
+                        hasExistingAsset = true;
+                    }
+                    else
+                    {
+                        collision = true;
+                    }
+                }
+                else if (registry && registry->Has(baseName))
+                {
+                    collision = true;
+                }
+            }
+
+            if (hasExistingAsset)
+            {
+                const std::string existingKey = NormalizeLogicalKey(existing.sourceFbx);
+                if (existingKey.empty() || existingKey != logicalKey)
+                    collision = true;
+            }
+
+            if (!collision)
+                return baseName;
+
+            return baseName + "_" + MakeMeshKeyHashSuffix(logicalKey);
+        }
+
         // 간단한 이미지 확장자 체크 함수입니다.
         inline bool IsImageFile(const std::filesystem::path& path)
         {
@@ -297,6 +375,8 @@ namespace Alice
             // 절대 경로를 논리 경로로 변환
             resolvedLogical = ResourceManager::NormalizeResourcePathAbsoluteToLogical(resolvedLogical);
         }
+        const std::string meshKey = ResolveUniqueMeshKey(m_resources, m_meshRegistry, baseName, resolvedLogical);
+        const std::string modelName = meshKey.empty() ? baseName : meshKey;
 
         if (fileExists)
         {
@@ -380,7 +460,6 @@ namespace Alice
             // 애니메이션 재생/클립 목록을 위해 원본 컨텍스트를 유지합니다.
             gpu->sourceModel = model;
 
-            const std::string meshKey = baseName;
             m_meshRegistry->Register(meshKey, gpu);
 
             ALICE_LOG_INFO("[FbxImporter] Registered mesh key=\"%s\" stride=%u indexCount=%u subsets=%zu mats=%zu\n",
@@ -404,9 +483,9 @@ namespace Alice
             
             // Diffuse/BaseColor 텍스처 (우선순위: DIFFUSE > BASE_COLOR)
             // fbxPath는 원본 경로(절대 또는 논리), resolved는 실제 파일 위치
-            std::string albedoPath = ProcessTexture(m_resources, scene, mat, aiTextureType_DIFFUSE, resolved, baseName, "D", embeddedCounter);
+            std::string albedoPath = ProcessTexture(m_resources, scene, mat, aiTextureType_DIFFUSE, resolved, modelName, "D", embeddedCounter);
             if (albedoPath.empty())
-                albedoPath = ProcessTexture(m_resources, scene, mat, aiTextureType_BASE_COLOR, resolved, baseName, "D", embeddedCounter);
+                albedoPath = ProcessTexture(m_resources, scene, mat, aiTextureType_BASE_COLOR, resolved, modelName, "D", embeddedCounter);
 
             materialAlbedoPaths[mi] = std::move(albedoPath);
         }
@@ -421,7 +500,7 @@ namespace Alice
 
         for (std::size_t i = 0; i < matCount; ++i)
         {
-            fs::path matPath = matDir / (baseName + "_" + std::to_string(i) + ".mat");
+            fs::path matPath = matDir / (modelName + "_" + std::to_string(i) + ".mat");
 
             MaterialComponent matComp;
             matComp.color = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
@@ -443,12 +522,12 @@ namespace Alice
             MaterialFile::Save(matPath, matComp);
 
             // 상대 경로로 변환하여 저장
-            fs::path matPathRelative = fs::path("Assets/Materials") / (baseName + "_" + std::to_string(i) + ".mat");
+            fs::path matPathRelative = fs::path("Assets/Materials") / (modelName + "_" + std::to_string(i) + ".mat");
             result.materialAssetPaths.push_back(matPathRelative.generic_string());
         }
 
         // 5) 메시 자산의 논리 경로는 FBX 이름을 그대로 사용합니다.
-        result.meshAssetPath = baseName;
+        result.meshAssetPath = meshKey.empty() ? baseName : meshKey;
 
         // 6) 에디터/World 에서 사용할 인스턴스 에셋(.fbxasset)을 생성합니다.
         //    - 언리얼의 SkeletalMesh 에셋 비슷한 개념으로, FBX 원본과 머티리얼을 묶어 둡니다.
@@ -457,7 +536,7 @@ namespace Alice
             std::error_code ec;
             fs::create_directories(fbxAssetDir, ec);
 
-            fs::path fbxAssetPath = fbxAssetDir / (baseName + ".fbxasset");
+            fs::path fbxAssetPath = fbxAssetDir / (result.meshAssetPath + ".fbxasset");
 
             FbxInstanceAsset asset;
             asset.sourceFbx = NormalizeToResourceLogical(resolvedLogical);
@@ -467,7 +546,7 @@ namespace Alice
             if (!SaveFbxInstanceAsset(fbxAssetPath, asset)) return result;
 
             // 상대 경로로 변환하여 저장 D:\\Github\\AliceRenderer\\Assets\\Materials -> (Assets/Fbx/... 형식)
-            fs::path fbxAssetPathRelative = fs::path("Assets/Fbx") / (baseName + ".fbxasset");
+            fs::path fbxAssetPathRelative = fs::path("Assets/Fbx") / (result.meshAssetPath + ".fbxasset");
             result.instanceAssetPath = fbxAssetPathRelative.generic_string();
         }
 
