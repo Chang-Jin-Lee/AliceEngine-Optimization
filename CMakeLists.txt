@@ -317,6 +317,7 @@ set(ENGINE_HEADERS
     ${ALICE_SRC_DIR}/Runtime/Rendering/DebugDrawSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/DebugDrawComponentSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/RenderTypes.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/CullingTuning.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/TrailEffectRenderSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/UnityVfxMeshRenderSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/PostProcessSettings.h
