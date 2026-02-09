@@ -142,8 +142,11 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_playerGuardEnterClip, "rig|Tia_Guard");
         ALICE_PROPERTY(std::string, m_playerGuardLoopClip, "rig|Tia_Guarding");
         ALICE_PROPERTY(std::string, m_playerGuardExitClip, "rig|Tia_Guard");
+        ALICE_PROPERTY(std::string, m_playerParryClip, "rig|Tia_Parrying");
         ALICE_PROPERTY(float, m_playerGuardEnterDurationSec, 0.0f);
         ALICE_PROPERTY(float, m_playerGuardExitDurationSec, 0.0f);
+        ALICE_PROPERTY(float, m_playerGuardTransitionBlendSec, 0.5f);
+        ALICE_PROPERTY(float, m_playerParryRecoverBlendSec, 0.1f);
         ALICE_PROPERTY(std::string, m_bossIdleClip, "");
         ALICE_PROPERTY(std::string, m_bossMoveClip, "");
         ALICE_PROPERTY(std::string, m_bossLightAttackClip, "");
