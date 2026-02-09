@@ -11,9 +11,9 @@ namespace Alice
 	{
 		// ============================================= 아이콘 로드 =============================================
 		// CMake에서 exe에 임베딩된 아이콘을 사용합니다.
-		constexpr int kAppIconId = 101;
-		HICON hIconBig = LoadIconW(m_hInstance, MAKEINTRESOURCEW(kAppIconId));
-		HICON hIconSmall = LoadIconW(m_hInstance, MAKEINTRESOURCEW(kAppIconId));
+		constexpr wchar_t kAppIconName[] = L"IDI_ICON1";
+		HICON hIconBig = LoadIconW(m_hInstance, kAppIconName);
+		HICON hIconSmall = LoadIconW(m_hInstance, kAppIconName);
 
 		// ============================================= 윈도우 클래스 등록 =============================================
 		// C++ 구조체 제로 초기화({})를 활용하여 불필요한 0 대입 생략
@@ -82,15 +82,106 @@ namespace Alice
 
 	}
 
+	void Engine::Impl::ToggleBorderlessFullscreen()
+	{
+		if (!m_hWnd)
+			return;
+
+		if (!m_borderlessFullscreen)
+		{
+			m_windowedStyle = GetWindowLongW(m_hWnd, GWL_STYLE);
+			m_windowedExStyle = GetWindowLongW(m_hWnd, GWL_EXSTYLE);
+			GetWindowRect(m_hWnd, &m_windowedRect);
+
+			MONITORINFO mi{ sizeof(mi) };
+			if (GetMonitorInfoW(MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST), &mi))
+			{
+				SetWindowLongW(m_hWnd, GWL_STYLE, (m_windowedStyle & ~WS_OVERLAPPEDWINDOW) | WS_POPUP);
+				SetWindowLongW(m_hWnd, GWL_EXSTYLE, m_windowedExStyle);
+				SetWindowPos(
+					m_hWnd,
+					HWND_TOP,
+					mi.rcMonitor.left,
+					mi.rcMonitor.top,
+					mi.rcMonitor.right - mi.rcMonitor.left,
+					mi.rcMonitor.bottom - mi.rcMonitor.top,
+					SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+				m_borderlessFullscreen = true;
+			}
+		}
+		else
+		{
+			SetWindowLongW(m_hWnd, GWL_STYLE, m_windowedStyle);
+			SetWindowLongW(m_hWnd, GWL_EXSTYLE, m_windowedExStyle);
+			SetWindowPos(
+				m_hWnd,
+				HWND_NOTOPMOST,
+				m_windowedRect.left,
+				m_windowedRect.top,
+				m_windowedRect.right - m_windowedRect.left,
+				m_windowedRect.bottom - m_windowedRect.top,
+				SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+			m_borderlessFullscreen = false;
+		}
+	}
+
 	LRESULT Engine::Impl::HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		auto ReleaseMouseLockOnDeactivate = [&]()
+			{
+				m_inputSystem.NotifyAppActivated(false);
+				m_inputSystem.SetCursorLocked(false);
+				m_inputSystem.SetCursorVisible(true);
+
+				for (auto&& [id, follow] : m_world.GetComponents<CameraFollowComponent>())
+				{
+					(void)id;
+					follow.mouseLocked = false;
+				}
+			};
+
 		switch (message)
 		{
 		case WM_SIZE:
+			if (wParam == SIZE_MINIMIZED)
+			{
+				ReleaseMouseLockOnDeactivate();
+			}
 			// 리사이즈
 			// lParam의 하위/상위 워드에서 해상도 추출 후 즉시 반영
 			OnResize(static_cast<std::uint32_t>(LOWORD(lParam)), static_cast<std::uint32_t>(HIWORD(lParam)));
 			return 0;
+
+		case WM_ACTIVATEAPP:
+			if (wParam == FALSE)
+			{
+				ReleaseMouseLockOnDeactivate();
+			}
+			else
+			{
+				m_inputSystem.NotifyAppActivated(true);
+			}
+			return 0;
+
+		case WM_KILLFOCUS:
+			ReleaseMouseLockOnDeactivate();
+			return 0;
+
+		case WM_SETFOCUS:
+			m_inputSystem.NotifyAppActivated(true);
+			return 0;
+
+		case WM_SYSKEYDOWN:
+			if (wParam == VK_RETURN && (HIWORD(lParam) & KF_ALTDOWN))
+			{
+				ToggleBorderlessFullscreen();
+				if (m_inputSystem.IsCursorLocked())
+				{
+					m_inputSystem.SetCursorLocked(true);
+				}
+				return 0;
+			}
+			break;
 
 		case WM_DESTROY:
 			// 종료

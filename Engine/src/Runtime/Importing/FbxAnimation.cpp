@@ -119,10 +119,15 @@ void FbxAnimation::SetSharedContext(
 
     // Precompute all clips to avoid per-frame evaluation
     // Default to 30 samples per second to balance memory/quality
-    if (m_Scene && m_BoneNames && m_BoneOffsets && m_GlobalInverse)
+    if (m_Precomputed.empty() && m_Scene && m_BoneNames && m_BoneOffsets && m_GlobalInverse)
     {
         PrecomputeAll(m_Scene, m_NodeIndexOfName, *m_BoneNames, *m_BoneOffsets, *m_GlobalInverse, 30);
     }
+}
+
+void FbxAnimation::CopyPrecomputedFrom(const FbxAnimation& src)
+{
+    m_Precomputed = src.m_Precomputed;
 }
 
 static void RebuildChannelMapIfNeeded(const aiScene* scene, int currentClip, const std::unordered_map<std::string,int>& nodeIndexOfName, std::vector<const aiNodeAnim*>& out)

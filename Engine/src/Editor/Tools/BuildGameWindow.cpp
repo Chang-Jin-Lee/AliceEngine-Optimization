@@ -3,6 +3,7 @@
 
 #include "Runtime/Resources/ResourceManager.h"
 #include "Runtime/Foundation/Logger.h"
+#include "Runtime/Scripting/ScriptHotReload.h"
 
 #include "ThirdParty/json/json.hpp"
 
@@ -140,6 +141,29 @@ namespace Alice
 				return false;
 			}
 			return true;
+		}
+
+		// 빌드 파일 뽑아내고 Release에 남아있는 파일들 삭제하기
+		void RemovePathIfExists(const std::filesystem::path& path)
+		{
+			namespace fs = std::filesystem;
+			std::error_code ec;
+			if (!fs::exists(path, ec) || ec)
+				return;
+			ec.clear();
+			if (fs::is_directory(path, ec))
+			{
+				fs::remove_all(path, ec);
+			}
+			else
+			{
+				fs::remove(path, ec);
+			}
+			if (ec)
+			{
+				ALICE_LOG_ERRORF("Build Game: cleanup failed. \"%s\" (%s)",
+					path.string().c_str(), ec.message().c_str());
+			}
 		}
 
 		// srcRoot의 모든 파일을 dstCookedRoot/<rel>.alice 로 "암호화 저장"합니다(폴더 구조 유지, 확장자는 .alice로 통일).
@@ -564,6 +588,14 @@ namespace Alice
 					return;
 				}
 
+				// (6) Cleanup: Release 스테이징 파일 정리 (복사 완료 후)
+				RemovePathIfExists(releaseBinDir / "AlicePlayer.exe");
+				RemovePathIfExists(releaseBinDir / "dll");
+				RemovePathIfExists(releaseBinDir / "Cooked");
+				RemovePathIfExists(releaseBinDir / "Metas");
+				RemovePathIfExists(releaseBinDir / "BuildSettings.json");
+				RemovePathIfExists(releaseBinDir / "EngineSettings.json");
+
 				ALICE_LOG_INFO("Build Game: exported to \"%s\" (run: Bin/AlicePlayer.exe)",
 					exportRoot.string().c_str());
 
@@ -584,8 +616,8 @@ namespace Alice
 		{
 			namespace fs = std::filesystem;
 
-			static int   s_Width = 1280;
-			static int   s_Height = 720;
+			static int   s_Width = 1920;
+			static int   s_Height = 1080;
 			static bool  s_ScanScenesOnce = true;
 			static std::vector<fs::path> s_ScenePaths;
 			static std::vector<bool>     s_SceneSelected;
@@ -743,6 +775,13 @@ namespace Alice
 			{
 				if (ImGui::Button("Build Game"))
 				{
+#if !defined(_DEBUG)
+					// Release 에디터에서는 빌드 전에 Play 중지 + 스크립트 언로드로 파일 잠금 해제
+					if (m_isPlayingPtr && *m_isPlayingPtr)
+						*m_isPlayingPtr = false;
+					ScriptHotReload_Unload();
+#endif
+
 					// 1) 빌드 설정 파일 저장 (JSON)
 					wchar_t exePathW[MAX_PATH] = {};
 					GetModuleFileNameW(nullptr, exePathW, MAX_PATH);

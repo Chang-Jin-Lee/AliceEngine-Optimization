@@ -1802,6 +1802,58 @@ float4 main(PSInput input) : SV_TARGET
         return true;
     }
 
+    bool UnityVfxMeshRenderSystem::PreloadEffect(const std::string& effectPath)
+    {
+        if (effectPath.empty())
+            return false;
+
+        const EffectCache* cache = GetEffectCache(effectPath);
+        if (!cache || !cache->valid)
+            return false;
+
+        const std::string baseDir = std::filesystem::path(effectPath).parent_path().generic_string();
+        bool ok = true;
+
+        for (const auto& node : cache->meshNodes)
+        {
+            if (!node.materialPath.empty())
+            {
+                MaterialGpu mat{};
+                ok = EnsureMaterialLoaded(baseDir, node.materialPath, mat) && ok;
+            }
+            if (!node.meshPath.empty())
+            {
+                MeshGpu mesh{};
+                ok = EnsureMeshLoaded(node.meshPath, mesh) && ok;
+            }
+        }
+
+        for (const auto& node : cache->billboardNodes)
+        {
+            if (!node.materialPath.empty())
+            {
+                MaterialGpu mat{};
+                ok = EnsureMaterialLoaded(baseDir, node.materialPath, mat) && ok;
+            }
+        }
+
+        for (const auto& def : cache->emitters)
+        {
+            if (!def.materialPath.empty())
+            {
+                MaterialGpu mat{};
+                ok = EnsureMaterialLoaded(baseDir, def.materialPath, mat) && ok;
+            }
+            if (def.meshRenderer && !def.meshPath.empty())
+            {
+                MeshGpu mesh{};
+                ok = EnsureMeshLoaded(def.meshPath, mesh) && ok;
+            }
+        }
+
+        return ok;
+    }
+
     bool UnityVfxMeshRenderSystem::EnsureTrailVertexBuffer(size_t vertexCount)
     {
         if (vertexCount == 0) return false;

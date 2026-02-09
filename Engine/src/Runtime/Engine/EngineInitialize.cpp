@@ -1,10 +1,21 @@
 #include "Runtime/Engine/EngineImpl.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Resources/Prefab.h"
+#include "Runtime/UI/UIWidgetComponent.h"
+#include "Runtime/UI/UITransformComponent.h"
+#include "Runtime/UI/UIImageComponent.h"
+#include "Runtime/UI/UITextComponent.h"
+#include "Runtime/UI/UIGaugeComponent.h"
+#include "Runtime/UI/UIEffectComponent.h"
+#include "Runtime/Importing/FbxAnimation.h"
 #include <Windows.h>
 #include <algorithm>
 #include <chrono>
 #include <thread>
+#include <cctype>
+#include <cstdio>
+#include <unordered_set>
+#include <cmath>
 
 namespace Alice
 {
@@ -104,9 +115,354 @@ namespace Alice
 				return;
 			}
 
-			ofs << j.dump(4); // 들여쓰기 4칸으로 포맷
-			ALICE_LOG_INFO("PVD settings saved to EngineSettings.json");
+		ofs << j.dump(4); // 들여쓰기 4칸으로 포맷
+		ALICE_LOG_INFO("PVD settings saved to EngineSettings.json");
+	}
+
+	std::string TrimAsciiRuntime(const std::string& s)
+	{
+		size_t start = 0;
+		while (start < s.size() && std::isspace(static_cast<unsigned char>(s[start])))
+			++start;
+		size_t end = s.size();
+		while (end > start && std::isspace(static_cast<unsigned char>(s[end - 1])))
+			--end;
+		return s.substr(start, end - start);
+	}
+
+	std::string NormalizeLogicalPathRuntime(const std::string& s)
+	{
+		std::string temp = s;
+		std::replace(temp.begin(), temp.end(), '\\', '/');
+		if (temp.rfind("./", 0) == 0)
+			temp = temp.substr(2);
+		std::filesystem::path p(temp);
+		std::string normalized = p.lexically_normal().generic_string();
+		if (normalized.rfind("./", 0) == 0)
+			normalized = normalized.substr(2);
+		return normalized;
+	}
+
+	bool HasParentTraversalRuntime(const std::string& s)
+	{
+		std::filesystem::path p(s);
+		for (const auto& part : p)
+		{
+			if (part == "..")
+				return true;
 		}
+		return false;
+	}
+
+	bool IsAllowedLogicalPathRuntime(const std::string& s)
+	{
+		std::string lower = s;
+		for (char& c : lower)
+			c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+		return lower.rfind("assets/", 0) == 0 ||
+			lower.rfind("resource/", 0) == 0 ||
+			lower.rfind("cooked/", 0) == 0;
+	}
+
+	std::string ToLowerAsciiRuntime(std::string s)
+	{
+		for (char& c : s)
+			c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+		return s;
+	}
+
+	bool EndsWithAsciiRuntime(const std::string& s, const std::string& suffix)
+	{
+		if (s.size() < suffix.size()) return false;
+		return std::equal(suffix.rbegin(), suffix.rend(), s.rbegin());
+	}
+
+	std::string GetLowerExtensionRuntime(const std::string& path)
+	{
+		const std::string ext = std::filesystem::path(path).extension().string();
+		return ToLowerAsciiRuntime(ext);
+	}
+
+	std::string MakeFbxHashedKeyRuntime(const std::string& logicalPath)
+	{
+		std::string normalized = NormalizeLogicalPathRuntime(logicalPath);
+		if (normalized.empty())
+			return {};
+		std::string lower = ToLowerAsciiRuntime(normalized);
+		const std::uint64_t h = ResourceManager::HashString64(lower);
+		char hex[17] = {};
+		std::snprintf(hex, sizeof(hex), "%016llx", static_cast<unsigned long long>(h));
+		std::string baseName = std::filesystem::path(logicalPath).stem().string();
+		if (baseName.empty())
+			baseName = "fbx";
+		return baseName + "_" + std::string(hex, hex + 8);
+	}
+
+	bool IsAudioExtensionRuntime(const std::string& extLower)
+	{
+		return extLower == ".wav" || extLower == ".ogg" || extLower == ".mp3" ||
+			extLower == ".flac" || extLower == ".m4a" || extLower == ".aac";
+	}
+
+	void AppendPreloadArray(const nlohmann::json& arr, std::vector<std::string>& out)
+	{
+		for (const auto& v : arr)
+		{
+			if (!v.is_string())
+				continue;
+			std::string s = TrimAsciiRuntime(v.get<std::string>());
+			if (s.empty())
+				continue;
+			out.push_back(NormalizeLogicalPathRuntime(s));
+		}
+	}
+
+	bool ParsePreloadJsonText(const std::string& text, std::vector<std::string>& out)
+	{
+		out.clear();
+		if (text.empty())
+			return false;
+
+		nlohmann::json j;
+		try
+		{
+			j = nlohmann::json::parse(text);
+		}
+		catch (...)
+		{
+			return false;
+		}
+
+		if (j.is_array())
+		{
+			AppendPreloadArray(j, out);
+			return true;
+		}
+
+		if (j.contains("preload") && j["preload"].is_array())
+		{
+			AppendPreloadArray(j["preload"], out);
+			return true;
+		}
+
+		if (j.contains("startup") && j["startup"].is_array())
+		{
+			AppendPreloadArray(j["startup"], out);
+			return true;
+		}
+
+		return true;
+	}
+
+	struct PreloadContext
+	{
+		ResourceManager& resources;
+		SkinnedMeshRegistry& skinnedRegistry;
+		std::unordered_map<std::string, std::shared_ptr<const std::vector<std::uint8_t>>>& blobs;
+		ForwardRenderSystem* forward = nullptr;
+		DeferredRenderSystem* deferred = nullptr;
+		UnityVfxMeshRenderSystem* vfx = nullptr;
+		ID3D11RenderDevice* renderDevice = nullptr;
+		bool useForward = false;
+
+		enum class KeyMatch
+		{
+			Unknown,
+			Match,
+			Mismatch
+		};
+
+		KeyMatch CheckMeshKeyForSource(const std::string& meshKey, const std::string& fbxLogicalPath)
+		{
+			if (meshKey.empty())
+				return KeyMatch::Unknown;
+
+			FbxInstanceAsset asset{};
+			const std::filesystem::path assetPath = std::filesystem::path("Assets/Fbx") / (meshKey + ".fbxasset");
+			if (!LoadFbxInstanceAssetAuto(resources, assetPath, asset))
+				return KeyMatch::Unknown;
+
+			if (asset.sourceFbx.empty())
+				return KeyMatch::Unknown;
+
+			std::string a = ToLowerAsciiRuntime(NormalizeLogicalPathRuntime(asset.sourceFbx));
+			std::string b = ToLowerAsciiRuntime(NormalizeLogicalPathRuntime(fbxLogicalPath));
+			if (a.empty() || b.empty())
+				return KeyMatch::Unknown;
+
+			return (a == b) ? KeyMatch::Match : KeyMatch::Mismatch;
+		}
+
+		bool PreloadBlob(const std::string& path)
+		{
+			auto sp = resources.LoadSharedBinaryAuto(path);
+			if (!sp)
+				return false;
+			blobs[path] = sp;
+			return true;
+		}
+
+		bool PreloadTexture(const std::string& path)
+		{
+			bool ok = false;
+			if (useForward && forward)
+				ok = forward->PreloadTexture(path) || ok;
+			if (!useForward && deferred)
+				ok = deferred->PreloadTexture(path) || ok;
+			if (!ok && forward)
+				ok = forward->PreloadTexture(path) || ok;
+			if (!ok && deferred)
+				ok = deferred->PreloadTexture(path) || ok;
+			return ok;
+		}
+
+		bool PrecomputeAnimationForMesh(const std::string& meshKey, const std::shared_ptr<SkinnedMeshGPU>& mesh)
+		{
+			if (meshKey.empty())
+				return false;
+			if (!mesh || !mesh->sourceModel)
+				return false;
+			if (skinnedRegistry.GetPrecomputedAnimation(meshKey))
+				return true;
+			if (!mesh->sourceModel->HasAnimations())
+				return true;
+			if (mesh->sourceModel->GetBoneNames().empty())
+				return true;
+
+			auto anim = std::make_shared<::FbxAnimation>();
+			anim->InitMetadata(mesh->sourceModel->GetScenePtr());
+			anim->SetSharedContext(
+				mesh->sourceModel->GetScenePtr(),
+				mesh->sourceModel->GetNodeIndexOfName(),
+				&mesh->sourceModel->GetBoneNames(),
+				&mesh->sourceModel->GetBoneOffsets(),
+				&mesh->sourceModel->GetGlobalInverse());
+
+			const auto t = mesh->sourceModel->GetCurrentAnimationType();
+			if (t == FbxModel::AnimationType::Rigid) anim->SetType(::FbxAnimation::AnimType::Rigid);
+			else if (t == FbxModel::AnimationType::Skinned) anim->SetType(::FbxAnimation::AnimType::Skinned);
+			else anim->SetType(::FbxAnimation::AnimType::None);
+
+			skinnedRegistry.SetPrecomputedAnimation(meshKey, anim);
+			return true;
+		}
+
+		bool PreloadByType(const std::string& path, bool allowGpu)
+		{
+			const std::string lower = ToLowerAsciiRuntime(path);
+			const std::string ext = GetLowerExtensionRuntime(lower);
+			const bool hasDevice = allowGpu && renderDevice && renderDevice->GetDevice();
+			ID3D11Device* device = hasDevice ? renderDevice->GetDevice() : nullptr;
+
+			if (EndsWithAsciiRuntime(lower, "effect.json"))
+			{
+				if (allowGpu && vfx)
+				{
+					if (vfx->PreloadEffect(path))
+						return true;
+				}
+				return PreloadBlob(path);
+			}
+
+			if (ext == ".fbxasset")
+			{
+				if (allowGpu && device)
+				{
+					FbxInstanceAsset asset{};
+					if (LoadFbxInstanceAssetAuto(resources, std::filesystem::path(path), asset))
+					{
+						if (asset.meshAssetPath.empty())
+							return PreloadBlob(path);
+						if (!skinnedRegistry.Has(asset.meshAssetPath))
+						{
+							FbxImporter importer(resources, &skinnedRegistry);
+							skinnedRegistry.LoadFromFbxAsset(asset.meshAssetPath, path, resources, importer, device);
+						}
+						if (auto mesh = skinnedRegistry.Find(asset.meshAssetPath))
+							PrecomputeAnimationForMesh(asset.meshAssetPath, mesh);
+						return true;
+					}
+				}
+				return PreloadBlob(path);
+			}
+
+			if (ext == ".fbx")
+			{
+				if (allowGpu && device)
+				{
+					const std::string meshKey = std::filesystem::path(path).stem().string();
+					const std::string hashedKey = MakeFbxHashedKeyRuntime(path);
+					const auto baseMatch = CheckMeshKeyForSource(meshKey, path);
+					const auto hashMatch = CheckMeshKeyForSource(hashedKey, path);
+					auto TryPrecompute = [&](const std::string& key) -> bool
+						{
+							if (key.empty())
+								return false;
+							if (auto mesh = skinnedRegistry.Find(key))
+							{
+								PrecomputeAnimationForMesh(key, mesh);
+								return true;
+							}
+							return false;
+						};
+
+					if (hashMatch == KeyMatch::Match && !hashedKey.empty() && skinnedRegistry.Has(hashedKey))
+					{
+						TryPrecompute(hashedKey);
+						return true;
+					}
+					if (baseMatch == KeyMatch::Match && !meshKey.empty() && skinnedRegistry.Has(meshKey))
+					{
+						TryPrecompute(meshKey);
+						return true;
+					}
+					if (hashMatch != KeyMatch::Mismatch && !hashedKey.empty() && skinnedRegistry.Has(hashedKey))
+					{
+						TryPrecompute(hashedKey);
+						return true;
+					}
+					if (baseMatch != KeyMatch::Mismatch && !meshKey.empty() && skinnedRegistry.Has(meshKey))
+					{
+						TryPrecompute(meshKey);
+						return true;
+					}
+
+					FbxImporter importer(resources, &skinnedRegistry);
+					FbxImportResult res = importer.Import(device, std::filesystem::path(path), FbxImportOptions{});
+					if (!res.meshAssetPath.empty())
+					{
+						if (auto mesh = skinnedRegistry.Find(res.meshAssetPath))
+							PrecomputeAnimationForMesh(res.meshAssetPath, mesh);
+						return true;
+					}
+				}
+				return PreloadBlob(path);
+			}
+
+			if (IsAudioExtensionRuntime(ext))
+			{
+				const std::wstring key = WStringFromUtf8(path);
+				if (!key.empty())
+				{
+					if (Sound::LoadAuto(resources, key, std::filesystem::path(path), Sound::Type::SFX))
+						return true;
+				}
+				return PreloadBlob(path);
+			}
+
+			if (ResourceManager::IsImageLogicalPath(std::filesystem::path(path)))
+			{
+				if (ext != ".tga")
+				{
+					if (allowGpu && PreloadTexture(path))
+						return true;
+				}
+				return PreloadBlob(path);
+			}
+
+			return PreloadBlob(path);
+		}
+	};
 
 		void LoadLightingSettings(const std::filesystem::path& exeDir,
 			int& shadingMode,
@@ -338,13 +694,44 @@ namespace Alice
 		if (!InitializeWindowAndInput(owner, nCmdShow)) return false;
 		if (!InitializeRenderDevice()) return false;
 
+		// 방금 생성한 윈도우가 흰색으로 보이는 현상을 막기 위해
+		// 가능한 가장 이른 시점에 한 프레임이라도 그려둡니다.
+		if (m_renderDevice)
+		{
+			float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			m_renderDevice->BeginFrame(clearColor);
+			m_renderDevice->EndFrame();
+		}
+
 		if (!InitializeEditorCoreIfNeeded()) return false;
 
-		InitializeAudio();
-
-		if (!InitializeRenderSystems()) return false;
-		if (!InitializeUI()) return false;
-		if (!InitializeComputeEffectSystem()) return false;
+		if (m_editorMode)
+		{
+			InitializeAudio();
+			if (!InitializeRenderSystems()) return false;
+			if (!InitializeUI()) return false;
+			if (!InitializeComputeEffectSystem()) return false;
+		}
+		else
+		{
+			ALICE_LOG_INFO("[Loading] Initializing UI renderer...");
+			if (!InitializeUI())
+			{
+				ALICE_LOG_ERRORF("[Loading] InitializeUI failed.");
+				return false;
+			}
+			ALICE_LOG_INFO("[Loading] UI renderer initialized.");
+			if (!InitializePreloadAndLoadingScreen(exeDir))
+			{
+				if (m_initCanceled)
+				{
+					ALICE_LOG_INFO("[Loading] Initialization canceled by user.");
+					return true;
+				}
+				ALICE_LOG_ERRORF("[Loading] Loading screen stage failed.");
+				return false;
+			}
+		}
 
 		InitializeCameraAndScriptHotReload();
 
@@ -688,6 +1075,9 @@ namespace Alice
 		if (m_deferredRenderSystem && m_trailRenderSystem)
 			m_deferredRenderSystem->SetSwordRenderSystem(m_trailRenderSystem.get());
 
+		if (m_forwardRenderSystem)  m_forwardRenderSystem->SetUIRenderer(&m_aliceUIRenderer);
+		if (m_deferredRenderSystem) m_deferredRenderSystem->SetUIRenderer(&m_aliceUIRenderer);
+
 		return true;
 	}
 
@@ -719,6 +1109,421 @@ namespace Alice
 			ALICE_LOG_ERRORF("[Debug] ComputeEffectSystem Init Failed!");
 			return false;
 		}
+		return true;
+	}
+
+	bool Engine::Impl::InitializePreloadAndLoadingScreen(const std::filesystem::path& /*exeDir*/)
+	{
+		if (m_editorMode)
+			return true;
+
+		ALICE_LOG_INFO("[Loading] InitializePreloadAndLoadingScreen begin.");
+
+		// 1) Preload.json 로드
+		std::string preloadText;
+		bool hasPreload = m_resourceManager.LoadText("Assets/Startup/Preload.json", preloadText);
+		if (!hasPreload)
+			hasPreload = m_resourceManager.LoadText("Assets/Preload.json", preloadText);
+
+		std::vector<std::string> rawList;
+		if (hasPreload)
+		{
+			if (!ParsePreloadJsonText(preloadText, rawList))
+			{
+				ALICE_LOG_WARN("Preload.json parse failed. Preload list will be empty.");
+				rawList.clear();
+			}
+		}
+		else
+		{
+			ALICE_LOG_WARN("Preload.json not found. Loading screen will use empty list.");
+		}
+
+		// 2) 경로 검증 + 중복 제거
+		std::vector<std::string> filtered;
+		filtered.reserve(rawList.size());
+		std::unordered_set<std::string> seen;
+		for (const auto& entry : rawList)
+		{
+			std::string normalized = NormalizeLogicalPathRuntime(entry);
+			if (normalized.empty())
+				continue;
+			if (HasParentTraversalRuntime(normalized))
+			{
+				ALICE_LOG_WARN("Preload: skipped path with '..' : %s", normalized.c_str());
+				continue;
+			}
+			if (!IsAllowedLogicalPathRuntime(normalized))
+			{
+				ALICE_LOG_WARN("Preload: invalid path (must be Assets/Resource/Cooked): %s", normalized.c_str());
+				continue;
+			}
+
+			std::string key = normalized;
+			for (char& c : key)
+				c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+			if (seen.insert(key).second)
+				filtered.push_back(normalized);
+		}
+
+		// 3) 존재 확인
+		std::vector<std::string> preloadList;
+		preloadList.reserve(filtered.size());
+		for (const auto& path : filtered)
+		{
+			const std::filesystem::path resolved = m_resourceManager.Resolve(path);
+			std::error_code ec;
+			if (std::filesystem::exists(resolved, ec))
+			{
+				preloadList.push_back(path);
+			}
+			else
+			{
+				ALICE_LOG_WARN("Preload: missing file (skipped): %s (resolved: %s)",
+					path.c_str(), resolved.string().c_str());
+			}
+		}
+
+		ALICE_LOG_INFO("[Loading] Preload list ready. raw=%zu filtered=%zu valid=%zu",
+			rawList.size(), filtered.size(), preloadList.size());
+		PreloadContext preloadCtx{
+			m_resourceManager,
+			m_skinnedMeshRegistry,
+			m_preloadedBlobs,
+			m_forwardRenderSystem.get(),
+			m_deferredRenderSystem.get(),
+			m_unityVfxMeshRenderSystem.get(),
+			m_renderDevice.get(),
+			m_useForwardRendering
+		};
+
+		// 4) 렌더 장치가 없으면 UI 없이 프리로드만 수행
+		if (!m_renderDevice || !m_renderDevice->GetBackBufferRTV())
+		{
+			ALICE_LOG_WARN("[Loading] Render device not ready. Running preload without UI.");
+			InitializeAudio();
+			if (!InitializeRenderSystems()) return false;
+			if (!InitializeComputeEffectSystem()) return false;
+
+			for (const auto& path : preloadList)
+				preloadCtx.PreloadByType(path, false);
+			return true;
+		}
+
+		// 5) 로딩 UI 월드 구성
+		World loadingWorld;
+		auto CreateScreenWidget = [&](const char* name, float anchorX, float anchorY,
+			const DirectX::XMFLOAT2& size, int sortOrder)
+		{
+			EntityId e = loadingWorld.CreateEntity();
+			loadingWorld.SetEntityName(e, name);
+			auto& widget = loadingWorld.AddComponent<UIWidgetComponent>(e);
+			widget.widgetName = name;
+			widget.space = AliceUI::UISpace::Screen;
+
+			auto& t = loadingWorld.AddComponent<UITransformComponent>(e);
+			t.anchorMin = DirectX::XMFLOAT2(anchorX, anchorY);
+			t.anchorMax = DirectX::XMFLOAT2(anchorX, anchorY);
+			t.position = DirectX::XMFLOAT2(0.0f, 0.0f);
+			t.size = size;
+			t.useAlignment = true;
+			t.alignH = AliceUI::UIAlignH::Center;
+			t.alignV = AliceUI::UIAlignV::Center;
+			t.sortOrder = sortOrder;
+
+			loadingWorld.AddComponent<TransformComponent>(e);
+			return e;
+		};
+
+		// Banner
+		const EntityId bannerId = CreateScreenWidget("Loading_Banner", 0.5f, 0.42f,
+			DirectX::XMFLOAT2(720.0f, 360.0f), 0);
+		auto& bannerImg = loadingWorld.AddComponent<UIImageComponent>(bannerId);
+		bannerImg.texturePath = "Resource/Icon/AliceBanner.png";
+		bannerImg.preserveAspect = true;
+
+		// Status text
+		const EntityId statusId = CreateScreenWidget("Loading_Status", 0.5f, 0.65f,
+			DirectX::XMFLOAT2(640.0f, 40.0f), 1);
+		{
+			auto& statusText = loadingWorld.AddComponent<UITextComponent>(statusId);
+			statusText.fontPath = "Resource/Fonts/NotoSansKR-Regular.ttf";
+			statusText.fontSize = 24.0f;
+			statusText.alignH = AliceUI::UIAlignH::Center;
+			statusText.alignV = AliceUI::UIAlignV::Center;
+			statusText.text = "쉐이더 컴파일중.";
+		}
+
+		// Progress gauge
+		const EntityId gaugeId = CreateScreenWidget("Loading_Bar", 0.5f, 0.73f,
+			DirectX::XMFLOAT2(560.0f, 20.0f), 1);
+		{
+			auto& gauge = loadingWorld.AddComponent<UIGaugeComponent>(gaugeId);
+			gauge.normalized = true;
+			gauge.value = 0.0f;
+			gauge.displayedValue = 0.0f;
+			gauge.smoothing = 0.15f;
+			gauge.fillColor = DirectX::XMFLOAT4(0.2f, 0.9f, 0.2f, 1.0f);
+			gauge.backgroundColor = DirectX::XMFLOAT4(0.1f, 0.1f, 0.1f, 0.85f);
+		}
+
+		{
+			auto& gaugeFx = loadingWorld.AddComponent<UIEffectComponent>(gaugeId);
+			gaugeFx.glowEnabled = false;
+			gaugeFx.glowColor = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+			gaugeFx.glowStrength = 0.25f;
+			gaugeFx.glowWidth = 0.25f;
+			gaugeFx.glowSpeed = 0.75f;
+		}
+
+		// Hint text
+		const EntityId hintId = CreateScreenWidget("Loading_Hint", 0.5f, 0.80f,
+			DirectX::XMFLOAT2(640.0f, 32.0f), 1);
+		{
+			auto& hintText = loadingWorld.AddComponent<UITextComponent>(hintId);
+			hintText.fontPath = "Resource/Fonts/NotoSansKR-Regular.ttf";
+			hintText.fontSize = 20.0f;
+			hintText.alignH = AliceUI::UIAlignH::Center;
+			hintText.alignV = AliceUI::UIAlignV::Center;
+			hintText.text.clear();
+		}
+
+		// 6) 로딩 화면 루프
+		using clock = std::chrono::steady_clock;
+		auto last = clock::now();
+		float dotTimer = 0.0f;
+		int dotIndex = 0;
+		const char* dotSeq[] = { ".", "..", "...", ".." };
+		float displayedProgress = 0.0f;
+		float targetProgress = 0.0f;
+
+		const float kAudioWeight = 0.05f;
+		const float kRenderWeight = 0.45f;
+		const float kComputeWeight = 0.15f;
+		float progressBase = 0.0f;
+
+		auto PumpMessages = [&]() -> bool
+		{
+			MSG msg{};
+			while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+			{
+				if (msg.message == WM_QUIT)
+				{
+					m_initCanceled = true;
+					ALICE_LOG_INFO("[Loading] WM_QUIT received. Canceling initialization.");
+					return false;
+				}
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			return true;
+		};
+
+		auto CalcDelta = [&]() -> float
+		{
+			const auto now = clock::now();
+			float dt = std::chrono::duration<float>(now - last).count();
+			last = now;
+			if (dt < 0.0f) dt = 0.0f;
+			if (dt > 0.1f) dt = 0.1f;
+			return dt;
+		};
+
+		auto UpdateLoadingUI = [&](float dt)
+		{
+			dotTimer += dt;
+			if (dotTimer >= 0.35f)
+			{
+				dotTimer = 0.0f;
+				dotIndex = (dotIndex + 1) % 4;
+			}
+			if (auto* statusText = loadingWorld.GetComponent<UITextComponent>(statusId))
+				statusText->text = std::string("쉐이더 컴파일중") + dotSeq[dotIndex];
+
+			const float speed = 3.5f;
+			const float t = std::clamp(dt * speed, 0.0f, 1.0f);
+			displayedProgress = displayedProgress + (targetProgress - displayedProgress) * t;
+			if (auto* gauge = loadingWorld.GetComponent<UIGaugeComponent>(gaugeId))
+				gauge->value = displayedProgress;
+		};
+
+		auto RenderFrame = [&](float dt, bool animate) -> bool
+		{
+			static int s_debugFrames = 2;
+			const bool debug = (s_debugFrames > 0);
+			if (debug)
+				ALICE_LOG_INFO("[Loading] RenderFrame begin (dt=%.4f, animate=%d)", dt, animate ? 1 : 0);
+
+			if (!PumpMessages())
+			{
+				if (debug)
+					ALICE_LOG_WARN("[Loading] PumpMessages failed.");
+				return false;
+			}
+			if (debug)
+				ALICE_LOG_INFO("[Loading] PumpMessages ok");
+
+			if (animate)
+				UpdateLoadingUI(dt);
+			if (debug)
+				ALICE_LOG_INFO("[Loading] UpdateLoadingUI ok");
+
+			m_inputSystem.Update(dt);
+			if (debug)
+				ALICE_LOG_INFO("[Loading] InputSystem.Update ok");
+
+			m_aliceUIRenderer.Update(loadingWorld, m_inputSystem, m_camera,
+				static_cast<float>(m_width), static_cast<float>(m_height), dt);
+			if (debug)
+				ALICE_LOG_INFO("[Loading] UIRenderer.Update ok");
+
+			float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			m_renderDevice->BeginFrame(clearColor);
+			if (debug)
+				ALICE_LOG_INFO("[Loading] BeginFrame ok");
+
+			m_aliceUIRenderer.RenderScreen(loadingWorld, m_camera,
+				m_renderDevice->GetBackBufferRTV(),
+				static_cast<float>(m_width), static_cast<float>(m_height));
+			if (debug)
+				ALICE_LOG_INFO("[Loading] RenderScreen ok");
+
+			m_renderDevice->EndFrame();
+			if (debug)
+				ALICE_LOG_INFO("[Loading] EndFrame ok");
+
+			if (debug)
+				--s_debugFrames;
+			return true;
+		};
+
+		auto AdvanceTo = [&](float nextTarget, float minSeconds) -> bool
+		{
+			targetProgress = std::clamp(nextTarget, 0.0f, 1.0f);
+			const auto endTime = clock::now() + std::chrono::duration<float>(std::max(0.0f, minSeconds));
+			while (clock::now() < endTime || displayedProgress + 0.001f < targetProgress)
+			{
+				float dt = CalcDelta();
+				if (!RenderFrame(dt, true))
+				{
+					ALICE_LOG_WARN("[Loading] RenderFrame failed during progress update.");
+					return false;
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(8));
+			}
+			return true;
+		};
+
+		// 초기 프레임
+		if (!RenderFrame(CalcDelta(), true))
+		{
+			ALICE_LOG_WARN("[Loading] Initial frame render failed.");
+			return false;
+		}
+		if (!AdvanceTo(0.02f, 0.15f))
+			return false;
+
+		// 시스템 초기화 단계
+		ALICE_LOG_INFO("[Loading] Initializing audio...");
+		InitializeAudio();
+		ALICE_LOG_INFO("[Loading] Audio initialized.");
+		progressBase += kAudioWeight;
+		if (!AdvanceTo(progressBase, 0.12f))
+			return false;
+
+		ALICE_LOG_INFO("[Loading] Initializing render systems...");
+		if (!InitializeRenderSystems())
+		{
+			ALICE_LOG_ERRORF("[Loading] Render systems initialization failed.");
+			return false;
+		}
+		ALICE_LOG_INFO("[Loading] Render systems initialized.");
+		progressBase += kRenderWeight;
+		if (!AdvanceTo(progressBase, 0.20f))
+			return false;
+
+		ALICE_LOG_INFO("[Loading] Initializing compute effect system...");
+		if (!InitializeComputeEffectSystem())
+		{
+			ALICE_LOG_ERRORF("[Loading] Compute effect system initialization failed.");
+			return false;
+		}
+		ALICE_LOG_INFO("[Loading] Compute effect system initialized.");
+		progressBase += kComputeWeight;
+		if (!AdvanceTo(progressBase, 0.15f))
+			return false;
+
+		// 프리로드 단계
+		const size_t total = preloadList.size();
+		size_t loaded = 0;
+		const float preloadBase = progressBase;
+		const float preloadWeight = std::max(0.0f, 1.0f - preloadBase);
+
+		if (total == 0)
+		{
+			ALICE_LOG_INFO("[Loading] Preload list empty.");
+			progressBase = preloadBase + preloadWeight;
+			if (!AdvanceTo(progressBase, 0.15f))
+				return false;
+		}
+		else
+		{
+			ALICE_LOG_INFO("[Loading] Preloading %zu items...", total);
+			float stepTime = 0.015f;
+			if (total <= 6) stepTime = 0.08f;
+			else if (total <= 24) stepTime = 0.03f;
+
+			for (const auto& path : preloadList)
+			{
+				if (!preloadCtx.PreloadByType(path, true))
+				{
+					ALICE_LOG_WARN("Preload failed: %s", path.c_str());
+				}
+
+				++loaded;
+				const float frac = static_cast<float>(loaded) / static_cast<float>(total);
+				const float nextTarget = preloadBase + preloadWeight * frac;
+				if (!AdvanceTo(nextTarget, stepTime))
+					return false;
+			}
+			ALICE_LOG_INFO("[Loading] Preload finished.");
+		}
+
+		if (!AdvanceTo(1.0f, 0.10f))
+			return false;
+
+		// 완료 상태
+		displayedProgress = 1.0f;
+		targetProgress = 1.0f;
+		if (auto* gauge = loadingWorld.GetComponent<UIGaugeComponent>(gaugeId))
+			gauge->value = 1.0f;
+		if (auto* statusText = loadingWorld.GetComponent<UITextComponent>(statusId))
+			statusText->text = "쉐이더 컴파일 완료";
+		if (auto* hintText = loadingWorld.GetComponent<UITextComponent>(hintId))
+			hintText->text = "마우스를 클릭하여 시작";
+		if (auto* gaugeFx = loadingWorld.GetComponent<UIEffectComponent>(gaugeId))
+			gaugeFx->glowEnabled = true;
+
+		float glowTime = 0.0f;
+		while (true)
+		{
+			float dt = CalcDelta();
+			glowTime += dt;
+			if (auto* gaugeFx = loadingWorld.GetComponent<UIEffectComponent>(gaugeId))
+				gaugeFx->glowStrength = 0.2f + 0.15f * (0.5f + 0.5f * std::sin(glowTime * 3.0f));
+
+			if (!RenderFrame(dt, false))
+			{
+				ALICE_LOG_WARN("[Loading] RenderFrame failed during completion wait.");
+				return false;
+			}
+
+			if (m_inputSystem.IsMouseButtonPressed(0))
+				break;
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(8));
+		}
+
 		return true;
 	}
 

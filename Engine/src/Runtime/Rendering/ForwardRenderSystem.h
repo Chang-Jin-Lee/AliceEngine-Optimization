@@ -47,6 +47,10 @@ namespace Alice
 
         /// 스키닝 메시 메타데이터(서브셋/스켈레톤)를 조회하기 위한 레지스트리를 주입합니다.
         void SetSkinnedMeshRegistry(SkinnedMeshRegistry* registry) { m_skinnedRegistry = registry; }
+
+        /// 텍스처를 미리 로드하여 캐시에 보관합니다.
+        /// - 경로가 비거나 로딩 실패 시 false 반환.
+        bool PreloadTexture(const std::string& path);
         
     public:
         /// 단일 엔티티(예: 큐브)와 스키닝 메시들을 함께 렌더링합니다.
