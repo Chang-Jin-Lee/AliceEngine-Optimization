@@ -459,8 +459,15 @@ namespace Alice
             std::vector<std::string>& outNames,
             std::vector<int>& outParents)
         {
-            outNames.assign(nodeIndexOfName.size(), std::string{});
-            outParents.assign(nodeIndexOfName.size(), -1);
+            size_t nodeCapacity = 0;
+            for (const auto& kv : nodeIndexOfName)
+            {
+                if (kv.second >= 0)
+                    nodeCapacity = (std::max)(nodeCapacity, (size_t)kv.second + 1);
+            }
+
+            outNames.assign(nodeCapacity, std::string{});
+            outParents.assign(nodeCapacity, -1);
 
             for (const auto& kv : nodeIndexOfName)
             {
