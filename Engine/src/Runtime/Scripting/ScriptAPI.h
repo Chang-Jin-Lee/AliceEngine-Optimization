@@ -58,6 +58,12 @@ namespace Alice
         virtual bool IsAppActive() const = 0;
         virtual bool ConsumeAppDeactivated() = 0;
         virtual bool ConsumeAppActivated() = 0;
+
+        // Time 제어/조회 (게임 dt와 UI용 unscaled dt 분리)
+        virtual void StopDeltaTime(bool stop) = 0;
+        virtual bool IsDeltaTimeStopped() const = 0;
+        virtual float GetGameDeltaTime() const = 0;
+        virtual float GetUnscaledDeltaTime() const = 0;
     };
 
     /// 스크립트에서 사용하는 씬 전환 API (즉시 로드 대신 "요청" → 프레임 끝에 처리)

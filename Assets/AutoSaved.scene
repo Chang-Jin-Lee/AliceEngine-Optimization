@@ -5,7 +5,7 @@
                 "albedoTexturePath": "",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Cube_0.mat",
+                "assetPath": "Assets/Materials/Tia_Animaition_0.mat",
                 "color": {
                     "x": 0.699999988079071,
                     "y": 0.699999988079071,
@@ -43,12 +43,12 @@
                 "clipIndex": 0,
                 "playing": true,
                 "speed": 1.0,
-                "timeSec": 0.0
+                "timeSec": 0.5081922543855824
             },
             "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
-                "meshAssetPath": "Cube"
+                "boneCount": 137,
+                "instanceAssetPath": "Assets/Fbx/Tia_Animaition.fbxasset",
+                "meshAssetPath": "Tia_Animaition"
             },
             "Transform": {
                 "enabled": true,
@@ -69,8 +69,60 @@
                 },
                 "visible": true
             },
-            "guid": "11073468189602588419",
-            "name": "Cube"
+            "guid": "8466225774694925435"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -4.103021144866943,
+                    "y": 1.286651849746704,
+                    "z": -0.7890481948852539
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 0.4478764533996582,
+                    "y": 0.22826135158538818,
+                    "z": 0.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_31_LightShield__Effect_31_Ring__OneShot/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.3480000495910645,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "guid": "15797597585108204479",
+            "name": "ONESHOT_DECOMP_(Opt)Effect_31_LightShield__Effect_31_Ring"
         }
     ],
     "sceneName": "AutoSaved",

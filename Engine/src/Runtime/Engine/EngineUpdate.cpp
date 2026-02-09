@@ -50,8 +50,10 @@ namespace Alice
 	void Engine::Impl::UpdateTimerAndInput(float& outDt)
 	{
 		m_timer.Tick();
-		outDt = m_timer.DeltaTime();
-		m_inputSystem.Update(outDt);
+		m_unscaledDeltaTime = m_timer.DeltaTime();
+		m_gameDeltaTime = m_stopGameDeltaTime ? 0.0f : m_unscaledDeltaTime;
+		outDt = m_gameDeltaTime;
+		m_inputSystem.Update(m_unscaledDeltaTime);
 		m_animUpdatedThisFrame = false;
 	}
 
@@ -271,7 +273,7 @@ namespace Alice
 	void Engine::Impl::UpdateUI(float /*dt*/)
 	{
 		m_aliceUIRenderer.Update(m_world, m_inputSystem, m_camera,
-			static_cast<float>(m_width), static_cast<float>(m_height), m_timer.DeltaTime());
+			static_cast<float>(m_width), static_cast<float>(m_height), m_unscaledDeltaTime);
 
 		m_prevIsPlaying = m_isPlaying;
 	}

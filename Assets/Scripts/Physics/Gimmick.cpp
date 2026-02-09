@@ -694,7 +694,7 @@ namespace Alice
 
         m_weaponCombined = findByName(m_weaponCombinedName);
         m_core = findByName(m_coreName);
-        m_tendon = findByName(m_tendonName);
+        // m_tendon = findByName(m_tendonName); // unused
         m_eye = findByName(m_eyeName);
         m_bindTarget = findByName(m_bindTargetName);
 
@@ -1481,7 +1481,7 @@ namespace Alice
         if (phase == Phase::Magnetize)
         {
             ResetShardState();
-            m_captureTimer = 0.0f;
+            // m_captureTimer = 0.0f; // unused
             m_captureCompleteTimer = 0.0f;
             m_magnetizeInitialized = false;
             m_eyeFloatAnchorValid = false;

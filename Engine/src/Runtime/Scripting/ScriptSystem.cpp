@@ -242,6 +242,27 @@ namespace Alice
         return m_input ? m_input->ConsumeAppActivated() : false;
     }
 
+    void ScriptSystem::StopDeltaTime(bool stop)
+    {
+        if (onSetDeltaTimeStopped.IsBound())
+            onSetDeltaTimeStopped.Execute(stop);
+    }
+
+    bool ScriptSystem::IsDeltaTimeStopped() const
+    {
+        return onGetDeltaTimeStopped.ExecuteOr(false);
+    }
+
+    float ScriptSystem::GetGameDeltaTime() const
+    {
+        return onGetGameDeltaTime.ExecuteOr(0.0f);
+    }
+
+    float ScriptSystem::GetUnscaledDeltaTime() const
+    {
+        return onGetUnscaledDeltaTime.ExecuteOr(0.0f);
+    }
+
     std::string ScriptSystem::GetResolvedPath(const char* filename) const
     {
         if (!filename || !filename[0])

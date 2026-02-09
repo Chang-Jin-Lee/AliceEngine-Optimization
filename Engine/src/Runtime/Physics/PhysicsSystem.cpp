@@ -3252,8 +3252,7 @@ void PhysicsSystem::ApplyRootMotionDeltas(float deltaTime)
         const bool hardSnap = dispLen > hardSnapStep;
 
         const bool isAttack2Clip = (clipName.find("Attack_2") != std::string::npos);
-        const bool isAttackHardClip = (clipName.find("Attack_hard") != std::string::npos);
-        const bool isKnownProblemClip = isAttack2Clip || isAttackHardClip;
+        const bool isKnownProblemClip = isAttack2Clip;
 
         bool reverseSnap = false;
         if (rmState.hasPrevDelta)

@@ -7,6 +7,7 @@
 
 #include <chrono>
 #include <algorithm>
+#include <cmath>
 #include <d3d11.h>
 
 namespace Alice
@@ -105,17 +106,20 @@ namespace Alice
         const ImU32 bg = IM_COL32(0, 0, 0, static_cast<int>(alpha * 255.0f));
         drawList->AddRectFilled(pos, maxPos, bg);
 
-        float texW = m_texW > 0.0f ? m_texW : 512.0f;
-        float texH = m_texH > 0.0f ? m_texH : 512.0f;
-        const float maxW = size.x * 0.6f;
-        const float maxH = size.y * 0.6f;
-        const float scale = (std::min)(maxW / texW, maxH / texH);
-        const float drawW = texW * scale;
-        const float drawH = texH * scale;
+        const float texW = m_texW;
+        const float texH = m_texH;
+        if (texW <= 0.0f || texH <= 0.0f)
+            return;
+
+        // 원본 텍스처 픽셀 크기 그대로 출력합니다.
+        const float drawW = texW;
+        const float drawH = texH;
 
         const ImVec2 center(pos.x + size.x * 0.5f, pos.y + size.y * 0.5f);
-        const ImVec2 p0(center.x - drawW * 0.5f, center.y - drawH * 0.5f);
-        const ImVec2 p1(center.x + drawW * 0.5f, center.y + drawH * 0.5f);
+        const float left = std::round(center.x - drawW * 0.5f);
+        const float top = std::round(center.y - drawH * 0.5f);
+        const ImVec2 p0(left, top);
+        const ImVec2 p1(left + drawW, top + drawH);
         const ImU32 tint = IM_COL32(255, 255, 255, static_cast<int>(alpha * 255.0f));
         drawList->AddImage(reinterpret_cast<ImTextureID>(m_srv.Get()), p0, p1, ImVec2(0, 0), ImVec2(1, 1), tint);
     }

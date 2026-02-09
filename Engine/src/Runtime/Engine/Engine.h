@@ -28,6 +28,12 @@ namespace Alice
         /// 메인 루프를 실행합니다.
         int Run();
 
+        // Game/UI 시간 제어 API
+        void StopDeltaTime(bool stop);
+        bool IsDeltaTimeStopped() const;
+        float GetGameDeltaTime() const;
+        float GetUnscaledDeltaTime() const;
+
         /// 윈도우 메시지를 처리하는 멤버 함수입니다.
         LRESULT HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
