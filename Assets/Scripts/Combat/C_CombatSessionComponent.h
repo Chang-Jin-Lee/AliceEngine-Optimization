@@ -54,7 +54,7 @@ namespace Alice
 
         // Combat rules
         ALICE_PROPERTY(bool, m_playerCanBeHitstunned, true);
-        ALICE_PROPERTY(bool, m_bossCanBeHitstunned, false);
+        // ALICE_PROPERTY(bool, m_bossCanBeHitstunned, false); // unused: boss hitstun is driven by boss session flow
         ALICE_PROPERTY(std::string, m_gimmickEntityName, "W_Target");
         ALICE_PROPERTY(std::string, m_healGimmickEntityName, "Heal_EYE");
         ALICE_PROPERTY(bool, m_blockPlayerActionsDuringGimmick, true);

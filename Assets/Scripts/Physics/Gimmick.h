@@ -27,7 +27,7 @@ namespace Alice
 
         ALICE_PROPERTY(std::string, m_weaponCombinedName, "Weapon(combined)");
         ALICE_PROPERTY(std::string, m_coreName, "W_Core");
-        ALICE_PROPERTY(std::string, m_tendonName, "W_Tendon");
+        // ALICE_PROPERTY(std::string, m_tendonName, "W_Tendon"); // unused
         ALICE_PROPERTY(std::string, m_eyeName, "W_EYE");
         ALICE_PROPERTY(std::string, m_bindTargetName, "W_Target");
 
@@ -35,7 +35,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_breakMaxSpeed, 6.0f); // 폭발 시 속도 상한(impulse/mass 클램프)
         ALICE_PROPERTY(float, m_captureCompleteDelaySec, 2.0f); // 포획 완료 후 다음 단계까지 대기 시간
 
-        ALICE_PROPERTY(float, m_magnetizeInterval, 1.0f); // (미사용) 포획 간격
+        // ALICE_PROPERTY(float, m_magnetizeInterval, 1.0f); // unused: old capture interval tuning
         ALICE_PROPERTY(float, m_eyeFloatMoveSpeed, 2.0f); // 눈 이동 속도(부유 연출)
         ALICE_PROPERTY(float, m_orbitAngularSpeed, 2.0f); // 포획 후 공전 각속도
         ALICE_PROPERTY(float, m_orbitAngularBlendDuration, 0.35f); // 공전 속도 블렌딩 시간
@@ -70,11 +70,11 @@ namespace Alice
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalOffset, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalRotation, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalScale, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
-        ALICE_PROPERTY(std::string, m_eyeMoveTrailEffectPath, "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json");
-        ALICE_PROPERTY(float, m_eyeMoveTrailSizeScale, 0.025f); // 파편 트레일과 동일 기본값
-        ALICE_PROPERTY(float, m_eyeMoveTrailIntensityScale, 0.0f);
-        ALICE_PROPERTY(DirectX::XMFLOAT3, m_eyeMoveTrailColorTint, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
-        ALICE_PROPERTY(DirectX::XMFLOAT3, m_eyeMoveTrailLocalScale, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f)); // 파편 트레일과 동일 기본값
+        // ALICE_PROPERTY(std::string, m_eyeMoveTrailEffectPath, "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json"); // unused
+        // ALICE_PROPERTY(float, m_eyeMoveTrailSizeScale, 0.025f); // unused
+        // ALICE_PROPERTY(float, m_eyeMoveTrailIntensityScale, 0.0f); // unused
+        // ALICE_PROPERTY(DirectX::XMFLOAT3, m_eyeMoveTrailColorTint, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f)); // unused
+        // ALICE_PROPERTY(DirectX::XMFLOAT3, m_eyeMoveTrailLocalScale, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f)); // unused
         ALICE_PROPERTY(std::string, m_eyeDustEffectPath, "Assets/VFX/UnityExport/Dust_3_41ffd4a3/effect.json");
         ALICE_PROPERTY(float, m_eyeDustRiseStartHeight, 1.0f); // 눈이 이 높이 이상 떠오르면 알파 상승 시작
         ALICE_PROPERTY(float, m_eyeDustFadeInSpeed, 0.9f); // 상승 시작 후 첫 파편 발사 전 알파 증가 속도
@@ -125,7 +125,7 @@ namespace Alice
 
         EntityId m_weaponCombined = InvalidEntityId;
         EntityId m_core = InvalidEntityId;
-        EntityId m_tendon = InvalidEntityId;
+        // EntityId m_tendon = InvalidEntityId; // unused
         EntityId m_eye = InvalidEntityId;
         EntityId m_bindTarget = InvalidEntityId;
 
@@ -136,7 +136,7 @@ namespace Alice
         bool m_initialized = false;
 
         float m_phaseTime = 0.0f;
-        float m_captureTimer = 0.0f;
+        // float m_captureTimer = 0.0f; // unused
         float m_captureCompleteTimer = 0.0f;
         float m_assembleTimer = 0.0f;
         size_t m_nextAssembleIndex = 0;
