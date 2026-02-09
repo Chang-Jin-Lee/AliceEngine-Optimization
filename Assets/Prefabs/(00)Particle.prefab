@@ -1,0 +1,56 @@
+{
+    "ComputeEffect": {
+        "color": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "depthBiasMeters": 0.05000000074505806,
+        "depthTest": true,
+        "drag": 0.9829999804496765,
+        "emissionDurationSec": 0.026000000536441803,
+        "emitNewParticles": true,
+        "enabled": true,
+        "gravity": {
+            "x": 0.0,
+            "y": -0.6499999761581421,
+            "z": 0.0
+        },
+        "intensity": 0.671999990940094,
+        "lifeMax": 0.17900000512599945,
+        "lifeMin": 0.009999999776482582,
+        "localOffset": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "loop": false,
+        "radius": 0.3700000047683716,
+        "shaderName": "Explosion",
+        "simulationSpace": "World",
+        "sizePx": 2.813999891281128,
+        "spawnRate": 1.0,
+        "startSpeed": 3.759000062942505
+    },
+    "Transform": {
+        "enabled": true,
+        "position": {
+            "x": -115.59066772460938,
+            "y": 3.991809844970703,
+            "z": 28.577007293701172
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "visible": true
+    },
+    "name": "GameObject3",
+    "version": 1
+}
