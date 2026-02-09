@@ -1020,6 +1020,7 @@ namespace Alice
 					changed |= DragFloatWithInput("Time Scale##UnityVfx", &vfx->timeScale, 0.0f, 4.0f);
 					changed |= DragFloatWithInput("Lifetime Scale##UnityVfx", &vfx->lifetimeScale, 0.1f, 5.0f);
 					changed |= DragFloatWithInput("Spawn Rate Scale##UnityVfx", &vfx->spawnRateScale, 0.0f, 2.0f);
+					changed |= ImGui::Checkbox("Emit New Particles##UnityVfx", &vfx->emitNewParticles);
 					changed |= ImGui::Checkbox("Override Loop##UnityVfx", &vfx->overrideLoop);
 					if (vfx->overrideLoop)
 					{

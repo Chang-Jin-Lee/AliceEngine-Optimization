@@ -30,6 +30,7 @@ namespace Alice
         Combat::ActionState GetBossState() const;
         Combat::ActionFlags GetPlayerFlags() const;
         Combat::ActionFlags GetBossFlags() const;
+        std::uint64_t GetPlayerParrySuccessCount() const;
         bool IsPlayerRageActive() const;
         float GetPlayerRageRemainingSec() const;
 
@@ -37,6 +38,8 @@ namespace Alice
         // Parameters: victimId, attackerId, resolveResult, damage, hitPosWS
         using FOnCombatResolved = Alice::Delegate<EntityId, EntityId, std::uint8_t, float, const DirectX::XMFLOAT3&>;
         FOnCombatResolved OnCombatResolved;
+        // Single-cast Delegate safety: dedicated channel for VFX bridge subscribers.
+        FOnCombatResolved OnCombatResolvedVfx;
 
         // Entity resolution (GUID preferred, name fallback when enabled)
         ALICE_PROPERTY(uint64_t, m_playerGuid, 0);
@@ -62,6 +65,10 @@ namespace Alice
         ALICE_PROPERTY(float, m_hitstopSec, 2.0f);
         ALICE_PROPERTY(float, m_guardBreakPushbackDurationSec, 1.0f);
         ALICE_PROPERTY(float, m_hitPushbackDurationSec, 0.3f);
+        ALICE_PROPERTY(float, m_phaseHowlingPushbackScale, 1.0f);
+        ALICE_PROPERTY(float, m_phaseHowlingPushbackDurationSec, 1.0f);
+        ALICE_PROPERTY(bool, m_phaseHowlingForceGuard, true);
+        ALICE_PROPERTY(bool, m_phaseHowlingLockInput, true);
         ALICE_PROPERTY(bool, m_playerInteractionEnabled, false);
         ALICE_PROPERTY(float, m_healStartDelaySec, 1.0f);
         ALICE_PROPERTY(float, m_healTickIntervalSec, 1.0f);

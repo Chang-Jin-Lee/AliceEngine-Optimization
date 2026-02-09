@@ -1,0 +1,53 @@
+{
+    "Transform": {
+        "enabled": true,
+        "position": {
+            "x": 18.0,
+            "y": 0.0,
+            "z": -24.0
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "visible": true
+    },
+    "UnityVfx": {
+        "alphaScale": 1.0,
+        "colorScale": 1.0,
+        "colorTint": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "dissolveOffset": 0.0,
+        "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
+        "emitNewParticles": true,
+        "enableTrails": true,
+        "enabled": true,
+        "hdrColorClamp": 1.0,
+        "intensityScale": 1.0,
+        "lifetimeScale": 1.0,
+        "loop": true,
+        "noiseScale": 1.0,
+        "overrideLoop": false,
+        "rampScale": 1.0,
+        "sizeScale": 1.659000039100647,
+        "spawnRateScale": 1.0,
+        "speedScale": 1.0,
+        "timeScale": 1.0,
+        "trailLifeScale": 1.0,
+        "trailWidthScale": 1.0,
+        "useComputeEffect": false,
+        "useMeshRenderer": true,
+        "uvScrollScale": 1.0
+    },
+    "name": "Combo_slash_fx_04_03_NoParticle",
+    "version": 1
+}
