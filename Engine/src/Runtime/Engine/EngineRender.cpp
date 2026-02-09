@@ -370,7 +370,7 @@ namespace Alice
 	{
 		if (m_animUpdatedThisFrame) return;
 
-		const double dtSec = static_cast<double>(m_timer.DeltaTime());
+		const double dtSec = static_cast<double>(m_gameDeltaTime);
 		m_attackDriverSystem.PreUpdate(m_world);
 		m_advancedAnimSystem.Update(m_world, dtSec);
 		m_skinnedAnimSystem.Update(m_world, dtSec);
@@ -411,7 +411,7 @@ namespace Alice
 
 	void Engine::Impl::RenderAudioUpdate()
 	{
-		m_audioSystem.Update(m_world, static_cast<double>(m_timer.DeltaTime()));
+		m_audioSystem.Update(m_world, static_cast<double>(m_gameDeltaTime));
 	}
 
 	void Engine::Impl::RenderMainPass()
@@ -570,7 +570,7 @@ namespace Alice
 				depthSRV = m_deferredRenderSystem->GetSceneDepthSRV();
 			}
 
-			float dtSec = m_timer.DeltaTime();
+			float dtSec = m_gameDeltaTime;
 			float nearPlane = m_camera.GetNearPlane();
 			float farPlane = m_camera.GetFarPlane();
 			m_computeEffectSystem->Execute(m_world, viewProj, cameraPos, depthSRV, nearPlane, farPlane, dtSec);
@@ -716,7 +716,7 @@ namespace Alice
 		}
 
 		if (m_effectSystem) m_effectSystem->Render(m_world, m_camera);
-		if (m_unityVfxMeshRenderSystem) m_unityVfxMeshRenderSystem->Render(m_world, m_camera, m_timer.DeltaTime());
+		if (m_unityVfxMeshRenderSystem) m_unityVfxMeshRenderSystem->Render(m_world, m_camera, m_gameDeltaTime);
 		if (m_trailRenderSystem) m_trailRenderSystem->Render(m_world, m_camera);
 
 		// 에디터 모드에서는 뷰포트 RTV를 SRV로 읽어야 하므로 백버퍼로 복귀
