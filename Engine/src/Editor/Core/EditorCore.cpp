@@ -74,6 +74,7 @@
 #include <thread>
 #include <mutex>
 #include <sstream>
+#include <Windows.h>
 #include <Runtime/Resources/Prefab.h>
 #include <Runtime/Scripting/IScript.h>
 #include <Runtime/Scripting/ScriptSystem.h>
@@ -435,57 +436,77 @@ namespace Alice
 		}
 
 		namespace fs = std::filesystem;
-		const fs::path cfg = projectRoot / "EngineSettings.json";
-
-		nlohmann::json j;
-		if (fs::exists(cfg))
-		{
-			std::ifstream ifs(cfg);
-			if (ifs.is_open())
-			{
-				try { ifs >> j; }
-				catch (...) {}
-			}
-		}
 
 		auto Vec3ToJson = [](const DirectX::XMFLOAT3& v)
 			{
 				return nlohmann::json::array({ v.x, v.y, v.z });
 			};
 
-		j["lighting"] = nlohmann::json::object();
-		j["lighting"]["shadingMode"] = m_cachedShadingMode;
-		j["lighting"]["useFillLight"] = m_cachedUseFillLight;
-		j["lighting"]["params"] = nlohmann::json::object();
-		auto& p = j["lighting"]["params"];
-		p["diffuseColor"] = Vec3ToJson(m_cachedLightingParams.diffuseColor);
-		p["specularColor"] = Vec3ToJson(m_cachedLightingParams.specularColor);
-		p["shininess"] = m_cachedLightingParams.shininess;
-		p["baseColor"] = Vec3ToJson(m_cachedLightingParams.baseColor);
-		p["metalness"] = m_cachedLightingParams.metalness;
-		p["roughness"] = m_cachedLightingParams.roughness;
-		p["ambientOcclusion"] = m_cachedLightingParams.ambientOcclusion;
-		p["keyIntensity"] = m_cachedLightingParams.keyIntensity;
-		p["fillIntensity"] = m_cachedLightingParams.fillIntensity;
-		p["keyDirection"] = Vec3ToJson(m_cachedLightingParams.keyDirection);
-		p["fillDirection"] = Vec3ToJson(m_cachedLightingParams.fillDirection);
+		auto UpdateAndWrite = [&](const fs::path& cfg) -> bool
+			{
+				nlohmann::json j;
+				if (fs::exists(cfg))
+				{
+					std::ifstream ifs(cfg);
+					if (ifs.is_open())
+					{
+						try { ifs >> j; }
+						catch (...) {}
+					}
+				}
 
-		j["skybox"] = nlohmann::json::object();
-		j["skybox"]["choice"] = m_cachedSkyboxChoice;
-		j["skybox"]["customDir"] = m_cachedSkyboxCustomDir;
-		j["skybox"]["customPrefix"] = m_cachedSkyboxCustomPrefix;
-		j["skybox"]["resolution"] = m_cachedSkyboxResolution;
+				j["lighting"] = nlohmann::json::object();
+				j["lighting"]["shadingMode"] = m_cachedShadingMode;
+				j["lighting"]["useFillLight"] = m_cachedUseFillLight;
+				j["lighting"]["params"] = nlohmann::json::object();
+				auto& p = j["lighting"]["params"];
+				p["diffuseColor"] = Vec3ToJson(m_cachedLightingParams.diffuseColor);
+				p["specularColor"] = Vec3ToJson(m_cachedLightingParams.specularColor);
+				p["shininess"] = m_cachedLightingParams.shininess;
+				p["baseColor"] = Vec3ToJson(m_cachedLightingParams.baseColor);
+				p["metalness"] = m_cachedLightingParams.metalness;
+				p["roughness"] = m_cachedLightingParams.roughness;
+				p["ambientOcclusion"] = m_cachedLightingParams.ambientOcclusion;
+				p["keyIntensity"] = m_cachedLightingParams.keyIntensity;
+				p["fillIntensity"] = m_cachedLightingParams.fillIntensity;
+				p["keyDirection"] = Vec3ToJson(m_cachedLightingParams.keyDirection);
+				p["fillDirection"] = Vec3ToJson(m_cachedLightingParams.fillDirection);
 
-		std::ofstream ofs(cfg);
-		if (!ofs.is_open())
+				j["skybox"] = nlohmann::json::object();
+				j["skybox"]["choice"] = m_cachedSkyboxChoice;
+				j["skybox"]["customDir"] = m_cachedSkyboxCustomDir;
+				j["skybox"]["customPrefix"] = m_cachedSkyboxCustomPrefix;
+				j["skybox"]["resolution"] = m_cachedSkyboxResolution;
+
+				std::ofstream ofs(cfg);
+				if (!ofs.is_open())
+				{
+					ALICE_LOG_ERRORF("Build Game: failed to write EngineSettings.json: \"%s\"", cfg.string().c_str());
+					return false;
+				}
+
+				ofs << j.dump(4);
+				ALICE_LOG_INFO("Build Game: EngineSettings.json updated: \"%s\"", cfg.string().c_str());
+				return true;
+			};
+
+		const fs::path projectCfg = (projectRoot / "EngineSettings.json").lexically_normal();
+		const bool ok = UpdateAndWrite(projectCfg);
+
+		wchar_t exePathW[MAX_PATH] = {};
+		if (GetModuleFileNameW(nullptr, exePathW, MAX_PATH) > 0)
 		{
-			ALICE_LOG_ERRORF("Build Game: failed to write EngineSettings.json: \"%s\"", cfg.string().c_str());
-			return false;
+			const fs::path exeCfg = (fs::path(exePathW).parent_path() / "EngineSettings.json").lexically_normal();
+			if (exeCfg != projectCfg)
+			{
+				if (!UpdateAndWrite(exeCfg))
+				{
+					ALICE_LOG_WARN("Build Game: failed to update EngineSettings.json at exeDir: \"%s\"", exeCfg.string().c_str());
+				}
+			}
 		}
 
-		ofs << j.dump(4);
-		ALICE_LOG_INFO("Build Game: EngineSettings.json updated: \"%s\"", cfg.string().c_str());
-		return true;
+		return ok;
 	}
 
 	// ComponentEditCommandRTTR 구현
