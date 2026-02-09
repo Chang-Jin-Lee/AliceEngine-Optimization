@@ -39,7 +39,7 @@ namespace Alice::Combat
         Attack,
         Dodge,
         Guard,
-        JustGuardSuccess,
+        JustGuardSuccess, // legacy placeholder: currently no active transition path
         GuardBreakWeak,
         Hitstun,
         Groggy,
