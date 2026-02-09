@@ -103,6 +103,7 @@ namespace Alice
         float             metalness    { 0.0f };                // 0.0 = 비금속, 1.0 = 금속
         float             roughness    { 0.5f };                // 0.0 = 거울, 1.0 = 거친 표면
         float             ambientOcclusion { 1.0f };            // AO (0.0 ~ 1.0)
+        float             globalIBLIntensity { 1.0f };          // 전역 IBL 강도 (0.0 ~ 1.0)
         float             shadowStrength { 1.0f };              // 전역 그림자 강도 (0~1)
         float             toonShadowStrength { 1.0f };          // ToonPBREditable 전용 그림자 강도 (0~1)
 
