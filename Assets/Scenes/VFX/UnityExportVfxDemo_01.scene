@@ -54,8 +54,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_01_Sword_1/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -101,8 +107,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_01_SwordEffect/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -148,8 +160,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_01_SwordEffect_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -195,8 +213,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_01_SwordPlaneEffect/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -242,8 +266,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_01_SwordPlaneEffect_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -289,8 +319,14 @@
             "UnityVfx": {
                 "alphaScale": 1.774999976158142,
                 "colorScale": 2.299999952316284,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_02_Spear_1/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 2.700000047683716,
@@ -336,8 +372,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_02_SpearHole/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -383,8 +425,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_02_SpearHole_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -430,8 +478,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_02_SpearSpawn/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -477,8 +531,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_02_SpearSpawn_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -524,8 +584,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_03_SpireField/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -571,8 +637,14 @@
             "UnityVfx": {
                 "alphaScale": 1.4609999656677246,
                 "colorScale": 1.6339999437332153,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.07999999821186066,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_04_SwordSlash/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.50600004196167,
@@ -618,8 +690,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_04_SwordSlashInit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -646,9 +724,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -18.0,
-                    "y": 0.0,
-                    "z": -16.0
+                    "x": -15.023702621459961,
+                    "y": 0.688147783279419,
+                    "z": -18.431127548217773
                 },
                 "rotation": {
                     "x": 0.0,
@@ -665,8 +743,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_05_StoneHitEffect/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -712,8 +796,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_05_StoneObject/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -759,8 +849,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -806,8 +902,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -853,8 +955,14 @@
             "UnityVfx": {
                 "alphaScale": 0.6499999761581421,
                 "colorScale": 0.30000001192092896,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalParticle/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.600000023841858,
@@ -900,8 +1008,14 @@
             "UnityVfx": {
                 "alphaScale": 1.149999976158142,
                 "colorScale": 0.699999988079071,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalParticle_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.2999999523162842,
@@ -947,8 +1061,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_MidSphereEffect/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -994,8 +1114,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_MidSphereEffect_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1041,8 +1167,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_OuterRingEffect/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1088,8 +1220,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_OuterRingEffect_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1135,8 +1273,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_08_HeatWave/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1163,9 +1307,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -22.0,
-                    "y": 0.0,
-                    "z": -12.0
+                    "x": -20.089754104614258,
+                    "y": 0.15717218816280365,
+                    "z": -13.772512435913086
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1182,8 +1326,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_09_EnergyCore/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1210,9 +1360,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -18.0,
-                    "y": 0.0,
-                    "z": -12.0
+                    "x": -16.10611915588379,
+                    "y": 0.2578103542327881,
+                    "z": -13.681264877319336
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1229,8 +1379,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_09_EnergyCoreRing/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1276,8 +1432,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_10_EnergyFire/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1323,8 +1485,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_10_EnergyRing/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1370,8 +1538,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_10_Hit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1417,8 +1591,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_10_HitEffect/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1464,8 +1644,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_11_BladePlane/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1511,8 +1697,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_11_BladeSlash/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1558,8 +1750,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_11_DevilBladeSlash/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1605,8 +1803,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_11_DevilBladeSlash_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1652,8 +1856,14 @@
             "UnityVfx": {
                 "alphaScale": 1.899999976158142,
                 "colorScale": 2.1500000953674316,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_12_Meteo/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 3.5999999046325684,
@@ -1699,8 +1909,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_12_MeteoPlane/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1746,8 +1962,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_13_SpearHitPlane/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1793,8 +2015,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_13_SpearHitPlane2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1821,8 +2049,8 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -14.0,
-                    "y": 0.0,
+                    "x": 26.622005462646484,
+                    "y": -0.4281405508518219,
                     "z": -8.0
                 },
                 "rotation": {
@@ -1840,8 +2068,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_14_ParticleWave/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1868,9 +2102,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.0,
-                    "y": 0.0,
-                    "z": -8.0
+                    "x": 2.4054412841796875,
+                    "y": 1.1313934326171875,
+                    "z": -19.428443908691406
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1887,8 +2121,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_14_ParticleWave2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1915,9 +2155,9 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -5.84105110168457,
-                    "y": 0.0,
-                    "z": -7.4870686531066895
+                    "x": -26.227537155151367,
+                    "y": 4.7944440841674805,
+                    "z": -9.742563247680664
                 },
                 "rotation": {
                     "x": 0.0,
@@ -1934,8 +2174,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_15_LifeWell/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -1962,14 +2208,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -1.8549368381500244,
-                    "y": 0.0,
-                    "z": -7.851624011993408
+                    "x": -43.75180435180664,
+                    "y": 17.534664154052734,
+                    "z": -35.74297332763672
                 },
                 "rotation": {
                     "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
+                    "y": -0.2792525887489319,
+                    "z": -1.57254159450531
                 },
                 "scale": {
                     "x": 1.0,
@@ -1981,8 +2227,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_15_LifeWell2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2028,8 +2280,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_16_Shield/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2075,8 +2333,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_16_ShieldHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2122,8 +2386,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_17_FireField/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2169,8 +2439,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_17_FireSphere/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2216,8 +2492,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_18_SunFall/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2263,8 +2545,14 @@
             "UnityVfx": {
                 "alphaScale": 1.2999999523162842,
                 "colorScale": 1.850000023841858,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_18_SunFall_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.600000023841858,
@@ -2310,8 +2598,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_18_SunFall_2_Ground/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2357,8 +2651,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_18_SunFall_2_Ground_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2404,8 +2704,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_18_SunFall_2_SunBottomEffect/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2451,8 +2757,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_18_SunFallGround/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2498,8 +2810,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_19_Lightning/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2545,8 +2863,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_19_Lightning_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2592,8 +2916,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_19_LightningField/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2639,8 +2969,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_19_LightningHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2686,8 +3022,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_19_LightningHit_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2733,8 +3075,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_20_Shot/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2780,8 +3128,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_20_ShotHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2827,8 +3181,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_20_ShotMark/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2874,8 +3234,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_21_BloodFloodGround/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2921,8 +3287,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_21_BloodFloodSplash/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -2968,8 +3340,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_22_DarkEnergyCore/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3015,8 +3393,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_22_DarkEnergyCorePlane/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3062,8 +3446,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_22_DarkEnergyCoreSide/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3109,8 +3499,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_23_PulseEnergy/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3156,8 +3552,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_23_PulseEnergyCharge/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3203,8 +3605,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_23_PulseEnergyShot/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3250,8 +3658,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_23_PulseExplode/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3297,8 +3711,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_23_PulseExplodeRing/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3344,8 +3764,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_AirStrikeHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3391,8 +3817,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_AirStrikeHitAfterImage/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3438,8 +3870,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_AirStrikeMark/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3485,8 +3923,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_AirStrikeObject/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3532,8 +3976,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_CallFleetHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3579,8 +4029,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_CallFleetHitMark/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3626,8 +4082,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_CallFleetMark/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3673,8 +4135,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_CallFleetObject/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3720,8 +4188,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_MissileHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3767,8 +4241,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_MissileHitAfterImage/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3814,8 +4294,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_MissileObject/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3861,8 +4347,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_ProximitySupportBigHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3908,8 +4400,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_ProximitySupportBigObject/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -3955,8 +4453,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_ProximitySupportMark/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4002,8 +4506,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_ProximitySupportMark_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4049,8 +4559,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_ProximitySupportSmallHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4096,8 +4612,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_ProximitySupportSmallObject/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4143,8 +4665,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_RemovalStrikeAttackMark/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4190,8 +4718,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_RemovalStrikeGroundMark/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4237,8 +4771,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_RemovalStrikeHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4284,8 +4824,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_24_RemovalStrikeHitAfterImage/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4331,8 +4877,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_25_BloodCharge/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4378,8 +4930,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_25_BloodSpread/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4425,8 +4983,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_26_WallArise/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4472,8 +5036,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_26_WallAriseWave/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4519,8 +5089,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_27_WarpParticles/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4566,8 +5142,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_27_WarpSide/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4613,8 +5195,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_28_EnergyHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4660,8 +5248,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_28_EnergyHit_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4707,8 +5301,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_28_EnergyHitPlane/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4754,8 +5354,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_28_EnergyHitPlane_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4801,8 +5407,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_29_SmokeArea/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4848,8 +5460,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_29_SmokeRotate/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4895,8 +5513,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_29_SmokeRotate_2/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4942,8 +5566,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_30_Arrow/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -4989,8 +5619,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_30_ArrowHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5036,8 +5672,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_30_ArrowHitWave/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5083,8 +5725,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_31_LightShield/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5130,8 +5778,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_32_Lightning/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5177,8 +5831,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_32_LightningCloud/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5224,8 +5884,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_32_LightningHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5271,8 +5937,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_33_StoneSmokeField/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5318,8 +5990,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_34_PlaneHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5365,8 +6043,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_35_StoneField/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5412,8 +6096,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_36_JudgementSword/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5459,8 +6149,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_36_JudgementSwordHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5506,8 +6202,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_36_JudgementSwordPlane/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5553,8 +6255,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_36_JudgementSwordWait/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5600,8 +6308,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_36_ThrowSword/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5647,8 +6361,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_36_ThrowSwordHit/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5694,8 +6414,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_36_ThrowSwordPlane/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5741,8 +6467,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_37_IceField/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5788,8 +6520,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_37_IceTideWave/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5835,8 +6573,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_38_FireBreath/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5882,8 +6626,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_38_FireBreathField/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5929,8 +6679,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_38_FireBreathHole/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -5976,8 +6732,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_39_AquaEffect/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -6023,8 +6785,14 @@
             "UnityVfx": {
                 "alphaScale": 1.0,
                 "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
                 "dissolveOffset": 0.0,
                 "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_39_AquaEffectSide/effect.json",
+                "emitNewParticles": true,
                 "enableTrails": true,
                 "enabled": true,
                 "hdrColorClamp": 1.0,
@@ -6046,6 +6814,59 @@
             },
             "guid": "7257631740209557504",
             "name": "(Opt)Effect_39_AquaEffectSide"
+        },
+        {
+            "ComputeEffect": {
+                "color": {
+                    "x": 1.0,
+                    "y": 0.4901960790157318,
+                    "z": 0.0
+                },
+                "depthBiasMeters": 0.07699999958276749,
+                "depthTest": true,
+                "drag": 0.5789999961853027,
+                "enabled": true,
+                "gravity": {
+                    "x": 0.0,
+                    "y": -1.2339999675750732,
+                    "z": 0.0
+                },
+                "intensity": 1.4880000352859497,
+                "lifeMax": 0.8539999723434448,
+                "lifeMin": 0.0989999994635582,
+                "localOffset": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "radius": 0.009999999776482582,
+                "shaderName": "Sparks",
+                "simulationSpace": "World",
+                "sizePx": 6.0,
+                "spawnRate": 0.0,
+                "startSpeed": 4.488999843597412
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -47.824581146240234,
+                    "y": 8.744185447692871,
+                    "z": 7.987188339233398
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "18244305006836929469",
+            "name": "Spark"
         }
     ],
     "sceneName": "UnityExportVfxDemo_01",

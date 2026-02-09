@@ -868,7 +868,13 @@ namespace Alice
 
 				// Emission Module
 				if (ImGui::TreeNode("Emission##ComputeEffect")) {
-					changed |= ImGui::SliderFloat("Spawn Rate##ComputeEffect", &effect->spawnRate, 0.0f, 1.0f);
+					changed |= DragFloatWithInput("Spawn Rate##ComputeEffect", &effect->spawnRate, 0.0f, 1.0f, "%.4f");
+					changed |= ImGui::Checkbox("Emit New Particles##ComputeEffect", &effect->emitNewParticles);
+					changed |= ImGui::Checkbox("Loop##ComputeEffect", &effect->loop);
+					if (!effect->loop) {
+						changed |= ImGui::SliderFloat("Emission Duration (s)##ComputeEffect", &effect->emissionDurationSec, 0.0f, 10.0f);
+						if (effect->emissionDurationSec < 0.0f) effect->emissionDurationSec = 0.0f;
+					}
 					ImGui::TreePop();
 				}
 

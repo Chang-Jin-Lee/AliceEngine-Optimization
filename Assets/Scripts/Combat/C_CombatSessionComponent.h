@@ -54,7 +54,7 @@ namespace Alice
 
         // Combat rules
         ALICE_PROPERTY(bool, m_playerCanBeHitstunned, true);
-        ALICE_PROPERTY(bool, m_bossCanBeHitstunned, false);
+        // ALICE_PROPERTY(bool, m_bossCanBeHitstunned, false); // unused: boss hitstun is driven by boss session flow
         ALICE_PROPERTY(std::string, m_gimmickEntityName, "W_Target");
         ALICE_PROPERTY(std::string, m_healGimmickEntityName, "Heal_EYE");
         ALICE_PROPERTY(bool, m_blockPlayerActionsDuringGimmick, true);
@@ -88,6 +88,18 @@ namespace Alice
         ALICE_PROPERTY(float, m_lightComboWindowSec, 0.5f);
         ALICE_PROPERTY(float, m_chargeCombo2Speed, 0.7f);
         ALICE_PROPERTY(float, m_rageDurationSec, 30.0f);
+        // Player rage trail (black) on weapon target.
+        ALICE_PROPERTY(bool, m_enablePlayerRageTrailVfx, true);
+        ALICE_PROPERTY(std::string, m_playerRageTrailTargetName, "W_Target");
+        ALICE_PROPERTY(std::string, m_playerRageTrailChildName, "W_Target_RageTrailVfx");
+        ALICE_PROPERTY(std::string, m_playerRageTrailEffectPath, "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json");
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_playerRageTrailColorTint, DirectX::XMFLOAT3(0.05f, 0.05f, 0.05f));
+        ALICE_PROPERTY(float, m_playerRageTrailColorScale, 1.0f);
+        ALICE_PROPERTY(float, m_playerRageTrailIntensityScale, 0.0f);
+        ALICE_PROPERTY(float, m_playerRageTrailSpawnRateScale, 1.5f);
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_playerRageTrailLocalOffset, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_playerRageTrailLocalRotation, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_playerRageTrailLocalScale, DirectX::XMFLOAT3(0.025f, 0.025f, 0.025f));
 
         // Animation blending
         ALICE_PROPERTY(float, m_animBlendSec, 0.12f);
@@ -142,8 +154,11 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_playerGuardEnterClip, "rig|Tia_Guard");
         ALICE_PROPERTY(std::string, m_playerGuardLoopClip, "rig|Tia_Guarding");
         ALICE_PROPERTY(std::string, m_playerGuardExitClip, "rig|Tia_Guard");
+        ALICE_PROPERTY(std::string, m_playerParryClip, "rig|Tia_Parrying");
         ALICE_PROPERTY(float, m_playerGuardEnterDurationSec, 0.0f);
         ALICE_PROPERTY(float, m_playerGuardExitDurationSec, 0.0f);
+        ALICE_PROPERTY(float, m_playerGuardTransitionBlendSec, 0.5f);
+        ALICE_PROPERTY(float, m_playerParryRecoverBlendSec, 0.1f);
         ALICE_PROPERTY(std::string, m_bossIdleClip, "");
         ALICE_PROPERTY(std::string, m_bossMoveClip, "");
         ALICE_PROPERTY(std::string, m_bossLightAttackClip, "");
@@ -199,6 +214,7 @@ namespace Alice
     private:
         EntityId ResolveEntity(uint64_t guid) const;
         EntityId ResolveEntityByName(const std::string& name) const;
+        EntityId m_playerRageTrailVfxId = InvalidEntityId;
 
         struct AnimConfig
         {

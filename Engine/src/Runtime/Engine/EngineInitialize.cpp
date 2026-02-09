@@ -9,6 +9,8 @@
 #include "Runtime/UI/UIEffectComponent.h"
 #include "Runtime/Importing/FbxAnimation.h"
 #include <Windows.h>
+#include <d3d11.h>
+#include <wrl/client.h>
 #include <algorithm>
 #include <chrono>
 #include <thread>
@@ -936,7 +938,7 @@ namespace Alice
 			return false;
 
 		m_editorCore.SetEngineLogoHoldUntilRelease(true);
-		m_editorCore.StartEngineLogoOverlay(m_resourceManager, "Resource/Icon/AliceBanner.png");
+		m_editorCore.StartEngineLogoOverlay(m_resourceManager, "Resource/Icon/EngineBanner.png");
 		if (!RenderStartupLogoFrames(0.7f))
 			return false;
 
@@ -1235,15 +1237,57 @@ namespace Alice
 			return e;
 		};
 
-		// Banner
-		const EntityId bannerId = CreateScreenWidget("Loading_Banner", 0.5f, 0.42f,
-			DirectX::XMFLOAT2(720.0f, 360.0f), 0);
+		// Banner: 텍스처 원본 픽셀 크기를 그대로 사용합니다.
+		DirectX::XMFLOAT2 bannerSize(0.0f, 0.0f);
+		{
+			auto bannerSrv = m_resourceManager.Load<ID3D11ShaderResourceView>(
+				"Resource/Icon/GameBanner.png", m_renderDevice->GetDevice());
+			if (bannerSrv.Get())
+			{
+				Microsoft::WRL::ComPtr<ID3D11Resource> resource;
+				bannerSrv->GetResource(resource.GetAddressOf());
+				Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2D;
+				if (resource.Get() && SUCCEEDED(resource.As(&texture2D)) && texture2D.Get())
+				{
+					D3D11_TEXTURE2D_DESC texDesc{};
+					texture2D->GetDesc(&texDesc);
+					if (texDesc.Width > 0 && texDesc.Height > 0)
+					{
+						bannerSize = DirectX::XMFLOAT2(
+							static_cast<float>(texDesc.Width),
+							static_cast<float>(texDesc.Height));
+					}
+				}
+			}
+
+			// 크기 조회에 실패하면 최소 유효 크기로 처리합니다.
+			if (bannerSize.x <= 0.0f || bannerSize.y <= 0.0f)
+			{
+				ALICE_LOG_WARN("[Loading] GameBanner size query failed. Using minimal fallback size.");
+				bannerSize = DirectX::XMFLOAT2(1.0f, 1.0f);
+			}
+		}
+
+		const float bannerAnchorX = 0.5f;
+		const float bannerAnchorY = 0.42f;
+		const EntityId bannerId = CreateScreenWidget("Loading_Banner", bannerAnchorX, bannerAnchorY,
+			bannerSize, 0);
 		auto& bannerImg = loadingWorld.AddComponent<UIImageComponent>(bannerId);
-		bannerImg.texturePath = "Resource/Icon/AliceBanner.png";
+		bannerImg.texturePath = "Resource/Icon/GameBanner.png";
 		bannerImg.preserveAspect = true;
+		if (auto* bannerTransform = loadingWorld.GetComponent<UITransformComponent>(bannerId))
+		{
+			// 소형 텍스처에서도 흐림을 줄이기 위해 배너 쿼드를 픽셀 그리드에 맞춥니다.
+			const float left = bannerAnchorX * static_cast<float>(m_width) - bannerSize.x * 0.5f;
+			const float top = bannerAnchorY * static_cast<float>(m_height) - bannerSize.y * 0.5f;
+			const float snapX = std::round(left) - left;
+			const float snapY = std::round(top) - top;
+			bannerTransform->position.x = snapX;
+			bannerTransform->position.y = -snapY;
+		}
 
 		// Status text
-		const EntityId statusId = CreateScreenWidget("Loading_Status", 0.5f, 0.65f,
+		const EntityId statusId = CreateScreenWidget("Loading_Status", 0.5f, 0.75f,
 			DirectX::XMFLOAT2(640.0f, 40.0f), 1);
 		{
 			auto& statusText = loadingWorld.AddComponent<UITextComponent>(statusId);
@@ -1255,7 +1299,7 @@ namespace Alice
 		}
 
 		// Progress gauge
-		const EntityId gaugeId = CreateScreenWidget("Loading_Bar", 0.5f, 0.73f,
+		const EntityId gaugeId = CreateScreenWidget("Loading_Bar", 0.5f, 0.80f,
 			DirectX::XMFLOAT2(560.0f, 20.0f), 1);
 		{
 			auto& gauge = loadingWorld.AddComponent<UIGaugeComponent>(gaugeId);
@@ -1277,7 +1321,7 @@ namespace Alice
 		}
 
 		// Hint text
-		const EntityId hintId = CreateScreenWidget("Loading_Hint", 0.5f, 0.80f,
+		const EntityId hintId = CreateScreenWidget("Loading_Hint", 0.5f, 0.86f,
 			DirectX::XMFLOAT2(640.0f, 32.0f), 1);
 		{
 			auto& hintText = loadingWorld.AddComponent<UITextComponent>(hintId);
@@ -1591,6 +1635,10 @@ namespace Alice
 		m_scriptSystem.onAfterSceneLoaded.BindObject(&owner, &Engine::EnsureSkinnedMeshesRegisteredForWorld);
 		m_scriptSystem.onTrimVideoMemory.BindObject(&owner, &Engine::TrimVideoMemory);
 		m_scriptSystem.onAfterSceneLoaded.BindObject(&owner, &Engine::RefreshPhysicsForCurrentWorld);
+		m_scriptSystem.onSetDeltaTimeStopped.BindObject(&owner, &Engine::StopDeltaTime);
+		m_scriptSystem.onGetDeltaTimeStopped.BindObject(&owner, &Engine::IsDeltaTimeStopped);
+		m_scriptSystem.onGetGameDeltaTime.BindObject(&owner, &Engine::GetGameDeltaTime);
+		m_scriptSystem.onGetUnscaledDeltaTime.BindObject(&owner, &Engine::GetUnscaledDeltaTime);
 	}
 
 	void Engine::Impl::SavePvdSettings(const std::filesystem::path& exeDir)
