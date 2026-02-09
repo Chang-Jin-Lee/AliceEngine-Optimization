@@ -1207,6 +1207,41 @@ namespace Alice
     {
         if (!m_cbExtraLights) return;
 
+        // NOTE:
+        // Forward 경로는 현재 Directional Shadow만 지원합니다.
+        // Point/Spot/Rect의 castShadow는 Deferred 경로에서만 실제 그림자에 반영됩니다.
+        {
+            static bool warnedLocalShadowUnsupported = false;
+            if (!warnedLocalShadowUnsupported)
+            {
+                bool requestedLocalShadow = false;
+                for (const auto& [_, light] : world.GetComponents<PointLightComponent>())
+                {
+                    if (light.enabled && light.castShadow) { requestedLocalShadow = true; break; }
+                }
+                if (!requestedLocalShadow)
+                {
+                    for (const auto& [_, light] : world.GetComponents<SpotLightComponent>())
+                    {
+                        if (light.enabled && light.castShadow) { requestedLocalShadow = true; break; }
+                    }
+                }
+                if (!requestedLocalShadow)
+                {
+                    for (const auto& [_, light] : world.GetComponents<RectLightComponent>())
+                    {
+                        if (light.enabled && light.castShadow) { requestedLocalShadow = true; break; }
+                    }
+                }
+
+                if (requestedLocalShadow)
+                {
+                    ALICE_LOG_WARN("ForwardRenderSystem: Point/Spot/Rect castShadow is not supported in Forward mode. Use Deferred Rendering for local light shadows.");
+                    warnedLocalShadowUnsupported = true;
+                }
+            }
+        }
+
         ExtraLightsCB data = {};
 
         // Point lights
@@ -1222,6 +1257,10 @@ namespace Alice
             dst.range = (std::max)(light.range, 0.01f);
             dst.color = light.color;
             dst.intensity = light.intensity;
+            dst.shadowIndex = -1;
+            dst.shadowStrength = light.castShadow ? 1.0f : 0.0f;
+            dst.pad[0] = 0.0f;
+            dst.pad[1] = 0.0f;
         }
 
         // Spot lights
@@ -1249,6 +1288,9 @@ namespace Alice
             dst.outerCos = std::cosf(outerRad);
             dst.color = light.color;
             dst.intensity = light.intensity;
+            dst.shadowIndex = -1;
+            dst.shadowStrength = light.castShadow ? 1.0f : 0.0f;
+            dst.pad0 = 0.0f;
         }
 
         // Rect lights
@@ -1273,6 +1315,9 @@ namespace Alice
             dst.height = (std::max)(light.height, 0.01f);
             dst.color = light.color;
             dst.intensity = light.intensity;
+            dst.shadowIndex = -1;
+            dst.shadowStrength = light.castShadow ? 1.0f : 0.0f;
+            dst.pad0 = 0.0f;
         }
 
         D3D11_MAPPED_SUBRESOURCE mapped{};

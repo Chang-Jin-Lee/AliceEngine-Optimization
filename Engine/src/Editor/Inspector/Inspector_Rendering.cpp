@@ -338,10 +338,11 @@ namespace Alice
 		if (auto* light = world.GetComponent<PointLightComponent>(_selectedEntity)) {
 			if (ImGui::CollapsingHeader("Point Light", ImGuiTreeNodeFlags_DefaultOpen)) {
 				bool changed = false;
-				changed |= ImGui::Checkbox("Enabled##PointLight", &light->enabled);
-				changed |= ImGui::ColorEdit3("Color##PointLight", &light->color.x);
-				changed |= DragFloatWithInput("Intensity##PointLight", &light->intensity, 0.0f, 50.0f);
-				changed |= DragFloatWithInput("Range##PointLight", &light->range, 0.1f, 200.0f);
+                changed |= ImGui::Checkbox("Enabled##PointLight", &light->enabled);
+                changed |= ImGui::Checkbox("Cast Shadow##PointLight", &light->castShadow);
+                changed |= ImGui::ColorEdit3("Color##PointLight", &light->color.x);
+                changed |= DragFloatWithInput("Intensity##PointLight", &light->intensity, 0.0f, 50.0f);
+                changed |= DragFloatWithInput("Range##PointLight", &light->range, 0.1f, 200.0f);
 
 				if (ImGui::Button("Remove Point Light")) {
 					world.RemoveComponent<PointLightComponent>(_selectedEntity);
@@ -360,10 +361,11 @@ namespace Alice
 		if (auto* light = world.GetComponent<SpotLightComponent>(_selectedEntity)) {
 			if (ImGui::CollapsingHeader("Spot Light", ImGuiTreeNodeFlags_DefaultOpen)) {
 				bool changed = false;
-				changed |= ImGui::Checkbox("Enabled##SpotLight", &light->enabled);
-				changed |= ImGui::ColorEdit3("Color##SpotLight", &light->color.x);
-				changed |= DragFloatWithInput("Intensity##SpotLight", &light->intensity, 0.0f, 50.0f);
-				changed |= DragFloatWithInput("Range##SpotLight", &light->range, 0.1f, 200.0f);
+                changed |= ImGui::Checkbox("Enabled##SpotLight", &light->enabled);
+                changed |= ImGui::Checkbox("Cast Shadow##SpotLight", &light->castShadow);
+                changed |= ImGui::ColorEdit3("Color##SpotLight", &light->color.x);
+                changed |= DragFloatWithInput("Intensity##SpotLight", &light->intensity, 0.0f, 50.0f);
+                changed |= DragFloatWithInput("Range##SpotLight", &light->range, 0.1f, 200.0f);
 				changed |= ImGui::SliderFloat("Inner Angle (deg)##SpotLight", &light->innerAngleDeg, 0.0f, 89.0f);
 				changed |= ImGui::SliderFloat("Outer Angle (deg)##SpotLight", &light->outerAngleDeg, 0.0f, 89.0f);
 
@@ -387,10 +389,11 @@ namespace Alice
 		if (auto* light = world.GetComponent<RectLightComponent>(_selectedEntity)) {
 			if (ImGui::CollapsingHeader("Rect Light", ImGuiTreeNodeFlags_DefaultOpen)) {
 				bool changed = false;
-				changed |= ImGui::Checkbox("Enabled##RectLight", &light->enabled);
-				changed |= ImGui::ColorEdit3("Color##RectLight", &light->color.x);
-				changed |= DragFloatWithInput("Intensity##RectLight", &light->intensity, 0.0f, 50.0f);
-				changed |= ImGui::SliderFloat("Width##RectLight", &light->width, 0.1f, 50.0f);
+                changed |= ImGui::Checkbox("Enabled##RectLight", &light->enabled);
+                changed |= ImGui::Checkbox("Cast Shadow##RectLight", &light->castShadow);
+                changed |= ImGui::ColorEdit3("Color##RectLight", &light->color.x);
+                changed |= DragFloatWithInput("Intensity##RectLight", &light->intensity, 0.0f, 50.0f);
+                changed |= ImGui::SliderFloat("Width##RectLight", &light->width, 0.1f, 50.0f);
 				changed |= ImGui::SliderFloat("Height##RectLight", &light->height, 0.1f, 50.0f);
 				changed |= DragFloatWithInput("Range##RectLight", &light->range, 0.1f, 200.0f);
 

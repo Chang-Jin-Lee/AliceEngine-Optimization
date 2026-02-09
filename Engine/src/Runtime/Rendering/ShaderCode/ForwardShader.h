@@ -395,6 +395,9 @@ struct PointLight
     float  range;
     float3 color;
     float  intensity;
+    int    shadowIndex;
+    float  shadowStrength;
+    float2 pad;
 };
 
 struct SpotLight
@@ -406,6 +409,8 @@ struct SpotLight
     float3 color;
     float  outerCos;
     float  intensity;
+    int    shadowIndex;
+    float  shadowStrength;
     float  pad0;
 };
 
@@ -418,6 +423,8 @@ struct RectLight
     float3 color;
     float  height;
     float  intensity;
+    int    shadowIndex;
+    float  shadowStrength;
     float  pad0;
 };
 

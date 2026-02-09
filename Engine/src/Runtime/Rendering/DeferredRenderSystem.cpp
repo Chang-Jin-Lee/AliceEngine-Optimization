@@ -20,6 +20,7 @@
 #include "Runtime/ECS/World.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Importing/FbxImporter.h"
+#include "Runtime/Importing/FbxModel.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
 #include "Runtime/Rendering/Components/DecalComponent.h"
 #include "Runtime/Rendering/Components/CameraComponent.h"
@@ -29,6 +30,7 @@
 #include "Runtime/Rendering/Components/SpotLightComponent.h"
 #include "Runtime/Rendering/Components/RectLightComponent.h"
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
+#include "Runtime/Rendering/CullingTuning.h"
 #include "Runtime/Rendering/ShaderCode/CommonShaderCode.h"
 #include "Runtime/Rendering/ShaderCode/DeferredShader.h"
 #include "Runtime/Rendering/TrailEffectRenderSystem.h"
@@ -344,6 +346,70 @@ namespace Alice
                    (std::fabs(a.y - b.y) <= eps) &&
                    (std::fabs(a.z - b.z) <= eps);
         }
+
+        inline void ExtractWorldAxisScales(DirectX::CXMMATRIX worldM, float& outSx, float& outSy, float& outSz)
+        {
+            DirectX::XMFLOAT4X4 m{};
+            DirectX::XMStoreFloat4x4(&m, worldM);
+            outSx = DirectX::XMVectorGetX(DirectX::XMVector3Length(DirectX::XMVectorSet(m._11, m._12, m._13, 0.0f)));
+            outSy = DirectX::XMVectorGetX(DirectX::XMVector3Length(DirectX::XMVectorSet(m._21, m._22, m._23, 0.0f)));
+            outSz = DirectX::XMVectorGetX(DirectX::XMVector3Length(DirectX::XMVectorSet(m._31, m._32, m._33, 0.0f)));
+        }
+
+        inline DirectX::BoundingSphere BuildSphereFromLocalAabb(DirectX::CXMMATRIX worldM,
+                                                                 const DirectX::XMFLOAT3& localMin,
+                                                                 const DirectX::XMFLOAT3& localMax,
+                                                                 float minRadius = CullingTuning::MinCullingSphereRadius)
+        {
+            DirectX::XMFLOAT3 localCenter{
+                (localMin.x + localMax.x) * 0.5f,
+                (localMin.y + localMax.y) * 0.5f,
+                (localMin.z + localMax.z) * 0.5f
+            };
+            DirectX::XMFLOAT3 halfExtents{
+                std::fabs(localMax.x - localMin.x) * 0.5f,
+                std::fabs(localMax.y - localMin.y) * 0.5f,
+                std::fabs(localMax.z - localMin.z) * 0.5f
+            };
+
+            DirectX::XMVECTOR centerWv = DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&localCenter), worldM);
+            DirectX::XMFLOAT3 centerW{};
+            DirectX::XMStoreFloat3(&centerW, centerWv);
+
+            float sx = 1.0f, sy = 1.0f, sz = 1.0f;
+            ExtractWorldAxisScales(worldM, sx, sy, sz);
+
+            const float rx = halfExtents.x * sx;
+            const float ry = halfExtents.y * sy;
+            const float rz = halfExtents.z * sz;
+            float radius = std::sqrt(rx * rx + ry * ry + rz * rz);
+            radius = (std::max)(radius, minRadius);
+
+            return DirectX::BoundingSphere(centerW, radius);
+        }
+
+        inline DirectX::BoundingSphere BuildSkinnedCullingSphere(DirectX::CXMMATRIX worldM, const SkinnedMeshGPU* mesh)
+        {
+            if (mesh && mesh->sourceModel)
+            {
+                DirectX::XMFLOAT3 localMin{};
+                DirectX::XMFLOAT3 localMax{};
+                if (mesh->sourceModel->GetLocalBounds(localMin, localMax))
+                {
+                    return BuildSphereFromLocalAabb(worldM, localMin, localMax);
+                }
+            }
+
+            float sx = 1.0f, sy = 1.0f, sz = 1.0f;
+            ExtractWorldAxisScales(worldM, sx, sy, sz);
+            const float fallbackRadius = (std::max)((std::max)(sx, sy), sz) * CullingTuning::SkinnedFallbackRadiusScale;
+
+            DirectX::XMFLOAT4X4 world{};
+            DirectX::XMStoreFloat4x4(&world, worldM);
+            return DirectX::BoundingSphere(
+                DirectX::XMFLOAT3(world._41, world._42, world._43),
+                (std::max)(fallbackRadius, CullingTuning::MinCullingSphereRadius));
+        }
     }
 
 
@@ -443,6 +509,11 @@ namespace Alice
         if (!CreateShadowMapResources())
         {
             ALICE_LOG_ERRORF("DeferredRenderSystem::Initialize: CreateShadowMapResources failed.");
+            return false;
+        }
+        if (!CreateLocalShadowResources())
+        {
+            ALICE_LOG_ERRORF("DeferredRenderSystem::Initialize: CreateLocalShadowResources failed.");
             return false;
         }
 
@@ -1464,6 +1535,25 @@ namespace Alice
                 return false;
         }
 
+        // Local shadow CB (register b6)
+        {
+            struct LocalShadowCBData
+            {
+                DirectX::XMMATRIX spotRectViewProj[MaxShadowedSpotRectLights];
+                float spotShadowMapSize;
+                int pointShadowCount;
+                float pointShadowMapSize;
+                int spotRectShadowCount;
+                float pointShadowNearZ;
+                float pad[3];
+            };
+
+            cbDesc.ByteWidth = sizeof(LocalShadowCBData);
+            cbDesc.ByteWidth = (cbDesc.ByteWidth + 15u) & ~15u;
+            if (FAILED(m_device->CreateBuffer(&cbDesc, nullptr, m_cbLocalShadow.ReleaseAndGetAddressOf())))
+                return false;
+        }
+
 
         return true;
     }
@@ -1620,6 +1710,22 @@ namespace Alice
             s.FrontCounterClockwise = FALSE;
             if (FAILED(m_device->CreateRasterizerState(&s, m_shadowRasterizerStateReversed.ReleaseAndGetAddressOf())))
                 return false;
+
+            // Local light shadow pass RS
+            // Directional용 큰 DepthBias는 Point/Spot/Rect에 과해서 그림자가 사라질 수 있어
+            // 로컬 라이트는 저바이어스 상태를 별도로 사용합니다.
+            D3D11_RASTERIZER_DESC ls = rsDesc;
+            ls.CullMode = D3D11_CULL_BACK;
+            ls.DepthBias = 0;
+            ls.DepthBiasClamp = 0.0f;
+            ls.SlopeScaledDepthBias = 0.0f;
+            ls.FrontCounterClockwise = TRUE;
+            if (FAILED(m_device->CreateRasterizerState(&ls, m_localShadowRasterizerState.ReleaseAndGetAddressOf())))
+                return false;
+
+            ls.FrontCounterClockwise = FALSE;
+            if (FAILED(m_device->CreateRasterizerState(&ls, m_localShadowRasterizerStateReversed.ReleaseAndGetAddressOf())))
+                return false;
         }
 
         // 아웃라인용 Rasterizer State (Cull Front)
@@ -1751,6 +1857,105 @@ namespace Alice
         // 4) Viewport
         m_shadowViewport = { 0.0f, 0.0f, (float)size, (float)size, 0.0f, 1.0f };
         m_shadowMapSizePxEffective = size;
+
+        return true;
+    }
+
+    bool DeferredRenderSystem::CreateLocalShadowResources()
+    {
+        m_localShadow2DTex.Reset();
+        m_localShadow2DSRV.Reset();
+        for (auto& dsv : m_localShadow2DDSVs)
+            dsv.Reset();
+
+        m_localPointShadowTex.Reset();
+        m_localPointShadowSRV.Reset();
+        for (auto& dsv : m_localPointShadowDSVs)
+            dsv.Reset();
+
+        const UINT spotRectShadowSize = LocalSpotRectShadowMapSizePx;
+        const UINT pointShadowSize = LocalPointShadowMapSizePx;
+
+        if constexpr (MaxShadowedSpotRectLights > 0)
+        {
+            D3D11_TEXTURE2D_DESC tDesc{};
+            tDesc.Width = spotRectShadowSize;
+            tDesc.Height = spotRectShadowSize;
+            tDesc.MipLevels = 1;
+            tDesc.ArraySize = static_cast<UINT>(MaxShadowedSpotRectLights);
+            tDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+            tDesc.SampleDesc.Count = 1;
+            tDesc.Usage = D3D11_USAGE_DEFAULT;
+            tDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+
+            if (FAILED(m_device->CreateTexture2D(&tDesc, nullptr, m_localShadow2DTex.ReleaseAndGetAddressOf())))
+                return false;
+
+            D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+            srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+            srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+            srvDesc.Texture2DArray.MostDetailedMip = 0;
+            srvDesc.Texture2DArray.MipLevels = 1;
+            srvDesc.Texture2DArray.FirstArraySlice = 0;
+            srvDesc.Texture2DArray.ArraySize = static_cast<UINT>(MaxShadowedSpotRectLights);
+            if (FAILED(m_device->CreateShaderResourceView(m_localShadow2DTex.Get(), &srvDesc, m_localShadow2DSRV.ReleaseAndGetAddressOf())))
+                return false;
+
+            for (int i = 0; i < MaxShadowedSpotRectLights; ++i)
+            {
+                D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+                dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+                dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+                dsvDesc.Texture2DArray.MipSlice = 0;
+                dsvDesc.Texture2DArray.FirstArraySlice = static_cast<UINT>(i);
+                dsvDesc.Texture2DArray.ArraySize = 1;
+                if (FAILED(m_device->CreateDepthStencilView(m_localShadow2DTex.Get(), &dsvDesc, m_localShadow2DDSVs[i].ReleaseAndGetAddressOf())))
+                    return false;
+            }
+
+            m_localShadow2DViewport = { 0.0f, 0.0f, static_cast<float>(spotRectShadowSize), static_cast<float>(spotRectShadowSize), 0.0f, 1.0f };
+        }
+
+        if constexpr (MaxShadowedPointLights > 0)
+        {
+            D3D11_TEXTURE2D_DESC tDesc{};
+            tDesc.Width = pointShadowSize;
+            tDesc.Height = pointShadowSize;
+            tDesc.MipLevels = 1;
+            tDesc.ArraySize = static_cast<UINT>(MaxShadowedPointLights * 6);
+            tDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+            tDesc.SampleDesc.Count = 1;
+            tDesc.Usage = D3D11_USAGE_DEFAULT;
+            tDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+            tDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+
+            if (FAILED(m_device->CreateTexture2D(&tDesc, nullptr, m_localPointShadowTex.ReleaseAndGetAddressOf())))
+                return false;
+
+            D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+            srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+            srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBEARRAY;
+            srvDesc.TextureCubeArray.MostDetailedMip = 0;
+            srvDesc.TextureCubeArray.MipLevels = 1;
+            srvDesc.TextureCubeArray.First2DArrayFace = 0;
+            srvDesc.TextureCubeArray.NumCubes = static_cast<UINT>(MaxShadowedPointLights);
+            if (FAILED(m_device->CreateShaderResourceView(m_localPointShadowTex.Get(), &srvDesc, m_localPointShadowSRV.ReleaseAndGetAddressOf())))
+                return false;
+
+            for (int i = 0; i < MaxShadowedPointLights * 6; ++i)
+            {
+                D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+                dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+                dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+                dsvDesc.Texture2DArray.MipSlice = 0;
+                dsvDesc.Texture2DArray.FirstArraySlice = static_cast<UINT>(i);
+                dsvDesc.Texture2DArray.ArraySize = 1;
+                if (FAILED(m_device->CreateDepthStencilView(m_localPointShadowTex.Get(), &dsvDesc, m_localPointShadowDSVs[i].ReleaseAndGetAddressOf())))
+                    return false;
+            }
+
+            m_localPointShadowViewport = { 0.0f, 0.0f, static_cast<float>(pointShadowSize), static_cast<float>(pointShadowSize), 0.0f, 1.0f };
+        }
 
         return true;
     }
@@ -2102,7 +2307,7 @@ namespace Alice
         float sceneRadius = XMVectorGetX(diagonal) * 0.5f;
 
         float r = (std::max)(m_shadowSettings.orthoRadius, sceneRadius);
-        r *= 1.5f;
+        r *= CullingTuning::ShadowSceneRadiusScale;
 
         // 4) lightView/lightProj
         float distFromCenter = r * 3.0f;
@@ -2198,15 +2403,21 @@ namespace Alice
                 if (!world.GetComponent<MaterialComponent>(id)) continue;
                 if (!tr.enabled || !tr.visible) continue;
 
+                XMMATRIX worldM = BuildWorldMatrix(world, id, tr);
+
                 // [프러스텀 컬링] 카메라 시야 밖 오브젝트는 건너뛰기
-                float maxScale = std::max({ tr.scale.x, tr.scale.y, tr.scale.z });
-                BoundingSphere bounds(tr.position, maxScale * 1.5f);
+                const BoundingSphere bounds = BuildSphereFromLocalAabb(
+                    worldM,
+                    XMFLOAT3(-CullingTuning::StaticMeshLocalBoundsExtent,
+                             -CullingTuning::StaticMeshLocalBoundsExtent,
+                             -CullingTuning::StaticMeshLocalBoundsExtent),
+                    XMFLOAT3(CullingTuning::StaticMeshLocalBoundsExtent,
+                             CullingTuning::StaticMeshLocalBoundsExtent,
+                             CullingTuning::StaticMeshLocalBoundsExtent));
                 if (cameraFrustum.Contains(bounds) == DISJOINT)
                 {
-                    //continue; // 화면에 보이지 않으면 렌더링하지 않음
+                    continue; // 화면에 보이지 않으면 렌더링하지 않음
                 }
-
-                XMMATRIX worldM = BuildWorldMatrix(world, id, tr);
 
                 const bool flipped = XMVectorGetX(XMMatrixDeterminant(worldM)) < 0.0f;
                 const bool canStaticInstance = m_shadowInstancedVS &&
@@ -2374,23 +2585,13 @@ namespace Alice
                 if (cmd.transparent) continue;
                 if (cmd.transparent) continue;
 
-                // [프러스텀 컬링] 월드 행렬에서 위치 추출
-                XMFLOAT4X4 worldMatrix;
-                XMStoreFloat4x4(&worldMatrix, cmd.world);
-                XMFLOAT3 position(worldMatrix._41, worldMatrix._42, worldMatrix._43);
-                
-                // 스케일 추정: 월드 행렬의 스케일 성분 추출 (간단한 근사)
-                XMVECTOR scaleVec = XMVectorSet(
-                    XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._11, worldMatrix._12, worldMatrix._13, 0.0f))),
-                    XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._21, worldMatrix._22, worldMatrix._23, 0.0f))),
-                    XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._31, worldMatrix._32, worldMatrix._33, 0.0f))),
-                    0.0f
-                );
-                float maxScale = std::max({ XMVectorGetX(scaleVec), XMVectorGetY(scaleVec), XMVectorGetZ(scaleVec) });
-                BoundingSphere bounds(position, maxScale * 1.5f);
+                std::shared_ptr<SkinnedMeshGPU> mesh =
+                    (m_skinnedRegistry && !cmd.meshKey.empty()) ? m_skinnedRegistry->Find(cmd.meshKey) : nullptr;
+
+                const BoundingSphere bounds = BuildSkinnedCullingSphere(cmd.world, mesh.get());
                 if (cameraFrustum.Contains(bounds) == DISJOINT)
                 {
-                    //continue; // 화면에 보이지 않으면 렌더링하지 않음
+                    continue; // 화면에 보이지 않으면 렌더링하지 않음
                 }
 
                 // 본 1개 + Identity인 경우만 인스턴싱 대상으로 처리
@@ -2521,6 +2722,353 @@ namespace Alice
         return lightViewProj;
     }
 
+    void DeferredRenderSystem::RenderLocalLightShadowPasses(
+        const World& world,
+        const Camera& camera,
+        const std::vector<SkinnedDrawCommand>& skinnedCommands,
+        const std::unordered_set<EntityId>& cameraEntities)
+    {
+        m_pointShadowIndices.clear();
+        m_spotShadowIndices.clear();
+        m_rectShadowIndices.clear();
+        m_spotRectShadowCount = 0;
+        m_pointShadowCount = 0;
+
+        if (!m_context || !m_depthStencilState || !m_shadowVS || !m_shadowSkinnedVS)
+            return;
+
+        if (!m_localShadow2DSRV || !m_localPointShadowSRV)
+            return;
+
+        auto forwardFromEuler = [](const DirectX::XMFLOAT3& euler) -> DirectX::XMFLOAT3
+        {
+            using namespace DirectX;
+            const XMVECTOR forward = XMVectorSet(0, 0, 1, 0);
+            const XMMATRIX rot = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&euler));
+            XMFLOAT3 out{};
+            XMStoreFloat3(&out, XMVector3Normalize(XMVector3TransformNormal(forward, rot)));
+            return out;
+        };
+
+        struct PointShadowCandidate
+        {
+            EntityId id = InvalidEntityId;
+            DirectX::XMFLOAT3 pos{};
+            float range = 0.0f;
+            float distanceSq = 0.0f;
+        };
+        struct SpotShadowCandidate
+        {
+            EntityId id = InvalidEntityId;
+            DirectX::XMFLOAT3 pos{};
+            DirectX::XMFLOAT3 dir{};
+            float range = 0.0f;
+            float outerAngleDeg = 45.0f;
+            float distanceSq = 0.0f;
+        };
+        struct RectShadowCandidate
+        {
+            EntityId id = InvalidEntityId;
+            DirectX::XMFLOAT3 pos{};
+            DirectX::XMFLOAT3 dir{};
+            float width = 1.0f;
+            float height = 1.0f;
+            float range = 5.0f;
+            float distanceSq = 0.0f;
+        };
+
+        const auto cameraPos = camera.GetPosition();
+        auto distanceSqToCamera = [&](const DirectX::XMFLOAT3& p) -> float
+        {
+            const float dx = p.x - cameraPos.x;
+            const float dy = p.y - cameraPos.y;
+            const float dz = p.z - cameraPos.z;
+            return dx * dx + dy * dy + dz * dz;
+        };
+
+        std::vector<PointShadowCandidate> pointCandidates;
+        std::vector<SpotShadowCandidate> spotCandidates;
+        std::vector<RectShadowCandidate> rectCandidates;
+
+        pointCandidates.reserve(MaxShadowedPointLights * 2);
+        spotCandidates.reserve(MaxShadowedSpotLights * 2);
+        rectCandidates.reserve(MaxShadowedRectLights * 2);
+
+        for (const auto& [id, light] : world.GetComponents<PointLightComponent>())
+        {
+            if (!light.enabled || !light.castShadow) continue;
+            const auto* tr = world.GetComponent<TransformComponent>(id);
+            if (!tr || !tr->enabled || !tr->visible) continue;
+            PointShadowCandidate c{};
+            c.id = id;
+            c.pos = tr->position;
+            c.range = (std::max)(light.range, 0.1f);
+            c.distanceSq = distanceSqToCamera(c.pos);
+            pointCandidates.push_back(c);
+        }
+
+        for (const auto& [id, light] : world.GetComponents<SpotLightComponent>())
+        {
+            if (!light.enabled || !light.castShadow) continue;
+            const auto* tr = world.GetComponent<TransformComponent>(id);
+            if (!tr || !tr->enabled || !tr->visible) continue;
+            SpotShadowCandidate c{};
+            c.id = id;
+            c.pos = tr->position;
+            c.dir = forwardFromEuler(tr->rotation);
+            c.range = (std::max)(light.range, 0.1f);
+            c.outerAngleDeg = (std::max)(light.outerAngleDeg, 1.0f);
+            c.distanceSq = distanceSqToCamera(c.pos);
+            spotCandidates.push_back(c);
+        }
+
+        for (const auto& [id, light] : world.GetComponents<RectLightComponent>())
+        {
+            if (!light.enabled || !light.castShadow) continue;
+            const auto* tr = world.GetComponent<TransformComponent>(id);
+            if (!tr || !tr->enabled || !tr->visible) continue;
+            RectShadowCandidate c{};
+            c.id = id;
+            c.pos = tr->position;
+            c.dir = forwardFromEuler(tr->rotation);
+            c.width = (std::max)(light.width, 0.1f);
+            c.height = (std::max)(light.height, 0.1f);
+            c.range = (std::max)(light.range, 0.1f);
+            c.distanceSq = distanceSqToCamera(c.pos);
+            rectCandidates.push_back(c);
+        }
+
+        const auto byDistanceAsc = [](const auto& a, const auto& b) { return a.distanceSq < b.distanceSq; };
+        std::stable_sort(pointCandidates.begin(), pointCandidates.end(), byDistanceAsc);
+        std::stable_sort(spotCandidates.begin(), spotCandidates.end(), byDistanceAsc);
+        std::stable_sort(rectCandidates.begin(), rectCandidates.end(), byDistanceAsc);
+
+        ID3D11ShaderResourceView* nullSrvs[16] = {};
+        m_context->PSSetShaderResources(0, 16, nullSrvs);
+        m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
+        m_context->PSSetShader(nullptr, nullptr, 0);
+
+        auto renderShadowScene = [&](DirectX::CXMMATRIX lightView,
+                                     DirectX::CXMMATRIX lightProj,
+                                     const DirectX::BoundingSphere* lightSphere,
+                                     const DirectX::BoundingFrustum* lightFrustum)
+        {
+            auto isVisibleToLight = [&](const DirectX::BoundingSphere& bounds) -> bool
+            {
+                if (!CullingTuning::EnableLocalShadowCasterCulling)
+                    return true;
+
+                DirectX::BoundingSphere testBounds = bounds;
+                testBounds.Radius = (std::max)(
+                    testBounds.Radius * CullingTuning::LocalShadowCasterBoundsInflation,
+                    CullingTuning::MinCullingSphereRadius);
+
+                if (lightSphere && !lightSphere->Intersects(testBounds))
+                    return false;
+                if (lightFrustum && lightFrustum->Contains(testBounds) == DirectX::DISJOINT)
+                    return false;
+                return true;
+            };
+
+            const auto& transforms = world.GetComponents<TransformComponent>();
+
+            if (m_cubeVB && m_cubeIB && m_shadowInputLayout && m_shadowVS && m_cubeIndexCount > 0)
+            {
+                UINT stride = sizeof(DirectX::XMFLOAT3) * 2 + sizeof(DirectX::XMFLOAT2);
+                UINT offset = 0;
+                ID3D11Buffer* vb = m_cubeVB.Get();
+                m_context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+                m_context->IASetIndexBuffer(m_cubeIB.Get(), DXGI_FORMAT_R16_UINT, 0);
+                m_context->IASetInputLayout(m_shadowInputLayout.Get());
+                m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                m_context->VSSetShader(m_shadowVS.Get(), nullptr, 0);
+
+                for (const auto& [id, tr] : transforms)
+                {
+                    if (cameraEntities.contains(id)) continue;
+                    if (world.GetComponent<SkinnedMeshComponent>(id)) continue;
+                    if (!world.GetComponent<MaterialComponent>(id)) continue;
+                    if (!tr.enabled || !tr.visible) continue;
+
+                    const DirectX::XMMATRIX worldM = BuildWorldMatrix(world, id, tr);
+                    const DirectX::BoundingSphere bounds = BuildSphereFromLocalAabb(
+                        worldM,
+                        XMFLOAT3(-CullingTuning::StaticMeshLocalBoundsExtent,
+                                 -CullingTuning::StaticMeshLocalBoundsExtent,
+                                 -CullingTuning::StaticMeshLocalBoundsExtent),
+                        XMFLOAT3(CullingTuning::StaticMeshLocalBoundsExtent,
+                                 CullingTuning::StaticMeshLocalBoundsExtent,
+                                 CullingTuning::StaticMeshLocalBoundsExtent));
+                    if (!isVisibleToLight(bounds))
+                        continue;
+
+                    const bool flipped = DirectX::XMVectorGetX(DirectX::XMMatrixDeterminant(worldM)) < 0.0f;
+                    if (flipped && m_localShadowRasterizerStateReversed) m_context->RSSetState(m_localShadowRasterizerStateReversed.Get());
+                    else if (m_localShadowRasterizerState) m_context->RSSetState(m_localShadowRasterizerState.Get());
+                    else if (flipped && m_shadowRasterizerStateReversed) m_context->RSSetState(m_shadowRasterizerStateReversed.Get());
+                    else if (m_shadowRasterizerState) m_context->RSSetState(m_shadowRasterizerState.Get());
+
+                    UpdatePerObjectCB(worldM, lightView, lightProj, XMFLOAT4(1, 1, 1, 1), 1.0f, 0.0f, 1.0f, false, false, 0,
+                                      1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(),
+                                      0.0f, 1.0f, 1.0f, 1.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
+                    m_context->DrawIndexed(m_cubeIndexCount, 0, 0);
+                }
+            }
+
+            if (!skinnedCommands.empty() && m_gBufferSkinnedInputLayout && m_shadowSkinnedVS)
+            {
+                UINT offset = 0;
+                m_context->IASetInputLayout(m_gBufferSkinnedInputLayout.Get());
+                m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                m_context->VSSetShader(m_shadowSkinnedVS.Get(), nullptr, 0);
+
+                for (const auto& cmd : skinnedCommands)
+                {
+                    if (!cmd.vertexBuffer || !cmd.indexBuffer || cmd.indexCount == 0) continue;
+                    if (cmd.transparent) continue;
+
+                    std::shared_ptr<SkinnedMeshGPU> mesh =
+                        (m_skinnedRegistry && !cmd.meshKey.empty()) ? m_skinnedRegistry->Find(cmd.meshKey) : nullptr;
+                    const DirectX::BoundingSphere bounds = BuildSkinnedCullingSphere(cmd.world, mesh.get());
+                    if (!isVisibleToLight(bounds))
+                        continue;
+
+                    UINT sStride = cmd.stride;
+                    m_context->IASetVertexBuffers(0, 1, &cmd.vertexBuffer, &sStride, &offset);
+                    m_context->IASetIndexBuffer(cmd.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+                    const bool flipped = DirectX::XMVectorGetX(DirectX::XMMatrixDeterminant(cmd.world)) < 0.0f;
+                    if (flipped && m_localShadowRasterizerStateReversed) m_context->RSSetState(m_localShadowRasterizerStateReversed.Get());
+                    else if (m_localShadowRasterizerState) m_context->RSSetState(m_localShadowRasterizerState.Get());
+                    else if (flipped && m_shadowRasterizerStateReversed) m_context->RSSetState(m_shadowRasterizerStateReversed.Get());
+                    else if (m_shadowRasterizerState) m_context->RSSetState(m_shadowRasterizerState.Get());
+
+                    UpdateBonesCB(cmd.bones, cmd.boneCount);
+                    UpdatePerObjectCB(cmd.world, lightView, lightProj, XMFLOAT4(1, 1, 1, 1), 1.0f, 0.0f, 1.0f, false, false, 0,
+                                      1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(),
+                                      0.0f, 1.0f, 1.0f, 1.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
+                    m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
+                }
+            }
+        };
+
+        // Spot + Rect: Texture2DArray 슬라이스 공유
+        int spotRectIndex = 0;
+        const int spotLimit = (std::min)(MaxShadowedSpotLights, static_cast<int>(spotCandidates.size()));
+        for (int i = 0; i < spotLimit && spotRectIndex < MaxShadowedSpotRectLights; ++i)
+        {
+            const auto& c = spotCandidates[i];
+            const DirectX::XMVECTOR posV = DirectX::XMLoadFloat3(&c.pos);
+            const DirectX::XMVECTOR dirV = DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&c.dir));
+
+            DirectX::XMVECTOR up = DirectX::XMVectorSet(0, 1, 0, 0);
+            if (std::fabs(DirectX::XMVectorGetX(DirectX::XMVector3Dot(up, dirV))) > 0.99f)
+                up = DirectX::XMVectorSet(1, 0, 0, 0);
+
+            const DirectX::XMMATRIX lightView = DirectX::XMMatrixLookToLH(posV, dirV, up);
+            const float fovY = DirectX::XMConvertToRadians((std::clamp)(c.outerAngleDeg * 2.0f, 2.0f, 170.0f));
+            const DirectX::XMMATRIX lightProj = DirectX::XMMatrixPerspectiveFovLH(fovY, 1.0f, LocalPointShadowNearZ, c.range);
+
+            DirectX::BoundingFrustum frustumVS;
+            DirectX::BoundingFrustum::CreateFromMatrix(frustumVS, lightProj);
+            DirectX::BoundingFrustum frustumWS;
+            frustumVS.Transform(frustumWS, DirectX::XMMatrixInverse(nullptr, lightView));
+            const DirectX::BoundingSphere sphere(c.pos, c.range);
+
+            m_context->RSSetViewports(1, &m_localShadow2DViewport);
+            m_context->OMSetRenderTargets(0, nullptr, m_localShadow2DDSVs[spotRectIndex].Get());
+            m_context->ClearDepthStencilView(m_localShadow2DDSVs[spotRectIndex].Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+            renderShadowScene(lightView, lightProj, &sphere, &frustumWS);
+
+            m_spotShadowIndices[c.id] = spotRectIndex;
+            m_spotRectShadowViewProj[spotRectIndex] = lightView * lightProj;
+            ++spotRectIndex;
+        }
+
+        const int rectLimit = (std::min)(MaxShadowedRectLights, static_cast<int>(rectCandidates.size()));
+        for (int i = 0; i < rectLimit && spotRectIndex < MaxShadowedSpotRectLights; ++i)
+        {
+            const auto& c = rectCandidates[i];
+            const DirectX::XMVECTOR posV = DirectX::XMLoadFloat3(&c.pos);
+            const DirectX::XMVECTOR dirV = DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&c.dir));
+
+            DirectX::XMVECTOR up = DirectX::XMVectorSet(0, 1, 0, 0);
+            if (std::fabs(DirectX::XMVectorGetX(DirectX::XMVector3Dot(up, dirV))) > 0.99f)
+                up = DirectX::XMVectorSet(1, 0, 0, 0);
+
+            const DirectX::XMMATRIX lightView = DirectX::XMMatrixLookToLH(posV, dirV, up);
+            const DirectX::XMMATRIX lightProj = DirectX::XMMatrixOrthographicLH(c.width, c.height, LocalPointShadowNearZ, c.range);
+
+            DirectX::BoundingFrustum frustumVS;
+            DirectX::BoundingFrustum::CreateFromMatrix(frustumVS, lightProj);
+            DirectX::BoundingFrustum frustumWS;
+            frustumVS.Transform(frustumWS, DirectX::XMMatrixInverse(nullptr, lightView));
+
+            const float halfW = c.width * 0.5f;
+            const float halfH = c.height * 0.5f;
+            const float halfR = c.range * 0.5f;
+            DirectX::XMFLOAT3 center = c.pos;
+            center.x += c.dir.x * halfR;
+            center.y += c.dir.y * halfR;
+            center.z += c.dir.z * halfR;
+            const float radius = std::sqrt(halfW * halfW + halfH * halfH + halfR * halfR);
+            const DirectX::BoundingSphere sphere(center, radius);
+
+            m_context->RSSetViewports(1, &m_localShadow2DViewport);
+            m_context->OMSetRenderTargets(0, nullptr, m_localShadow2DDSVs[spotRectIndex].Get());
+            m_context->ClearDepthStencilView(m_localShadow2DDSVs[spotRectIndex].Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+            renderShadowScene(lightView, lightProj, &sphere, &frustumWS);
+
+            m_rectShadowIndices[c.id] = spotRectIndex;
+            m_spotRectShadowViewProj[spotRectIndex] = lightView * lightProj;
+            ++spotRectIndex;
+        }
+
+        m_spotRectShadowCount = spotRectIndex;
+
+        // Point: CubeArray (1 light = 6 faces)
+        const int pointLimit = (std::min)(MaxShadowedPointLights, static_cast<int>(pointCandidates.size()));
+        static const DirectX::XMFLOAT3 kFaceDirs[6] = {
+            { 1, 0, 0 }, { -1, 0, 0 }, { 0, 1, 0 }, { 0, -1, 0 }, { 0, 0, 1 }, { 0, 0, -1 }
+        };
+        static const DirectX::XMFLOAT3 kFaceUps[6] = {
+            { 0, 1, 0 }, { 0, 1, 0 }, { 0, 0, -1 }, { 0, 0, 1 }, { 0, 1, 0 }, { 0, 1, 0 }
+        };
+
+        for (int i = 0; i < pointLimit; ++i)
+        {
+            const auto& c = pointCandidates[i];
+            const DirectX::BoundingSphere sphere(c.pos, c.range);
+            m_pointShadowIndices[c.id] = i;
+
+            for (int face = 0; face < 6; ++face)
+            {
+                const int dsvIndex = i * 6 + face;
+                const DirectX::XMMATRIX lightView = DirectX::XMMatrixLookToLH(
+                    DirectX::XMLoadFloat3(&c.pos),
+                    DirectX::XMLoadFloat3(&kFaceDirs[face]),
+                    DirectX::XMLoadFloat3(&kFaceUps[face]));
+                const DirectX::XMMATRIX lightProj = DirectX::XMMatrixPerspectiveFovLH(
+                    DirectX::XM_PIDIV2,
+                    1.0f,
+                    LocalPointShadowNearZ,
+                    c.range);
+
+                m_context->RSSetViewports(1, &m_localPointShadowViewport);
+                m_context->OMSetRenderTargets(0, nullptr, m_localPointShadowDSVs[dsvIndex].Get());
+                m_context->ClearDepthStencilView(m_localPointShadowDSVs[dsvIndex].Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+                renderShadowScene(lightView, lightProj, &sphere, nullptr);
+            }
+        }
+
+        m_pointShadowCount = pointLimit;
+        if (m_rasterizerState)
+            m_context->RSSetState(m_rasterizerState.Get());
+    }
+
     void DeferredRenderSystem::Render(const World& world,
                                       const Camera& camera,
                                       EntityId entity,
@@ -2565,6 +3113,9 @@ namespace Alice
             m_lastShadowLightDir = m_lightingParameters.keyDirection;
         }
         m_shadowEnabledLast = m_shadowSettings.enabled;
+
+        // Local light shadow pass (Point/Spot/Rect) - 성능을 위해 상위 N개만 갱신
+        RenderLocalLightShadowPasses(world, camera, skinnedCommands, cameraEntities);
 
         // ShadowPass에서 viewport가 섀도우맵 해상도로 바뀌므로, 씬 뷰포트를 다시 설정
         m_context->RSSetViewports(1, &vp);
@@ -2828,6 +3379,10 @@ namespace Alice
 
         // Use cached shadow map from the main render
         DirectX::XMMATRIX lightViewProj = m_lastShadowViewProj;
+        if (m_spotRectShadowCount == 0 && m_pointShadowCount == 0)
+        {
+            RenderLocalLightShadowPasses(world, camera, skinnedCommands, cameraEntities);
+        }
 
         // G-Buffer + Deferred light
         PassGBuffer(world, camera, skinnedCommands, cameraEntities, shadingMode, editorMode, isPlaying, hiddenCameraEntity);
@@ -3061,15 +3616,21 @@ namespace Alice
             const MaterialComponent* mat = world.GetComponent<MaterialComponent>(id);
             if (!mat) continue;
 
+            XMMATRIX worldM = BuildWorldMatrix(world, id, transform);
+
             // [프러스텀 컬링] 카메라 시야 밖 오브젝트는 건너뛰기
-            float maxScale = std::max({ transform.scale.x, transform.scale.y, transform.scale.z });
-            BoundingSphere bounds(transform.position, maxScale * 1.5f); // 1.5f는 안전 계수
+            const BoundingSphere bounds = BuildSphereFromLocalAabb(
+                worldM,
+                XMFLOAT3(-CullingTuning::StaticMeshLocalBoundsExtent,
+                         -CullingTuning::StaticMeshLocalBoundsExtent,
+                         -CullingTuning::StaticMeshLocalBoundsExtent),
+                XMFLOAT3(CullingTuning::StaticMeshLocalBoundsExtent,
+                         CullingTuning::StaticMeshLocalBoundsExtent,
+                         CullingTuning::StaticMeshLocalBoundsExtent));
             if (cameraFrustum.Contains(bounds) == DISJOINT)
             {
-                //continue; // 화면에 보이지 않으면 렌더링하지 않음
+                continue; // 화면에 보이지 않으면 렌더링하지 않음
             }
-
-            XMMATRIX worldM = BuildWorldMatrix(world, id, transform);
             
             // 재질 정보 가져오기
             XMFLOAT4 color = { 1, 1, 1, 1 };
@@ -3280,31 +3841,18 @@ namespace Alice
             {
                 if (!cmd.vertexBuffer || !cmd.indexBuffer || cmd.indexCount == 0) continue;
 
-                // [프러스텀 컬링] 월드 행렬에서 위치 추출
-                XMFLOAT4X4 worldMatrix;
-                XMStoreFloat4x4(&worldMatrix, cmd.world);
-                XMFLOAT3 position(worldMatrix._41, worldMatrix._42, worldMatrix._43);
-                
-                // 스케일 추정: 월드 행렬의 스케일 성분 추출 (간단한 근사)
-                XMVECTOR scaleVec = XMVectorSet(
-                    XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._11, worldMatrix._12, worldMatrix._13, 0.0f))),
-                    XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._21, worldMatrix._22, worldMatrix._23, 0.0f))),
-                    XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._31, worldMatrix._32, worldMatrix._33, 0.0f))),
-                    0.0f
-                );
-                float maxScale = std::max({ XMVectorGetX(scaleVec), XMVectorGetY(scaleVec), XMVectorGetZ(scaleVec) });
-                BoundingSphere bounds(position, maxScale * 1.5f);
+                std::shared_ptr<SkinnedMeshGPU> mesh =
+                    (m_skinnedRegistry && !cmd.meshKey.empty()) ? m_skinnedRegistry->Find(cmd.meshKey) : nullptr;
+
+                const BoundingSphere bounds = BuildSkinnedCullingSphere(cmd.world, mesh.get());
                 if (cameraFrustum.Contains(bounds) == DISJOINT)
                 {
-                    //continue; // 화면에 보이지 않으면 렌더링하지 않음
+                    continue; // 화면에 보이지 않으면 렌더링하지 않음
                 }
 
                 const XMFLOAT4 color(cmd.color.x, cmd.color.y, cmd.color.z, cmd.alpha);
                 const int objectShadingMode = (cmd.shadingMode >= 0) ? cmd.shadingMode : shadingMode;
                 const float ao = (cmd.shadingMode >= 0) ? cmd.ambientOcclusion : m_lightingParameters.ambientOcclusion;
-
-                std::shared_ptr<SkinnedMeshGPU> mesh =
-                    (m_skinnedRegistry && !cmd.meshKey.empty()) ? m_skinnedRegistry->Find(cmd.meshKey) : nullptr;
 
                 const bool canInstance = IsRigidSkinnedCommand(cmd) &&
                                          (cmd.outlineWidth <= 0.0f) &&
@@ -3724,7 +4272,7 @@ namespace Alice
             if (!tr || !tr->enabled || !tr->visible) continue;
 
             float maxScale = std::max({ std::fabs(tr->scale.x), std::fabs(tr->scale.y), std::fabs(tr->scale.z) });
-            BoundingSphere bounds(tr->position, maxScale * 1.8f);
+            BoundingSphere bounds(tr->position, maxScale * CullingTuning::DecalCullingRadiusScale);
             if (cameraFrustum.Contains(bounds) == DISJOINT)
                 continue;
 
@@ -3830,7 +4378,9 @@ namespace Alice
             m_iblSpecularSRV.Get(),  // IBL Specular
             m_iblBrdfLutSRV.Get(),   // IBL BRDF LUT
             m_shadowSRV.Get(),       // Shadow Map
-            m_dBufferSRVs[0].Get()   // Decal D-Buffer
+            m_dBufferSRVs[0].Get(),  // Decal D-Buffer
+            m_localShadow2DSRV.Get(), // Local Spot/Rect Shadow Array
+            m_localPointShadowSRV.Get() // Local Point Shadow CubeArray
         };
         m_context->PSSetShaderResources(0, static_cast<UINT>(srvs.size()), srvs.data());
 
@@ -3878,6 +4428,42 @@ namespace Alice
             m_context->PSSetConstantBuffers(4, 1, &cb); // b4
         }
 
+        if (m_cbLocalShadow)
+        {
+            struct LocalShadowCBData
+            {
+                DirectX::XMMATRIX spotRectViewProj[MaxShadowedSpotRectLights];
+                float spotShadowMapSize;
+                int pointShadowCount;
+                float pointShadowMapSize;
+                int spotRectShadowCount;
+                float pointShadowNearZ;
+                float pad[3];
+            };
+
+            LocalShadowCBData lcb{};
+            for (int i = 0; i < MaxShadowedSpotRectLights; ++i)
+            {
+                const DirectX::XMMATRIX viewProj = (i < m_spotRectShadowCount) ? m_spotRectShadowViewProj[i] : DirectX::XMMatrixIdentity();
+                lcb.spotRectViewProj[i] = DirectX::XMMatrixTranspose(viewProj);
+            }
+            lcb.spotShadowMapSize = static_cast<float>(LocalSpotRectShadowMapSizePx);
+            lcb.pointShadowCount = m_pointShadowCount;
+            lcb.pointShadowMapSize = static_cast<float>(LocalPointShadowMapSizePx);
+            lcb.spotRectShadowCount = m_spotRectShadowCount;
+            lcb.pointShadowNearZ = LocalPointShadowNearZ;
+
+            D3D11_MAPPED_SUBRESOURCE mapped{};
+            if (SUCCEEDED(m_context->Map(m_cbLocalShadow.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+            {
+                std::memcpy(mapped.pData, &lcb, sizeof(lcb));
+                m_context->Unmap(m_cbLocalShadow.Get(), 0);
+            }
+
+            ID3D11Buffer* cb = m_cbLocalShadow.Get();
+            m_context->PSSetConstantBuffers(6, 1, &cb); // b6
+        }
+
 
         // FullScreen Quad 그리기
         m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -3890,8 +4476,8 @@ namespace Alice
         m_context->DrawIndexed(m_quadIndexCount, 0, 0);
 
         // 리소스 해제
-        ID3D11ShaderResourceView* nullSRVs[12] = { nullptr };
-        m_context->PSSetShaderResources(0, 12, nullSRVs);
+        ID3D11ShaderResourceView* nullSRVs[14] = { nullptr };
+        m_context->PSSetShaderResources(0, 14, nullSRVs);
     }
 
     void DeferredRenderSystem::PassTransparentForward(
@@ -3987,33 +4573,19 @@ namespace Alice
             if (!cmd.vertexBuffer || !cmd.indexBuffer || cmd.indexCount == 0) continue;
             if (!cmd.transparent) continue;
 
-            // [프러스텀 컬링] 월드 행렬에서 위치 추출
-            XMFLOAT4X4 worldMatrix;
-            XMStoreFloat4x4(&worldMatrix, cmd.world);
-            XMFLOAT3 position(worldMatrix._41, worldMatrix._42, worldMatrix._43);
-            
-            // 스케일 추정: 월드 행렬의 스케일 성분 추출 (간단한 근사)
-            XMVECTOR scaleVec = XMVectorSet(
-                XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._11, worldMatrix._12, worldMatrix._13, 0.0f))),
-                XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._21, worldMatrix._22, worldMatrix._23, 0.0f))),
-                XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._31, worldMatrix._32, worldMatrix._33, 0.0f))),
-                0.0f
-            );
-            float maxScale = std::max({ XMVectorGetX(scaleVec), XMVectorGetY(scaleVec), XMVectorGetZ(scaleVec) });
-            BoundingSphere bounds(position, maxScale * 1.5f);
+            std::shared_ptr<SkinnedMeshGPU> mesh =
+                (m_skinnedRegistry && !cmd.meshKey.empty()) ? m_skinnedRegistry->Find(cmd.meshKey) : nullptr;
+
+            const BoundingSphere bounds = BuildSkinnedCullingSphere(cmd.world, mesh.get());
             if (cameraFrustum.Contains(bounds) == DISJOINT)
             {
-                //continue; // 화면에 보이지 않으면 렌더링하지 않음
+                continue; // 화면에 보이지 않으면 렌더링하지 않음
             }
 
             const DirectX::XMFLOAT4 color(cmd.color.x, cmd.color.y, cmd.color.z, cmd.alpha);
             const int objectShadingMode = (cmd.shadingMode >= 0) ? cmd.shadingMode : shadingMode;
             const float ao = (cmd.shadingMode >= 0) ? cmd.ambientOcclusion : m_lightingParameters.ambientOcclusion;
             const float outlineWidth = cmd.outlineWidth;
-
-            // FBX 서브셋 머티리얼이 있으면 그걸 우선 사용 (Forward와 동일)
-            std::shared_ptr<SkinnedMeshGPU> mesh =
-                (m_skinnedRegistry && !cmd.meshKey.empty()) ? m_skinnedRegistry->Find(cmd.meshKey) : nullptr;
 
             // 인스턴싱 조건: 본 1개(Identity) + 아웃라인 없음 + 단일 서브셋
             const bool canInstance = IsRigidSkinnedCommand(cmd) &&
@@ -4575,6 +5147,11 @@ namespace Alice
             dst.range = (std::max)(light.range, 0.01f);
             dst.color = light.color;
             dst.intensity = light.intensity;
+            const auto itShadow = m_pointShadowIndices.find(id);
+            dst.shadowIndex = (itShadow != m_pointShadowIndices.end()) ? itShadow->second : -1;
+            dst.shadowStrength = light.castShadow ? 1.0f : 0.0f;
+            dst.pad[0] = 0.0f;
+            dst.pad[1] = 0.0f;
         }
 
         // Spot lights
@@ -4602,6 +5179,10 @@ namespace Alice
             dst.outerCos = std::cosf(outerRad);
             dst.color = light.color;
             dst.intensity = light.intensity;
+            const auto itShadow = m_spotShadowIndices.find(id);
+            dst.shadowIndex = (itShadow != m_spotShadowIndices.end()) ? itShadow->second : -1;
+            dst.shadowStrength = light.castShadow ? 1.0f : 0.0f;
+            dst.pad0 = 0.0f;
         }
 
         // Rect lights
@@ -4626,6 +5207,10 @@ namespace Alice
             dst.height = (std::max)(light.height, 0.01f);
             dst.color = light.color;
             dst.intensity = light.intensity;
+            const auto itShadow = m_rectShadowIndices.find(id);
+            dst.shadowIndex = (itShadow != m_rectShadowIndices.end()) ? itShadow->second : -1;
+            dst.shadowStrength = light.castShadow ? 1.0f : 0.0f;
+            dst.pad0 = 0.0f;
         }
 
         D3D11_MAPPED_SUBRESOURCE mapped{};
