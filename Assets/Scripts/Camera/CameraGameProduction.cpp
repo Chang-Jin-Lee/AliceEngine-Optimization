@@ -79,7 +79,11 @@ namespace Alice
         const CameraPose cam2 = GetCameraPose(2);
 
         ApplyPose(cam1);
-        BeginBlend(cam1, cam2, std::max(0.0f, Get_m_blendDuration12()), Get_m_useSmoothStep12());
+        BeginBlend(
+            cam1,
+            cam2,
+            ResolveBlendDuration(Get_m_blendDuration12(), Get_m_blendSpeed12()),
+            Get_m_useSmoothStep12());
     }
 
     void CameraGameProduction::AdvanceAfterBlend()
@@ -92,25 +96,41 @@ namespace Alice
         case Phase::Blend12:
             m_phase = Phase::Blend34;
             ApplyPose(GetCameraPose(3));
-            BeginBlend(GetCameraPose(3), GetCameraPose(4), std::max(0.0f, Get_m_blendDuration34()), Get_m_useSmoothStep34());
+            BeginBlend(
+                GetCameraPose(3),
+                GetCameraPose(4),
+                ResolveBlendDuration(Get_m_blendDuration34(), Get_m_blendSpeed34()),
+                Get_m_useSmoothStep34());
             break;
 
         case Phase::Blend34:
             m_phase = Phase::Blend56;
             ApplyPose(GetCameraPose(5));
-            BeginBlend(GetCameraPose(5), GetCameraPose(6), std::max(0.0f, Get_m_blendDuration56()), Get_m_useSmoothStep56());
+            BeginBlend(
+                GetCameraPose(5),
+                GetCameraPose(6),
+                ResolveBlendDuration(Get_m_blendDuration56(), Get_m_blendSpeed56()),
+                Get_m_useSmoothStep56());
             break;
 
         case Phase::Blend56:
             m_phase = Phase::Blend78;
             ApplyPose(GetCameraPose(7));
-            BeginBlend(GetCameraPose(7), GetCameraPose(8), std::max(0.0f, Get_m_blendDuration78()), Get_m_useSmoothStep78());
+            BeginBlend(
+                GetCameraPose(7),
+                GetCameraPose(8),
+                ResolveBlendDuration(Get_m_blendDuration78(), Get_m_blendSpeed78()),
+                Get_m_useSmoothStep78());
             break;
 
         case Phase::Blend78:
             m_phase = Phase::Blend910;
             ApplyPose(GetCameraPose(9));
-            BeginBlend(GetCameraPose(9), GetCameraPose(10), std::max(0.0f, Get_m_blendDuration910()), Get_m_useSmoothStep910());
+            BeginBlend(
+                GetCameraPose(9),
+                GetCameraPose(10),
+                ResolveBlendDuration(Get_m_blendDuration910(), Get_m_blendSpeed910()),
+                Get_m_useSmoothStep910());
             break;
 
         case Phase::Blend910:
@@ -500,5 +520,12 @@ namespace Alice
     {
         t = std::clamp(t, 0.0f, 1.0f);
         return t * t * (3.0f - 2.0f * t);
+    }
+
+    float CameraGameProduction::ResolveBlendDuration(float baseDuration, float speedMultiplier)
+    {
+        const float safeDuration = std::max(0.0f, baseDuration);
+        const float safeSpeed = std::max(0.001f, speedMultiplier);
+        return safeDuration / safeSpeed;
     }
 }
