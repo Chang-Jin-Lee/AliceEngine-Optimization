@@ -218,6 +218,22 @@ namespace Alice
 				}
 			}
 
+			if (!mat->assetPath.empty())
+			{
+				ImGui::SameLine();
+				if (ImGui::Button("Save .mat"))
+				{
+					if (MaterialFile::Save(mat->assetPath, *mat))
+					{
+						ALICE_LOG_INFO("[Inspector] Material saved: %s", mat->assetPath.c_str());
+					}
+					else
+					{
+						ALICE_LOG_WARN("[Inspector] Material save failed: %s", mat->assetPath.c_str());
+					}
+				}
+			}
+
 
 			if (changed) {
 				g_SceneDirty = true;
