@@ -982,10 +982,38 @@ float CalcLocalPointShadowFactor(float3 posW, float3 lightPos, float lightRange,
         return 1.0f;
 
     float3 dir = toPixel / dist;
-    float sampleDepth = g_LocalShadowCubeArray.SampleLevel(g_SamplerLinear, float4(dir, shadowIndex), 0.0f).r;
-    float currentDepth = ComputePointShadowDepth(dist, g_PointShadowNearZ, lightRange);
-    const float bias = 0.0025f;
-    return (currentDepth - bias <= sampleDepth) ? 1.0f : 0.0f;
+    // Point shadow is rendered as six 90-degree perspective faces.
+    // The stored depth corresponds to face-space Z (dominant axis), not radial length.
+    float faceDepth = max(max(abs(toPixel.x), abs(toPixel.y)), abs(toPixel.z));
+    float currentDepth = ComputePointShadowDepth(faceDepth, g_PointShadowNearZ, lightRange);
+
+    float invMapSize = 1.0f / max(g_PointShadowMapSize, 1.0f);
+    float normalizedDist = saturate(dist / max(lightRange, 1e-4f));
+    float bias = 0.0015f + invMapSize * 1.5f + normalizedDist * 0.0015f;
+
+    float3 up = (abs(dir.y) < 0.99f) ? float3(0.0f, 1.0f, 0.0f) : float3(1.0f, 0.0f, 0.0f);
+    float3 tangent = normalize(cross(up, dir));
+    float3 bitangent = normalize(cross(dir, tangent));
+    float kernelRadius = invMapSize * (2.0f + 2.0f * normalizedDist);
+
+    const float2 kernel[9] =
+    {
+        float2(0.0f, 0.0f),
+        float2(1.0f, 0.0f), float2(-1.0f, 0.0f),
+        float2(0.0f, 1.0f), float2(0.0f, -1.0f),
+        float2(1.0f, 1.0f), float2(-1.0f, 1.0f),
+        float2(1.0f, -1.0f), float2(-1.0f, -1.0f)
+    };
+
+    float visible = 0.0f;
+    [unroll] for (int i = 0; i < 9; ++i)
+    {
+        float3 offset = (kernel[i].x * tangent + kernel[i].y * bitangent) * kernelRadius;
+        float3 sampleDir = normalize(dir + offset);
+        float sampleDepth = g_LocalShadowCubeArray.SampleLevel(g_SamplerLinear, float4(sampleDir, shadowIndex), 0.0f).r;
+        visible += (currentDepth - bias <= sampleDepth) ? 1.0f : 0.0f;
+    }
+    return visible / 9.0f;
 }
 
 float3 EvaluatePBRLight(float3 N, float3 V, float3 L, float3 albedoPBR, float metalness, float roughness, float3 lightColor, float ndotlOverride)
