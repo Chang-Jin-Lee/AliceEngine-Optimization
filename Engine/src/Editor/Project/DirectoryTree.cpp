@@ -27,7 +27,7 @@ namespace Alice
 
 			nlohmann::json j;
 			j["preload"] = nlohmann::json::array({
-				"Resource/Icon/AliceBanner.png",
+				"Resource/Icon/GameBanner.png",
 				"Resource/Fonts/NotoSansKR-Regular.ttf",
 				"Resource/Fonts/meiryo.ttc"
 				});

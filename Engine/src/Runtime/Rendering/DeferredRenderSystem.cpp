@@ -2203,7 +2203,7 @@ namespace Alice
                 BoundingSphere bounds(tr.position, maxScale * 1.5f);
                 if (cameraFrustum.Contains(bounds) == DISJOINT)
                 {
-                    continue; // 화면에 보이지 않으면 렌더링하지 않음
+                    //continue; // 화면에 보이지 않으면 렌더링하지 않음
                 }
 
                 XMMATRIX worldM = BuildWorldMatrix(world, id, tr);
@@ -2390,7 +2390,7 @@ namespace Alice
                 BoundingSphere bounds(position, maxScale * 1.5f);
                 if (cameraFrustum.Contains(bounds) == DISJOINT)
                 {
-                    continue; // 화면에 보이지 않으면 렌더링하지 않음
+                    //continue; // 화면에 보이지 않으면 렌더링하지 않음
                 }
 
                 // 본 1개 + Identity인 경우만 인스턴싱 대상으로 처리
@@ -3034,7 +3034,7 @@ namespace Alice
             BoundingSphere bounds(transform.position, maxScale * 1.5f); // 1.5f는 안전 계수
             if (cameraFrustum.Contains(bounds) == DISJOINT)
             {
-                continue; // 화면에 보이지 않으면 렌더링하지 않음
+                //continue; // 화면에 보이지 않으면 렌더링하지 않음
             }
 
             XMMATRIX worldM = BuildWorldMatrix(world, id, transform);
@@ -3264,7 +3264,7 @@ namespace Alice
                 BoundingSphere bounds(position, maxScale * 1.5f);
                 if (cameraFrustum.Contains(bounds) == DISJOINT)
                 {
-                    continue; // 화면에 보이지 않으면 렌더링하지 않음
+                    //continue; // 화면에 보이지 않으면 렌더링하지 않음
                 }
 
                 const XMFLOAT4 color(cmd.color.x, cmd.color.y, cmd.color.z, cmd.alpha);
@@ -3971,7 +3971,7 @@ namespace Alice
             BoundingSphere bounds(position, maxScale * 1.5f);
             if (cameraFrustum.Contains(bounds) == DISJOINT)
             {
-                continue; // 화면에 보이지 않으면 렌더링하지 않음
+                //continue; // 화면에 보이지 않으면 렌더링하지 않음
             }
 
             const DirectX::XMFLOAT4 color(cmd.color.x, cmd.color.y, cmd.color.z, cmd.alpha);

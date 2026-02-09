@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/door_animation_0.mat"
+    ],
+    "mesh": "door_animation",
+    "source_fbx": "../../../TEAM_REALREAL/EGOSIS/Resource/fbx/door_animation.fbx"
+}
