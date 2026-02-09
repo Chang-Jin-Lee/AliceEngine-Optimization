@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstring>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include <d3dcompiler.h>
@@ -600,6 +601,7 @@ namespace Alice
             preset.pool.srv.Reset();
             preset.pool.count = 0;
         }
+        m_activePresetsPrevFrame.clear();
     }
 
     void ComputeEffectSystem::SetEmitterNormalized(float x, float y, float radius)
@@ -651,19 +653,88 @@ namespace Alice
         };
 
         std::unordered_map<std::string, std::vector<EmitterSource>> emittersByPreset;
+        // Keep effect timing close to real-time.
+        // A very small max clamp made one-shot emission/lifetime look stretched on low FPS.
+        const float clampedDtSec = ClampFloat(dtSec, 0.0f, 0.25f);
+        std::unordered_set<EntityId> trackedComputeEntities;
+
+        auto MarkComputePlaybackDisabled = [&](EntityId entityId)
+            {
+                auto it = m_emitterPlaybackStates.find(entityId);
+                if (it != m_emitterPlaybackStates.end())
+                    it->second.wasEnabled = false;
+            };
 
         for (auto&& [entityId, effect] : world.GetComponents<ComputeEffectComponent>())
         {
+            trackedComputeEntities.insert(entityId);
+
             if (!effect.enabled || effect.shaderName.empty())
+            {
+                MarkComputePlaybackDisabled(entityId);
                 continue;
+            }
             if (const auto* tr = world.GetComponent<TransformComponent>(entityId); tr && (!tr->enabled || !tr->visible))
+            {
+                MarkComputePlaybackDisabled(entityId);
                 continue;
+            }
 
             // 등록된 프리셋이 있는지 확인
             if (m_presets.find(effect.shaderName) == m_presets.end())
+            {
+                MarkComputePlaybackDisabled(entityId);
                 continue;
+            }
 
-            emittersByPreset[effect.shaderName].push_back({ entityId, effect });
+            ComputeEffectComponent runtimeEffect = effect;
+            runtimeEffect.spawnRate = ClampFloat(runtimeEffect.spawnRate, 0.0f, 1.0f);
+
+            EmitterPlaybackState& playback = m_emitterPlaybackStates[entityId];
+            if (!playback.wasEnabled)
+            {
+                playback.elapsedSec = 0.0f;
+                playback.oneShotFrameConsumed = false;
+            }
+
+            if (!runtimeEffect.emitNewParticles)
+            {
+                runtimeEffect.spawnRate = 0.0f;
+                // Emission is paused by direction; restart one-shot timing when toggled back on.
+                playback.wasEnabled = false;
+            }
+            else if (!runtimeEffect.loop)
+            {
+                if (runtimeEffect.emissionDurationSec > 0.0f)
+                {
+                    if (playback.elapsedSec >= runtimeEffect.emissionDurationSec)
+                        runtimeEffect.spawnRate = 0.0f;
+                }
+                else
+                {
+                    if (playback.oneShotFrameConsumed)
+                        runtimeEffect.spawnRate = 0.0f;
+                    else
+                        playback.oneShotFrameConsumed = true;
+                }
+                playback.elapsedSec += clampedDtSec;
+                playback.wasEnabled = true;
+            }
+            else
+            {
+                playback.elapsedSec += clampedDtSec;
+                playback.wasEnabled = true;
+            }
+
+            emittersByPreset[runtimeEffect.shaderName].push_back({ entityId, runtimeEffect });
+        }
+
+        for (auto it = m_emitterPlaybackStates.begin(); it != m_emitterPlaybackStates.end(); )
+        {
+            if (trackedComputeEntities.find(it->first) == trackedComputeEntities.end())
+                it = m_emitterPlaybackStates.erase(it);
+            else
+                ++it;
         }
 
         for (auto&& [entityId, unityFx] : world.GetComponents<UnityVfxComponent>())
@@ -702,6 +773,30 @@ namespace Alice
             }
         }
 
+        std::unordered_set<std::string> activePresetsThisFrame;
+        activePresetsThisFrame.reserve(emittersByPreset.size());
+        for (const auto& entry : emittersByPreset)
+            activePresetsThisFrame.insert(entry.first);
+
+        // Prevent stale particles from resurfacing when a preset emitter stream stops and starts again.
+        // Clear only on active->inactive transition to keep steady-state cost low.
+        for (const std::string& previousPreset : m_activePresetsPrevFrame)
+        {
+            if (activePresetsThisFrame.find(previousPreset) != activePresetsThisFrame.end())
+                continue;
+
+            auto presetIt = m_presets.find(previousPreset);
+            if (presetIt == m_presets.end())
+                continue;
+            auto& pool = presetIt->second.pool;
+            if (!pool.uav)
+                continue;
+
+            const UINT zeros[4] = { 0u, 0u, 0u, 0u };
+            m_context->ClearUnorderedAccessViewUint(pool.uav.Get(), zeros);
+        }
+        m_activePresetsPrevFrame = std::move(activePresetsThisFrame);
+
         if (emittersByPreset.empty())
         {
             m_hasActiveEffect = false;
@@ -711,7 +806,7 @@ namespace Alice
         m_hasActiveEffect = true;
 
         // dtSec를 사용하여 시간 업데이트
-        m_dtSec = ClampFloat(dtSec, 0.0f, 1.0f / 20.0f);
+        m_dtSec = clampedDtSec;
         m_timeSec += m_dtSec;
 
         // depthSRV가 nullptr이면 더미 depth 사용

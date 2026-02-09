@@ -17,7 +17,7 @@ namespace Alice
         void Update(float deltaTime) override;
         void OnDisable() override;
 
-        ALICE_PROPERTY(std::string, sessionEntityName, "SceneManager");
+        // ALICE_PROPERTY(std::string, sessionEntityName, "SceneManager"); // unused
         ALICE_PROPERTY(std::string, bossEntityName, "Boss");
         ALICE_PROPERTY(std::string, aoeEntityName, "AoE");
         ALICE_PROPERTY(std::string, soulClipName, "Boss|Boss|Soul_Attack");
@@ -30,8 +30,8 @@ namespace Alice
         ALICE_PROPERTY(std::string, howlClipName, "Boss|Boss|Phase_Howling");
         ALICE_PROPERTY(std::string, howlDustEntityName, "W_EYE_TrailVfx");
         ALICE_PROPERTY(float, howlDustAlphaPeak, 1.0f);
-        ALICE_PROPERTY(float, howlDustFadeInSpeed, 2.0f);
-        ALICE_PROPERTY(float, howlDustFadeOutSpeed, 3.0f);
+        // ALICE_PROPERTY(float, howlDustFadeInSpeed, 2.0f); // unused
+        // ALICE_PROPERTY(float, howlDustFadeOutSpeed, 3.0f); // unused
         ALICE_PROPERTY(bool, debugLogs, false);
 
     private:

@@ -36,7 +36,7 @@ namespace Alice::Combat
         float m_dodgeDurationSec = 0.6f;
         float m_dodgeMoveDurationSec = 0.5f;
         float m_dodgeDistance = 3.0f;
-        float m_justGuardDurationSec = 0.18f;
+        // float m_justGuardDurationSec = 0.18f; // unused (no JustGuardSuccess transition path)
         float m_attackFallbackDurationSec = 0.8f;
         float m_dodgeMoveTimer = 0.0f;
         bool m_dodgeMoveStopped = false;
