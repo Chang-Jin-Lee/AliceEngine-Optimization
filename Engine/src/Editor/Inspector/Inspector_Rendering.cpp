@@ -43,6 +43,54 @@ namespace Alice
 
 			return changed;
 		}
+
+		inline bool SliderFloatWithDoubleClickInput(const char* label, float* value, float minValue, float maxValue, const char* fmt = "%.3f")
+		{
+			ImGui::PushID(label);
+			bool changed = ImGui::SliderFloat(label, value, minValue, maxValue, fmt);
+
+			static float s_editValue = 0.0f;
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+			{
+				s_editValue = *value;
+				ImGui::OpenPopup("EditValue");
+			}
+
+			if (ImGui::BeginPopup("EditValue"))
+			{
+				ImGui::SetNextItemWidth(140.0f);
+				ImGui::InputFloat("Value", &s_editValue, 0.0f, 0.0f, fmt);
+
+				auto applyEditedValue = [&]()
+				{
+					const float clamped = std::clamp(s_editValue, minValue, maxValue);
+					if (*value != clamped)
+					{
+						*value = clamped;
+						changed = true;
+					}
+					ImGui::CloseCurrentPopup();
+				};
+
+				if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
+					ImGui::IsKeyPressed(ImGuiKey_Enter))
+				{
+					applyEditedValue();
+				}
+
+				if (ImGui::Button("OK"))
+					applyEditedValue();
+
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel"))
+					ImGui::CloseCurrentPopup();
+
+				ImGui::EndPopup();
+			}
+
+			ImGui::PopID();
+			return changed;
+		}
 	}
 
 	void EditorCore::DrawInspectorMaterial(World& world, const EntityId& _selectedEntity)
@@ -90,7 +138,7 @@ namespace Alice
 			// Shadow Intensity (커스텀 UI)
 			{
 				float shadowIntensity = mat->shadowStrength;
-				if (ImGui::SliderFloat("Shadow Intensity", &shadowIntensity, 0.0f, 1.0f, "%.3f"))
+				if (SliderFloatWithDoubleClickInput("Shadow Intensity", &shadowIntensity, 0.0f, 1.0f, "%.3f"))
 				{
 					mat->shadowStrength = std::clamp(shadowIntensity, 0.0f, 1.0f);
 					changed = true;
@@ -99,7 +147,7 @@ namespace Alice
 			// Toon Ramp Intensity (커스텀 UI)
 			{
 				float toonRamp = mat->toonPbrRampIntensity;
-				if (ImGui::SliderFloat("Toon Ramp Intensity", &toonRamp, 0.0f, 1.0f, "%.3f"))
+				if (SliderFloatWithDoubleClickInput("Toon Ramp Intensity", &toonRamp, 0.0f, 1.0f, "%.3f"))
 				{
 					mat->toonPbrRampIntensity = std::clamp(toonRamp, 0.0f, 1.0f);
 					changed = true;
@@ -108,7 +156,7 @@ namespace Alice
 			// Toon Self Shadow (커스텀 UI)
 			{
 				float toonSelfShadow = mat->toonSelfShadowStrength;
-				if (ImGui::SliderFloat("Toon Self Shadow", &toonSelfShadow, 0.0f, 1.0f, "%.3f"))
+				if (SliderFloatWithDoubleClickInput("Toon Self Shadow", &toonSelfShadow, 0.0f, 1.0f, "%.3f"))
 				{
 					mat->toonSelfShadowStrength = std::clamp(toonSelfShadow, 0.0f, 1.0f);
 					changed = true;

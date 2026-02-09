@@ -37,6 +37,132 @@ namespace Alice
 		};
 		namespace Detail
 		{
+			struct NumericWidgetEvent
+			{
+				bool changed = false;
+				bool activated = false;
+				bool deactivatedAfterEdit = false;
+			};
+
+			inline NumericWidgetEvent DragFloatWithDoubleClickInput(const char* label,
+				float* value,
+				float speed,
+				float minValue,
+				float maxValue,
+				const char* fmt = "%.3f",
+				bool useClamp = false)
+			{
+				NumericWidgetEvent event{};
+				ImGui::PushID(label);
+
+				event.changed = useClamp
+					? ImGui::DragFloat(label, value, speed, minValue, maxValue, fmt)
+					: ImGui::DragFloat(label, value, speed, 0.0f, 0.0f, fmt);
+				event.activated = ImGui::IsItemActivated();
+				event.deactivatedAfterEdit = ImGui::IsItemDeactivatedAfterEdit();
+
+				static float s_editValue = 0.0f;
+				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+				{
+					s_editValue = *value;
+					ImGui::OpenPopup("EditValue");
+				}
+
+				if (ImGui::BeginPopup("EditValue"))
+				{
+					ImGui::SetNextItemWidth(140.0f);
+					ImGui::InputFloat("Value", &s_editValue, 0.0f, 0.0f, fmt);
+
+					auto applyEditedValue = [&]()
+					{
+						float newValue = s_editValue;
+						if (useClamp)
+							newValue = std::clamp(newValue, minValue, maxValue);
+
+						if (*value != newValue)
+						{
+							*value = newValue;
+							event.changed = true;
+						}
+						ImGui::CloseCurrentPopup();
+					};
+
+					if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
+						ImGui::IsKeyPressed(ImGuiKey_Enter))
+					{
+						applyEditedValue();
+					}
+
+					if (ImGui::Button("OK"))
+						applyEditedValue();
+
+					ImGui::SameLine();
+					if (ImGui::Button("Cancel"))
+						ImGui::CloseCurrentPopup();
+
+					ImGui::EndPopup();
+				}
+
+				ImGui::PopID();
+				return event;
+			}
+
+			inline NumericWidgetEvent SliderFloatWithDoubleClickInput(const char* label,
+				float* value,
+				float minValue,
+				float maxValue,
+				const char* fmt = "%.3f")
+			{
+				NumericWidgetEvent event{};
+				ImGui::PushID(label);
+
+				event.changed = ImGui::SliderFloat(label, value, minValue, maxValue, fmt);
+				event.activated = ImGui::IsItemActivated();
+				event.deactivatedAfterEdit = ImGui::IsItemDeactivatedAfterEdit();
+
+				static float s_editValue = 0.0f;
+				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+				{
+					s_editValue = *value;
+					ImGui::OpenPopup("EditValue");
+				}
+
+				if (ImGui::BeginPopup("EditValue"))
+				{
+					ImGui::SetNextItemWidth(140.0f);
+					ImGui::InputFloat("Value", &s_editValue, 0.0f, 0.0f, fmt);
+
+					auto applyEditedValue = [&]()
+					{
+						const float newValue = std::clamp(s_editValue, minValue, maxValue);
+						if (*value != newValue)
+						{
+							*value = newValue;
+							event.changed = true;
+						}
+						ImGui::CloseCurrentPopup();
+					};
+
+					if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
+						ImGui::IsKeyPressed(ImGuiKey_Enter))
+					{
+						applyEditedValue();
+					}
+
+					if (ImGui::Button("OK"))
+						applyEditedValue();
+
+					ImGui::SameLine();
+					if (ImGui::Button("Cancel"))
+						ImGui::CloseCurrentPopup();
+
+					ImGui::EndPopup();
+				}
+
+				ImGui::PopID();
+				return event;
+			}
+
 			/// @param obj 인스턴스
 			/// @param label 렌더링할 라벨
 			/// @param world World 포인터 (엔티티 참조 드래그 앤 드롭용, 선택적)
@@ -97,10 +223,17 @@ namespace Alice
 				else if (propType == rttr::type::get<float>())
 				{
 					float val = value.to_float();
-					bool changed = ImGui::DragFloat(displayName.c_str(), &val, 0.01f);
-					event.activated = ImGui::IsItemActivated();
-					event.deactivatedAfterEdit = ImGui::IsItemDeactivatedAfterEdit();
-					if (changed)
+					NumericWidgetEvent widgetEvent = DragFloatWithDoubleClickInput(
+						displayName.c_str(),
+						&val,
+						0.01f,
+						0.0f,
+						0.0f,
+						"%.3f",
+						false);
+					event.activated = widgetEvent.activated;
+					event.deactivatedAfterEdit = widgetEvent.deactivatedAfterEdit;
+					if (widgetEvent.changed)
 					{
 						prop.set_value(obj, val);
 						event.changed = true;
@@ -109,10 +242,17 @@ namespace Alice
 				else if (propType == rttr::type::get<double>())
 				{
 					float val = static_cast<float>(value.to_double());
-					bool changed = ImGui::DragFloat(displayName.c_str(), &val, 0.01f);
-					event.activated = ImGui::IsItemActivated();
-					event.deactivatedAfterEdit = ImGui::IsItemDeactivatedAfterEdit();
-					if (changed)
+					NumericWidgetEvent widgetEvent = DragFloatWithDoubleClickInput(
+						displayName.c_str(),
+						&val,
+						0.01f,
+						0.0f,
+						0.0f,
+						"%.3f",
+						false);
+					event.activated = widgetEvent.activated;
+					event.deactivatedAfterEdit = widgetEvent.deactivatedAfterEdit;
+					if (widgetEvent.changed)
 					{
 						prop.set_value(obj, static_cast<double>(val));
 						event.changed = true;
@@ -461,12 +601,16 @@ namespace Alice
 				float val = propType == rttr::type::get<float>() ?
 					value.to_float() : static_cast<float>(value.to_double());
 
-				bool changed = ImGui::SliderFloat(displayName.c_str(), &val, minVal, maxVal);
+				NumericWidgetEvent widgetEvent = SliderFloatWithDoubleClickInput(
+					displayName.c_str(),
+					&val,
+					minVal,
+					maxVal);
 				UIEditEvent event{};
-				event.activated = ImGui::IsItemActivated();
-				event.deactivatedAfterEdit = ImGui::IsItemDeactivatedAfterEdit();
+				event.activated = widgetEvent.activated;
+				event.deactivatedAfterEdit = widgetEvent.deactivatedAfterEdit;
 
-				if (changed)
+				if (widgetEvent.changed)
 				{
 					if (propType == rttr::type::get<float>())
 						prop.set_value(obj, val);
