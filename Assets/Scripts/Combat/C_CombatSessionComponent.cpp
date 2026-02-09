@@ -22,6 +22,8 @@
 #include "Runtime/Rendering/Components/CameraFollowComponent.h"
 #include "Runtime/Rendering/Components/CameraLookAtComponent.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
+#include "Runtime/Rendering/Components/ComputeEffectComponent.h"
 #include "Runtime/Rendering/SkinnedMeshRegistry.h"
 #include "Runtime/Importing/FbxModel.h"
 #include <assimp/scene.h>
@@ -52,6 +54,7 @@ namespace Alice
 			bool blending = false;
 			bool blendingToOverride = false;
 			float blendTimer = 0.0f;
+			float blendDurationSec = 0.0f;
 			std::string overrideClip{};
 			bool overrideLoop = false;
 			std::string attackClip{};
@@ -79,6 +82,13 @@ namespace Alice
 			float dashForwardSec = 0.0f;
 			float dashReverseSec = 0.0f;
 			std::string dashClipName{};
+			bool parryOverrideActive = false;
+			bool parryHardCutPending = false;
+			float parryTimer = 0.0f;
+			float parryDurationSec = 0.0f;
+			bool parryRecoverBlendPending = false;
+			bool parryExitParryWindowActive = false;
+			std::string parryClip{};
 		};
 
 		struct AttackMoveState
@@ -162,6 +172,7 @@ namespace Alice
 		float playerHealLoopSec = 0.0f;
 		float playerHealNextTickSec = 0.0f;
 		std::uint64_t playerParrySuccessCount = 0;
+		bool playerParryClipFallbackWarned = false;
 		std::vector<PendingDeferredEvent> pendingDeferred;
 		std::vector<PendingImmediateCommand> pendingImmediate;
 		Combat::BossSignals bossSignals{};
@@ -242,6 +253,7 @@ namespace Alice
 			playerHealLoopSec = 0.0f;
 			playerHealNextTickSec = 0.0f;
 			playerParrySuccessCount = 0;
+			playerParryClipFallbackWarned = false;
 			pendingDeferred.clear();
 			pendingImmediate.clear();
 			parryResolvedByVictim.clear();
@@ -293,6 +305,127 @@ namespace Alice
 		if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
 			return trace->baseDamage;
 		return 0.0f;
+	}
+
+	static EntityId FindNamedDescendant(World& world, EntityId rootId, const std::string& targetName)
+	{
+		if (rootId == InvalidEntityId || targetName.empty())
+			return InvalidEntityId;
+
+		std::vector<EntityId> stack = world.GetChildren(rootId);
+		while (!stack.empty())
+		{
+			const EntityId id = stack.back();
+			stack.pop_back();
+			if (world.GetEntityName(id) == targetName)
+				return id;
+
+			const auto children = world.GetChildren(id);
+			for (EntityId child : children)
+				stack.push_back(child);
+		}
+		return InvalidEntityId;
+	}
+
+	static EntityId EnsureTrailVfxChild(World& world,
+		EntityId parentId,
+		EntityId cachedId,
+		const std::string& childName,
+		const std::string& effectPath,
+		const DirectX::XMFLOAT3& localOffset,
+		const DirectX::XMFLOAT3& localRotation,
+		const DirectX::XMFLOAT3& localScale,
+		const DirectX::XMFLOAT3& colorTint,
+		float colorScale,
+		float intensityScale,
+		float spawnRateScale)
+	{
+		auto hasTransform = [&](EntityId id) -> bool
+			{
+				return id != InvalidEntityId && world.GetComponent<TransformComponent>(id);
+			};
+
+		if (parentId == InvalidEntityId || effectPath.empty())
+			return InvalidEntityId;
+
+		EntityId vfxId = cachedId;
+		if (!hasTransform(vfxId))
+			vfxId = FindNamedDescendant(world, parentId, childName);
+
+		if (!hasTransform(vfxId))
+		{
+			vfxId = world.CreateEmpty();
+			if (vfxId == InvalidEntityId)
+				return InvalidEntityId;
+			if (!childName.empty())
+				world.SetEntityName(vfxId, childName);
+		}
+
+		world.SetParent(vfxId, parentId, false);
+		if (auto* tr = world.GetComponent<TransformComponent>(vfxId))
+		{
+			tr->position = localOffset;
+			tr->rotation = localRotation;
+			tr->scale = localScale;
+			world.MarkTransformDirty(vfxId);
+		}
+
+		auto* vfx = world.GetComponent<UnityVfxComponent>(vfxId);
+		if (!vfx)
+			vfx = &world.AddComponent<UnityVfxComponent>(vfxId);
+		if (!vfx)
+			return InvalidEntityId;
+
+		vfx->effectPath = effectPath;
+		vfx->useMeshRenderer = true;
+		vfx->useComputeEffect = false;
+		vfx->timeScale = 1.0f;
+		vfx->lifetimeScale = 1.0f;
+		vfx->overrideLoop = false;
+		vfx->loop = true;
+		vfx->sizeScale = 0.025f;
+		vfx->spawnRateScale = std::max(0.0f, spawnRateScale);
+		vfx->enableTrails = true;
+		vfx->colorTint = colorTint;
+		vfx->colorScale = std::max(0.0f, colorScale);
+		vfx->intensityScale = std::max(0.0f, intensityScale);
+		vfx->alphaScale = 1.0f;
+
+		if (auto* compute = world.GetComponent<ComputeEffectComponent>(vfxId))
+		{
+			compute->enabled = false;
+			compute->spawnRate = 0.0f;
+		}
+
+		return vfxId;
+	}
+
+	static void SetTrailVfxActive(World& world, EntityId vfxId, bool active)
+	{
+		if (vfxId == InvalidEntityId)
+			return;
+
+		if (auto* tr = world.GetComponent<TransformComponent>(vfxId))
+		{
+			if (tr->enabled != active || tr->visible != active)
+			{
+				tr->enabled = active;
+				tr->visible = active;
+				world.MarkTransformDirty(vfxId);
+			}
+		}
+
+		if (auto* vfx = world.GetComponent<UnityVfxComponent>(vfxId))
+		{
+			vfx->enabled = active;
+			vfx->emitNewParticles = active;
+		}
+
+		if (auto* compute = world.GetComponent<ComputeEffectComponent>(vfxId))
+		{
+			compute->enabled = false;
+			compute->spawnRate = 0.0f;
+		}
 	}
 
 	namespace
@@ -584,6 +717,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
         if (!m_state)
             m_state.reset(new SessionState());
 		m_state->Init();
+		m_playerRageTrailVfxId = InvalidEntityId;
 
 		if (auto* world = GetWorld())
 			world->SetScriptCombatEnabled(true);
@@ -593,6 +727,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 	{
         if (!m_state)
             m_state.reset(new SessionState());
+		m_playerRageTrailVfxId = InvalidEntityId;
 
 		if (auto* world = GetWorld())
 			world->SetScriptCombatEnabled(true);
@@ -607,7 +742,12 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			m_state->Init();
 
 		if (auto* world = GetWorld())
+		{
+			SetTrailVfxActive(*world, m_playerRageTrailVfxId, false);
 			world->SetScriptCombatEnabled(false);
+		}
+
+		m_playerRageTrailVfxId = InvalidEntityId;
 	}
 
     Combat::ActionState C_CombatSessionComponent::GetPlayerState() const
@@ -837,13 +977,11 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			&& !blockPlayerActions;
 		const bool playerCanInteract = m_playerInteractionEnabled && !blockPlayerActions;
 		const auto* skinnedRegistry = SkinnedRegistry();
-		constexpr float kGuardExitMoveUnlockSec = 0.5f;
-		constexpr float kGuardTransitionAnimSpeedScale = 1.5f;
+		constexpr float kPlayerGuardExitReverseSpeedScale = 2.5f;
 		auto IsPlayerGuardExitMoveLocked = [&]() -> bool
 			{
 				return (m_state->playerGuardExitLockSec > 0.0f)
-					|| (m_state->playerAnim.guardExitActive
-						&& (m_state->playerAnim.guardExitTimer < kGuardExitMoveUnlockSec));
+					|| m_state->playerAnim.guardExitActive;
 			};
 
 		auto ResolveGuardExitDuration = [&](EntityId entityId) -> float
@@ -853,6 +991,18 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					duration = m_playerGuardExitDurationSec;
 				else if (entityId == bossId && m_bossGuardExitDurationSec > 0.0f)
 					duration = m_bossGuardExitDurationSec;
+				const AnimConfig cfg = BuildAnimConfig(entityId, playerId, bossId);
+				if (!cfg.guardExitClip.empty())
+				{
+					const float clipDuration = GetClipDurationSecByName(skinnedRegistry, world, entityId, cfg.guardExitClip);
+					if (clipDuration > 0.0f)
+						duration = std::max(duration, clipDuration);
+				}
+				if (entityId == playerId)
+				{
+					const float speedScale = std::max(0.0001f, kPlayerGuardExitReverseSpeedScale);
+					duration /= speedScale;
+				}
 				return std::max(0.0f, duration);
 			};
 
@@ -872,18 +1022,12 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						duration = std::max(duration, clipDuration);
 				}
 
-				// Guard-enter (parry) logic window follows animation speed scale.
-				if (duration > 0.0f)
-					duration /= kGuardTransitionAnimSpeedScale;
-
 				return std::max(0.0f, duration);
 			};
 
 		auto BeginGuardExitLock = [&](EntityId entityId, float& lockSec)
 			{
 				float duration = ResolveGuardExitDuration(entityId);
-				if (entityId == playerId)
-					duration = kGuardExitMoveUnlockSec;
 				if (duration <= 0.0f)
 					return;
 				lockSec = std::max(lockSec, duration);
@@ -943,6 +1087,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			m_state->playerAnim.guardExitActive = false;
 			m_state->playerAnim.guardExitTimer = 0.0f;
 			m_state->playerAnim.guardExitAnimDurationSec = 0.0f;
+			m_state->playerAnim.parryExitParryWindowActive = false;
 			if (auto* driver = world.GetComponent<AttackDriverComponent>(playerId))
 			{
 				driver->guardLockRemainingSec = 0.0f;
@@ -1676,6 +1821,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			bossSignals.groggyTriggered = true;
 
 		const auto& ePlayer = m_state->bus.PeekDeferred(playerId);
+		const bool playerParrySuccessPulse = HasEvent(ePlayer, Combat::CombatEventType::OnParrySuccess);
 		const bool freezePlayerFsm = playerHitstopActive;
 		const bool freezeBossFsm = bossHitstopActive;
 
@@ -2393,13 +2539,6 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		m_state->player.flags = outPlayer.flags;
 		m_state->boss.state = outBoss.state;
 		m_state->boss.flags = outBoss.flags;
-		if (outPlayer.parryRecoverToIdle)
-		{
-			m_state->playerGuardExitLockSec = 0.0f;
-			m_state->playerAnim.guardExitActive = false;
-			m_state->playerAnim.guardExitTimer = 0.0f;
-			m_state->playerAnim.guardExitAnimDurationSec = 0.0f;
-		}
 		if (auto* driver = world.GetComponent<AttackDriverComponent>(playerId))
 		{
 			if (outPlayer.state != Combat::ActionState::Attack)
@@ -3000,15 +3139,6 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
                     if (cmd.type == Combat::CommandType::EnableTrace ||
                         cmd.type == Combat::CommandType::DisableTrace)
                     {
-                        if (cmd.type == Combat::CommandType::EnableTrace)
-                        {
-                            const auto payload = std::get<Combat::CmdEnableTrace>(cmd.payload);
-                            if (auto* driver = world.GetComponent<AttackDriverComponent>(payload.weaponOrOwner))
-                            {
-                                if (driver->attackSuppressed)
-                                    continue;
-                            }
-                        }
                         traceCmds.push_back(cmd);
                     }
                 }
@@ -3152,6 +3282,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			float& moveBlend,
 			bool guardEnterPulse,
 			bool guardExitPulse,
+			bool parrySuccessPulse,
 			bool chargeActive,
 			bool attackRestartPulse,
 			bool blendIdleOnAttackEnd,
@@ -3270,6 +3401,73 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					return {};
 					};
 
+				const bool isPlayerEntity = (entityId == playerId);
+				auto ResolvePlayerParryClip = [&](float& outDurationSec) -> std::string
+					{
+						outDurationSec = 0.0f;
+						std::string parryClip = m_playerParryClip;
+						if (parryClip.empty())
+							parryClip = "rig|Tia_Parrying";
+
+						float duration = GetClipDurationSecByName(registry, world, entityId, parryClip);
+						if (duration > 0.0f)
+						{
+							outDurationSec = duration;
+							return parryClip;
+						}
+
+						std::string fallback = !cfg.guardEnterClip.empty() ? cfg.guardEnterClip : m_playerGuardEnterClip;
+						if (fallback.empty())
+							fallback = cfg.guardLoopClip;
+						if (!fallback.empty())
+						{
+							duration = GetClipDurationSecByName(registry, world, entityId, fallback);
+							if (duration > 0.0f)
+								outDurationSec = duration;
+						}
+
+						if (!m_state->playerParryClipFallbackWarned)
+						{
+							ALICE_LOG_WARN("[CombatSession] Missing parry clip '%s' on player. Fallback='%s'.",
+								parryClip.c_str(), fallback.c_str());
+							m_state->playerParryClipFallbackWarned = true;
+						}
+						return fallback;
+					};
+
+				if (isPlayerEntity && parrySuccessPulse)
+				{
+					float parryDurationSec = 0.0f;
+					const std::string parryClip = ResolvePlayerParryClip(parryDurationSec);
+					if (!parryClip.empty())
+					{
+						animState.overrideActive = false;
+						animState.overrideClip.clear();
+						animState.saved = false;
+						animState.blending = false;
+						animState.blendingToOverride = false;
+						animState.blendTimer = 0.0f;
+						animState.blendDurationSec = 0.0f;
+
+						animState.guardEnterActive = false;
+						animState.guardExitActive = false;
+						animState.guardEnterTimer = 0.0f;
+						animState.guardExitTimer = 0.0f;
+						animState.guardEnterAnimDurationSec = 0.0f;
+						animState.guardExitAnimDurationSec = 0.0f;
+						animState.groggyRecoverActive = false;
+
+						animState.parryOverrideActive = true;
+						animState.parryHardCutPending = true;
+						animState.parryTimer = 0.0f;
+						animState.parryDurationSec = (parryDurationSec > 0.0f) ? parryDurationSec : 0.2f;
+						animState.parryRecoverBlendPending = false;
+						animState.parryExitParryWindowActive = false;
+						animState.parryClip = parryClip;
+					}
+				}
+				const bool playerParryAnimActive = isPlayerEntity && animState.parryOverrideActive;
+
 				// Attack clip slow-motion was removed.
 				// auto ResolveOverrideSpeed = [&](EntityId targetId,
 				//                                 Combat::ActionState state,
@@ -3296,6 +3494,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						guardEnterAnimDurationSec = std::max(guardEnterAnimDurationSec, clipDuration);
 				}
 				if (!forceGuardLoopOnly
+					&& !playerParryAnimActive
 					&& (enteringGuard || guardEnterPulse)
 					&& !cfg.guardEnterClip.empty()
 					&& guardEnterAnimDurationSec > 0.0f)
@@ -3311,17 +3510,37 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					if (clipDuration > 0.0f)
 						guardExitAnimDurationSec = clipDuration;
 				}
-				if ((exitingGuard || guardExitPulse)
+				if (!playerParryAnimActive
+					&& (exitingGuard || guardExitPulse)
 					&& !cfg.guardExitClip.empty()
 					&& guardExitAnimDurationSec > 0.0f)
 				{
 					animState.guardExitActive = true;
 					animState.guardExitTimer = 0.0f;
-					animState.guardExitAnimDurationSec = std::max(guardExitAnimDurationSec, kGuardExitMoveUnlockSec);
+					animState.guardExitAnimDurationSec = guardExitAnimDurationSec;
+					animState.parryExitParryWindowActive = false;
 					if (guardExitPulse)
 					{
 						animState.guardEnterActive = false;
 						animState.guardEnterAnimDurationSec = 0.0f;
+					}
+				}
+				if (isPlayerEntity && animState.parryRecoverBlendPending)
+				{
+					animState.parryRecoverBlendPending = false;
+					if (!cfg.guardExitClip.empty() && guardExitAnimDurationSec > 0.0f)
+					{
+						animState.guardEnterActive = false;
+						animState.guardEnterTimer = 0.0f;
+						animState.guardEnterAnimDurationSec = 0.0f;
+						animState.guardExitActive = true;
+						animState.guardExitTimer = 0.0f;
+						animState.guardExitAnimDurationSec = guardExitAnimDurationSec;
+						animState.parryExitParryWindowActive = true;
+					}
+					else
+					{
+						animState.parryExitParryWindowActive = false;
 					}
 				}
 				const bool exitingGroggy = (prev == Combat::ActionState::Groggy && curr != Combat::ActionState::Groggy);
@@ -3355,20 +3574,38 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					animState.guardExitActive = false;
 					animState.guardEnterAnimDurationSec = 0.0f;
 					animState.guardExitAnimDurationSec = 0.0f;
+					animState.parryExitParryWindowActive = false;
 					animState.groggyRecoverActive = false;
 				}
-				if (animState.guardExitActive
-					&& curr == Combat::ActionState::Move
-					&& animState.guardExitTimer >= kGuardExitMoveUnlockSec)
+				if (playerParryAnimActive)
 				{
-					// After guard-exit unlock time, moving input should blend back to locomotion.
+					animState.guardEnterActive = false;
 					animState.guardExitActive = false;
+					animState.guardEnterAnimDurationSec = 0.0f;
 					animState.guardExitAnimDurationSec = 0.0f;
+					animState.parryExitParryWindowActive = false;
 				}
+				const float playerGuardTransitionBlendSec = isPlayerEntity
+					? std::max(0.0f, m_playerGuardTransitionBlendSec)
+					: 0.0f;
+				const float guardExitDurationForTailBlend = (animState.guardExitAnimDurationSec > 0.0f)
+					? animState.guardExitAnimDurationSec
+					: std::max(0.0f, cfg.guardExitDurationSec);
+				const bool playerGuardExitTailBlendToBase = isPlayerEntity
+					&& animState.guardExitActive
+					&& (curr == Combat::ActionState::Idle || curr == Combat::ActionState::Move)
+					&& playerGuardTransitionBlendSec > 0.0f
+					&& guardExitDurationForTailBlend > 0.0f
+					&& animState.guardExitTimer >= std::max(0.0f, guardExitDurationForTailBlend - playerGuardTransitionBlendSec);
 
 				std::string clipName;
 				bool loop = false;
-				if (entityId == bossId && fatalGroggyClipReady && bossBrain)
+				if (playerParryAnimActive)
+				{
+					clipName = animState.parryClip;
+					loop = false;
+				}
+				else if (entityId == bossId && fatalGroggyClipReady && bossBrain)
 				{
 					const std::string& groggyAttacked = bossBrain->GetGroggyClip();
 					if (!groggyAttacked.empty())
@@ -3466,7 +3703,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					clipName = animState.groggyRecoverClip;
 					loop = false;
 				}
-				else if (clipName.empty() && animState.guardExitActive)
+				else if (clipName.empty() && animState.guardExitActive && !playerGuardExitTailBlendToBase)
 				{
 					clipName = cfg.guardExitClip;
 					loop = false;
@@ -3476,6 +3713,16 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					const std::string guardLoop = !cfg.guardLoopClip.empty()
 						? cfg.guardLoopClip
 						: resolveClipByType(AttackDriverNotifyType::Guard);
+					const float guardEnterDurationForTailBlend = (animState.guardEnterAnimDurationSec > 0.0f)
+						? animState.guardEnterAnimDurationSec
+						: std::max(0.0f, cfg.guardEnterDurationSec);
+					const bool playerGuardEnterTailBlendToLoop = isPlayerEntity
+						&& !forceGuardLoopOnly
+						&& animState.guardEnterActive
+						&& !guardLoop.empty()
+						&& playerGuardTransitionBlendSec > 0.0f
+						&& guardEnterDurationForTailBlend > 0.0f
+						&& animState.guardEnterTimer >= std::max(0.0f, guardEnterDurationForTailBlend - playerGuardTransitionBlendSec);
 					if (forceGuardLoopOnly)
 					{
 						animState.guardEnterActive = false;
@@ -3487,12 +3734,12 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					else
 					{
 						const bool parryWindowActive = driver && driver->parryActive;
-						if (parryWindowActive && !cfg.guardEnterClip.empty())
+						if (parryWindowActive && !cfg.guardEnterClip.empty() && !playerGuardEnterTailBlendToLoop)
 						{
 							clipName = cfg.guardEnterClip;
 							loop = false;
 						}
-						else if (animState.guardEnterActive)
+						else if (animState.guardEnterActive && !playerGuardEnterTailBlendToLoop)
 						{
 							clipName = cfg.guardEnterClip;
 							loop = false;
@@ -3520,6 +3767,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						|| curr == Combat::ActionState::Guard
 						|| animState.guardExitActive
 						|| animState.groggyRecoverActive
+						|| animState.parryOverrideActive
 						|| chargeActive
 						|| hitReactActive);
 				const bool isDashClip = (entityId == bossId)
@@ -3693,11 +3941,48 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 				if (wantsReverse && overrideSpeed > 0.0f)
 					overrideSpeed = -overrideSpeed;
-				if (animState.guardEnterActive || animState.guardExitActive)
-					overrideSpeed *= kGuardTransitionAnimSpeedScale;
+				if (isPlayerEntity && animState.guardExitActive)
+				{
+					overrideSpeed *= std::max(0.0f, kPlayerGuardExitReverseSpeedScale);
+				}
+				if (playerParryAnimActive)
+				{
+					overrideSpeed = 1.0f;
+					wantsReverse = false;
+					reverseStartTime = 0.0f;
+				}
 				float blendSec = (entityId == bossId)
 					? std::max(0.0f, m_bossAnimBlendSec)
 					: std::max(0.0f, m_animBlendSec);
+				// Force hard-cut for player attack state (attack start + combo step changes).
+				if (entityId == playerId && curr == Combat::ActionState::Attack)
+					blendSec = 0.0f;
+				const bool playerGuardEnterToLoopTransition = isPlayerEntity
+					&& !cfg.guardEnterClip.empty()
+					&& !cfg.guardLoopClip.empty()
+					&& clipName == cfg.guardLoopClip
+					&& animState.overrideActive
+					&& animState.overrideClip == cfg.guardEnterClip;
+				const bool playerGuardLoopToExitTransition = isPlayerEntity
+					&& animState.guardExitActive
+					&& !cfg.guardExitClip.empty()
+					&& clipName == cfg.guardExitClip;
+				const float playerGuardExitLightBlendSec = std::min(playerGuardTransitionBlendSec, 0.1f);
+				if (playerGuardEnterToLoopTransition)
+				{
+					blendSec = std::max(blendSec, playerGuardTransitionBlendSec);
+				}
+				if (playerGuardLoopToExitTransition)
+				{
+					blendSec = std::max(0.0f, playerGuardExitLightBlendSec);
+				}
+				if (playerGuardExitTailBlendToBase)
+				{
+					blendSec = std::max(0.0f, playerGuardExitLightBlendSec);
+				}
+				const bool forceParryHardCut = isPlayerEntity && animState.parryHardCutPending;
+				if (forceParryHardCut)
+					blendSec = 0.0f;
 				const bool bossGroggyEnterBlendLock = (entityId == bossId)
 					&& (curr == Combat::ActionState::Groggy)
 					&& (m_state->bossGroggyEnterBlendBlockSec > 0.0f);
@@ -3737,12 +4022,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						anim->base.blend01 = 0.0f;
 						animState.blending = false;
 						animState.blendingToOverride = true;
+						animState.blendDurationSec = 0.0f;
 						return;
 					}
 
 					animState.blending = true;
 					animState.blendingToOverride = true;
 					animState.blendTimer = 0.0f;
+					animState.blendDurationSec = blendSec;
 
 					anim->base.autoAdvance = true;
 					anim->base.clipB = nextClip;
@@ -3752,16 +4039,17 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					anim->base.blend01 = 0.0f;
 					};
 
-				auto BeginBlendToSaved = [&]() {
+				auto BeginBlendToSaved = [&](float targetBlendSec) {
 					if (!animState.saved)
 					{
 						animState.overrideActive = false;
 						animState.overrideClip.clear();
 						animState.blending = false;
+						animState.blendDurationSec = 0.0f;
 						return;
 					}
 
-					if (blendSec <= 0.0f)
+					if (targetBlendSec <= 0.0f)
 					{
 						anim->base = animState.savedBase;
 						anim->base.timeA = 0.0f;
@@ -3770,12 +4058,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						animState.overrideClip.clear();
 						animState.saved = false;
 						animState.blending = false;
+						animState.blendDurationSec = 0.0f;
 						return;
 					}
 
 					animState.blending = true;
 					animState.blendingToOverride = false;
 					animState.blendTimer = 0.0f;
+					animState.blendDurationSec = targetBlendSec;
 
 					const bool preferMoveTarget =
 						(!animState.savedBase.clipB.empty())
@@ -3800,11 +4090,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					};
 
 				auto StepBlend = [&]() {
-					if (!animState.blending || blendSec <= 0.0f)
+					const float activeBlendSec = (animState.blendDurationSec > 0.0f)
+						? animState.blendDurationSec
+						: blendSec;
+					if (!animState.blending || activeBlendSec <= 0.0f)
 						return;
 
 					animState.blendTimer += animDt;
-					float alpha = animState.blendTimer / blendSec;
+					float alpha = animState.blendTimer / activeBlendSec;
 					if (alpha > 1.0f)
 						alpha = 1.0f;
 
@@ -3822,6 +4115,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 							anim->base.timeB = anim->base.timeA;
 							anim->base.blend01 = 0.0f;
 							animState.blending = false;
+							animState.blendDurationSec = 0.0f;
 						}
 						else
 						{
@@ -3832,6 +4126,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 							animState.overrideClip.clear();
 							animState.saved = false;
 							animState.blending = false;
+							animState.blendDurationSec = 0.0f;
 						}
 					}
 					};
@@ -3846,11 +4141,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						|| animState.overrideClip != clipName
 						|| animState.overrideLoop != loop
 						|| (attackRestartPulse && curr == Combat::ActionState::Attack)
-						|| dashPhaseChanged;
+						|| dashPhaseChanged
+						|| forceParryHardCut;
 					if (clipChanged)
 					{
 						const float startTime = wantsReverse ? reverseStartTime : 0.0f;
 						BeginBlendToOverride(clipName, loop, startTime);
+						if (forceParryHardCut)
+							animState.parryHardCutPending = false;
 					}
 				}
 				else if (animState.overrideActive)
@@ -3858,11 +4156,21 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					const bool blendOnAttackEnd = (entityId == bossId);
 					if (attackEnded && !blendOnAttackEnd)
 					{
-						if (blendIdleOnAttackEnd
+						const bool wantsShortPlayerAttackEndBlend =
+							(entityId == playerId) && blendIdleOnAttackEnd;
+						if (wantsShortPlayerAttackEndBlend)
+						{
+							constexpr float kPlayerAttackEndBlendMaxSec = 0.06f;
+							const float attackEndBlendSec =
+								std::min(std::max(0.0f, blendSec), kPlayerAttackEndBlendMaxSec);
+							if (!animState.blending || animState.blendingToOverride)
+								BeginBlendToSaved(attackEndBlendSec);
+						}
+						else if (blendIdleOnAttackEnd
 							&& !avoidRootMotionBlendBack)
 						{
 							if (!animState.blending || animState.blendingToOverride)
-								BeginBlendToSaved();
+								BeginBlendToSaved(blendSec);
 						}
 						else
 						{
@@ -3878,12 +4186,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 							animState.blending = false;
 							animState.blendingToOverride = false;
 							animState.blendTimer = 0.0f;
+							animState.blendDurationSec = 0.0f;
 						}
 					}
 					else
 					{
 						if (!animState.blending || animState.blendingToOverride)
-							BeginBlendToSaved();
+							BeginBlendToSaved(blendSec);
 					}
 				}
 
@@ -3916,6 +4225,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					{
 						animState.guardExitActive = false;
 						animState.guardExitAnimDurationSec = 0.0f;
+						animState.parryExitParryWindowActive = false;
 					}
 				}
 				if (animState.chargeEnterActive)
@@ -3927,6 +4237,19 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						animState.chargeEnterActive = false;
 					}
 				}
+				if (animState.parryOverrideActive)
+				{
+					animState.parryTimer += timerStep;
+					if (animState.parryDurationSec > 0.0f
+						&& animState.parryTimer >= animState.parryDurationSec)
+					{
+						animState.parryOverrideActive = false;
+						animState.parryHardCutPending = false;
+						animState.parryTimer = 0.0f;
+						animState.parryDurationSec = 0.0f;
+						animState.parryRecoverBlendPending = true;
+					}
+				}
 				prev = curr;
 			};
 
@@ -3935,14 +4258,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		const bool playerHowlingGuardJustEnded = m_state->playerHowlingGuardActivePrev
 			&& !playerHowlingGuardActive;
 		const bool suppressPlayerGuardExitAnim =
-			playerHowlingGuardActive || playerHowlingGuardJustEnded || outPlayer.parryRecoverToIdle;
+			playerHowlingGuardActive || playerHowlingGuardJustEnded;
 		const bool forcePlayerGuardLoopOnly = playerHowlingGuardActive;
 
 		const bool playerGuardEnterPulse = playerGuardPressed;
 		ApplyAnimByState(playerId, playerIntent, outPlayer.state, m_state->prevPlayerState, m_state->playerAnim, m_state->playerMoveBlend,
-			playerGuardEnterPulse, false, m_state->playerChargeActive, outPlayer.attackRestarted, playerAttackEndedOnFinal, false, suppressPlayerGuardExitAnim, forcePlayerGuardLoopOnly, false);
+			playerGuardEnterPulse, false, playerParrySuccessPulse, m_state->playerChargeActive, outPlayer.attackRestarted, playerAttackEndedOnFinal, false, suppressPlayerGuardExitAnim, forcePlayerGuardLoopOnly, false);
 		ApplyAnimByState(bossId, bossIntentCompat, outBoss.state, m_state->prevBossState, m_state->bossAnim, m_state->bossMoveBlend,
-			false, false, m_state->bossChargeActive, outBoss.attackRestarted, false, bossOut.hitReactActive, false, false, bossOut.groggyRecoverActive);
+			false, false, false, m_state->bossChargeActive, outBoss.attackRestarted, false, bossOut.hitReactActive, false, false, bossOut.groggyRecoverActive);
 		m_state->playerHowlingGuardActivePrev = playerHowlingGuardActive;
 
 		auto ApplyHitstopVelocityStop = [&](EntityId entityId, float timerSec)
@@ -3975,6 +4298,27 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		ApplyHitstopToAnim(playerId, m_state->playerHitstopTimer);
 		ApplyHitstopToAnim(bossId, m_state->bossHitstopTimer);
+
+		const bool playerRageTrailActive = m_enablePlayerRageTrailVfx && m_state->playerRageActive;
+		const std::string rageTargetName = !m_playerRageTrailTargetName.empty() ? m_playerRageTrailTargetName : "W_Target";
+		EntityId rageTargetId = FindNamedDescendant(world, playerId, rageTargetName);
+		if (playerRageTrailActive && rageTargetId != InvalidEntityId)
+		{
+			m_playerRageTrailVfxId = EnsureTrailVfxChild(
+				world,
+				rageTargetId,
+				m_playerRageTrailVfxId,
+				m_playerRageTrailChildName,
+				m_playerRageTrailEffectPath,
+				m_playerRageTrailLocalOffset,
+				m_playerRageTrailLocalRotation,
+				m_playerRageTrailLocalScale,
+				m_playerRageTrailColorTint,
+				m_playerRageTrailColorScale,
+				m_playerRageTrailIntensityScale,
+				m_playerRageTrailSpawnRateScale);
+		}
+		SetTrailVfxActive(world, m_playerRageTrailVfxId, playerRageTrailActive && rageTargetId != InvalidEntityId);
 	}
 
 	void C_CombatSessionComponent::PostCombatUpdate(float deltaTime)
@@ -4104,6 +4448,18 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				else
 				{
 					flags.parryWindowActive = false;
+				}
+				if (fighter.id == playerId && m_state->playerAnim.parryOverrideActive)
+				{
+					flags.guardActive = false;
+					flags.parryWindowActive = false;
+				}
+				if (fighter.id == playerId
+					&& m_state->playerAnim.guardExitActive
+					&& m_state->playerAnim.parryExitParryWindowActive)
+				{
+					flags.guardActive = false;
+					flags.parryWindowActive = true;
 				}
 
 				snap.flags = flags;

@@ -2251,7 +2251,8 @@
                     "x": 100.0,
                     "y": 0.10000000149011612,
                     "z": 100.0
-                }
+                },
+                "visible": true
             },
             "guid": "3001",
             "name": "PhysicsSettings"
@@ -2270,14 +2271,15 @@
                 },
                 "aim": {
                     "enabled": false,
+                    "pitchRad": 0.0,
                     "weight": 1.0,
                     "yawRad": 0.0
                 },
                 "base": {
                     "autoAdvance": true,
-                    "blend01": 0.0,
-                    "clipA": "alice-Apose_arm|Swing",
-                    "clipB": "",
+                    "blend01": 1.3395879250310827e-05,
+                    "clipA": "Idle",
+                    "clipB": "Walk",
                     "enabled": true,
                     "layerAlpha": 1.0,
                     "loopA": true,
@@ -2289,29 +2291,38 @@
                 },
                 "enabled": true,
                 "ik": {
-                    "chainLength": 3,
-                    "enabled": false,
+                    "chainLength": 2,
+                    "enabled": true,
                     "targetMS": {
-                        "x": 0.0,
+                        "x": -0.20000000298023224,
                         "y": 0.0,
-                        "z": 0.0
+                        "z": 0.10000000149011612
                     },
-                    "tipBone": "Hand_L",
+                    "tipBone": "Ball_L",
                     "weight": 1.0
                 },
-                "playing": false,
+                "ikChains": [
+                    {}
+                ],
+                "playing": true,
                 "procedural": {
                     "seed": 0,
                     "strength": 0.0,
                     "timeSec": 0.0
                 },
-                "sockets": [],
+                "rootBoneLock": false,
+                "rootBoneName": "root",
+                "rootMotionDriveCct": false,
+                "rootMotionUnlock": false,
+                "sockets": [
+                    {}
+                ],
                 "upper": {
                     "autoAdvance": true,
                     "blend01": 0.0,
-                    "clipA": "",
+                    "clipA": "Aim",
                     "clipB": "",
-                    "enabled": true,
+                    "enabled": false,
                     "layerAlpha": 1.0,
                     "loopA": true,
                     "loopB": true,
@@ -2324,7 +2335,94 @@
             "Scripts": [
                 {
                     "enabled": true,
-                    "name": "CharacterAnimatorComponent"
+                    "name": "CharacterAnimatorComponent",
+                    "props": {
+                        "m_additiveClip": "Recoil",
+                        "m_additiveDuration": 0.25,
+                        "m_additiveRefClip": "Idle",
+                        "m_aimWeight": 1.0,
+                        "m_aimYawDeg": 0.0,
+                        "m_attackClip": "Attack01",
+                        "m_attackComputeColor": {
+                            "x": 1.0,
+                            "y": 0.20000000298023224,
+                            "z": 0.20000000298023224
+                        },
+                        "m_attackComputeDuration": 3.0,
+                        "m_attackComputeOffset": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "m_attackComputeSize": 6.0,
+                        "m_attackDuration": 1.5,
+                        "m_attackHitTime": 0.699999988079071,
+                        "m_attackPlaySpeed": 1.0,
+                        "m_blendSpeed": 8.0,
+                        "m_crouchClip": "CrouchDown",
+                        "m_crouchDuration": 1.0,
+                        "m_enableAdditive": false,
+                        "m_enableAim": false,
+                        "m_enableFootIK": true,
+                        "m_enableIK": false,
+                        "m_enableUpperLayer": false,
+                        "m_gravity": 18.0,
+                        "m_idleClip": "Idle",
+                        "m_ikChainLength": 3,
+                        "m_ikLiftSpeed": 5.0,
+                        "m_ikTargetLocal": {
+                            "x": 0.0,
+                            "y": 1.2000000476837158,
+                            "z": 0.20000000298023224
+                        },
+                        "m_ikTipBone": "Hand_L",
+                        "m_ikWeight": 1.0,
+                        "m_jumpSpeed": 6.5,
+                        "m_leftFootBasePos": {
+                            "x": -0.20000000298023224,
+                            "y": 0.0,
+                            "z": 0.10000000149011612
+                        },
+                        "m_leftFootBone": "Ball_L",
+                        "m_maxLiftHeight": 0.5,
+                        "m_moveSpeed": 10.0,
+                        "m_runClip": "Run",
+                        "m_runMultiplier": 1.600000023841858,
+                        "m_socketName": "WeaponPoint",
+                        "m_socketParentBone": "Hand_R",
+                        "m_socketPos": {
+                            "x": 0.10000000149011612,
+                            "y": 0.05000000074505806,
+                            "z": 0.0
+                        },
+                        "m_socketRotDeg": {
+                            "x": 0.0,
+                            "y": 90.0,
+                            "z": 0.0
+                        },
+                        "m_socketScale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "m_transitionDuration": 0.20000000298023224,
+                        "m_upperClip": "Aim",
+                        "m_walkClip": "Walk",
+                        "m_walkComputeColor": {
+                            "x": 0.800000011920929,
+                            "y": 0.800000011920929,
+                            "z": 0.800000011920929
+                        },
+                        "m_walkComputeDuration": 1.0,
+                        "m_walkComputeOffset": {
+                            "x": 0.0,
+                            "y": 0.10000000149011612,
+                            "z": 0.0
+                        },
+                        "m_walkComputeSize": 3.0,
+                        "m_walkSpawnInterval": 0.30000001192092896,
+                        "m_weaponObjName": "Weapon"
+                    }
                 }
             ],
             "SkinnedAnimation": {
@@ -2334,7 +2432,7 @@
                 "timeSec": 0.0
             },
             "SkinnedMesh": {
-                "boneCount": 248,
+                "boneCount": 1,
                 "instanceAssetPath": "Assets/Fbx/Alice.fbxasset",
                 "meshAssetPath": "Alice"
             },
@@ -2343,7 +2441,63 @@
                 "position": {
                     "x": 0.30000001192092896,
                     "y": 0.0,
+                    "z": -7.217227935791016
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 6.283186435699463,
                     "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "1001",
+            "name": "Alice"
+        },
+        {
+            "ComputeEffect": {
+                "color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "depthBiasMeters": 0.05000000074505806,
+                "depthTest": true,
+                "drag": 0.9829999804496765,
+                "emissionDurationSec": 0.026000000536441803,
+                "emitNewParticles": true,
+                "enabled": true,
+                "gravity": {
+                    "x": 0.0,
+                    "y": -0.6499999761581421,
+                    "z": 0.0
+                },
+                "intensity": 0.671999990940094,
+                "lifeMax": 0.17900000512599945,
+                "lifeMin": 0.009999999776482582,
+                "localOffset": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "loop": false,
+                "radius": 0.3700000047683716,
+                "shaderName": "Explosion",
+                "simulationSpace": "World",
+                "sizePx": 2.813999891281128,
+                "spawnRate": 1.0,
+                "startSpeed": 3.759000062942505
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -115.59066772460938,
+                    "y": 3.991809844970703,
+                    "z": 28.577007293701172
                 },
                 "rotation": {
                     "x": 0.0,
@@ -2354,10 +2508,11 @@
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
-                }
+                },
+                "visible": true
             },
-            "guid": "1001",
-            "name": "Alice"
+            "guid": "18323617903673084256",
+            "name": "GameObject3"
         }
     ],
     "sceneName": "AnimTest",

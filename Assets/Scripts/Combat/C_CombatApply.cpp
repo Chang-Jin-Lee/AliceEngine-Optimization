@@ -200,12 +200,6 @@ namespace Alice::Combat
                         trace->activeWindowDurationSec = 0.0f;
                     }
                 });
-                if (auto* driver = world.GetComponent<AttackDriverComponent>(p.weaponOrOwner))
-                {
-                    // If we disabled mid-attack window (parry/hit), suppress re-enable until window ends.
-                    if (driver->attackActive)
-                        driver->attackSuppressed = true;
-                }
                 break;
             }
             case CommandType::EnableTrace:
