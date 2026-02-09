@@ -49,6 +49,24 @@ namespace Alice
         ALICE_PROPERTY(std::string, pathDeath, "Resource/Sound/SFX/플레이어/사망/Player_Death_01.wav");
 
         /// 공격 상태 → OnPlayerAttackSfxRequest 델리게이트로 바인딩
+        // Per-file volume controls (Inspector)
+        ALICE_PROPERTY(float, volumeHeavyAttack, 1.0f);
+        ALICE_PROPERTY(float, volumeAttack1, 1.0f);
+        ALICE_PROPERTY(float, volumeAttack2, 1.0f);
+        ALICE_PROPERTY(float, volumeAttack3, 1.0f);
+        ALICE_PROPERTY(float, volumeGuard, 1.0f);
+        ALICE_PROPERTY(float, volumeParry, 1.0f);
+        ALICE_PROPERTY(float, volumeRoll, 1.0f);
+        ALICE_PROPERTY(float, volumeRun, 1.0f);
+        ALICE_PROPERTY(float, volumeDash, 1.0f);
+        ALICE_PROPERTY(float, volumeStop, 1.0f);
+        ALICE_PROPERTY(float, volumeHitRoll, 1.0f);
+        ALICE_PROPERTY(float, volumeGuardBreakAlarm, 1.0f);
+        ALICE_PROPERTY(float, volumeGuardBreak, 1.0f);
+        ALICE_PROPERTY(float, volumeEgoCombine, 1.0f);
+        ALICE_PROPERTY(float, volumeHeal, 1.0f);
+        ALICE_PROPERTY(float, volumeDeath, 1.0f);
+
         void SetAttackState(PlayerAttackState state);
         PlayerAttackState GetAttackState() const { return m_currentAttack; }
 
@@ -94,6 +112,10 @@ namespace Alice
         std::string GetPathForAttackState(PlayerAttackState state) const;
         std::string GetPathForMovementState(PlayerMovementState state) const;
         std::string GetPathForOtherState(PlayerOtherState state) const;
+        float GetAttackStateVolume(PlayerAttackState state) const;
+        float GetMovementStateVolume(PlayerMovementState state) const;
+        float GetOtherStateVolume(PlayerOtherState state) const;
+        void PlayPathInternal(const std::string& path, bool isLooping, float volumeMul);
         void PlayPathInternal(const std::string& path, bool isLooping);
         void PreloadSound(const std::string& path);
 

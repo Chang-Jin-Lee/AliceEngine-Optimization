@@ -83,7 +83,7 @@ namespace Alice
         //  대상 엔티티/스크립트 찾기 및 OnValueChanged 바인딩
         // Boss HP gauge appearance (color-only)
         // 텍스처를 빈 문자열로 설정하여 색상만 사용
-        TargetGauge->fillTexture = "";
+        TargetGauge->fillTexture = "Resource/Test/4_Resources/UI/StateBar/Boss_HP_Gauge_IN.png";
         TargetGauge->fillLateTexture = "";  // FillLate도 텍스처 없이 색상만 사용
         TargetGauge->backgroundTexture = "";
         TargetGauge->useFillLate = true;
