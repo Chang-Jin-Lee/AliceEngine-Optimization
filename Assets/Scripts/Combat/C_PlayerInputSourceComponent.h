@@ -43,11 +43,11 @@ namespace Alice
         ALICE_PROPERTY(float, m_chargeStage1Sec, 1.0f);
         ALICE_PROPERTY(float, m_chargeStage2Sec, 2.0f);
         ALICE_PROPERTY(float, m_chargeStage3Sec, 3.0f);
-        ALICE_PROPERTY(float, m_attackHoldThresholdSec, 0.35f);
+        // ALICE_PROPERTY(float, m_attackHoldThresholdSec, 0.35f); // unused
         ALICE_PROPERTY(float, m_parryWindowSec, 0.5f);
         ALICE_PROPERTY(bool, m_enableLogs, false);
         /// CCT ?? ?? (m/s). Intent.move ??? ??? desiredVelocity? ???.
-        ALICE_PROPERTY(float, m_moveSpeed, 5.0f);
+        // ALICE_PROPERTY(float, m_moveSpeed, 5.0f); // unused
 
     private:
         void EnsurePlayerComponents();

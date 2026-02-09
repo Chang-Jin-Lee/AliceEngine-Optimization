@@ -109,8 +109,8 @@ namespace Alice
         const std::string& GetIdleClip() const { return m_clipIdle; }
         const std::string& GetWalkForwardClip() const { return m_clipWalkForward; }
         const std::string& GetWalkSideClip() const { return m_clipWalkSide; }
-        const std::string& GetTurnLeftClip() const { return m_clipTurnLeft; }
-        const std::string& GetTurnRightClip() const { return m_clipTurnRight; }
+        // const std::string& GetTurnLeftClip() const { return m_clipTurnLeft; } // unused
+        // const std::string& GetTurnRightClip() const { return m_clipTurnRight; } // unused
         const std::string& GetHitClip() const { return m_clipHit; }
         const std::string& GetGroggyClip() const { return m_clipGroggy; }
         const std::string& GetGroggyRecoverClip() const { return m_clipGroggyRecover; }
@@ -199,15 +199,15 @@ namespace Alice
         ALICE_PROPERTY(float, m_distBand6, 6.0f);
         ALICE_PROPERTY(float, m_distBand8, 8.0f);
         ALICE_PROPERTY(float, m_distBand10, 10.0f);
-        ALICE_PROPERTY(float, m_attackSectorHoldSec, 0.6f);
+        // ALICE_PROPERTY(float, m_attackSectorHoldSec, 0.6f); // unused
         ALICE_PROPERTY(float, m_traceDelaySec, 0.5f);
         ALICE_PROPERTY(float, m_traceMaxHoldMinSec, 3.0f);
         ALICE_PROPERTY(float, m_traceMaxHoldMaxSec, 6.0f);
         ALICE_PROPERTY(float, m_actionDelaySec, 0.3f);
         ALICE_PROPERTY(float, m_rotationOffsetDeg, 180.0f);
-        ALICE_PROPERTY(float, m_dashCooldownSec, 10.0f);
+        // ALICE_PROPERTY(float, m_dashCooldownSec, 10.0f); // unused
         ALICE_PROPERTY(float, m_rangedCooldownSec, 10.0f);
-        ALICE_PROPERTY(int, m_rangedRepeatCount, 3);
+        // ALICE_PROPERTY(int, m_rangedRepeatCount, 3); // unused
         ALICE_PROPERTY(float, m_damageWindowSec, 0.0f);
         ALICE_PROPERTY(float, m_damageWindowThreshold, 0.0f);
         ALICE_PROPERTY(float, m_feedbackHoldSec, 0.5f);
@@ -216,8 +216,8 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_clipIdle, "Boss|Boss|Idle");
         ALICE_PROPERTY(std::string, m_clipWalkForward, "Boss|Boss|Walk_Forward");
         ALICE_PROPERTY(std::string, m_clipWalkSide, "Boss|Boss|Walk_Side");
-        ALICE_PROPERTY(std::string, m_clipTurnLeft, "");
-        ALICE_PROPERTY(std::string, m_clipTurnRight, "");
+        // ALICE_PROPERTY(std::string, m_clipTurnLeft, ""); // unused
+        // ALICE_PROPERTY(std::string, m_clipTurnRight, ""); // unused
         ALICE_PROPERTY(std::string, m_clipHit, "Boss|Boss|Hit");
         ALICE_PROPERTY(std::string, m_clipGroggy, "Boss|Boss|Groggy_Attacked");
         ALICE_PROPERTY(std::string, m_clipGroggyRecover, "Boss|Boss|Groggy_Recovery");
