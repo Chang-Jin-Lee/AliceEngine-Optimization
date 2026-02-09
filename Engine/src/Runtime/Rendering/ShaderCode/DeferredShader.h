@@ -787,6 +787,8 @@ TextureCube g_IBL_Specular : register(t8);
 Texture2D   g_IBL_BRDF_LUT : register(t9);
 Texture2D<float> g_ShadowMap : register(t10);
 Texture2D g_DecalAlbedo : register(t11);
+Texture2DArray g_LocalShadow2DArray : register(t12);
+TextureCubeArray g_LocalShadowCubeArray : register(t13);
 
 SamplerState g_Sam : register(s0);
 SamplerComparisonState g_ShadowSampler : register(s1);
@@ -847,6 +849,10 @@ cbuffer DirectionalLightBuffer : register(b3)
 #define MAX_POINT_LIGHTS 16
 #define MAX_SPOT_LIGHTS 16
 #define MAX_RECT_LIGHTS 16
+#define MAX_POINT_SHADOW_LIGHTS 1
+#define MAX_SPOT_SHADOW_LIGHTS 2
+#define MAX_RECT_SHADOW_LIGHTS 1
+#define MAX_SPOT_RECT_SHADOWS (MAX_SPOT_SHADOW_LIGHTS + MAX_RECT_SHADOW_LIGHTS)
 
 struct PointLight
 {
@@ -854,6 +860,9 @@ struct PointLight
     float  range;
     float3 color;
     float  intensity;
+    int    shadowIndex;
+    float  shadowStrength;
+    float2 pad;
 };
 
 struct SpotLight
@@ -865,6 +874,8 @@ struct SpotLight
     float3 color;
     float  outerCos;
     float  intensity;
+    int    shadowIndex;
+    float  shadowStrength;
     float  pad0;
 };
 
@@ -877,6 +888,8 @@ struct RectLight
     float3 color;
     float  height;
     float  intensity;
+    int    shadowIndex;
+    float  shadowStrength;
     float  pad0;
 };
 
@@ -889,6 +902,17 @@ cbuffer ExtraLightsBuffer : register(b5)
     PointLight g_PointLights[MAX_POINT_LIGHTS];
     SpotLight  g_SpotLights[MAX_SPOT_LIGHTS];
     RectLight  g_RectLights[MAX_RECT_LIGHTS];
+};
+
+cbuffer LocalShadowBuffer : register(b6)
+{
+    float4x4 g_SpotRectShadowViewProj[MAX_SPOT_RECT_SHADOWS];
+    float    g_SpotShadowMapSize;
+    int      g_PointShadowCount;
+    float    g_PointShadowMapSize;
+    int      g_SpotRectShadowCount;
+    float    g_PointShadowNearZ;
+    float3   g_LocalShadowPad0;
 };
 
 float ComputeAttenuation(float dist, float range)
@@ -908,6 +932,60 @@ float ComputeSpotFactor(float3 L, float3 lightDir, float innerCos, float outerCo
 float ComputeRectFactor(float3 L, float3 lightDir)
 {
     return saturate(dot(-L, normalize(lightDir)));
+}
+
+float CalcLocalSpotRectShadowFactor(float3 posW, int shadowIndex)
+{
+    if (shadowIndex < 0 || shadowIndex >= g_SpotRectShadowCount)
+        return 1.0f;
+
+    float4 shadowPos = mul(float4(posW, 1.0f), g_SpotRectShadowViewProj[shadowIndex]);
+    shadowPos.xyz /= max(shadowPos.w, 1e-6f);
+
+    float2 uv = float2(shadowPos.x * 0.5f + 0.5f, -shadowPos.y * 0.5f + 0.5f);
+    float depth = shadowPos.z;
+    if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f || depth <= 0.0f || depth >= 1.0f)
+        return 1.0f;
+
+    const float2 texelSize = float2(1.0f, 1.0f) / max(g_SpotShadowMapSize, 1.0f);
+    const float bias = 0.0015f;
+    float sum = 0.0f;
+    [unroll] for (int y = -1; y <= 1; ++y)
+    {
+        [unroll] for (int x = -1; x <= 1; ++x)
+        {
+            float2 offset = float2(x, y) * texelSize;
+            sum += g_LocalShadow2DArray.SampleCmpLevelZero(g_ShadowSampler, float3(uv + offset, shadowIndex), depth - bias);
+        }
+    }
+    return sum / 9.0f;
+}
+
+float ComputePointShadowDepth(float distanceToLight, float nearPlane, float farPlane)
+{
+    float safeFar = max(farPlane, nearPlane + 1e-3f);
+    float m33 = safeFar / (safeFar - nearPlane);
+    float m43 = (-nearPlane * safeFar) / (safeFar - nearPlane);
+    return m33 + m43 / max(distanceToLight, nearPlane + 1e-4f);
+}
+
+float CalcLocalPointShadowFactor(float3 posW, float3 lightPos, float lightRange, int shadowIndex)
+{
+    if (shadowIndex < 0 || shadowIndex >= g_PointShadowCount)
+        return 1.0f;
+    if (lightRange <= g_PointShadowNearZ + 1e-4f)
+        return 1.0f;
+
+    float3 toPixel = posW - lightPos;
+    float dist = length(toPixel);
+    if (dist <= 1e-4f || dist >= lightRange)
+        return 1.0f;
+
+    float3 dir = toPixel / dist;
+    float sampleDepth = g_LocalShadowCubeArray.SampleLevel(g_SamplerLinear, float4(dir, shadowIndex), 0.0f).r;
+    float currentDepth = ComputePointShadowDepth(dist, g_PointShadowNearZ, lightRange);
+    const float bias = 0.0025f;
+    return (currentDepth - bias <= sampleDepth) ? 1.0f : 0.0f;
 }
 
 float3 EvaluatePBRLight(float3 N, float3 V, float3 L, float3 albedoPBR, float metalness, float roughness, float3 lightColor, float ndotlOverride)
@@ -1269,7 +1347,9 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
              float dist = length(toLight);
              float3 Lp = (dist > 0.0001f) ? (toLight / dist) : float3(0, 0, 1);
              float atten = ComputeAttenuation(dist, pl.range);
-             float3 lc = pl.color * pl.intensity * atten;
+             float localShadow = (pl.shadowIndex >= 0) ? CalcLocalPointShadowFactor(posW, pl.position, pl.range, pl.shadowIndex) : 1.0f;
+             localShadow = lerp(1.0f, localShadow, saturate(pl.shadowStrength));
+             float3 lc = pl.color * pl.intensity * atten * localShadow;
              AccumulateLegacy(N, V, Lp, lc, 1.0f, shadingMode, shininess, totalDiffuse, totalSpecular);
         }
         
@@ -1280,7 +1360,9 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
             float3 Ls = (dist > 0.0001f) ? (toLight / dist) : float3(0, 0, 1);
             float atten = ComputeAttenuation(dist, sl.range);
             float spot = ComputeSpotFactor(Ls, sl.direction, sl.innerCos, sl.outerCos);
-            float3 lc = sl.color * sl.intensity * atten * spot;
+            float localShadow = (sl.shadowIndex >= 0) ? CalcLocalSpotRectShadowFactor(posW, sl.shadowIndex) : 1.0f;
+            localShadow = lerp(1.0f, localShadow, saturate(sl.shadowStrength));
+            float3 lc = sl.color * sl.intensity * atten * spot * localShadow;
             AccumulateLegacy(N, V, Ls, lc, 1.0f, shadingMode, shininess, totalDiffuse, totalSpecular);
         }
 
@@ -1292,7 +1374,9 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
             float atten = ComputeAttenuation(dist, rl.range);
             float facing = ComputeRectFactor(Lr, rl.direction);
             float areaScale = max(rl.width * rl.height, 0.01f);
-            float3 lc = rl.color * rl.intensity * atten * facing * areaScale;
+            float localShadow = (rl.shadowIndex >= 0) ? CalcLocalSpotRectShadowFactor(posW, rl.shadowIndex) : 1.0f;
+            localShadow = lerp(1.0f, localShadow, saturate(rl.shadowStrength));
+            float3 lc = rl.color * rl.intensity * atten * facing * areaScale * localShadow;
             AccumulateLegacy(N, V, Lr, lc, 1.0f, shadingMode, shininess, totalDiffuse, totalSpecular);
         }
 
@@ -1335,6 +1419,8 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float3 Lp = (dist > 0.0001f) ? (toLight / dist) : float3(0, 0, 1);
         float atten = ComputeAttenuation(dist, pl.range);
         float3 lc = pl.color * pl.intensity * atten;
+        float localShadow = (pl.shadowIndex >= 0) ? CalcLocalPointShadowFactor(posW, pl.position, pl.range, pl.shadowIndex) : 1.0f;
+        localShadow = lerp(1.0f, localShadow, saturate(pl.shadowStrength));
         float ndotl = max(dot(N, Lp), 0.0f);
         float shadedNdotL = ndotl;
         if (toonPbr && ndotl > 0.0f) {
@@ -1342,7 +1428,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         }
         float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength);
         float3 lit = EvaluatePBRLight(N, V, Lp, albedoPBR, metalness, roughness, lc, selfShadowNdotL);
-        extraLighting += lit * ao;
+        extraLighting += lit * ao * localShadow;
     }
 
     [loop] for (int i = 0; i < g_SpotLightCount; ++i) {
@@ -1353,6 +1439,8 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float atten = ComputeAttenuation(dist, sl.range);
         float spot = ComputeSpotFactor(Ls, sl.direction, sl.innerCos, sl.outerCos);
         float3 lc = sl.color * sl.intensity * atten * spot;
+        float localShadow = (sl.shadowIndex >= 0) ? CalcLocalSpotRectShadowFactor(posW, sl.shadowIndex) : 1.0f;
+        localShadow = lerp(1.0f, localShadow, saturate(sl.shadowStrength));
         float ndotl = max(dot(N, Ls), 0.0f);
         float shadedNdotL = ndotl;
         if (toonPbr && ndotl > 0.0f) {
@@ -1360,7 +1448,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         }
         float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength);
         float3 lit = EvaluatePBRLight(N, V, Ls, albedoPBR, metalness, roughness, lc, selfShadowNdotL);
-        extraLighting += lit * ao;
+        extraLighting += lit * ao * localShadow;
     }
 
     [loop] for (int i = 0; i < g_RectLightCount; ++i) {
@@ -1372,6 +1460,8 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float facing = ComputeRectFactor(Lr, rl.direction);
         float areaScale = max(rl.width * rl.height, 0.01f);
         float3 lc = rl.color * rl.intensity * atten * facing * areaScale;
+        float localShadow = (rl.shadowIndex >= 0) ? CalcLocalSpotRectShadowFactor(posW, rl.shadowIndex) : 1.0f;
+        localShadow = lerp(1.0f, localShadow, saturate(rl.shadowStrength));
         float ndotl = max(dot(N, Lr), 0.0f);
         float shadedNdotL = ndotl;
         if (toonPbr && ndotl > 0.0f) {
@@ -1379,7 +1469,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         }
         float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength);
         float3 lit = EvaluatePBRLight(N, V, Lr, albedoPBR, metalness, roughness, lc, selfShadowNdotL);
-        extraLighting += lit * ao;
+        extraLighting += lit * ao * localShadow;
     }
 
     // Indirect Light (IBL)

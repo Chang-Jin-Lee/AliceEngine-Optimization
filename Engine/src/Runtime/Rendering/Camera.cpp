@@ -1,4 +1,5 @@
 #include "Runtime/Rendering/Camera.h"
+#include "Runtime/Rendering/CullingTuning.h"
 
 #include <cmath>
 #include <algorithm>
@@ -184,10 +185,11 @@ namespace Alice
         BoundingFrustum frustum;
 
         // 각도 조절. 실제 눈에 보이는 FOV(m_fovYRadians)보다 1.3배(30%) 더 넓게 잡습니다.
-        float cullingFov = m_fovYRadians * 1.3f;
+        float cullingFov = m_fovYRadians * CullingTuning::FrustumFovScale;
 
         // 179도(약 3.124 라디안)를 넘지 않도록 제한 (180도 이상은 투영 행렬 생성 불가)
-        if (cullingFov > XM_PI - 0.02f) cullingFov = XM_PI - 0.02f;
+        if (cullingFov > XM_PI - CullingTuning::FrustumFovClampEpsilon)
+            cullingFov = XM_PI - CullingTuning::FrustumFovClampEpsilon;
 
         float safeAspectRatio = m_aspectRatio;
         if (safeAspectRatio < 0.001f)

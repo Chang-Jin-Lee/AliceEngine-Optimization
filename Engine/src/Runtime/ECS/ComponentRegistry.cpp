@@ -663,6 +663,7 @@ namespace Alice
             .property("color", &PointLightComponent::color)
             .property("intensity", &PointLightComponent::intensity)
             .property("range", &PointLightComponent::range)
+            .property("castShadow", &PointLightComponent::castShadow)
             .property("enabled", &PointLightComponent::enabled);
 
         // === SpotLightComponent ��� ===
@@ -673,6 +674,7 @@ namespace Alice
             .property("range", &SpotLightComponent::range)
             .property("innerAngleDeg", &SpotLightComponent::innerAngleDeg)
             .property("outerAngleDeg", &SpotLightComponent::outerAngleDeg)
+            .property("castShadow", &SpotLightComponent::castShadow)
             .property("enabled", &SpotLightComponent::enabled);
 
         // === RectLightComponent ��� ===
@@ -683,6 +685,7 @@ namespace Alice
             .property("width", &RectLightComponent::width)
             .property("height", &RectLightComponent::height)
             .property("range", &RectLightComponent::range)
+            .property("castShadow", &RectLightComponent::castShadow)
             .property("enabled", &RectLightComponent::enabled);
 
         // === PostProcessVolumeComponent ��� ===

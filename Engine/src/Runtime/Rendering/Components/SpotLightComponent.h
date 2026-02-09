@@ -12,6 +12,7 @@ namespace Alice
         float range { 15.0f };
         float innerAngleDeg { 15.0f };
         float outerAngleDeg { 30.0f };
+        bool castShadow { true };
         bool enabled { true };
     };
 }

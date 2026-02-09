@@ -4,6 +4,7 @@
 #include <Windows.h>
 
 #include <cstdint>
+#include <array>
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -244,6 +245,7 @@ namespace Alice
         bool EnsureInstanceBufferCapacity(std::size_t requiredCount);
         bool CreateIblResources(const std::string& iblDir = "Bridge", const std::string& iblName = "bridge", const std::string& iblSuffix = "HDR");
         bool CreateShadowMapResources();
+        bool CreateLocalShadowResources();
         bool CreateToneMappingResources(const std::uint32_t& width, const std::uint32_t& height);
         bool CreateCameraPreviewTargets(std::uint32_t width, std::uint32_t height);
 
@@ -257,6 +259,10 @@ namespace Alice
                                            const std::unordered_set<EntityId>& cameraEntities,
                                            bool editorMode = false,
                                            bool isPlaying = false);
+        void RenderLocalLightShadowPasses(const World& world,
+                                          const Camera& camera,
+                                          const std::vector<SkinnedDrawCommand>& skinnedCommands,
+                                          const std::unordered_set<EntityId>& cameraEntities);
         void PassGBuffer(const World& world, 
                         const Camera& camera,
                         const std::vector<SkinnedDrawCommand>& skinnedCommands,
@@ -435,6 +441,8 @@ namespace Alice
         Microsoft::WRL::ComPtr<ID3D11Buffer>           m_cbTransparentLight;
         // Shadow 전용 CB (정확한 패킹/행렬 전달용)
         Microsoft::WRL::ComPtr<ID3D11Buffer>           m_cbShadow;
+        // Local light shadow 전용 CB (register b6)
+        Microsoft::WRL::ComPtr<ID3D11Buffer>           m_cbLocalShadow;
 
         // ==== GPU 인스턴싱 버퍼 ====
         Microsoft::WRL::ComPtr<ID3D11Buffer>           m_instanceBuffer;
@@ -490,6 +498,8 @@ namespace Alice
         // Shadow depth bias RS
         Microsoft::WRL::ComPtr<ID3D11RasterizerState>   m_shadowRasterizerState;
         Microsoft::WRL::ComPtr<ID3D11RasterizerState>   m_shadowRasterizerStateReversed;
+        Microsoft::WRL::ComPtr<ID3D11RasterizerState>   m_localShadowRasterizerState;
+        Microsoft::WRL::ComPtr<ID3D11RasterizerState>   m_localShadowRasterizerStateReversed;
         // 아웃라인용 (Cull Front) 래스터라이저
         Microsoft::WRL::ComPtr<ID3D11RasterizerState>   m_rsCullFront;
 
@@ -526,6 +536,25 @@ namespace Alice
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_shadowSRV;
         D3D11_VIEWPORT                                  m_shadowViewport {};
         ShadowSettings                                  m_shadowSettings {};
+
+        // ==== 로컬 라이트 섀도우 리소스 (Point/Spot/Rect) ====
+        Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_localShadow2DTex;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_localShadow2DSRV;
+        std::array<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>, MaxShadowedSpotRectLights> m_localShadow2DDSVs;
+        D3D11_VIEWPORT                                   m_localShadow2DViewport {};
+
+        Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_localPointShadowTex;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_localPointShadowSRV;
+        std::array<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>, MaxShadowedPointLights * 6> m_localPointShadowDSVs;
+        D3D11_VIEWPORT                                   m_localPointShadowViewport {};
+
+        // 프레임별 로컬 섀도우 인덱스 캐시
+        std::unordered_map<EntityId, int>               m_pointShadowIndices;
+        std::unordered_map<EntityId, int>               m_spotShadowIndices;
+        std::unordered_map<EntityId, int>               m_rectShadowIndices;
+        std::array<DirectX::XMMATRIX, MaxShadowedSpotRectLights> m_spotRectShadowViewProj;
+        int                                              m_spotRectShadowCount = 0;
+        int                                              m_pointShadowCount = 0;
 
         // ==== Shadow 캐시/갱신 설정 ====
         std::uint64_t                                   m_shadowFrameIndex = 0;
