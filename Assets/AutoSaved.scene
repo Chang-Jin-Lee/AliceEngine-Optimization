@@ -5,7 +5,7 @@
                 "albedoTexturePath": "",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/EgoWeapon_Animaition_0.mat",
+                "assetPath": "Assets/Materials/Cube_0.mat",
                 "color": {
                     "x": 0.699999988079071,
                     "y": 0.699999988079071,
@@ -40,15 +40,15 @@
                 "transparent": false
             },
             "SkinnedAnimation": {
-                "clipIndex": 10,
-                "playing": false,
+                "clipIndex": 0,
+                "playing": true,
                 "speed": 1.0,
-                "timeSec": 0.28999999165534973
+                "timeSec": 0.0
             },
             "SkinnedMesh": {
-                "boneCount": 5,
-                "instanceAssetPath": "Assets/Fbx/EgoWeapon_Animaition.fbxasset",
-                "meshAssetPath": "EgoWeapon_Animaition"
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
             },
             "Transform": {
                 "enabled": true,
@@ -69,132 +69,8 @@
                 },
                 "visible": true
             },
-            "guid": "15025427496531985483"
-        },
-        {
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 0.800000011920929,
-                    "y": 0.0,
-                    "z": -0.699999988079071
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.5619960427284241
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": true
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": true,
-                "enableTrails": true,
-                "enabled": true,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 5.0,
-                "loop": true,
-                "noiseScale": 1.0,
-                "overrideLoop": false,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 2.0,
-                "speedScale": 1.0,
-                "timeScale": 0.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "15025427496531985483",
-            "guid": "6931034796036509830",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Material": {
-                "albedoTexturePath": "",
-                "alpha": 1.0,
-                "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/EgoWeapon_Animaition_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "envDiffuseStrength": 1.0,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.5,
-                "shadingMode": -1,
-                "shadowStrength": 1.0,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrLevel3Alpha": 1.0,
-                "toonPbrRampIntensity": 0.0,
-                "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 10,
-                "playing": false,
-                "speed": 1.0,
-                "timeSec": 0.43799999356269836
-            },
-            "SkinnedMesh": {
-                "boneCount": 5,
-                "instanceAssetPath": "Assets/Fbx/EgoWeapon_Animaition.fbxasset",
-                "meshAssetPath": "EgoWeapon_Animaition"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "guid": "14022596960544332542"
+            "guid": "11073468189602588419",
+            "name": "Cube"
         }
     ],
     "sceneName": "AutoSaved",
