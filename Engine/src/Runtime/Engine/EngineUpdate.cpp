@@ -1,4 +1,5 @@
 #include "Runtime/Engine/EngineImpl.h"
+#include "Runtime/ECS/Components/TransformComponent.h"
 
 namespace Alice
 {
@@ -224,11 +225,46 @@ namespace Alice
 	{
 		using namespace DirectX;
 
-		if (!m_inputSystem.IsRightButtonDown())
+		auto& input = m_inputSystem;
+
+		// Editor + Stopped 상태에서만 이 함수가 호출됩니다.
+		// F: 선택 오브젝트 앞으로 카메라를 이동(포커스)합니다.
+		if (input.IsKeyPressed(Keyboard::F))
+		{
+			if (m_selectedEntity != InvalidEntityId)
+			{
+				const TransformComponent* selectedTransform = m_world.GetComponent<TransformComponent>(m_selectedEntity);
+				if (selectedTransform)
+				{
+					const XMMATRIX targetWorld = m_world.ComputeWorldMatrix(m_selectedEntity);
+					XMFLOAT3 targetPos{};
+					XMStoreFloat3(&targetPos, targetWorld.r[3]);
+
+					const XMMATRIX camRot = XMMatrixRotationRollPitchYaw(m_cameraPitchRadians, m_cameraYawRadians, 0.0f);
+					const XMVECTOR camForward = XMVector3Normalize(XMVector3TransformNormal(XMVectorSet(0, 0, 1, 0), camRot));
+
+					const float sx = std::fabs(selectedTransform->scale.x);
+					const float sy = std::fabs(selectedTransform->scale.y);
+					const float sz = std::fabs(selectedTransform->scale.z);
+					const float maxScale = (std::max)((std::max)(sx, sy), sz);
+					const float focusDistance = std::clamp(maxScale * 2.0f, 1.5f, 20.0f);
+
+					const XMVECTOR targetPosV = XMLoadFloat3(&targetPos);
+					const XMVECTOR newCamPos = XMVectorSubtract(targetPosV, XMVectorScale(camForward, focusDistance));
+					XMStoreFloat3(&m_cameraPosition, newCamPos);
+				}
+				else
+				{
+					// 선택 엔티티가 이미 삭제된 경우 선택 상태 정리
+					m_selectedEntity = InvalidEntityId;
+				}
+			}
+		}
+
+		if (!input.IsRightButtonDown())
 			return;
 
 		XMVECTOR moveDir = XMVectorZero();
-		auto& input = m_inputSystem;
 
 		if (input.IsKeyDown(Keyboard::W)) moveDir = XMVectorAdd(moveDir, XMVectorSet(0, 0, 1, 0));
 		if (input.IsKeyDown(Keyboard::S)) moveDir = XMVectorAdd(moveDir, XMVectorSet(0, 0, -1, 0));
