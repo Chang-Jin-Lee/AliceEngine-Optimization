@@ -184,7 +184,7 @@ void main(uint3 id : SV_DispatchThreadID)
     if (p.life <= 0.0)
     {
         float base = (float)i * 1.2345 + t * 13.37 + p.seed * 101.0;
-        if (Hash11(base + 17.0) > spawnRate)
+        if (Hash11(base + 17.0) >= spawnRate)
         {
             p.life = 0.0;
             particles[i] = p;
@@ -478,7 +478,7 @@ void main(uint3 id : SV_DispatchThreadID)
     if (p.life <= 0.0)
     {
         float base = (float)i * 1.913 + t * 19.71 + p.seed * 97.0;
-        if (Hash11(base + 17.0) > spawnRate)
+        if (Hash11(base + 17.0) >= spawnRate)
         {
             p.life = 0.0;
             particles[i] = p;
@@ -779,7 +779,7 @@ void main(uint3 id : SV_DispatchThreadID)
     if (p.life <= 0.0)
     {
         float base = (float)i * 0.777 + t * 3.1 + p.seed * 113.0;
-        if (Hash11(base + 17.0) > spawnRate)
+        if (Hash11(base + 17.0) >= spawnRate)
         {
             p.life = 0.0;
             particles[i] = p;
@@ -1066,7 +1066,7 @@ void main(uint3 id : SV_DispatchThreadID)
     if (p.life <= 0.0)
     {
         float base = (float)i * 2.11 + t * 7.7 + p.seed * 111.0;
-        if (Hash11(base + 17.0) > spawnRate)
+        if (Hash11(base + 17.0) >= spawnRate)
         {
             p.life = 0.0;
             particles[i] = p;
@@ -1350,7 +1350,7 @@ void main(uint3 id : SV_DispatchThreadID)
     if (p.life <= 0.0)
     {
         float base = (float)i * 0.91 + t * 0.37 + p.seed * 401.0;
-        if (Hash11(base + 17.0) > spawnRate)
+        if (Hash11(base + 17.0) >= spawnRate)
         {
             p.life = 0.0;
             particles[i] = p;
@@ -1622,7 +1622,7 @@ void main(uint3 id : SV_DispatchThreadID)
     if (p.life <= 0.0)
     {
         float base = (float)i * 1.57 + t * 9.0 + p.seed * 181.0;
-        if (Hash11(base + 17.0) > spawnRate)
+        if (Hash11(base + 17.0) >= spawnRate)
         {
             p.life = 0.0;
             particles[i] = p;

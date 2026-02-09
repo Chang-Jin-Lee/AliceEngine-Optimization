@@ -75,6 +75,7 @@ namespace Alice
         vfx.speedScale = m_speedScale;
         vfx.intensityScale = m_intensityScale;
         vfx.spawnRateScale = m_spawnRateScale;
+        vfx.emitNewParticles = m_emitNewParticles;
         vfx.enableTrails = m_enableTrails;
         vfx.trailWidthScale = m_trailWidthScale;
         vfx.trailLifeScale = m_trailLifeScale;

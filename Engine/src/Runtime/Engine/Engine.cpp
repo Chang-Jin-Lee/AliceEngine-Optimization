@@ -90,6 +90,26 @@ namespace Alice
 		return static_cast<int>(msg.wParam);
 	}
 
+	void Engine::StopDeltaTime(bool stop)
+	{
+		pImpl->m_stopGameDeltaTime = stop;
+	}
+
+	bool Engine::IsDeltaTimeStopped() const
+	{
+		return pImpl->m_stopGameDeltaTime;
+	}
+
+	float Engine::GetGameDeltaTime() const
+	{
+		return pImpl->m_gameDeltaTime;
+	}
+
+	float Engine::GetUnscaledDeltaTime() const
+	{
+		return pImpl->m_unscaledDeltaTime;
+	}
+
 	LRESULT Engine::HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		return pImpl->HandleMessage(hWnd, message, wParam, lParam);

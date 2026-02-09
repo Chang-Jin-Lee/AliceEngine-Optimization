@@ -20,6 +20,9 @@
 #include "Runtime/Physics/Components/Phy_MeshColliderComponent.h"
 #include "Runtime/Physics/IPhysicsWorld.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/ComputeEffectComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
+#include "../Combat/C_CombatSessionComponent.h"
 //TODO : Include 확인 해야함
 
 namespace Alice
@@ -134,6 +137,18 @@ namespace Alice
     {
         m_rng = std::mt19937(std::random_device{}());
         FindEntities();
+        SetupShardTrailVfx();
+        m_prevPlayerParrySuccessCount = 0;
+        m_hasSeenPlayerParrySuccessCount = false;
+        m_parryShieldVfx = InvalidEntityId;
+        m_parryShieldFreezeAnchor = InvalidEntityId;
+        m_parryShieldDetachTimerSec = 0.0f;
+        m_parryShieldDetached = false;
+        m_warnedMissingCombatSession = false;
+        m_warnedMissingPlayerEntity = false;
+        m_warnedMissingParryShield = false;
+        m_warnedMissingParryShieldVfx = false;
+        RestoreParryShieldToPlayer(true);
 
         m_initialized = (m_weaponCombined != InvalidEntityId && m_eye != InvalidEntityId);
         if (!m_initialized)
@@ -152,6 +167,8 @@ namespace Alice
 
     void Gimmick::Update(float deltaTime)
     {
+        UpdateParryShieldParryTrigger(deltaTime);
+
         if (!m_initialized)
             return;
 
@@ -230,6 +247,8 @@ namespace Alice
             if (m_eyeArrived && m_tendonFading && m_tendonTimer >= m_tendonVisibleDelay)
                 EnterPhase(Phase::Normal);
         }
+
+        UpdateShardTrailEmission(deltaTime);
     }
 
     void Gimmick::DebugEnableEnemyWeaponTrace()
@@ -314,6 +333,310 @@ namespace Alice
         }
     }
 
+    C_CombatSessionComponent* Gimmick::FindCombatSession()
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return nullptr;
+
+        const std::string& sessionName = Get_m_combatSessionName();
+        if (sessionName.empty())
+            return nullptr;
+
+        GameObject go = world->FindGameObject(sessionName);
+        if (!go.IsValid())
+        {
+            if (!m_warnedMissingCombatSession)
+            {
+                ALICE_LOG_WARN("[Gimmick] Combat session entity not found: %s", sessionName.c_str());
+                m_warnedMissingCombatSession = true;
+            }
+            return nullptr;
+        }
+
+        auto* scripts = world->GetScripts(go.id());
+        if (!scripts)
+            return nullptr;
+
+        for (auto& sc : *scripts)
+        {
+            if (sc.scriptName == "C_CombatSessionComponent" && sc.instance)
+                return static_cast<C_CombatSessionComponent*>(sc.instance.get());
+        }
+
+        if (!m_warnedMissingCombatSession)
+        {
+            ALICE_LOG_WARN("[Gimmick] C_CombatSessionComponent missing on entity: %s", sessionName.c_str());
+            m_warnedMissingCombatSession = true;
+        }
+        return nullptr;
+    }
+
+    EntityId Gimmick::ResolvePlayerEntity(bool logWarnings)
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return InvalidEntityId;
+
+        const std::string& playerName = Get_m_playerEntityName();
+        if (playerName.empty())
+            return InvalidEntityId;
+
+        GameObject go = world->FindGameObject(playerName);
+        if (!go.IsValid())
+        {
+            if (logWarnings && !m_warnedMissingPlayerEntity)
+            {
+                ALICE_LOG_WARN("[Gimmick] Player entity not found: %s", playerName.c_str());
+                m_warnedMissingPlayerEntity = true;
+            }
+            return InvalidEntityId;
+        }
+
+        return go.id();
+    }
+
+    EntityId Gimmick::ResolveParryShieldVfxEntity(bool logWarnings)
+    {
+        auto* world = GetWorld();
+        if (!world)
+        {
+            m_parryShieldVfx = InvalidEntityId;
+            return InvalidEntityId;
+        }
+
+        if (m_parryShieldVfx != InvalidEntityId && world->GetComponent<UnityVfxComponent>(m_parryShieldVfx))
+            return m_parryShieldVfx;
+
+        const std::string ownerName = Get_m_playerEntityName();
+        const std::string shieldName = Get_m_parryShieldVfxName();
+        if (shieldName.empty())
+        {
+            m_parryShieldVfx = InvalidEntityId;
+            return InvalidEntityId;
+        }
+
+        EntityId resolved = InvalidEntityId;
+        if (!ownerName.empty())
+        {
+            GameObject ownerGo = world->FindGameObject(ownerName);
+            if (ownerGo.IsValid())
+            {
+                const auto children = world->GetChildren(ownerGo.id());
+                for (EntityId child : children)
+                {
+                    if (world->GetEntityName(child) == shieldName)
+                    {
+                        resolved = child;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (resolved == InvalidEntityId)
+        {
+            GameObject shieldGo = world->FindGameObject(shieldName);
+            if (shieldGo.IsValid())
+                resolved = shieldGo.id();
+        }
+
+        if (resolved == InvalidEntityId)
+        {
+            m_parryShieldVfx = InvalidEntityId;
+            if (logWarnings && !m_warnedMissingParryShield)
+            {
+                ALICE_LOG_WARN("[Gimmick] Parry shield VFX entity not found: owner=%s child=%s",
+                               ownerName.c_str(),
+                               shieldName.c_str());
+                m_warnedMissingParryShield = true;
+            }
+            return InvalidEntityId;
+        }
+
+        if (!world->GetComponent<UnityVfxComponent>(resolved))
+        {
+            m_parryShieldVfx = InvalidEntityId;
+            if (logWarnings && !m_warnedMissingParryShieldVfx)
+            {
+                ALICE_LOG_WARN("[Gimmick] Parry shield entity has no UnityVfxComponent: %s", shieldName.c_str());
+                m_warnedMissingParryShieldVfx = true;
+            }
+            return InvalidEntityId;
+        }
+
+        m_parryShieldVfx = resolved;
+        return resolved;
+    }
+
+    void Gimmick::TriggerParryShieldOneShot()
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        const EntityId shieldId = ResolveParryShieldVfxEntity(true);
+        if (shieldId == InvalidEntityId)
+            return;
+
+        const EntityId playerId = ResolvePlayerEntity(true);
+        if (playerId == InvalidEntityId)
+            return;
+
+        // If already detached from a previous play, restore first, then re-freeze.
+        if (m_parryShieldDetached)
+            RestoreParryShieldToPlayer(false);
+
+        const EntityId anchor = world->CreateEmpty();
+        if (anchor != InvalidEntityId)
+        {
+            world->SetEntityName(anchor, "__ParryShieldFreezeAnchor");
+            world->SetParent(anchor, InvalidEntityId, false);
+
+            XMFLOAT3 worldPos{};
+            XMFLOAT3 worldRot{};
+            XMFLOAT3 worldScale{};
+            const XMMATRIX playerWorld = world->ComputeWorldMatrix(playerId);
+            if (DecomposeMatrix(playerWorld, worldPos, worldRot, worldScale))
+            {
+                if (auto* anchorTr = world->GetComponent<TransformComponent>(anchor))
+                {
+                    anchorTr->position = worldPos;
+                    anchorTr->rotation = worldRot;
+                    anchorTr->scale = worldScale;
+                    anchorTr->enabled = true;
+                    anchorTr->visible = true;
+                    world->MarkTransformDirty(anchor);
+                }
+
+                // Keep current local offset while freezing parent world transform snapshot.
+                world->SetParent(shieldId, anchor, false);
+                m_parryShieldFreezeAnchor = anchor;
+                m_parryShieldDetached = true;
+                const float safeTimeScale = std::max(0.01f, Get_m_parryShieldTimeScale());
+                m_parryShieldDetachTimerSec = std::max(0.05f, Get_m_parryShieldDetachDurationSec() / safeTimeScale);
+            }
+            else
+            {
+                world->DestroyEntity(anchor);
+            }
+        }
+
+        if (!m_parryShieldDetached && world->GetParent(shieldId) != playerId)
+            world->SetParent(shieldId, playerId, false);
+
+        if (auto* tr = world->GetComponent<TransformComponent>(shieldId))
+        {
+            const bool changed = (!tr->enabled) || (!tr->visible);
+            tr->enabled = true;
+            tr->visible = true;
+            if (changed)
+                world->MarkTransformDirty(shieldId);
+        }
+
+        if (auto* vfx = world->GetComponent<UnityVfxComponent>(shieldId))
+        {
+            vfx->enabled = true;
+            vfx->timeScale = std::max(0.01f, Get_m_parryShieldTimeScale());
+            vfx->overrideLoop = true;
+            vfx->loop = false;
+            vfx->emitNewParticles = true;
+            vfx->alphaScale = 1.0f;
+            vfx->playId += 1;
+        }
+
+        if (auto* compute = world->GetComponent<ComputeEffectComponent>(shieldId))
+        {
+            compute->enabled = false;
+            compute->spawnRate = 0.0f;
+        }
+    }
+
+    void Gimmick::RestoreParryShieldToPlayer(bool hideAfterRestore)
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        const EntityId shieldId = ResolveParryShieldVfxEntity(false);
+        const EntityId playerId = ResolvePlayerEntity(false);
+        if (shieldId != InvalidEntityId && playerId != InvalidEntityId)
+        {
+            if (world->GetParent(shieldId) != playerId)
+                world->SetParent(shieldId, playerId, false);
+
+            if (hideAfterRestore)
+            {
+                if (auto* tr = world->GetComponent<TransformComponent>(shieldId))
+                {
+                    tr->enabled = false;
+                    tr->visible = false;
+                    world->MarkTransformDirty(shieldId);
+                }
+
+                if (auto* vfx = world->GetComponent<UnityVfxComponent>(shieldId))
+                {
+                    vfx->enabled = false;
+                    vfx->emitNewParticles = false;
+                    vfx->alphaScale = 1.0f;
+                }
+            }
+        }
+
+        if (m_parryShieldFreezeAnchor != InvalidEntityId)
+        {
+            world->DestroyEntity(m_parryShieldFreezeAnchor);
+            m_parryShieldFreezeAnchor = InvalidEntityId;
+        }
+
+        m_parryShieldDetached = false;
+        m_parryShieldDetachTimerSec = 0.0f;
+    }
+
+    void Gimmick::UpdateParryShieldParryTrigger(float dt)
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        if (m_parryShieldDetached)
+        {
+            m_parryShieldDetachTimerSec = std::max(0.0f, m_parryShieldDetachTimerSec - std::max(0.0f, dt));
+            if (m_parryShieldDetachTimerSec <= 0.0f)
+                RestoreParryShieldToPlayer(true);
+        }
+
+        C_CombatSessionComponent* session = FindCombatSession();
+        if (!session)
+        {
+            return;
+        }
+
+        const std::uint64_t parryCount = session->GetPlayerParrySuccessCount();
+        if (!m_hasSeenPlayerParrySuccessCount)
+        {
+            m_prevPlayerParrySuccessCount = parryCount;
+            m_hasSeenPlayerParrySuccessCount = true;
+        }
+
+        const bool triggerPulse = (parryCount != m_prevPlayerParrySuccessCount);
+        if (triggerPulse)
+        {
+            TriggerParryShieldOneShot();
+        }
+        else
+        {
+            const EntityId shieldId = ResolveParryShieldVfxEntity(false);
+            if (shieldId != InvalidEntityId)
+            {
+                if (auto* vfx = world->GetComponent<UnityVfxComponent>(shieldId))
+                    vfx->emitNewParticles = false;
+            }
+        }
+
+        m_prevPlayerParrySuccessCount = parryCount;
+    }
+
     bool Gimmick::IsGuardBroken() const
     {
         auto* world = GetWorld();
@@ -371,7 +694,7 @@ namespace Alice
 
         m_weaponCombined = findByName(m_weaponCombinedName);
         m_core = findByName(m_coreName);
-        m_tendon = findByName(m_tendonName);
+        // m_tendon = findByName(m_tendonName); // unused
         m_eye = findByName(m_eyeName);
         m_bindTarget = findByName(m_bindTargetName);
 
@@ -417,6 +740,555 @@ namespace Alice
                     m_assembleOrder.push_back(i);
                     break;
                 }
+            }
+        }
+    }
+
+    void Gimmick::SetupShardTrailVfx()
+    {
+        m_eyeTrailVfx = InvalidEntityId;
+        m_eyeTrailPrevPosValid = false;
+        m_eyeMoveTrailVfx = InvalidEntityId;
+        m_eyeMoveTrailPrevPosValid = false;
+        m_eyeDustAlpha = 0.0f;
+        m_eyeDustRiseTriggered = false;
+        m_eyeDustFirstShardLaunched = false;
+
+        if (!m_enableShardTrailVfx)
+            return;
+
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        const bool hasShardTrail = !m_shardTrailEffectPath.empty();
+        const bool hasEyeDust = !m_eyeDustEffectPath.empty();
+        const float spawnRateScale = std::max(0.0f, m_shardTrailSpawnRateScale);
+        if (hasShardTrail)
+        {
+            for (auto& shard : m_shards)
+            {
+                if (shard.id == InvalidEntityId)
+                    continue;
+
+                // Legacy direct-on-shard VFX는 비활성화하고, 자식 empty에만 VFX를 유지한다.
+                if (auto* legacy = world->GetComponent<UnityVfxComponent>(shard.id))
+                {
+                    legacy->emitNewParticles = false;
+                    legacy->enabled = false;
+                }
+
+                const std::string childName = shard.name + "_TrailVfx";
+                EntityId vfxEntity = InvalidEntityId;
+                GameObject childGo = world->FindGameObject(childName);
+                if (childGo.IsValid())
+                    vfxEntity = childGo.id();
+
+                if (vfxEntity == InvalidEntityId)
+                {
+                    vfxEntity = world->CreateEmpty();
+                    if (vfxEntity == InvalidEntityId)
+                        continue;
+                    world->SetEntityName(vfxEntity, childName);
+                }
+
+                shard.trailVfxId = vfxEntity;
+                world->SetParent(vfxEntity, shard.id, false);
+                if (auto* vfxTr = world->GetComponent<TransformComponent>(vfxEntity))
+                {
+                    vfxTr->position = m_shardTrailLocalOffset;
+                    vfxTr->rotation = m_shardTrailLocalRotation;
+                    vfxTr->scale = m_shardTrailLocalScale;
+                    vfxTr->enabled = true;
+                    vfxTr->visible = false;
+                    world->MarkTransformDirty(vfxEntity);
+                }
+
+                auto* vfx = world->GetComponent<UnityVfxComponent>(vfxEntity);
+                if (!vfx)
+                    vfx = &world->AddComponent<UnityVfxComponent>(vfxEntity);
+                if (!vfx)
+                    continue;
+
+                vfx->enabled = false;
+                vfx->effectPath = m_shardTrailEffectPath;
+                vfx->useMeshRenderer = true;
+                vfx->useComputeEffect = false;
+                vfx->timeScale = 1.0f;
+                vfx->lifetimeScale = 1.0f;
+                // Match UnityExportVfxDemo_01.scene "(Opt)Effect_06_PortalEffect_2"
+                vfx->overrideLoop = false;
+                vfx->loop = true;
+                vfx->sizeScale = 0.025f;
+                vfx->intensityScale = 0.0f;
+                vfx->spawnRateScale = spawnRateScale;
+                vfx->enableTrails = true;
+                vfx->emitNewParticles = false;
+                vfx->alphaScale = 1.0f;
+            }
+        }
+
+        if (m_eye != InvalidEntityId && hasShardTrail)
+        {
+            const std::string childName = m_eyeName.empty() ? "W_EYE_MoveTrailVfx" : (m_eyeName + "_MoveTrailVfx");
+            EntityId vfxEntity = InvalidEntityId;
+            GameObject childGo = world->FindGameObject(childName);
+            if (childGo.IsValid())
+                vfxEntity = childGo.id();
+
+            if (vfxEntity == InvalidEntityId)
+            {
+                vfxEntity = world->CreateEmpty();
+                if (vfxEntity != InvalidEntityId)
+                    world->SetEntityName(vfxEntity, childName);
+            }
+
+            if (vfxEntity != InvalidEntityId)
+            {
+                m_eyeMoveTrailVfx = vfxEntity;
+                world->SetParent(vfxEntity, m_eye, false);
+                if (auto* vfxTr = world->GetComponent<TransformComponent>(vfxEntity))
+                {
+                    vfxTr->position = m_shardTrailLocalOffset;
+                    vfxTr->rotation = m_shardTrailLocalRotation;
+                    vfxTr->scale = m_shardTrailLocalScale;
+                    vfxTr->enabled = true;
+                    vfxTr->visible = false;
+                    world->MarkTransformDirty(vfxEntity);
+                }
+
+                auto* vfx = world->GetComponent<UnityVfxComponent>(vfxEntity);
+                if (!vfx)
+                    vfx = &world->AddComponent<UnityVfxComponent>(vfxEntity);
+
+                if (vfx)
+                {
+                    vfx->enabled = false;
+                    vfx->effectPath = m_shardTrailEffectPath;
+                    vfx->useMeshRenderer = true;
+                    vfx->useComputeEffect = false;
+                    vfx->timeScale = 1.0f;
+                    vfx->lifetimeScale = 1.0f;
+                    vfx->overrideLoop = false;
+                    vfx->loop = true;
+                    vfx->sizeScale = 0.025f;
+                    vfx->intensityScale = 2.0f;
+                    vfx->spawnRateScale = spawnRateScale;
+                    vfx->enableTrails = true;
+                    vfx->emitNewParticles = false;
+                    // Eye move trail only: force pure red so it does not read as purple.
+                    vfx->colorTint = XMFLOAT3(1.0f, 0.0f, 0.0f);
+                    vfx->colorScale = 5.0f;
+                    vfx->alphaScale = 1.0f;
+                }
+
+                if (auto* compute = world->GetComponent<ComputeEffectComponent>(vfxEntity))
+                {
+                    compute->enabled = false;
+                    compute->spawnRate = 0.0f;
+                }
+            }
+        }
+
+        if (m_eye != InvalidEntityId && hasEyeDust)
+        {
+            const std::string childName = m_eyeName.empty() ? "W_EYE_TrailVfx" : (m_eyeName + "_TrailVfx");
+            EntityId vfxEntity = InvalidEntityId;
+            GameObject childGo = world->FindGameObject(childName);
+            if (childGo.IsValid())
+                vfxEntity = childGo.id();
+
+            if (vfxEntity == InvalidEntityId)
+            {
+                vfxEntity = world->CreateEmpty();
+                if (vfxEntity != InvalidEntityId)
+                    world->SetEntityName(vfxEntity, childName);
+            }
+
+            if (vfxEntity != InvalidEntityId)
+            {
+                m_eyeTrailVfx = vfxEntity;
+                world->SetParent(vfxEntity, m_eye, false);
+                if (auto* vfxTr = world->GetComponent<TransformComponent>(vfxEntity))
+                {
+                    vfxTr->position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+                    vfxTr->rotation = XMFLOAT3(0.0f, 0.0f, 0.0f);
+                    vfxTr->scale = XMFLOAT3(0.1f, 0.1f, 0.1f);
+                    vfxTr->enabled = true;
+                    vfxTr->visible = false;
+                    world->MarkTransformDirty(vfxEntity);
+                }
+
+                auto* unityVfx = world->GetComponent<UnityVfxComponent>(vfxEntity);
+                if (!unityVfx)
+                    unityVfx = &world->AddComponent<UnityVfxComponent>(vfxEntity);
+
+                if (unityVfx)
+                {
+                    unityVfx->enabled = false;
+                    unityVfx->effectPath = m_eyeDustEffectPath;
+                    unityVfx->useMeshRenderer = true;
+                    unityVfx->useComputeEffect = false;
+                    unityVfx->timeScale = 1.0f;
+                    unityVfx->lifetimeScale = 1.0f;
+                    unityVfx->overrideLoop = false;
+                    unityVfx->loop = true;
+                    unityVfx->sizeScale = 2.00f;
+                    unityVfx->speedScale = 6.445f;
+                    // Eye dust trail too: keep it red to match eye move trail.
+                    unityVfx->intensityScale = 2.0f;
+                    unityVfx->colorScale = 2.0f;
+                    unityVfx->colorTint = XMFLOAT3(1.0f, 0.0f, 0.0f);
+                    unityVfx->spawnRateScale = 1.0f;
+                    unityVfx->enableTrails = true;
+                    unityVfx->emitNewParticles = false;
+                    unityVfx->alphaScale = 0.0f;
+                }
+
+                auto* compute = world->GetComponent<ComputeEffectComponent>(vfxEntity);
+                if (compute)
+                {
+                    compute->enabled = false;
+                    compute->spawnRate = 0.0f;
+                }
+            }
+        }
+    }
+
+    void Gimmick::UpdateShardTrailEmission(float dt)
+    {
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        const bool hasShardTrail = m_enableShardTrailVfx && !m_shardTrailEffectPath.empty();
+        const bool hasEyeDust = m_enableShardTrailVfx && !m_eyeDustEffectPath.empty();
+        const bool pullPhaseActive =
+            (m_phase == Phase::Magnetize) ||
+            (m_phase == Phase::AssembleShards) ||
+            (m_phase == Phase::AssembleEye);
+        const float safeDt = std::max(dt, 0.0001f);
+        const float minSpeed = std::max(0.0f, m_shardTrailEmitMinSpeed);
+
+        for (auto& shard : m_shards)
+        {
+            if (shard.id == InvalidEntityId)
+                continue;
+
+            const EntityId vfxEntity = shard.trailVfxId;
+            if (vfxEntity == InvalidEntityId)
+                continue;
+
+            auto* vfx = world->GetComponent<UnityVfxComponent>(vfxEntity);
+            if (!vfx)
+                continue;
+
+            auto* shardTr = world->GetComponent<TransformComponent>(shard.id);
+            const bool activeTransform = (shardTr && shardTr->enabled && shardTr->visible);
+            const bool activate = hasShardTrail && pullPhaseActive && activeTransform;
+
+            if (auto* vfxTr = world->GetComponent<TransformComponent>(vfxEntity))
+            {
+                if (vfxTr->enabled != activate || vfxTr->visible != activate)
+                {
+                    vfxTr->enabled = activate;
+                    vfxTr->visible = activate;
+                    world->MarkTransformDirty(vfxEntity);
+                }
+            }
+
+            bool moving = false;
+            bool shouldEmit = false;
+            if (activate)
+            {
+                if (shard.prevPosValid)
+                {
+                    XMFLOAT3 delta{
+                        shardTr->position.x - shard.prevPos.x,
+                        shardTr->position.y - shard.prevPos.y,
+                        shardTr->position.z - shard.prevPos.z
+                    };
+                    const float speed = Length(delta) / safeDt;
+                    moving = (speed >= minSpeed);
+                }
+
+                shard.prevPos = shardTr->position;
+                shard.prevPosValid = true;
+                shouldEmit = moving;
+            }
+            else
+            {
+                shard.prevPosValid = false;
+            }
+
+            vfx->enabled = activate;
+            vfx->emitNewParticles = shouldEmit;
+        }
+
+        if (m_eyeMoveTrailVfx != InvalidEntityId)
+        {
+            auto* eyeMoveVfx = world->GetComponent<UnityVfxComponent>(m_eyeMoveTrailVfx);
+            auto* eyeTr = world->GetComponent<TransformComponent>(m_eye);
+            const bool activeTransform = (eyeTr && eyeTr->enabled && eyeTr->visible);
+            const bool activate = hasShardTrail && pullPhaseActive && activeTransform;
+
+            if (auto* vfxTr = world->GetComponent<TransformComponent>(m_eyeMoveTrailVfx))
+            {
+                if (vfxTr->enabled != activate || vfxTr->visible != activate)
+                {
+                    vfxTr->enabled = activate;
+                    vfxTr->visible = activate;
+                    world->MarkTransformDirty(m_eyeMoveTrailVfx);
+                }
+            }
+
+            bool shouldEmit = false;
+            if (activate && eyeTr)
+            {
+                if (m_eyeMoveTrailPrevPosValid)
+                {
+                    XMFLOAT3 delta{
+                        eyeTr->position.x - m_eyeMoveTrailPrevPos.x,
+                        eyeTr->position.y - m_eyeMoveTrailPrevPos.y,
+                        eyeTr->position.z - m_eyeMoveTrailPrevPos.z
+                    };
+                    const float speed = Length(delta) / safeDt;
+                    shouldEmit = (speed >= minSpeed);
+                }
+
+                m_eyeMoveTrailPrevPos = eyeTr->position;
+                m_eyeMoveTrailPrevPosValid = true;
+            }
+            else
+            {
+                m_eyeMoveTrailPrevPosValid = false;
+            }
+
+            if (eyeMoveVfx)
+            {
+                eyeMoveVfx->enabled = activate;
+                eyeMoveVfx->emitNewParticles = shouldEmit;
+                eyeMoveVfx->alphaScale = 1.0f;
+            }
+
+            if (auto* compute = world->GetComponent<ComputeEffectComponent>(m_eyeMoveTrailVfx))
+            {
+                compute->enabled = false;
+                compute->spawnRate = 0.0f;
+            }
+        }
+
+        if (m_eyeTrailVfx != InvalidEntityId)
+        {
+            auto* eyeVfx = world->GetComponent<UnityVfxComponent>(m_eyeTrailVfx);
+            auto* eyeTr = world->GetComponent<TransformComponent>(m_eye);
+            const bool activeTransform = (eyeTr && eyeTr->enabled && eyeTr->visible);
+            const bool eyeDustPhase = (m_phase == Phase::Magnetize) || (m_phase == Phase::AssembleShards);
+            bool activate = false;
+            bool shouldEmit = false;
+
+            if (hasEyeDust && eyeVfx && activeTransform)
+            {
+                if (!m_eyeDustRiseTriggered && m_eyeFloatAnchorValid)
+                {
+                    const float riseStartHeight = std::max(0.0f, m_eyeDustRiseStartHeight);
+                    const float riseDelta = eyeTr->position.y - m_eyeFloatAnchor.y;
+                    if (riseDelta >= riseStartHeight)
+                        m_eyeDustRiseTriggered = true;
+                }
+
+                if (m_phase == Phase::AssembleShards && m_nextAssembleIndex > 0)
+                {
+                    if (!m_eyeDustFirstShardLaunched)
+                    {
+                        m_eyeDustFirstShardLaunched = true;
+                        m_eyeDustAlpha = 1.0f; // 첫 파편 발사 순간 1.0 고정
+                    }
+                }
+
+                if (!eyeDustPhase)
+                {
+                    m_eyeDustAlpha = 0.0f;
+                }
+                else if (!m_eyeDustRiseTriggered)
+                {
+                    m_eyeDustAlpha = 0.0f;
+                }
+                else if (!m_eyeDustFirstShardLaunched)
+                {
+                    const float fadeInSpeed = std::max(0.0f, m_eyeDustFadeInSpeed);
+                    m_eyeDustAlpha = std::min(0.98f, m_eyeDustAlpha + fadeInSpeed * std::max(0.0f, dt));
+                }
+                else
+                {
+                    float assembleProgress = 1.0f;
+                    const size_t totalShards = m_shards.size();
+                    if (totalShards > 0)
+                    {
+                        size_t assembledCount = 0;
+                        float partialProgress = 0.0f;
+
+                        XMFLOAT3 targetPos{};
+                        XMFLOAT3 targetRot{};
+                        XMFLOAT3 targetScale{};
+                        const bool hasTargetPose = GetBindTargetWorldPose(targetPos, targetRot, targetScale);
+
+                        for (const auto& shard : m_shards)
+                        {
+                            if (shard.assembled)
+                            {
+                                assembledCount += 1;
+                                continue;
+                            }
+
+                            if (!hasTargetPose || !shard.assembling || shard.id == InvalidEntityId)
+                                continue;
+
+                            auto* shardTr = world->GetComponent<TransformComponent>(shard.id);
+                            if (!shardTr)
+                                continue;
+
+                            const XMFLOAT3 delta{
+                                targetPos.x - shardTr->position.x,
+                                targetPos.y - shardTr->position.y,
+                                targetPos.z - shardTr->position.z
+                            };
+                            const float dist = Length(delta);
+                            const float startDist = std::max(shard.assembleStartDistance, m_arriveThreshold);
+                            if (startDist > 0.0001f)
+                            {
+                                const float p = 1.0f - Clamp(dist / startDist, 0.0f, 1.0f);
+                                partialProgress = std::max(partialProgress, p);
+                            }
+                        }
+
+                        assembleProgress = Clamp(
+                            (static_cast<float>(assembledCount) + partialProgress) / static_cast<float>(totalShards),
+                            0.0f,
+                            1.0f);
+                    }
+
+                    m_eyeDustAlpha = Clamp(1.0f - SmoothStep(assembleProgress), 0.0f, 1.0f);
+                }
+
+                activate = eyeDustPhase && (m_eyeDustAlpha > 0.001f);
+                shouldEmit = activate;
+            }
+            else
+            {
+                m_eyeDustAlpha = 0.0f;
+            }
+
+            if (auto* vfxTr = world->GetComponent<TransformComponent>(m_eyeTrailVfx))
+            {
+                if (vfxTr->enabled != activate || vfxTr->visible != activate)
+                {
+                    vfxTr->enabled = activate;
+                    vfxTr->visible = activate;
+                    world->MarkTransformDirty(m_eyeTrailVfx);
+                }
+            }
+
+            if (eyeVfx)
+            {
+                eyeVfx->enabled = activate;
+                eyeVfx->emitNewParticles = shouldEmit;
+                eyeVfx->alphaScale = m_eyeDustAlpha;
+            }
+
+            m_eyeTrailPrevPos = (eyeTr ? eyeTr->position : XMFLOAT3(0.0f, 0.0f, 0.0f));
+            m_eyeTrailPrevPosValid = activeTransform;
+
+            if (auto* compute = world->GetComponent<ComputeEffectComponent>(m_eyeTrailVfx))
+            {
+                compute->enabled = false;
+                compute->spawnRate = 0.0f;
+            }
+        }
+    }
+
+    void Gimmick::ResetShardTrailPlayback()
+    {
+        if (!m_enableShardTrailVfx)
+            return;
+
+        auto* world = GetWorld();
+        if (!world)
+            return;
+
+        for (auto& shard : m_shards)
+        {
+            shard.prevPosValid = false;
+            const EntityId vfxEntity = shard.trailVfxId;
+            if (vfxEntity == InvalidEntityId)
+                continue;
+
+            if (auto* vfx = world->GetComponent<UnityVfxComponent>(vfxEntity))
+            {
+                vfx->enabled = false;
+                vfx->emitNewParticles = false;
+                vfx->alphaScale = 1.0f;
+                vfx->playId += 1;
+            }
+
+            if (auto* vfxTr = world->GetComponent<TransformComponent>(vfxEntity))
+            {
+                vfxTr->enabled = false;
+                vfxTr->visible = false;
+                world->MarkTransformDirty(vfxEntity);
+            }
+        }
+
+        m_eyeTrailPrevPosValid = false;
+        m_eyeMoveTrailPrevPosValid = false;
+        m_eyeDustAlpha = 0.0f;
+        m_eyeDustRiseTriggered = false;
+        m_eyeDustFirstShardLaunched = false;
+        if (m_eyeTrailVfx != InvalidEntityId)
+        {
+            if (auto* vfx = world->GetComponent<UnityVfxComponent>(m_eyeTrailVfx))
+            {
+                vfx->enabled = false;
+                vfx->emitNewParticles = false;
+                vfx->alphaScale = 0.0f;
+                vfx->playId += 1;
+            }
+
+            if (auto* compute = world->GetComponent<ComputeEffectComponent>(m_eyeTrailVfx))
+            {
+                compute->enabled = false;
+                compute->spawnRate = 0.0f;
+            }
+
+            if (auto* vfxTr = world->GetComponent<TransformComponent>(m_eyeTrailVfx))
+            {
+                vfxTr->enabled = false;
+                vfxTr->visible = false;
+                world->MarkTransformDirty(m_eyeTrailVfx);
+            }
+        }
+
+        if (m_eyeMoveTrailVfx != InvalidEntityId)
+        {
+            if (auto* vfx = world->GetComponent<UnityVfxComponent>(m_eyeMoveTrailVfx))
+            {
+                vfx->enabled = false;
+                vfx->emitNewParticles = false;
+                vfx->alphaScale = 1.0f;
+                vfx->playId += 1;
+            }
+
+            if (auto* compute = world->GetComponent<ComputeEffectComponent>(m_eyeMoveTrailVfx))
+            {
+                compute->enabled = false;
+                compute->spawnRate = 0.0f;
+            }
+
+            if (auto* vfxTr = world->GetComponent<TransformComponent>(m_eyeMoveTrailVfx))
+            {
+                vfxTr->enabled = false;
+                vfxTr->visible = false;
+                world->MarkTransformDirty(m_eyeMoveTrailVfx);
             }
         }
     }
@@ -487,6 +1359,7 @@ namespace Alice
 
         if (phase == Phase::Restore)
         {
+            ResetShardTrailPlayback();
             SetOwnerWeaponDurability(true);
             SetEnabled(m_weaponCombined, true);
             SetVisible(m_weaponCombined, true);
@@ -507,6 +1380,7 @@ namespace Alice
 
         if (phase == Phase::Normal)
         {
+            ResetShardTrailPlayback();
             SetOwnerWeaponDurability(true);
             SetEnabled(m_weaponCombined, true);
             SetVisible(m_weaponCombined, true);
@@ -526,6 +1400,7 @@ namespace Alice
 
         if (phase == Phase::Break)
         {
+            ResetShardTrailPlayback();
             SetOwnerWeaponDurability(false);
             SetVisible(m_eye, true);
             SetMaterialAlpha(m_weaponCombined, 0.0f);
@@ -606,10 +1481,13 @@ namespace Alice
         if (phase == Phase::Magnetize)
         {
             ResetShardState();
-            m_captureTimer = 0.0f;
+            // m_captureTimer = 0.0f; // unused
             m_captureCompleteTimer = 0.0f;
             m_magnetizeInitialized = false;
             m_eyeFloatAnchorValid = false;
+            m_eyeDustAlpha = 0.0f;
+            m_eyeDustRiseTriggered = false;
+            m_eyeDustFirstShardLaunched = false;
             if (auto* tr = world->GetComponent<TransformComponent>(m_eye))
             {
                 m_eyeFloatAnchor = tr->position;
@@ -653,9 +1531,19 @@ namespace Alice
             m_eyeArrived = false;
             m_tendonTimer = 0.0f;
             m_tendonFading = false;
+            m_eyeDustAlpha = 0.0f;
             SetColliderTrigger(m_eye, true);
             SetRigidBodyKinematic(m_eye, true, false);
             ClearRigidBodyVelocity(m_eye);
+            if (m_eyeTrailVfx != InvalidEntityId)
+            {
+                if (auto* eyeVfx = world->GetComponent<UnityVfxComponent>(m_eyeTrailVfx))
+                {
+                    eyeVfx->enabled = false;
+                    eyeVfx->emitNewParticles = false;
+                    eyeVfx->alphaScale = 0.0f;
+                }
+            }
             return;
         }
     }
@@ -673,11 +1561,18 @@ namespace Alice
         {
             m_magnetizeInitialized = true;
 
+            const float heightJitterRange = std::max(0.0f, m_captureOrbitHeightJitter);
+            std::uniform_real_distribution<float> heightOffsetDist(-heightJitterRange, heightJitterRange);
+            const float pullStartHeightJitterRange = std::max(0.0f, m_capturePullStartHeightJitter);
+            std::uniform_real_distribution<float> pullStartHeightOffsetDist(-pullStartHeightJitterRange, pullStartHeightJitterRange);
+
             float maxPullDistance = 0.0f;
             for (auto& shard : m_shards)
             {
                 if (shard.captured)
                     continue;
+                shard.orbitHeightOffset = (heightJitterRange > 0.0f) ? heightOffsetDist(m_rng) : 0.0f;
+                shard.pullStartHeightOffset = (pullStartHeightJitterRange > 0.0f) ? pullStartHeightOffsetDist(m_rng) : 0.0f;
                 if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
                 {
                     XMFLOAT3 delta{ tr->position.x - eyePos.x, tr->position.y - eyePos.y, tr->position.z - eyePos.z };
@@ -685,7 +1580,7 @@ namespace Alice
                     XMFLOAT3 baseDir = Normalize(delta);
                     float scaledRadius = std::max(m_orbitMinRadius, radius * m_orbitRadiusScale);
                     XMFLOAT3 targetPos{ eyePos.x + baseDir.x * scaledRadius,
-                                        eyePos.y + baseDir.y * scaledRadius,
+                                        eyePos.y + baseDir.y * scaledRadius + shard.orbitHeightOffset,
                                         eyePos.z + baseDir.z * scaledRadius };
                     XMFLOAT3 pullDelta{ targetPos.x - tr->position.x,
                                         targetPos.y - tr->position.y,
@@ -738,7 +1633,7 @@ namespace Alice
                     shard.orbitAngle = 0.0f;
 
                     XMFLOAT3 targetPos{ eyePos.x + baseDir.x * scaledRadius,
-                                        eyePos.y + baseDir.y * scaledRadius,
+                                        eyePos.y + baseDir.y * scaledRadius + shard.orbitHeightOffset,
                                         eyePos.z + baseDir.z * scaledRadius };
                     XMFLOAT3 pullDelta{ targetPos.x - shard.pullStartPos.x,
                                         targetPos.y - shard.pullStartPos.y,
@@ -792,7 +1687,25 @@ namespace Alice
             size_t shardIndex = m_assembleOrder[m_nextAssembleIndex++];
             if (shardIndex < m_shards.size())
             {
-                m_shards[shardIndex].assembling = true;
+                auto& launchShard = m_shards[shardIndex];
+                launchShard.assembling = true;
+                launchShard.assembleStartDistance = 0.0f;
+
+                DirectX::XMFLOAT3 targetPos{};
+                DirectX::XMFLOAT3 targetRot{};
+                DirectX::XMFLOAT3 targetScale{};
+                if (GetBindTargetWorldPose(targetPos, targetRot, targetScale))
+                {
+                    if (auto* launchTr = world->GetComponent<TransformComponent>(launchShard.id))
+                    {
+                        DirectX::XMFLOAT3 startDelta{
+                            targetPos.x - launchTr->position.x,
+                            targetPos.y - launchTr->position.y,
+                            targetPos.z - launchTr->position.z
+                        };
+                        launchShard.assembleStartDistance = std::max(Length(startDelta), m_arriveThreshold);
+                    }
+                }
             }
             m_assembleTimer = 0.0f;
         }
@@ -822,6 +1735,7 @@ namespace Alice
             {
                 shard.assembled = true;
                 shard.assembling = false;
+                shard.assembleStartDistance = 0.0f;
                 if (m_bindTarget != InvalidEntityId)
                     world->SetParent(shard.id, m_bindTarget, false);
                 if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
@@ -995,7 +1909,17 @@ namespace Alice
             shard.orbitAngularStartSpeed = 0.0f;
             shard.orbitBlendTimer = 0.0f;
             shard.orbitBlending = false;
+            shard.orbitHeightOffset = 0.0f;
+            shard.pullStartHeightOffset = 0.0f;
+            shard.assembleStartDistance = 0.0f;
+            shard.prevPos = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+            shard.prevPosValid = false;
         }
+        m_eyeTrailPrevPosValid = false;
+        m_eyeMoveTrailPrevPosValid = false;
+        m_eyeDustAlpha = 0.0f;
+        m_eyeDustRiseTriggered = false;
+        m_eyeDustFirstShardLaunched = false;
         m_magnetizeInitialized = false;
     }
 
@@ -1221,7 +2145,7 @@ namespace Alice
             const float radius = std::max(m_orbitMinRadius, shard.orbitRadius);
             XMFLOAT3 rotatedDir = RotateAroundAxis(shard.orbitBaseDir, shard.orbitAxis, shard.orbitAngle);
             XMFLOAT3 offset{ rotatedDir.x * radius, rotatedDir.y * radius, rotatedDir.z * radius };
-            XMFLOAT3 targetPos{ eyePos.x + offset.x, eyePos.y + offset.y, eyePos.z + offset.z };
+            XMFLOAT3 targetPos{ eyePos.x + offset.x, eyePos.y + offset.y + shard.orbitHeightOffset, eyePos.z + offset.z };
 
             if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
             {
@@ -1230,8 +2154,9 @@ namespace Alice
                     shard.pullTimer += dt;
                     float t = (shard.pullDuration > 0.0f) ? std::min(1.0f, shard.pullTimer / shard.pullDuration) : 1.0f;
                     float smoothT = SmoothStep(t);
+                    const float startHeightBias = shard.pullStartHeightOffset * (1.0f - smoothT);
                     tr->position.x = shard.pullStartPos.x + (targetPos.x - shard.pullStartPos.x) * smoothT;
-                    tr->position.y = shard.pullStartPos.y + (targetPos.y - shard.pullStartPos.y) * smoothT;
+                    tr->position.y = shard.pullStartPos.y + (targetPos.y - shard.pullStartPos.y) * smoothT + startHeightBias;
                     tr->position.z = shard.pullStartPos.z + (targetPos.z - shard.pullStartPos.z) * smoothT;
                     if (t >= 1.0f)
                     {
@@ -1239,7 +2164,11 @@ namespace Alice
                         shard.orbitBlending = true;
                         shard.orbitBlendTimer = 0.0f;
 
-                        XMFLOAT3 toEye{ tr->position.x - eyePos.x, tr->position.y - eyePos.y, tr->position.z - eyePos.z };
+                        XMFLOAT3 toEye{
+                            tr->position.x - eyePos.x,
+                            (tr->position.y - shard.orbitHeightOffset) - eyePos.y,
+                            tr->position.z - eyePos.z
+                        };
                         float newRadius = Length(toEye);
                         shard.orbitRadius = std::max(m_orbitMinRadius, newRadius);
                         shard.orbitBaseDir = Normalize(toEye);

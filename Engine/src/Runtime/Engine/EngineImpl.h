@@ -118,6 +118,9 @@ namespace Alice
 		Camera         m_camera;
 		InputSystem    m_inputSystem;
 		GameTimer      m_timer;
+		float          m_unscaledDeltaTime = 0.0f;
+		float          m_gameDeltaTime = 0.0f;
+		bool           m_stopGameDeltaTime = false;
 		ResourceManager m_resourceManager;
 		std::unique_ptr<SceneManager> m_sceneManager;
 

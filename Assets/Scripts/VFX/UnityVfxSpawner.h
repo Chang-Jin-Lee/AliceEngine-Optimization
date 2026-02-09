@@ -42,6 +42,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_speedScale, 1.0f);
         ALICE_PROPERTY(float, m_intensityScale, 1.0f);
         ALICE_PROPERTY(float, m_spawnRateScale, 1.0f);
+        ALICE_PROPERTY(bool, m_emitNewParticles, true);
         ALICE_PROPERTY(bool, m_enableTrails, true);
         ALICE_PROPERTY(float, m_trailWidthScale, 1.0f);
         ALICE_PROPERTY(float, m_trailLifeScale, 1.0f);

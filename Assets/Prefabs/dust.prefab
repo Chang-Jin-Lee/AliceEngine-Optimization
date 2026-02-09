@@ -1,0 +1,53 @@
+{
+    "Transform": {
+        "enabled": false,
+        "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 0.10000000149011612,
+            "y": 0.10000000149011612,
+            "z": 0.10000000149011612
+        },
+        "visible": false
+    },
+    "UnityVfx": {
+        "alphaScale": 0.0,
+        "colorScale": 2.0,
+        "colorTint": {
+            "x": 1.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "dissolveOffset": 0.0,
+        "effectPath": "Assets/VFX/UnityExport/Dust_3_41ffd4a3/effect.json",
+        "emitNewParticles": false,
+        "enableTrails": true,
+        "enabled": false,
+        "hdrColorClamp": 1.0,
+        "intensityScale": 2.0,
+        "lifetimeScale": 1.0,
+        "loop": true,
+        "noiseScale": 1.0,
+        "overrideLoop": false,
+        "rampScale": 1.0,
+        "sizeScale": 2.0,
+        "spawnRateScale": 1.0,
+        "speedScale": 6.445000171661377,
+        "timeScale": 1.0,
+        "trailLifeScale": 1.0,
+        "trailWidthScale": 1.0,
+        "useComputeEffect": false,
+        "useMeshRenderer": true,
+        "uvScrollScale": 1.0
+    },
+    "name": "W_EYE_TrailVfx",
+    "version": 1
+}

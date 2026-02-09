@@ -2,17 +2,25 @@
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <cmath>
+#include <cstdlib>
 #include <random>
 #include <vector>
+
+#include <assimp/scene.h>
 
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/ECS/World.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
 #include "Runtime/Gameplay/Combat/HealthComponent.h"
+#include "Runtime/Importing/FbxModel.h"
+#include "Runtime/Input/Input.h"
 #include "Runtime/Physics/Components/Phy_CCTComponent.h"
 #include "Runtime/Physics/IPhysicsWorld.h"
+#include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
+#include "Runtime/Rendering/SkinnedMeshRegistry.h"
 
 namespace Alice
 {
@@ -46,6 +54,65 @@ namespace Alice
         {
             return (RandomRange(0.0f, 1.0f) < 0.5f) ? -1 : 1;
         }
+
+        bool TryParseIndex(const std::string& key, int& outIdx)
+        {
+            if (key.empty())
+                return false;
+            for (char c : key)
+            {
+                if (!std::isdigit(static_cast<unsigned char>(c)))
+                    return false;
+            }
+            outIdx = std::atoi(key.c_str());
+            return true;
+        }
+
+        float GetClipDurationSecByName(const SkinnedMeshRegistry* registry,
+                                       World& world,
+                                       EntityId entityId,
+                                       const std::string& clipName)
+        {
+            if (clipName.empty() || !registry)
+                return 0.0f;
+
+            auto* skinned = world.GetComponent<SkinnedMeshComponent>(entityId);
+            if (!skinned || skinned->meshAssetPath.empty())
+                return 0.0f;
+
+            auto mesh = registry->Find(skinned->meshAssetPath);
+            if (!mesh || !mesh->sourceModel)
+                return 0.0f;
+
+            const auto& names = mesh->sourceModel->GetAnimationNames();
+            const auto* scene = mesh->sourceModel->GetScenePtr();
+            const size_t clipCount = scene ? scene->mNumAnimations : names.size();
+
+            for (size_t i = 0; i < names.size() && i < clipCount; ++i)
+            {
+                if (names[i] == clipName)
+                    return static_cast<float>(mesh->sourceModel->GetClipDurationSec(static_cast<int>(i)));
+            }
+
+            if (scene)
+            {
+                for (size_t i = 0; i < scene->mNumAnimations; ++i)
+                {
+                    const auto* anim = scene->mAnimations[i];
+                    if (anim && anim->mName.length > 0 && clipName == anim->mName.C_Str())
+                        return static_cast<float>(mesh->sourceModel->GetClipDurationSec(static_cast<int>(i)));
+                }
+            }
+
+            int idx = -1;
+            if (TryParseIndex(clipName, idx))
+            {
+                if (idx >= 0 && static_cast<size_t>(idx) < clipCount)
+                    return static_cast<float>(mesh->sourceModel->GetClipDurationSec(idx));
+            }
+
+            return 0.0f;
+        }
     }
 
     void C_BossBrainComponent::Start()
@@ -55,6 +122,15 @@ namespace Alice
 
     void C_BossBrainComponent::Update(float deltaTime)
     {
+        if (m_enableF4ActivationToggle)
+        {
+            if (auto* input = Input())
+            {
+                if (input->GetKeyDown(KeyCode::F4))
+                    ToggleBrainActivated();
+            }
+        }
+
         auto* world = GetWorld();
         if (world && world->IsScriptCombatEnabled())
             return;
@@ -66,6 +142,40 @@ namespace Alice
     void C_BossBrainComponent::OnDisable()
     {
         ResetBrain();
+    }
+
+    void C_BossBrainComponent::SetBrainActivated(bool active)
+    {
+        const bool wasActive = m_brainActivated;
+        m_brainActivated = active;
+        if (m_brainActivated)
+        {
+            m_deactivateAfterCurrentAttack = false;
+            if (!wasActive)
+            {
+                // Wake-up should immediately run one howling sequence.
+                m_attackCooldownTimer = 0.0f;
+                if (m_usePhaseRules)
+                {
+                    m_phase2HowlingPending = true;
+                }
+                else
+                {
+                    m_specialPending = true;
+                }
+            }
+            return;
+        }
+
+        if (m_state == BrainState::Attack)
+            m_deactivateAfterCurrentAttack = true;
+        else
+            EnterStandbyState();
+    }
+
+    void C_BossBrainComponent::ToggleBrainActivated()
+    {
+        SetBrainActivated(!m_brainActivated);
     }
 
     Combat::BossIntent C_BossBrainComponent::Think(float deltaTime, EntityId targetId)
@@ -86,8 +196,24 @@ namespace Alice
 
         const float dt = std::max(0.0f, deltaTime);
         m_stateTimer += dt;
+        m_faceTargetSuppressTimer = std::max(0.0f, m_faceTargetSuppressTimer - dt);
         m_attackCooldownTimer = std::max(0.0f, m_attackCooldownTimer - dt);
         m_blockedCooldownTimer = std::max(0.0f, m_blockedCooldownTimer - dt);
+
+        if (m_brainActivated)
+        {
+            m_deactivateAfterCurrentAttack = false;
+        }
+        else if (m_state == BrainState::Attack)
+        {
+            m_deactivateAfterCurrentAttack = true;
+        }
+        else
+        {
+            EnterStandbyState();
+            intent.wantsFaceTarget = m_wantsFaceTarget;
+            return intent;
+        }
 
         const float dx = targetTr->position.x - selfTr->position.x;
         const float dz = targetTr->position.z - selfTr->position.z;
@@ -145,6 +271,15 @@ namespace Alice
                     {
                         m_patrolDirection = RandomSign();
                         m_traceEnterDist = dist;
+                        const float traceMinHoldSec = std::max(0.0f, m_traceMaxHoldMinSec);
+                        const float traceMaxHoldSec = std::max(traceMinHoldSec, m_traceMaxHoldMaxSec);
+                        m_traceTargetSec = (traceMaxHoldSec > 0.0f)
+                            ? RandomRange(traceMinHoldSec, traceMaxHoldSec)
+                            : std::max(0.0f, m_traceDelaySec);
+                    }
+                    else
+                    {
+                        m_traceTargetSec = 0.0f;
                     }
                     if (next != BrainState::Idle)
                         m_idleTargetSec = 0.0f;
@@ -167,6 +302,16 @@ namespace Alice
                 m_decision.sectorLockedSec = 0.0f;
                 MarkPatternUsed(type);
                 EnterState(BrainState::Attack);
+            };
+        auto IsFacingReadyForPattern = [&](PatternType type) -> bool
+            {
+                // Side attack is an anti-flank tool and may start without front-facing.
+                if (type == PatternType::Side || type == PatternType::Special || type == PatternType::None)
+                    return true;
+                if (!hasDir)
+                    return true;
+                const float facingDotThreshold = GetTurnInPlaceDotThreshold();
+                return targetDot >= facingDotThreshold;
             };
 
         if (m_stationaryAttackBoss)
@@ -242,7 +387,8 @@ namespace Alice
             {
                 if (dist <= approachDist)
                 {
-                    BeginAttack(PatternType::AttackA);
+                    if (IsFacingReadyForPattern(PatternType::AttackA))
+                        BeginAttack(PatternType::AttackA);
                 }
                 else if (hasDir)
                 {
@@ -346,6 +492,7 @@ namespace Alice
                         return;
                     m_intentActive = true;
                     m_intentCompleted = false;
+                    m_intentFollowupUsed = false;
                     m_intentRoot = root;
                     m_followupQueue.clear();
                 };
@@ -353,6 +500,7 @@ namespace Alice
                 {
                     m_intentActive = false;
                     m_intentCompleted = true;
+                    m_intentFollowupUsed = false;
                     m_intentRoot = PatternType::None;
                     m_followupQueue.clear();
                 };
@@ -446,7 +594,9 @@ namespace Alice
                     return dist >= minRange && dist <= maxRange;
                 };
 
-            auto PickRandomPattern = [&](PatternType avoid, bool includeCharge) -> PatternType
+            auto PickRandomPattern = [&](PatternType avoid,
+                                        bool includeCharge,
+                                        PatternType prevPattern) -> PatternType
                 {
                     std::vector<PatternType> pool;
                     pool.reserve(4);
@@ -460,6 +610,12 @@ namespace Alice
                     {
                         pool.erase(std::remove(pool.begin(), pool.end(), avoid), pool.end());
                     }
+                    pool.erase(std::remove_if(pool.begin(), pool.end(),
+                                              [&](PatternType type)
+                                              {
+                                                  return !IsTransitionAllowed(prevPattern, type);
+                                              }),
+                               pool.end());
                     if (pool.empty())
                         return PatternType::None;
 
@@ -483,15 +639,26 @@ namespace Alice
                 }
 
                 float minSpecialTime = std::max(0.0f, m_specialPatternHoldSec);
-                const float driverDuration = ResolveAttackDuration();
-                if (driverDuration > 0.0f)
-                    minSpecialTime = std::max(minSpecialTime, driverDuration);
+                const float specialClipDuration = GetClipDurationSecByName(
+                    SkinnedRegistry(), *world, selfId, GetPatternClip(PatternType::Special));
+                if (specialClipDuration > 0.0f)
+                {
+                    minSpecialTime = specialClipDuration;
+                }
+                else
+                {
+                    const float driverDuration = ResolveAttackDuration();
+                    if (driverDuration > 0.0f)
+                        minSpecialTime = driverDuration;
+                }
 
                 if (m_attackIssued && m_stateTimer >= minSpecialTime)
                 {
                     m_activePattern = PatternType::None;
                     m_attackIssued = false;
+                    m_faceTargetSuppressTimer = std::max(m_faceTargetSuppressTimer, std::max(0.0f, m_actionDelaySec));
                     m_attackCooldownTimer = std::max(0.0f, m_attackCooldown);
+                    m_idleTargetSec = std::max(0.0f, m_actionDelaySec);
                     EnterState(BrainState::Idle);
                 }
             }
@@ -546,7 +713,7 @@ namespace Alice
                 {
                     AttackOutcome outcome = m_attackOutcomeSet ? m_attackOutcome : AttackOutcome::Evaded;
                     PatternType followUp = PatternType::None;
-                    if (m_intentActive && m_phase2Active && outcome == AttackOutcome::Evaded)
+                    if (m_intentActive && !m_intentFollowupUsed && m_phase2Active && outcome == AttackOutcome::Evaded)
                     {
                         switch (m_lastAttackPattern)
                         {
@@ -566,6 +733,14 @@ namespace Alice
                     m_decision.sectorLocked = false;
                     m_decision.sectorLockedSec = 0.0f;
                     m_decision.lockedSector = Sector::Unknown;
+                    m_faceTargetSuppressTimer = std::max(m_faceTargetSuppressTimer, std::max(0.0f, m_actionDelaySec));
+
+                    if (m_deactivateAfterCurrentAttack)
+                    {
+                        EnterStandbyState();
+                        intent.wantsFaceTarget = m_wantsFaceTarget;
+                        return intent;
+                    }
 
                     if (m_rerollAfterAttack)
                     {
@@ -580,6 +755,7 @@ namespace Alice
                     {
                         m_activePattern = PatternType::None;
                         m_forceWalkAfterAttack = false;
+                        m_intentFollowupUsed = true;
                         PushFollowupFront(followUp);
                         EnterState(BrainState::Orbit);
                     }
@@ -605,6 +781,7 @@ namespace Alice
                         }
                         else
                         {
+                            m_idleTargetSec = std::max(0.0f, m_actionDelaySec);
                             EnterState(BrainState::Idle);
                         }
                     }
@@ -614,15 +791,30 @@ namespace Alice
             {
                 const bool rangedReady = (m_rangedCooldownSec <= 0.0f)
                     || (m_decision.timeSinceRangedSec >= m_rangedCooldownSec);
-                const float traceHoldSec = (m_traceDelaySec > 0.0f) ? m_traceDelaySec : 5.0f;
+                const float rangedTraceMinDist = std::max(0.0f, GetPatternMinRange(PatternType::Ranged));
+                if (m_traceTargetSec <= 0.0f)
+                {
+                    const float traceMinHoldSec = std::max(0.0f, m_traceMaxHoldMinSec);
+                    const float traceMaxHoldSec = std::max(traceMinHoldSec, m_traceMaxHoldMaxSec);
+                    m_traceTargetSec = (traceMaxHoldSec > 0.0f)
+                        ? RandomRange(traceMinHoldSec, traceMaxHoldSec)
+                        : std::max(0.0f, m_traceDelaySec);
+                }
+                const float traceHoldSec = std::max(0.0f, m_traceTargetSec);
                 const float traceFarThreshold = m_traceEnterDist + 2.0f;
                 const float traceNearThreshold = std::max(0.0f, m_traceEnterDist - 1.0f);
                 const bool traceFar = (dist >= traceFarThreshold);
                 const bool traceNear = (dist <= traceNearThreshold);
                 const bool traceTimeReady = (traceHoldSec <= 0.0f) || (m_stateTimer >= traceHoldSec);
                 bool allowDecision = traceNear || traceTimeReady;
+                const bool traceAttackRangeReady = (dist <= meleeRange);
+                if (traceAttackRangeReady)
+                    allowDecision = true;
 
-                if (traceFar && rangedReady && PeekQueuedPattern() == PatternType::None)
+                if (traceFar
+                    && dist >= rangedTraceMinDist
+                    && rangedReady
+                    && PeekQueuedPattern() == PatternType::None)
                 {
                     PushQueuedPattern(PatternType::Ranged);
                     m_forceWalkAfterAttack = true;
@@ -635,11 +827,25 @@ namespace Alice
                 {
                     const float closeRange = std::max(0.0f, m_kickRange);
                     PatternType nextPattern = PatternType::None;
+                    const PatternType prevPattern = m_lastPattern;
                     if (dist <= closeRange)
                     {
-                        nextPattern = targetInFront ? PatternType::Kick : PatternType::Side;
+                        const PatternType harass = targetInFront ? PatternType::Kick : PatternType::Side;
+                        if (IsTransitionAllowed(prevPattern, harass))
+                        {
+                            nextPattern = harass;
+                        }
+                        else
+                        {
+                            const bool includeCharge = m_chargePending;
+                            nextPattern = PickRandomPattern(m_lastPattern, includeCharge, prevPattern);
+                            if (nextPattern == PatternType::Charge)
+                                m_chargePending = false;
+                        }
                     }
-                    else if (m_chargePending && m_lastPattern != PatternType::Charge)
+                    else if (m_chargePending
+                        && m_lastPattern != PatternType::Charge
+                        && IsTransitionAllowed(prevPattern, PatternType::Charge))
                     {
                         nextPattern = PatternType::Charge;
                         m_chargePending = false;
@@ -647,24 +853,27 @@ namespace Alice
                     else
                     {
                         const bool includeCharge = m_chargePending;
-                        nextPattern = PickRandomPattern(m_lastPattern, includeCharge);
+                        nextPattern = PickRandomPattern(m_lastPattern, includeCharge, prevPattern);
                         if (nextPattern == PatternType::Charge)
                             m_chargePending = false;
                     }
-                    PushQueuedPattern(nextPattern);
+                    if (nextPattern != PatternType::None)
+                        PushQueuedPattern(nextPattern);
                 }
 
                 PatternType pending = PeekPendingPattern();
-                if (pending != PatternType::None && allowDecision)
+                if (pending != PatternType::None)
                 {
-                    if (pending == PatternType::Dash || IsPatternInRange(pending))
+                    const bool pendingInRange = (pending == PatternType::Dash) || IsPatternInRange(pending);
+                    const bool facingReady = IsFacingReadyForPattern(pending);
+                    if (pendingInRange && facingReady)
                     {
                         if (pending == PatternType::Ranged)
                             m_forceWalkAfterAttack = true;
                         m_activePattern = PopPendingPattern();
                         BeginAttack(m_activePattern);
                     }
-                    else
+                    else if (allowDecision)
                     {
                         EnterState(BrainState::Approach);
                     }
@@ -680,20 +889,26 @@ namespace Alice
                 }
                 else if (IsPatternInRange(pending))
                 {
-                    if (pending == PatternType::Ranged)
-                        m_forceWalkAfterAttack = true;
-                    m_activePattern = PopPendingPattern();
-                    BeginAttack(m_activePattern);
+                    if (IsFacingReadyForPattern(pending))
+                    {
+                        if (pending == PatternType::Ranged)
+                            m_forceWalkAfterAttack = true;
+                        m_activePattern = PopPendingPattern();
+                        BeginAttack(m_activePattern);
+                    }
                 }
                 else
                 {
                     const float approachCompleteDist = std::max(0.0f, m_approachCompleteDist);
                     if (approachCompleteDist > 0.0f && dist <= approachCompleteDist)
                     {
-                        if (pending == PatternType::Ranged)
-                            m_forceWalkAfterAttack = true;
-                        m_activePattern = PopPendingPattern();
-                        BeginAttack(m_activePattern);
+                        if (IsFacingReadyForPattern(pending))
+                        {
+                            if (pending == PatternType::Ranged)
+                                m_forceWalkAfterAttack = true;
+                            m_activePattern = PopPendingPattern();
+                            BeginAttack(m_activePattern);
+                        }
                     }
                     else
                     {
@@ -709,10 +924,13 @@ namespace Alice
                         }
                         else if (dashTimeout > 0.0f && m_stateTimer >= dashTimeout)
                         {
-                            PopPendingPattern();
-                            CompleteIntent();
-                            m_rerollAfterAttack = true;
-                            BeginAttack(PatternType::Dash);
+                            if (IsFacingReadyForPattern(PatternType::Dash))
+                            {
+                                PopPendingPattern();
+                                CompleteIntent();
+                                m_rerollAfterAttack = true;
+                                BeginAttack(PatternType::Dash);
+                            }
                         }
                     }
                 }
@@ -727,14 +945,32 @@ namespace Alice
             }
             else if (m_state == BrainState::Idle)
             {
-                if (m_attackCooldownTimer <= 0.0f)
-                    EnterState(BrainState::Orbit);
+                const float idleRetreatTriggerDist = std::max(0.0f, m_idleRetreatTriggerDist);
+                const float idleRetreatStepDist = std::max(0.0f, m_idleRetreatStepDist);
+                if (idleRetreatTriggerDist > 0.0f
+                    && idleRetreatStepDist > 0.0f
+                    && dist <= idleRetreatTriggerDist)
+                {
+                    StartRetreat(dist + idleRetreatStepDist);
+                }
+                else
+                {
+                    const float idleHoldSec = std::max(0.0f, m_idleTargetSec);
+                    if ((idleHoldSec <= 0.0f || m_stateTimer >= idleHoldSec)
+                        && m_attackCooldownTimer <= 0.0f)
+                        EnterState(BrainState::Orbit);
+                }
             }
 
             if (m_state == BrainState::Orbit)
             {
                 if (hasDir)
                     intent.move = { right.x * static_cast<float>(m_patrolDirection), right.y * static_cast<float>(m_patrolDirection) };
+            }
+            else if (m_state == BrainState::Retreat)
+            {
+                if (hasDir)
+                    intent.move = { -toTarget.x, -toTarget.y };
             }
             else if (m_state == BrainState::Approach || m_state == BrainState::Chase)
             {
@@ -743,7 +979,8 @@ namespace Alice
             }
 
             // runHeld is ignored for boss intents
-            m_wantsFaceTarget = (m_state != BrainState::Gimmick);
+            m_wantsFaceTarget = (m_state != BrainState::Gimmick)
+                && ((m_state == BrainState::Attack) || m_faceTargetSuppressTimer <= 0.0f);
 
             if (m_intentActive && m_state != BrainState::Attack
                 && m_activePattern == PatternType::None
@@ -847,6 +1084,9 @@ namespace Alice
             {
                 if (type == PatternType::None)
                     return false;
+                const PatternType prevPattern = m_patternQueue.empty() ? m_lastPattern : m_patternQueue.back();
+                if (!IsTransitionAllowed(prevPattern, type))
+                    return false;
                 if (!allowDuplicate && type == LastQueued())
                     return false;
                 m_patternQueue.push_back(type);
@@ -905,7 +1145,13 @@ namespace Alice
                 intent.attackRequested = true;
                 m_attackIssued = true;
             }
-            if (m_stateTimer >= std::max(0.0f, m_specialPatternHoldSec))
+            float minSpecialTime = std::max(0.0f, m_specialPatternHoldSec);
+            const float specialClipDuration = GetClipDurationSecByName(
+                SkinnedRegistry(), *world, selfId, GetPatternClip(PatternType::Special));
+            if (specialClipDuration > 0.0f)
+                minSpecialTime = specialClipDuration;
+
+            if (m_stateTimer >= minSpecialTime)
                 finishedPattern = true;
         }
         else if (m_activePattern != PatternType::None)
@@ -968,7 +1214,8 @@ namespace Alice
 
                 if (inRange)
                 {
-                    BeginAttack(m_activePattern);
+                    if (IsFacingReadyForPattern(m_activePattern))
+                        BeginAttack(m_activePattern);
                 }
                 else
                 {
@@ -1012,10 +1259,17 @@ namespace Alice
             m_activePattern = PatternType::None;
             m_attackIssued = false;
             m_chargeTimer = 0.0f;
+            m_faceTargetSuppressTimer = std::max(m_faceTargetSuppressTimer, std::max(0.0f, m_actionDelaySec));
             m_attackCooldownTimer = std::max(0.0f, m_attackCooldown);
             m_decision.sectorLocked = false;
             m_decision.sectorLockedSec = 0.0f;
             m_decision.lockedSector = Sector::Unknown;
+            if (m_deactivateAfterCurrentAttack)
+            {
+                EnterStandbyState();
+                intent.wantsFaceTarget = m_wantsFaceTarget;
+                return intent;
+            }
             if (inMelee)
                 EnterState(BrainState::Idle);
             else
@@ -1065,7 +1319,8 @@ namespace Alice
         }
         m_lastDistance = dist;
 
-        m_wantsFaceTarget = (m_state != BrainState::Gimmick);
+        m_wantsFaceTarget = (m_state != BrainState::Gimmick)
+            && ((m_state == BrainState::Attack) || m_faceTargetSuppressTimer <= 0.0f);
 
         std::string label = GetStateLabel(m_state);
         if (m_state == BrainState::Orbit)
@@ -1172,13 +1427,19 @@ namespace Alice
             PushUnique(PatternType::Charge);
 
         if (count == 0)
-            return PatternType::AttackA;
+            return PatternType::None;
+
+        const PatternType prevPattern = (avoidB != PatternType::None)
+            ? avoidB
+            : ((avoidA != PatternType::None) ? avoidA : m_lastPattern);
 
         auto Pick = [&](bool allowDuplicate) -> PatternType
             {
                 for (size_t i = 0; i < count; ++i)
                 {
                     const PatternType type = candidates[i];
+                    if (!IsTransitionAllowed(prevPattern, type))
+                        continue;
                     if (!allowDuplicate && (type == avoidA || type == avoidB))
                         continue;
                     return type;
@@ -1378,6 +1639,7 @@ namespace Alice
     {
         m_intentActive = false;
         m_intentCompleted = true;
+        m_intentFollowupUsed = false;
         m_intentRoot = PatternType::None;
         m_followupQueue.clear();
         m_forceWalkAfterAttack = false;
@@ -1391,6 +1653,55 @@ namespace Alice
         const bool started = m_phase2HowlingStartedPulse;
         m_phase2HowlingStartedPulse = false;
         return started;
+    }
+
+    void C_BossBrainComponent::EnterStandbyState()
+    {
+        m_state = BrainState::Idle;
+        m_stateTimer = 0.0f;
+        m_activePattern = PatternType::None;
+        m_attackIssued = false;
+        m_chargeTimer = 0.0f;
+        m_chargePending = false;
+        m_specialPending = false;
+        m_phase2HowlingPending = false;
+        m_phase2HowlingStartedPulse = false;
+        m_patternQueue.clear();
+        m_followupQueue.clear();
+        ForceCompleteIntent();
+        m_decision.sectorLocked = false;
+        m_decision.sectorLockedSec = 0.0f;
+        m_decision.lockedSector = Sector::Unknown;
+        m_retreatTargetDist = 0.0f;
+        m_traceTargetSec = 0.0f;
+        m_faceTargetSuppressTimer = 0.0f;
+        m_deactivateAfterCurrentAttack = false;
+        // In standby, boss should ignore player presence and keep current forward.
+        m_wantsFaceTarget = false;
+        m_debugLabel = "Standby | Idle | Inactive";
+    }
+
+    bool C_BossBrainComponent::IsHarassPattern(PatternType type) const
+    {
+        return type == PatternType::Kick || type == PatternType::Side;
+    }
+
+    bool C_BossBrainComponent::IsNormalPattern(PatternType type) const
+    {
+        return type == PatternType::AttackA
+            || type == PatternType::AttackB
+            || type == PatternType::AttackC;
+    }
+
+    bool C_BossBrainComponent::IsTransitionAllowed(PatternType prev, PatternType next) const
+    {
+        if (prev == PatternType::None || next == PatternType::None)
+            return true;
+        if (IsHarassPattern(prev) && IsHarassPattern(next))
+            return false;
+        if (IsNormalPattern(prev) && IsNormalPattern(next) && prev == next)
+            return false;
+        return true;
     }
 
     C_BossBrainComponent::DistanceBand C_BossBrainComponent::ComputeDistanceBand(float dist) const
@@ -1505,6 +1816,7 @@ namespace Alice
         m_attackCycleIndex = 0;
         m_patrolDirection = m_startPatrolRight ? 1 : -1;
         m_stateTimer = 0.0f;
+        m_faceTargetSuppressTimer = 0.0f;
         m_attackCooldownTimer = 0.0f;
         m_blockedCooldownTimer = 0.0f;
         m_stuckTimer = 0.0f;
@@ -1524,7 +1836,8 @@ namespace Alice
         m_chargePending = false;
         m_forceWalkAfterAttack = false;
         m_rerollAfterAttack = false;
-        m_wantsFaceTarget = false;
+        m_deactivateAfterCurrentAttack = false;
+        m_wantsFaceTarget = m_brainActivated;
         m_targetDot = 1.0f;
         m_targetSideDot = 0.0f;
         m_decision = {};
@@ -1533,14 +1846,16 @@ namespace Alice
         m_testRetreatTimer = 0.0f;
         m_idleTargetSec = 0.0f;
         m_retreatTargetDist = 0.0f;
-        m_debugLabel = "Idle";
+        m_debugLabel = m_brainActivated ? "Idle" : "Standby | Idle | Inactive";
         m_traceEnterDist = 0.0f;
+        m_traceTargetSec = 0.0f;
         m_lastPattern = PatternType::None;
         m_lastAttackPattern = PatternType::None;
         m_attackOutcome = AttackOutcome::None;
         m_attackOutcomeSet = false;
         m_intentActive = false;
         m_intentCompleted = true;
+        m_intentFollowupUsed = false;
         m_intentRoot = PatternType::None;
         m_followupQueue.clear();
     }
