@@ -1710,6 +1710,22 @@ namespace Alice
             s.FrontCounterClockwise = FALSE;
             if (FAILED(m_device->CreateRasterizerState(&s, m_shadowRasterizerStateReversed.ReleaseAndGetAddressOf())))
                 return false;
+
+            // Local light shadow pass RS
+            // Directional용 큰 DepthBias는 Point/Spot/Rect에 과해서 그림자가 사라질 수 있어
+            // 로컬 라이트는 저바이어스 상태를 별도로 사용합니다.
+            D3D11_RASTERIZER_DESC ls = rsDesc;
+            ls.CullMode = D3D11_CULL_BACK;
+            ls.DepthBias = 0;
+            ls.DepthBiasClamp = 0.0f;
+            ls.SlopeScaledDepthBias = 0.0f;
+            ls.FrontCounterClockwise = TRUE;
+            if (FAILED(m_device->CreateRasterizerState(&ls, m_localShadowRasterizerState.ReleaseAndGetAddressOf())))
+                return false;
+
+            ls.FrontCounterClockwise = FALSE;
+            if (FAILED(m_device->CreateRasterizerState(&ls, m_localShadowRasterizerStateReversed.ReleaseAndGetAddressOf())))
+                return false;
         }
 
         // 아웃라인용 Rasterizer State (Cull Front)
@@ -2839,9 +2855,17 @@ namespace Alice
         {
             auto isVisibleToLight = [&](const DirectX::BoundingSphere& bounds) -> bool
             {
-                if (lightSphere && !lightSphere->Intersects(bounds))
+                if (!CullingTuning::EnableLocalShadowCasterCulling)
+                    return true;
+
+                DirectX::BoundingSphere testBounds = bounds;
+                testBounds.Radius = (std::max)(
+                    testBounds.Radius * CullingTuning::LocalShadowCasterBoundsInflation,
+                    CullingTuning::MinCullingSphereRadius);
+
+                if (lightSphere && !lightSphere->Intersects(testBounds))
                     return false;
-                if (lightFrustum && lightFrustum->Contains(bounds) == DirectX::DISJOINT)
+                if (lightFrustum && lightFrustum->Contains(testBounds) == DirectX::DISJOINT)
                     return false;
                 return true;
             };
@@ -2879,7 +2903,9 @@ namespace Alice
                         continue;
 
                     const bool flipped = DirectX::XMVectorGetX(DirectX::XMMatrixDeterminant(worldM)) < 0.0f;
-                    if (flipped && m_shadowRasterizerStateReversed) m_context->RSSetState(m_shadowRasterizerStateReversed.Get());
+                    if (flipped && m_localShadowRasterizerStateReversed) m_context->RSSetState(m_localShadowRasterizerStateReversed.Get());
+                    else if (m_localShadowRasterizerState) m_context->RSSetState(m_localShadowRasterizerState.Get());
+                    else if (flipped && m_shadowRasterizerStateReversed) m_context->RSSetState(m_shadowRasterizerStateReversed.Get());
                     else if (m_shadowRasterizerState) m_context->RSSetState(m_shadowRasterizerState.Get());
 
                     UpdatePerObjectCB(worldM, lightView, lightProj, XMFLOAT4(1, 1, 1, 1), 1.0f, 0.0f, 1.0f, false, false, 0,
@@ -2912,7 +2938,9 @@ namespace Alice
                     m_context->IASetIndexBuffer(cmd.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
                     const bool flipped = DirectX::XMVectorGetX(DirectX::XMMatrixDeterminant(cmd.world)) < 0.0f;
-                    if (flipped && m_shadowRasterizerStateReversed) m_context->RSSetState(m_shadowRasterizerStateReversed.Get());
+                    if (flipped && m_localShadowRasterizerStateReversed) m_context->RSSetState(m_localShadowRasterizerStateReversed.Get());
+                    else if (m_localShadowRasterizerState) m_context->RSSetState(m_localShadowRasterizerState.Get());
+                    else if (flipped && m_shadowRasterizerStateReversed) m_context->RSSetState(m_shadowRasterizerStateReversed.Get());
                     else if (m_shadowRasterizerState) m_context->RSSetState(m_shadowRasterizerState.Get());
 
                     UpdateBonesCB(cmd.bones, cmd.boneCount);
