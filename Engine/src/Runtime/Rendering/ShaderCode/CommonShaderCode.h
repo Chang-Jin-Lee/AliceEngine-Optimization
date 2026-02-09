@@ -92,6 +92,8 @@ cbuffer PostProcessConstantBuffer : register(b2)
                                       // 주의: 이것은 "출력 감마 보정"이 아니라 luminance에 영향을 주는 color grading 파라미터입니다.
     float4 g_ColorGradingGain;      // Color Grading Gain: Multiply 스케일 (R,G,B 채널별, 0.0 = 검정, 1.0 = 원본, >1.0 = 밝게, W=1.0)
                                       // 주의: 이것은 "출력 감마 보정"이 아니라 Color Grading 단계에서 색상을 곱하는 룩 조절 파라미터입니다.
+    float4 g_SplitParams;            // x: splitAmount, y: splitAngleDeg, z: splitLineOffset, w: splitFeather
+    float4 g_SplitFxParams;          // x: splitFxIntensity, y: splitFxWidth, z: splitFxSpeed, w: splitFxTimeSec
 };
 
 struct PS_INPUT_QUAD
@@ -158,9 +160,80 @@ float3 ApplyColorGradingGamma(float3 color, float3 gammaColor)
       return color * gainColor;
   }
 
+float2 ApplyHalfCutUV(float2 uv)
+{
+    float amount = g_SplitParams.x;
+    if (abs(amount) < 1e-6f)
+        return uv;
+
+    float angle = radians(g_SplitParams.y);
+    float lineOffset = g_SplitParams.z;
+    float feather = max(abs(g_SplitParams.w), 1e-6f);
+
+    float2 lineDir = float2(cos(angle), sin(angle));
+    float2 normal = float2(-lineDir.y, lineDir.x);
+    float2 centered = uv - float2(0.5f, 0.5f);
+    float side = dot(centered, normal) - lineOffset;
+
+    // side < 0 (하단): +lineDir, side > 0 (상단): -lineDir
+    float sideBlend = smoothstep(-feather, feather, side);
+    float directionSign = lerp(1.0f, -1.0f, sideBlend);
+    return uv + lineDir * (amount * directionSign);
+}
+
+float Hash11(float p)
+{
+    p = frac(p * 0.1031f);
+    p *= p + 33.33f;
+    p *= p + p;
+    return frac(p);
+}
+
+float3 ApplySplitCutFx(float3 color, float2 uv)
+{
+    float intensity = max(g_SplitFxParams.x, 0.0f);
+    if (intensity <= 1e-6f)
+        return color;
+
+    float width = max(g_SplitFxParams.y, 1e-5f);
+    float speed = g_SplitFxParams.z;
+    float timeSec = g_SplitFxParams.w;
+
+    float angle = radians(g_SplitParams.y);
+    float lineOffset = g_SplitParams.z;
+
+    float2 lineDir = float2(cos(angle), sin(angle));
+    float2 normal = float2(-lineDir.y, lineDir.x);
+    float2 centered = uv - float2(0.5f, 0.5f);
+
+    float side = dot(centered, normal) - lineOffset;
+    float along = dot(centered, lineDir);
+
+    float edgeBand = exp(-abs(side) / width);
+    float core = exp(-abs(side) / max(width * 0.35f, 1e-5f));
+
+    float sweep = along * 180.0f + timeSec * speed;
+    float n0 = Hash11(sweep + 0.13f);
+    float n1 = Hash11(sweep * 1.73f - 2.41f);
+    float sparks = saturate((n0 * 0.65f + n1 * 0.35f) * 1.9f - 1.0f);
+    sparks *= sparks;
+
+    float3 glowColor = float3(2.8f, 1.2f, 0.45f);
+    float3 fringeColor = float3(0.10f, 1.05f, 0.95f);
+
+    float glow = edgeBand * (0.35f + sparks * 1.25f);
+    float dark = core * 0.55f;
+
+    float3 result = color * (1.0f - dark * saturate(intensity * 0.8f));
+    result += (glowColor * glow + fringeColor * sparks * edgeBand) * intensity;
+    return result;
+}
+
 float4 main(PS_INPUT_QUAD input) : SV_Target
 {
-    float3 C_linear709 = g_SceneHDR.Sample(g_SamplerLinear, input.uv).rgb;
+    float2 splitUV = ApplyHalfCutUV(input.uv);
+    float3 C_linear709 = g_SceneHDR.Sample(g_SamplerLinear, splitUV).rgb;
+    C_linear709 = ApplySplitCutFx(C_linear709, input.uv);
     
     // 1. Exposure 적용
     float exposureFactor = pow(2.0f, g_Exposure);
@@ -203,6 +276,8 @@ cbuffer PostProcessConstantBuffer : register(b2)
                                       // 주의: 이것은 "출력 감마 보정"이 아니라 luminance에 영향을 주는 color grading 파라미터입니다.
     float4 g_ColorGradingGain;      // Color Grading Gain: Multiply 스케일 (R,G,B 채널별, 0.0 = 검정, 1.0 = 원본, >1.0 = 밝게, W=1.0)
                                       // 주의: 이것은 "출력 감마 보정"이 아니라 Color Grading 단계에서 색상을 곱하는 룩 조절 파라미터입니다.
+    float4 g_SplitParams;            // x: splitAmount, y: splitAngleDeg, z: splitLineOffset, w: splitFeather
+    float4 g_SplitFxParams;          // x: splitFxIntensity, y: splitFxWidth, z: splitFxSpeed, w: splitFxTimeSec
 };
 
 struct PS_INPUT_QUAD
@@ -266,6 +341,75 @@ float3 ApplyColorGradingGain(float3 color, float3 gainColor)
     return color * gainColor;
 }
 
+float2 ApplyHalfCutUV(float2 uv)
+{
+    float amount = g_SplitParams.x;
+    if (abs(amount) < 1e-6f)
+        return uv;
+
+    float angle = radians(g_SplitParams.y);
+    float lineOffset = g_SplitParams.z;
+    float feather = max(abs(g_SplitParams.w), 1e-6f);
+
+    float2 lineDir = float2(cos(angle), sin(angle));
+    float2 normal = float2(-lineDir.y, lineDir.x);
+    float2 centered = uv - float2(0.5f, 0.5f);
+    float side = dot(centered, normal) - lineOffset;
+
+    // side < 0 (하단): +lineDir, side > 0 (상단): -lineDir
+    float sideBlend = smoothstep(-feather, feather, side);
+    float directionSign = lerp(1.0f, -1.0f, sideBlend);
+    return uv + lineDir * (amount * directionSign);
+}
+
+float Hash11(float p)
+{
+    p = frac(p * 0.1031f);
+    p *= p + 33.33f;
+    p *= p + p;
+    return frac(p);
+}
+
+float3 ApplySplitCutFx(float3 color, float2 uv)
+{
+    float intensity = max(g_SplitFxParams.x, 0.0f);
+    if (intensity <= 1e-6f)
+        return color;
+
+    float width = max(g_SplitFxParams.y, 1e-5f);
+    float speed = g_SplitFxParams.z;
+    float timeSec = g_SplitFxParams.w;
+
+    float angle = radians(g_SplitParams.y);
+    float lineOffset = g_SplitParams.z;
+
+    float2 lineDir = float2(cos(angle), sin(angle));
+    float2 normal = float2(-lineDir.y, lineDir.x);
+    float2 centered = uv - float2(0.5f, 0.5f);
+
+    float side = dot(centered, normal) - lineOffset;
+    float along = dot(centered, lineDir);
+
+    float edgeBand = exp(-abs(side) / width);
+    float core = exp(-abs(side) / max(width * 0.35f, 1e-5f));
+
+    float sweep = along * 180.0f + timeSec * speed;
+    float n0 = Hash11(sweep + 0.13f);
+    float n1 = Hash11(sweep * 1.73f - 2.41f);
+    float sparks = saturate((n0 * 0.65f + n1 * 0.35f) * 1.9f - 1.0f);
+    sparks *= sparks;
+
+    float3 glowColor = float3(2.8f, 1.2f, 0.45f);
+    float3 fringeColor = float3(0.10f, 1.05f, 0.95f);
+
+    float glow = edgeBand * (0.35f + sparks * 1.25f);
+    float dark = core * 0.55f;
+
+    float3 result = color * (1.0f - dark * saturate(intensity * 0.8f));
+    result += (glowColor * glow + fringeColor * sparks * edgeBand) * intensity;
+    return result;
+}
+
 // Rec709 to Rec2020 색공간 변환
 float3 Rec709ToRec2020(float3 color)
 {
@@ -298,7 +442,9 @@ float3 LinearToST2084(float3 color)
 float4 main(PS_INPUT_QUAD input) : SV_Target
 {
     // 예제 프로젝트 36_ToneMappingPS_HDR.hlsl와 동일한 로직
-    float3 C_linear709 = g_SceneHDR.Sample(g_SamplerLinear, input.uv).rgb;
+    float2 splitUV = ApplyHalfCutUV(input.uv);
+    float3 C_linear709 = g_SceneHDR.Sample(g_SamplerLinear, splitUV).rgb;
+    C_linear709 = ApplySplitCutFx(C_linear709, input.uv);
     
     // 1. Exposure 적용
     float3 C_exposure = C_linear709 * pow(2.0f, g_Exposure);

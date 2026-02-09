@@ -521,6 +521,22 @@ namespace Alice
             target.bloomRadius = volumeSettings.bloomRadius;
         if (volumeSettings.bOverride_BloomDownsample)
             target.bloomDownsample = volumeSettings.bloomDownsample;
+        if (volumeSettings.bOverride_SplitAmount)
+            target.splitAmount = volumeSettings.splitAmount;
+        if (volumeSettings.bOverride_SplitAngleDeg)
+            target.splitAngleDeg = volumeSettings.splitAngleDeg;
+        if (volumeSettings.bOverride_SplitLineOffset)
+            target.splitLineOffset = volumeSettings.splitLineOffset;
+        if (volumeSettings.bOverride_SplitFeather)
+            target.splitFeather = volumeSettings.splitFeather;
+        if (volumeSettings.bOverride_SplitFxIntensity)
+            target.splitFxIntensity = volumeSettings.splitFxIntensity;
+        if (volumeSettings.bOverride_SplitFxWidth)
+            target.splitFxWidth = volumeSettings.splitFxWidth;
+        if (volumeSettings.bOverride_SplitFxSpeed)
+            target.splitFxSpeed = volumeSettings.splitFxSpeed;
+        if (volumeSettings.bOverride_SplitFxTimeSec)
+            target.splitFxTimeSec = volumeSettings.splitFxTimeSec;
 
         return target;
     }

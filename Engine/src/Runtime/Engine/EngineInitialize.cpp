@@ -677,10 +677,13 @@ namespace Alice
 						lighting.roughness = p["roughness"].get<float>();
 					if (p.contains("ambientOcclusion") && p["ambientOcclusion"].is_number())
 						lighting.ambientOcclusion = p["ambientOcclusion"].get<float>();
+					if (p.contains("globalIBLIntensity") && p["globalIBLIntensity"].is_number())
+						lighting.globalIBLIntensity = p["globalIBLIntensity"].get<float>();
 					if (p.contains("shadowStrength") && p["shadowStrength"].is_number())
 						lighting.shadowStrength = p["shadowStrength"].get<float>();
 					if (p.contains("toonShadowStrength") && p["toonShadowStrength"].is_number())
 						lighting.toonShadowStrength = p["toonShadowStrength"].get<float>();
+					lighting.globalIBLIntensity = std::clamp(lighting.globalIBLIntensity, 0.0f, 1.0f);
 					lighting.shadowStrength = std::clamp(lighting.shadowStrength, 0.0f, 1.0f);
 					lighting.toonShadowStrength = std::clamp(lighting.toonShadowStrength, 0.0f, 1.0f);
 
@@ -748,6 +751,7 @@ namespace Alice
 			p["metalness"] = lighting.metalness;
 			p["roughness"] = lighting.roughness;
 			p["ambientOcclusion"] = lighting.ambientOcclusion;
+			p["globalIBLIntensity"] = lighting.globalIBLIntensity;
 			p["shadowStrength"] = lighting.shadowStrength;
 			p["toonShadowStrength"] = lighting.toonShadowStrength;
 			p["keyIntensity"] = lighting.keyIntensity;
