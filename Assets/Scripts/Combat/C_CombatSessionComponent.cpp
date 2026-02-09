@@ -52,6 +52,7 @@ namespace Alice
 			bool blending = false;
 			bool blendingToOverride = false;
 			float blendTimer = 0.0f;
+			float blendDurationSec = 0.0f;
 			std::string overrideClip{};
 			bool overrideLoop = false;
 			std::string attackClip{};
@@ -3698,6 +3699,9 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				float blendSec = (entityId == bossId)
 					? std::max(0.0f, m_bossAnimBlendSec)
 					: std::max(0.0f, m_animBlendSec);
+				// Force hard-cut for player attack state (attack start + combo step changes).
+				if (entityId == playerId && curr == Combat::ActionState::Attack)
+					blendSec = 0.0f;
 				const bool bossGroggyEnterBlendLock = (entityId == bossId)
 					&& (curr == Combat::ActionState::Groggy)
 					&& (m_state->bossGroggyEnterBlendBlockSec > 0.0f);
@@ -3737,12 +3741,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						anim->base.blend01 = 0.0f;
 						animState.blending = false;
 						animState.blendingToOverride = true;
+						animState.blendDurationSec = 0.0f;
 						return;
 					}
 
 					animState.blending = true;
 					animState.blendingToOverride = true;
 					animState.blendTimer = 0.0f;
+					animState.blendDurationSec = blendSec;
 
 					anim->base.autoAdvance = true;
 					anim->base.clipB = nextClip;
@@ -3752,16 +3758,17 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					anim->base.blend01 = 0.0f;
 					};
 
-				auto BeginBlendToSaved = [&]() {
+				auto BeginBlendToSaved = [&](float targetBlendSec) {
 					if (!animState.saved)
 					{
 						animState.overrideActive = false;
 						animState.overrideClip.clear();
 						animState.blending = false;
+						animState.blendDurationSec = 0.0f;
 						return;
 					}
 
-					if (blendSec <= 0.0f)
+					if (targetBlendSec <= 0.0f)
 					{
 						anim->base = animState.savedBase;
 						anim->base.timeA = 0.0f;
@@ -3770,12 +3777,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						animState.overrideClip.clear();
 						animState.saved = false;
 						animState.blending = false;
+						animState.blendDurationSec = 0.0f;
 						return;
 					}
 
 					animState.blending = true;
 					animState.blendingToOverride = false;
 					animState.blendTimer = 0.0f;
+					animState.blendDurationSec = targetBlendSec;
 
 					const bool preferMoveTarget =
 						(!animState.savedBase.clipB.empty())
@@ -3800,11 +3809,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					};
 
 				auto StepBlend = [&]() {
-					if (!animState.blending || blendSec <= 0.0f)
+					const float activeBlendSec = (animState.blendDurationSec > 0.0f)
+						? animState.blendDurationSec
+						: blendSec;
+					if (!animState.blending || activeBlendSec <= 0.0f)
 						return;
 
 					animState.blendTimer += animDt;
-					float alpha = animState.blendTimer / blendSec;
+					float alpha = animState.blendTimer / activeBlendSec;
 					if (alpha > 1.0f)
 						alpha = 1.0f;
 
@@ -3822,6 +3834,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 							anim->base.timeB = anim->base.timeA;
 							anim->base.blend01 = 0.0f;
 							animState.blending = false;
+							animState.blendDurationSec = 0.0f;
 						}
 						else
 						{
@@ -3832,6 +3845,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 							animState.overrideClip.clear();
 							animState.saved = false;
 							animState.blending = false;
+							animState.blendDurationSec = 0.0f;
 						}
 					}
 					};
@@ -3858,11 +3872,21 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					const bool blendOnAttackEnd = (entityId == bossId);
 					if (attackEnded && !blendOnAttackEnd)
 					{
-						if (blendIdleOnAttackEnd
+						const bool wantsShortPlayerAttackEndBlend =
+							(entityId == playerId) && blendIdleOnAttackEnd;
+						if (wantsShortPlayerAttackEndBlend)
+						{
+							constexpr float kPlayerAttackEndBlendMaxSec = 0.06f;
+							const float attackEndBlendSec =
+								std::min(std::max(0.0f, blendSec), kPlayerAttackEndBlendMaxSec);
+							if (!animState.blending || animState.blendingToOverride)
+								BeginBlendToSaved(attackEndBlendSec);
+						}
+						else if (blendIdleOnAttackEnd
 							&& !avoidRootMotionBlendBack)
 						{
 							if (!animState.blending || animState.blendingToOverride)
-								BeginBlendToSaved();
+								BeginBlendToSaved(blendSec);
 						}
 						else
 						{
@@ -3878,12 +3902,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 							animState.blending = false;
 							animState.blendingToOverride = false;
 							animState.blendTimer = 0.0f;
+							animState.blendDurationSec = 0.0f;
 						}
 					}
 					else
 					{
 						if (!animState.blending || animState.blendingToOverride)
-							BeginBlendToSaved();
+							BeginBlendToSaved(blendSec);
 					}
 				}
 

@@ -1,0 +1,24 @@
+{
+    "materials": [
+        "Assets/Materials/dooranimation_0.mat",
+        "Assets/Materials/dooranimation_1.mat",
+        "Assets/Materials/dooranimation_2.mat",
+        "Assets/Materials/dooranimation_3.mat",
+        "Assets/Materials/dooranimation_4.mat",
+        "Assets/Materials/dooranimation_5.mat",
+        "Assets/Materials/dooranimation_6.mat",
+        "Assets/Materials/dooranimation_7.mat",
+        "Assets/Materials/dooranimation_8.mat",
+        "Assets/Materials/dooranimation_9.mat",
+        "Assets/Materials/dooranimation_10.mat",
+        "Assets/Materials/dooranimation_11.mat",
+        "Assets/Materials/dooranimation_12.mat",
+        "Assets/Materials/dooranimation_13.mat",
+        "Assets/Materials/dooranimation_14.mat",
+        "Assets/Materials/dooranimation_15.mat",
+        "Assets/Materials/dooranimation_16.mat",
+        "Assets/Materials/dooranimation_17.mat"
+    ],
+    "mesh": "dooranimation",
+    "source_fbx": "Resource/Test/4_Resources/background/door/dooranimation.fbx"
+}
