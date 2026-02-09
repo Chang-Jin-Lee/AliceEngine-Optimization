@@ -1,0 +1,99 @@
+{
+    "entities": [
+        {
+            "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
+                "aspectOverride": 0.0,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 2.0,
+                    "z": -8.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "12958477492010421032",
+            "name": "MainCamera"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "effectPath": "Assets/VFX/Samples/SimpleFire/effect.json",
+                "enabled": true,
+                "intensityScale": 1.0,
+                "sizeScale": 1.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0
+            },
+            "guid": "11390124840292953586",
+            "name": "Fire"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 1.0028313398361206,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "effectPath": "Assets/VFX/Samples/SimpleSmoke/effect.json",
+                "enabled": true,
+                "intensityScale": 0.800000011920929,
+                "sizeScale": 1.0,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0
+            },
+            "guid": "11830171289292064935",
+            "name": "Smoke"
+        }
+    ],
+    "sceneName": "UnityVfxDemo",
+    "version": 1
+}

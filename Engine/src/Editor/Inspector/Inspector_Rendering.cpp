@@ -868,7 +868,13 @@ namespace Alice
 
 				// Emission Module
 				if (ImGui::TreeNode("Emission##ComputeEffect")) {
-					changed |= ImGui::SliderFloat("Spawn Rate##ComputeEffect", &effect->spawnRate, 0.0f, 1.0f);
+					changed |= DragFloatWithInput("Spawn Rate##ComputeEffect", &effect->spawnRate, 0.0f, 1.0f, "%.4f");
+					changed |= ImGui::Checkbox("Emit New Particles##ComputeEffect", &effect->emitNewParticles);
+					changed |= ImGui::Checkbox("Loop##ComputeEffect", &effect->loop);
+					if (!effect->loop) {
+						changed |= ImGui::SliderFloat("Emission Duration (s)##ComputeEffect", &effect->emissionDurationSec, 0.0f, 10.0f);
+						if (effect->emissionDurationSec < 0.0f) effect->emissionDurationSec = 0.0f;
+					}
 					ImGui::TreePop();
 				}
 
@@ -1020,6 +1026,7 @@ namespace Alice
 					changed |= DragFloatWithInput("Time Scale##UnityVfx", &vfx->timeScale, 0.0f, 4.0f);
 					changed |= DragFloatWithInput("Lifetime Scale##UnityVfx", &vfx->lifetimeScale, 0.1f, 5.0f);
 					changed |= DragFloatWithInput("Spawn Rate Scale##UnityVfx", &vfx->spawnRateScale, 0.0f, 2.0f);
+					changed |= ImGui::Checkbox("Emit New Particles##UnityVfx", &vfx->emitNewParticles);
 					changed |= ImGui::Checkbox("Override Loop##UnityVfx", &vfx->overrideLoop);
 					if (vfx->overrideLoop)
 					{

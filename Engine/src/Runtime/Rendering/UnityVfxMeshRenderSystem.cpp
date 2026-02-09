@@ -576,6 +576,14 @@ namespace Alice
             XMMATRIX entityWorld = world.ComputeWorldMatrix(entityId);
             XMMATRIX entityWorldNoTrans = entityWorld;
             entityWorldNoTrans.r[3] = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+            XMMATRIX entityRotOnly = XMMatrixIdentity();
+            {
+                XMVECTOR s{}, r{}, t{};
+                if (XMMatrixDecompose(&s, &r, &t, entityWorld))
+                    entityRotOnly = XMMatrixRotationQuaternion(r);
+                else
+                    entityRotOnly = entityWorldNoTrans;
+            }
             const float entityScale =
                 (XMVectorGetX(XMVector3Length(entityWorld.r[0])) +
                  XMVectorGetX(XMVector3Length(entityWorld.r[1])) +
@@ -630,6 +638,7 @@ namespace Alice
                 const float dt = dtComponent;
 
                 const bool loopEnabled = vfx.overrideLoop ? vfx.loop : def.loop;
+                const float emissionScale = vfx.emitNewParticles ? 1.0f : 0.0f;
                 const bool canSpawn = loopEnabled || rt.time < def.duration;
                 bool looped = false;
                 rt.time += dt;
@@ -776,7 +785,7 @@ namespace Alice
 
                 if (canSpawn)
                 {
-                    const float rate = def.rateOverTime * vfx.spawnRateScale;
+                    const float rate = def.rateOverTime * vfx.spawnRateScale * emissionScale;
                     if (rate > 0.0f)
                     {
                         rt.spawnAccum += rate * dt;
@@ -809,7 +818,7 @@ namespace Alice
                                 count = bd.maxCount;
                             else
                                 count = RandomRangeInt(bd.minCount, bd.maxCount);
-                            count = static_cast<int>(count * vfx.spawnRateScale);
+                            count = static_cast<int>(count * vfx.spawnRateScale * emissionScale);
                             for (int s = 0; s < count; ++s)
                                 spawnOne();
                             br.remaining--;
@@ -1013,6 +1022,25 @@ namespace Alice
                     };
                     const int quadIdx[6] = { 0,1,2, 0,2,3 };
 
+                    XMVECTOR alignRight = camRight;
+                    XMVECTOR alignUp = camUp;
+                    XMVECTOR alignForward = camForward;
+                    if (def.alignment == BillboardAlignment::Local)
+                    {
+                        XMMATRIX alignRot = XMMatrixRotationQuaternion(XMLoadFloat4(&def.localRot));
+                        if (def.space == SimulationSpace::Local)
+                            alignRot = alignRot * entityRotOnly;
+                        alignRight = XMVector3Normalize(alignRot.r[0]);
+                        alignUp = XMVector3Normalize(alignRot.r[1]);
+                        alignForward = XMVector3Normalize(alignRot.r[2]);
+                    }
+                    else if (def.alignment == BillboardAlignment::World)
+                    {
+                        alignRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+                        alignUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+                        alignForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+                    }
+
                     for (const Particle& p : rt.particles)
                     {
                         XMVECTOR worldPos = XMLoadFloat3(&p.pos);
@@ -1043,15 +1071,25 @@ namespace Alice
 
                         const float renderSize = p.size * ((def.space == SimulationSpace::Local) ? entityScale : 1.0f);
 
-                        XMVECTOR right = camRight;
-                        XMVECTOR up = camUp;
-                        XMVECTOR forward = camForward;
+                        XMVECTOR right = alignRight;
+                        XMVECTOR up = alignUp;
+                        XMVECTOR forward = alignForward;
 
                         if (def.renderMode == BillboardMode::Horizontal)
                         {
-                            XMVECTOR worldUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-                            right = XMVector3Normalize(XMVector3Cross(worldUp, camForward));
-                            up = worldUp;
+                            XMVECTOR axisUp = (def.alignment == BillboardAlignment::View)
+                                ? XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)
+                                : alignUp;
+                            XMVECTOR faceRef = (def.alignment == BillboardAlignment::View)
+                                ? camForward
+                                : alignForward;
+                            right = XMVector3Cross(axisUp, faceRef);
+                            if (XMVectorGetX(XMVector3LengthSq(right)) < 1e-6f)
+                                right = XMVector3Cross(axisUp, camForward);
+                            if (XMVectorGetX(XMVector3LengthSq(right)) < 1e-6f)
+                                right = XMVector3Cross(axisUp, XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f));
+                            right = XMVector3Normalize(right);
+                            up = XMVector3Normalize(axisUp);
                             forward = XMVector3Normalize(XMVector3Cross(right, up));
                         }
                         else if (def.renderMode == BillboardMode::Stretch)
@@ -1060,7 +1098,13 @@ namespace Alice
                             const float velLenSq = XMVectorGetX(XMVector3LengthSq(vel));
                             if (velLenSq > 1e-6f)
                                 up = XMVector3Normalize(vel);
-                            right = XMVector3Normalize(XMVector3Cross(up, camForward));
+                            XMVECTOR faceRef = (def.alignment == BillboardAlignment::View)
+                                ? camForward
+                                : alignForward;
+                            right = XMVector3Cross(up, faceRef);
+                            if (XMVectorGetX(XMVector3LengthSq(right)) < 1e-6f)
+                                right = XMVector3Cross(up, camForward);
+                            right = XMVector3Normalize(right);
                             forward = XMVector3Normalize(XMVector3Cross(right, up));
                         }
 
@@ -1190,6 +1234,8 @@ namespace Alice
                         XMMATRIX RParticle = XMMatrixRotationRollPitchYaw(p.rotation3.x, p.rotation3.y, p.rotation3.z);
                         XMMATRIX REmitter = XMMatrixRotationQuaternion(XMLoadFloat4(&def.localRot));
                         XMMATRIX R = RParticle * REmitter;
+                        if (def.space == SimulationSpace::Local)
+                            R = R * entityRotOnly;
                         XMMATRIX T = XMMatrixTranslationFromVector(worldPos);
                         cb.world = XMMatrixTranspose(S * R * T);
 
@@ -2309,6 +2355,13 @@ float4 main(PSInput input) : SV_TARGET
             {
                 def.renderMode = BillboardMode::Stretch;
             }
+
+            const std::string alignment = ToLower(itRenderer->value("alignment", "view"));
+            def.alignment = BillboardAlignment::View;
+            if (alignment == "local")
+                def.alignment = BillboardAlignment::Local;
+            else if (alignment == "world")
+                def.alignment = BillboardAlignment::World;
 
             std::string matRel = itRenderer->value("material", "");
             if (!matRel.empty() && (StartsWithInsensitive(matRel, "resource/") || StartsWithInsensitive(matRel, "assets/")))

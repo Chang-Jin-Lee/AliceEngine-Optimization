@@ -126,7 +126,12 @@ namespace Alice
                     m_BoneNodeIndices[i] = it->second;
             }
 
-            const size_t nodeCount = nodeMap.size();
+            size_t nodeCount = 0;
+            for (const auto& kv : nodeMap)
+            {
+                if (kv.second >= 0)
+                    nodeCount = (std::max)(nodeCount, (size_t)kv.second + 1);
+            }
             m_NodePtrs.assign(nodeCount, nullptr);
             m_NodeParents.assign(nodeCount, -1);
             m_NodeNames.assign(nodeCount, std::string{});

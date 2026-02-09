@@ -1,0 +1,56 @@
+{
+    "ComputeEffect": {
+        "color": {
+            "x": 1.0,
+            "y": 0.47058823704719543,
+            "z": 0.0
+        },
+        "depthBiasMeters": 0.05000000074505806,
+        "depthTest": true,
+        "drag": 0.18199999630451202,
+        "emissionDurationSec": 0.14000000059604645,
+        "emitNewParticles": true,
+        "enabled": true,
+        "gravity": {
+            "x": 0.0,
+            "y": -2.5369999408721924,
+            "z": 0.0
+        },
+        "intensity": 2.821000099182129,
+        "lifeMax": 0.6880000233650208,
+        "lifeMin": 0.09399999678134918,
+        "localOffset": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "loop": false,
+        "radius": 0.009999999776482582,
+        "shaderName": "Sparks",
+        "simulationSpace": "World",
+        "sizePx": 6.0,
+        "spawnRate": 9.999999747378752e-05,
+        "startSpeed": 3.0999999046325684
+    },
+    "Transform": {
+        "enabled": true,
+        "position": {
+            "x": -10.91402816772461,
+            "y": 5.316431045532227,
+            "z": 9.20979118347168
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "visible": true
+    },
+    "name": "GameObject2",
+    "version": 1
+}

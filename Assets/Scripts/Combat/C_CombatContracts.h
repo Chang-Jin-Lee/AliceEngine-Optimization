@@ -39,7 +39,7 @@ namespace Alice::Combat
         Attack,
         Dodge,
         Guard,
-        JustGuardSuccess,
+        JustGuardSuccess, // legacy placeholder: currently no active transition path
         GuardBreakWeak,
         Hitstun,
         Groggy,
@@ -248,6 +248,7 @@ namespace Alice::Combat
         ActionFlags flags{};
         std::vector<Command> commands;
         bool attackRestarted = false;
+        bool parryRecoverToIdle = false;
     };
 
     struct ResolveOutput

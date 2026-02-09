@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 #include <wrl/client.h>
 #include <d3d11.h>
@@ -125,6 +126,13 @@ namespace Alice
             EmitterBuffer      emitters;
         };
 
+        struct EmitterPlaybackState
+        {
+            bool wasEnabled = false;
+            bool oneShotFrameConsumed = false;
+            float elapsedSec = 0.0f;
+        };
+
         std::unordered_map<std::string, PresetRuntime> m_presets;
         /// Clear용 셰이더. 모든 프리셋이 m_outputUAV를 공유하므로 시스템 전역 1회 Clear.
         Microsoft::WRL::ComPtr<ID3D11ComputeShader> m_clearShader;
@@ -155,6 +163,10 @@ namespace Alice
         // 시간 관리
         float m_timeSec = 0.0f;
         float m_dtSec = 0.0f;
+
+        // 엔티티별 방출 재생 상태 (loop/one-shot 제어)
+        std::unordered_map<EntityId, EmitterPlaybackState> m_emitterPlaybackStates;
+        std::unordered_set<std::string> m_activePresetsPrevFrame;
 
         std::uint32_t m_width  = 0;
         std::uint32_t m_height = 0;
