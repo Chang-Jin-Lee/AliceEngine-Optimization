@@ -146,7 +146,7 @@ namespace Alice
     static constexpr int MaxShadowedRectLights = 1;
     static constexpr int MaxShadowedSpotRectLights = MaxShadowedSpotLights + MaxShadowedRectLights;
     static constexpr std::uint32_t LocalSpotRectShadowMapSizePx = 512;
-    static constexpr std::uint32_t LocalPointShadowMapSizePx = 256;
+    static constexpr std::uint32_t LocalPointShadowMapSizePx = 512;
     static constexpr float LocalPointShadowNearZ = 0.05f;
 
     struct PointLightGPU
