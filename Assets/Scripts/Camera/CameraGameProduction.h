@@ -68,6 +68,7 @@ namespace Alice
         static DirectX::XMFLOAT4 EulerToQuaternion(const DirectX::XMFLOAT3& eulerRad);
         static DirectX::XMFLOAT3 QuaternionToEuler(const DirectX::XMFLOAT4& quat);
         static float ApplySmoothStep(float t);
+        static float ResolveBlendDuration(float baseDuration, float speedMultiplier);
 
         ALICE_PROPERTY(std::string, m_outputCameraName, "MainCamera");
         ALICE_PROPERTY(bool, m_useSceneCameraEntities, true);
@@ -96,6 +97,12 @@ namespace Alice
         ALICE_PROPERTY(float, m_blendDuration56, 1.10f);
         ALICE_PROPERTY(float, m_blendDuration78, 1.20f);
         ALICE_PROPERTY(float, m_blendDuration910, 1.40f);
+
+        ALICE_PROPERTY(float, m_blendSpeed12, 1.00f);
+        ALICE_PROPERTY(float, m_blendSpeed34, 1.00f);
+        ALICE_PROPERTY(float, m_blendSpeed56, 1.00f);
+        ALICE_PROPERTY(float, m_blendSpeed78, 1.00f);
+        ALICE_PROPERTY(float, m_blendSpeed910, 1.00f);
 
         ALICE_PROPERTY(bool, m_useSmoothStep12, true);
         ALICE_PROPERTY(bool, m_useSmoothStep34, true);
