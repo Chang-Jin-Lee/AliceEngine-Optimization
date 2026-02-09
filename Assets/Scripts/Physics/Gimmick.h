@@ -13,6 +13,8 @@
 
 namespace Alice
 {
+    class C_CombatSessionComponent;
+
     // Weapon break/assemble gimmick controller
     class Gimmick : public IScript
     {
@@ -55,10 +57,32 @@ namespace Alice
         ALICE_PROPERTY(float, m_capturePullTargetDuration, 0.0f); // 포획 단계 총 시간(0이면 자동 계산)
         ALICE_PROPERTY(float, m_capturePullMinDuration, 0.08f); // 포획 최소 시간
         ALICE_PROPERTY(float, m_capturePullMaxDuration, 0.6f); // 포획 최대 시간
+        ALICE_PROPERTY(float, m_capturePullStartHeightJitter, 1.0f); // 포획 시작 구간 Y 오프셋 랜덤 범위
+        ALICE_PROPERTY(float, m_captureOrbitHeightJitter, 1.0f); // 포획/공전 시 파편별 Y 오프셋 랜덤 범위
         ALICE_PROPERTY(std::string, m_enemyName, "Enemy"); // 디버그: Enemy 무기 트레이스 토글 대상
         ALICE_PROPERTY(std::string, m_guardBreakOwnerName, "Enemy"); // 가드브레이크 감지 대상
         ALICE_PROPERTY(float, m_breakScatterDurationSec, 2.0f); // 파괴 후 흩뿌려진 상태 유지 시간
         ALICE_PROPERTY(float, m_shardAssembleFinishDelaySec, 0.5f); // 파편 조립 완료 후 눈 조립 전 대기
+        ALICE_PROPERTY(bool, m_enableShardTrailVfx, false); // 파편 이동 중 트레일 VFX 사용
+        ALICE_PROPERTY(std::string, m_shardTrailEffectPath, "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json");
+        ALICE_PROPERTY(float, m_shardTrailEmitMinSpeed, 0.15f); // 이 속도 이상일 때만 emission
+        ALICE_PROPERTY(float, m_shardTrailSpawnRateScale, 1.0f);
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalOffset, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalRotation, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_shardTrailLocalScale, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
+        ALICE_PROPERTY(std::string, m_eyeMoveTrailEffectPath, "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json");
+        ALICE_PROPERTY(float, m_eyeMoveTrailSizeScale, 0.025f); // 파편 트레일과 동일 기본값
+        ALICE_PROPERTY(float, m_eyeMoveTrailIntensityScale, 0.0f);
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_eyeMoveTrailColorTint, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_eyeMoveTrailLocalScale, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f)); // 파편 트레일과 동일 기본값
+        ALICE_PROPERTY(std::string, m_eyeDustEffectPath, "Assets/VFX/UnityExport/Dust_3_41ffd4a3/effect.json");
+        ALICE_PROPERTY(float, m_eyeDustRiseStartHeight, 1.0f); // 눈이 이 높이 이상 떠오르면 알파 상승 시작
+        ALICE_PROPERTY(float, m_eyeDustFadeInSpeed, 0.9f); // 상승 시작 후 첫 파편 발사 전 알파 증가 속도
+        ALICE_PROPERTY(std::string, m_combatSessionName, "SceneManager");
+        ALICE_PROPERTY(std::string, m_playerEntityName, "Player(Tia)");
+        ALICE_PROPERTY(std::string, m_parryShieldVfxName, "LightShield");
+        ALICE_PROPERTY(float, m_parryShieldTimeScale, 1.5f);
+        ALICE_PROPERTY(float, m_parryShieldDetachDurationSec, 1.0f);
 
     private:
         enum class Phase
@@ -91,6 +115,12 @@ namespace Alice
             float orbitAngularStartSpeed = 0.0f;
             float orbitBlendTimer = 0.0f;
             bool orbitBlending = false;
+            float orbitHeightOffset = 0.0f;
+            float pullStartHeightOffset = 0.0f;
+            float assembleStartDistance = 0.0f;
+            DirectX::XMFLOAT3 prevPos{ 0.0f, 0.0f, 0.0f };
+            bool prevPosValid = false;
+            EntityId trailVfxId = InvalidEntityId;
         };
 
         EntityId m_weaponCombined = InvalidEntityId;
@@ -121,10 +151,35 @@ namespace Alice
         bool m_enemyTraceForced = false;
         bool m_guardBreakLatched = false;
         float m_assembleFinishTimer = 0.0f;
+        EntityId m_eyeTrailVfx = InvalidEntityId;
+        DirectX::XMFLOAT3 m_eyeTrailPrevPos{ 0.0f, 0.0f, 0.0f };
+        bool m_eyeTrailPrevPosValid = false;
+        EntityId m_eyeMoveTrailVfx = InvalidEntityId;
+        DirectX::XMFLOAT3 m_eyeMoveTrailPrevPos{ 0.0f, 0.0f, 0.0f };
+        bool m_eyeMoveTrailPrevPosValid = false;
+        float m_eyeDustAlpha = 0.0f;
+        bool m_eyeDustRiseTriggered = false;
+        bool m_eyeDustFirstShardLaunched = false;
+        EntityId m_parryShieldVfx = InvalidEntityId;
+        EntityId m_parryShieldFreezeAnchor = InvalidEntityId;
+        float m_parryShieldDetachTimerSec = 0.0f;
+        bool m_parryShieldDetached = false;
+        std::uint64_t m_prevPlayerParrySuccessCount = 0;
+        bool m_hasSeenPlayerParrySuccessCount = false;
+        bool m_warnedMissingCombatSession = false;
+        bool m_warnedMissingPlayerEntity = false;
+        bool m_warnedMissingParryShield = false;
+        bool m_warnedMissingParryShieldVfx = false;
 
         std::mt19937 m_rng;
 
         void FindEntities();
+        C_CombatSessionComponent* FindCombatSession();
+        EntityId ResolvePlayerEntity(bool logWarnings);
+        EntityId ResolveParryShieldVfxEntity(bool logWarnings);
+        void TriggerParryShieldOneShot();
+        void RestoreParryShieldToPlayer(bool hideAfterRestore);
+        void UpdateParryShieldParryTrigger(float dt);
 
         void AdvancePhase();
         void EnterPhase(Phase phase);
@@ -140,6 +195,9 @@ namespace Alice
 
         void UpdateEyeFloat(float dt);
         void UpdateOrbitingShards(float dt);
+        void SetupShardTrailVfx();
+        void UpdateShardTrailEmission(float dt);
+        void ResetShardTrailPlayback();
 
         void ApplyBreakImpulse();
         bool CanApplyBreakImpulse() const;

@@ -122,12 +122,20 @@ namespace Alice
         void NotifyAttackOutcome(bool evaded);
         void ForceCompleteIntent();
         bool ConsumePhase2HowlingStarted();
+        void SetBrainActivated(bool active);
+        ALICE_FUNC(SetBrainActivated);
+        void ToggleBrainActivated();
+        ALICE_FUNC(ToggleBrainActivated);
+        bool IsBrainActivated() const { return m_brainActivated; }
 
+    public:
         // Phase2 전환 델리게이트
         ALICE_DECLARE_DELEGATE(FOnPhase2Entered);
         FOnPhase2Entered OnPhase2Entered;
 
         // 공격/패턴 튜닝
+        ALICE_PROPERTY(bool, m_brainActivated, false);
+        ALICE_PROPERTY(bool, m_enableF4ActivationToggle, true);
         ALICE_PROPERTY(float, m_attackCooldown, 1.0f);
         ALICE_PROPERTY(float, m_attackStateHoldSec, 0.45f);
         ALICE_PROPERTY(float, m_specialPatternHoldSec, 1.2f);
@@ -158,6 +166,8 @@ namespace Alice
         ALICE_PROPERTY(float, m_approachCompleteDist, 2.5f);
         ALICE_PROPERTY(float, m_postAttackRetreatTriggerDist, 1.0f);
         ALICE_PROPERTY(float, m_postAttackRetreatStepDist, 1.0f);
+        ALICE_PROPERTY(float, m_idleRetreatTriggerDist, 2.0f);
+        ALICE_PROPERTY(float, m_idleRetreatStepDist, 1.0f);
 
         // 공격 사거리 (단순 디버그용)
         ALICE_PROPERTY(float, m_dashRangeMin, 4.0f);
@@ -191,6 +201,8 @@ namespace Alice
         ALICE_PROPERTY(float, m_distBand10, 10.0f);
         ALICE_PROPERTY(float, m_attackSectorHoldSec, 0.6f);
         ALICE_PROPERTY(float, m_traceDelaySec, 0.5f);
+        ALICE_PROPERTY(float, m_traceMaxHoldMinSec, 3.0f);
+        ALICE_PROPERTY(float, m_traceMaxHoldMaxSec, 6.0f);
         ALICE_PROPERTY(float, m_actionDelaySec, 0.3f);
         ALICE_PROPERTY(float, m_rotationOffsetDeg, 180.0f);
         ALICE_PROPERTY(float, m_dashCooldownSec, 10.0f);
@@ -244,6 +256,10 @@ namespace Alice
         float GetPatternMaxRange(PatternType type) const;
         const char* GetStateLabel(BrainState state) const;
         const char* GetPatternLabel(PatternType type) const;
+        void EnterStandbyState();
+        bool IsHarassPattern(PatternType type) const;
+        bool IsNormalPattern(PatternType type) const;
+        bool IsTransitionAllowed(PatternType prev, PatternType next) const;
         void ResetBrain();
 
         BrainState m_state = BrainState::Orbit;
@@ -252,6 +268,7 @@ namespace Alice
         int m_attackCycleIndex = 0;
         int m_patrolDirection = 1;
         float m_stateTimer = 0.0f;
+        float m_faceTargetSuppressTimer = 0.0f;
         float m_attackCooldownTimer = 0.0f;
         float m_blockedCooldownTimer = 0.0f;
         float m_stuckTimer = 0.0f;
@@ -275,6 +292,7 @@ namespace Alice
         bool m_chargePending = false;
         bool m_forceWalkAfterAttack = false;
         bool m_rerollAfterAttack = false;
+        bool m_deactivateAfterCurrentAttack = false;
         bool m_wantsFaceTarget = false;
         float m_targetDot = 1.0f;
         float m_targetSideDot = 0.0f;
@@ -287,8 +305,10 @@ namespace Alice
         bool m_attackOutcomeSet = false;
         bool m_intentActive = false;
         bool m_intentCompleted = true;
+        bool m_intentFollowupUsed = false;
         PatternType m_intentRoot = PatternType::None;
         std::deque<PatternType> m_followupQueue;
+        float m_traceTargetSec = 0.0f;
         float m_retreatTargetDist = 0.0f;
     };
 }

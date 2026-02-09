@@ -1,0 +1,53 @@
+{
+    "Transform": {
+        "enabled": true,
+        "position": {
+            "x": 54.0,
+            "y": 0.0,
+            "z": 30.0
+        },
+        "rotation": {
+            "x": 1.2097219228744507,
+            "y": 0.4357161819934845,
+            "z": -3.0538015365600586
+        },
+        "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "visible": true
+    },
+    "UnityVfx": {
+        "alphaScale": 1.0,
+        "colorScale": 1.0,
+        "colorTint": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "dissolveOffset": 0.0,
+        "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_07_OuterRingEffect__Effect_07_OuterPlaneRing__OneShot/effect.json",
+        "emitNewParticles": true,
+        "enableTrails": true,
+        "enabled": true,
+        "hdrColorClamp": 1.0,
+        "intensityScale": 1.0,
+        "lifetimeScale": 1.0,
+        "loop": false,
+        "noiseScale": 1.0,
+        "overrideLoop": true,
+        "rampScale": 1.0,
+        "sizeScale": 0.5009999871253967,
+        "spawnRateScale": 1.0,
+        "speedScale": 1.0,
+        "timeScale": 1.0800000429153442,
+        "trailLifeScale": 1.0,
+        "trailWidthScale": 1.0,
+        "useComputeEffect": false,
+        "useMeshRenderer": true,
+        "uvScrollScale": 1.0
+    },
+    "name": "ONESHOT_DECOMP_(Opt)Effect_07_OuterRingEffect__Effect_07_OuterPlaneRing",
+    "version": 1
+}
