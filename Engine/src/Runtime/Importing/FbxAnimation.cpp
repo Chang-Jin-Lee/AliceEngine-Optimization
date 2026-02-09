@@ -13,6 +13,19 @@ static XMMATRIX LerpMatrix(const XMMATRIX& A, const XMMATRIX& B, float t)
 	return A + (B - A) * t;
 }
 
+// nodeIndex map is name->index and can become non-compact when duplicate names overwrite entries.
+// We size index-addressed arrays by (maxIndex + 1), not by map.size().
+static size_t ComputeNodeIndexCapacity(const std::unordered_map<std::string, int>& nodeIndexOfName)
+{
+    int maxIdx = -1;
+    for (const auto& kv : nodeIndexOfName)
+    {
+        if (kv.second > maxIdx)
+            maxIdx = kv.second;
+    }
+    return (maxIdx >= 0) ? (size_t)(maxIdx + 1) : 0;
+}
+
 FbxAnimation::FbxAnimation() {}
 FbxAnimation::~FbxAnimation() { Clear(); }
 
@@ -70,17 +83,18 @@ void FbxAnimation::SetSharedContext(
     m_BoneNames = boneNames;
     m_BoneOffsets = boneOffsets;
     m_GlobalInverse = globalInverse;
-    m_ChannelOfNode.assign(m_NodeIndexOfName.size(), nullptr);
+    const size_t nodeCapacity = ComputeNodeIndexCapacity(m_NodeIndexOfName);
+    m_ChannelOfNode.assign(nodeCapacity, nullptr);
     m_ChannelDirty = true;
 
     // Build fast traversal caches aligned with node indices
     m_NodePtrByIndex.clear();
     m_ParentIndexByIndex.clear();
     m_BoneNodeIndices.clear();
-    if (m_Scene && !m_NodeIndexOfName.empty())
+    if (m_Scene && nodeCapacity > 0)
     {
-        m_NodePtrByIndex.resize(m_NodeIndexOfName.size(), nullptr);
-        m_ParentIndexByIndex.resize(m_NodeIndexOfName.size(), -1);
+        m_NodePtrByIndex.resize(nodeCapacity, nullptr);
+        m_ParentIndexByIndex.resize(nodeCapacity, -1);
 
         std::function<void(const aiNode*, int)> build = [&](const aiNode* node, int parentIdx)
         {
@@ -209,12 +223,13 @@ void FbxAnimation::EvaluateGlobals(
     std::vector<XMFLOAT4X4>& outGlobal) const
 {
 	outGlobal.clear(); if (!scene) return;
-	outGlobal.resize(nodeIndexOfName.size());
+    const size_t nodeCapacity = ComputeNodeIndexCapacity(nodeIndexOfName);
+	outGlobal.resize(nodeCapacity);
 
 	// Optimized path: compute only nodes needed by bones using parent indices
-	if (!m_ParentIndexByIndex.empty() && !m_BoneNodeIndices.empty() && m_NodePtrByIndex.size() == nodeIndexOfName.size())
+	if (!m_ParentIndexByIndex.empty() && !m_BoneNodeIndices.empty() && m_NodePtrByIndex.size() == nodeCapacity)
 	{
-		std::vector<uint8_t> done; done.assign(nodeIndexOfName.size(), 0);
+		std::vector<uint8_t> done; done.assign(nodeCapacity, 0);
 		auto computeNode = [&](auto&& self, int idx) -> void {
 			if (idx < 0 || (size_t)idx >= m_NodePtrByIndex.size()) return;
 			if (done[(size_t)idx]) return;
@@ -343,7 +358,7 @@ void FbxAnimation::PrecomputeAll(
 
 		// Build channel map for this clip
 		m_Current = (int)clipIdx;
-		m_ChannelOfNode.assign(nodeIndexOfName.size(), nullptr);
+        m_ChannelOfNode.assign(ComputeNodeIndexCapacity(nodeIndexOfName), nullptr);
 		RebuildChannelMapIfNeeded(scene, m_Current, nodeIndexOfName, m_ChannelOfNode);
 
 		int numSamples = (int)std::ceil(pc.durationSec * samplesPerSecond);
@@ -678,7 +693,7 @@ void FbxAnimation::EvaluateGlobalsAtFull(int clipIndex, double timeSec, std::vec
 	}
 
 	outGlobal.clear();
-	outGlobal.resize(m_NodeIndexOfName.size());
+	outGlobal.resize(ComputeNodeIndexCapacity(m_NodeIndexOfName));
 
 	std::function<void(const aiNode*, int, const XMMATRIX&)> eval = [&](const aiNode* node, int idx, const XMMATRIX& parent){
 		aiVector3D S(1,1,1), T(0,0,0);
@@ -752,7 +767,7 @@ void FbxAnimation::EvaluateLocalsAt(int clipIndex, double timeSec,
 	if (!m_Scene || clipIndex < 0 || (size_t)clipIndex >= m_Scene->mNumAnimations)
 		return;
 
-	const size_t nodeCount = m_NodeIndexOfName.size();
+	const size_t nodeCount = ComputeNodeIndexCapacity(m_NodeIndexOfName);
 	if (nodeCount == 0 || m_NodePtrByIndex.size() != nodeCount)
 		return;
 
