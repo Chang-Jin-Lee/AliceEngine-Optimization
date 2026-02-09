@@ -218,6 +218,32 @@ namespace Alice
         }
     }
 
+    void InputSystem::NotifyAppActivated(bool active)
+    {
+        if (m_appActive == active)
+            return;
+
+        m_appActive = active;
+        if (active)
+            m_appActivated = true;
+        else
+            m_appDeactivated = true;
+    }
+
+    bool InputSystem::ConsumeAppDeactivated()
+    {
+        const bool v = m_appDeactivated;
+        m_appDeactivated = false;
+        return v;
+    }
+
+    bool InputSystem::ConsumeAppActivated()
+    {
+        const bool v = m_appActivated;
+        m_appActivated = false;
+        return v;
+    }
+
     void InputSystem::ProcessRawInput(HRAWINPUT hRawInput)
     {
         if (!m_useRawInput || !hRawInput)

@@ -4715,6 +4715,11 @@ namespace Alice
         return srv.Get();
     }
 
+    bool DeferredRenderSystem::PreloadTexture(const std::string& path)
+    {
+        return GetOrCreateTexture(path) != nullptr;
+    }
+
     void DeferredRenderSystem::GetPostProcessParams(float& outExposure, float& outMaxHDRNits) const
     {
         outExposure = m_postProcessParams.exposure;

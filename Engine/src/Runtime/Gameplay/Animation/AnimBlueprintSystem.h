@@ -63,6 +63,8 @@ namespace Alice
                     rt = Runtime{};
                     rt.meshKey = skinned.meshAssetPath;
                     rt.anim.InitMetadata(mesh->sourceModel->GetScenePtr());
+                    if (auto pre = m_registry.GetPrecomputedAnimation(rt.meshKey))
+                        rt.anim.CopyPrecomputedFrom(*pre);
                     rt.anim.SetSharedContext(
                         mesh->sourceModel->GetScenePtr(),
                         mesh->sourceModel->GetNodeIndexOfName(),
