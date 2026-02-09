@@ -128,6 +128,7 @@ namespace Alice
 
         void SpawnSlashFromAttackWindow(int attackSlotIndex = -1);
         void SpawnHitFromResolve(const DirectX::XMFLOAT3& hitPos,
+                                 EntityId victimId,
                                  int attackSlotIndex = -1);
         void OnCombatResolve(EntityId victimId,
                              EntityId attackerId,

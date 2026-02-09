@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cmath>
+#include <cctype>
 
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/ECS/GameObject.h"
@@ -36,6 +37,21 @@ namespace Alice
             if (v > maxV)
                 return maxV;
             return v;
+        }
+
+        bool ContainsCaseInsensitive(std::string value, const std::string& needle)
+        {
+            if (needle.empty())
+                return false;
+
+            std::transform(value.begin(), value.end(), value.begin(),
+                           [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+            std::string lowerNeedle = needle;
+            std::transform(lowerNeedle.begin(), lowerNeedle.end(), lowerNeedle.begin(),
+                           [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+            return value.find(lowerNeedle) != std::string::npos;
         }
 
         struct Basis
@@ -886,6 +902,7 @@ namespace Alice
     }
 
     void CombatVfxBridgeScript::SpawnHitFromResolve(const DirectX::XMFLOAT3& hitPos,
+                                                    EntityId victimId,
                                                     int attackSlotIndex)
     {
         const int hitSlot = ResolveHitSlotForAttackSlotIndex(attackSlotIndex);
@@ -918,19 +935,50 @@ namespace Alice
         if (LengthSq(Cross(upHint, forward)) <= kVectorEpsilonSq)
             upHint = XMFLOAT3(0.0f, 0.0f, 1.0f);
 
-        XMFLOAT3 slashRotationOffsetDeg = Get_slashRotationOffsetDeg();
-        if (Get_useSlashSlotTransformTuning() && attackSlotIndex > 0)
-            slashRotationOffsetDeg = Add(slashRotationOffsetDeg, GetSlashSlotRotationOffsetDeg(attackSlotIndex));
-        // HIT crack/card plane should face the opposite side of slash orientation.
-        // slashRotationOffsetDeg.x += 180.0f;
+        XMFLOAT3 spawnPos = hitPos;
+        const std::string hitPrefabPath = GetPrefabPath(hitSlot);
+        const bool isRedHitEffect =
+            ContainsCaseInsensitive(hitPrefabPath, "red_hit")
+            || ContainsCaseInsensitive(hitPrefabPath, "red hit");
+        if (isRedHitEffect && victimId != InvalidEntityId)
+        {
+            DirectX::XMFLOAT4X4 victimWorld{};
+            XMStoreFloat4x4(&victimWorld, world->ComputeWorldMatrix(victimId));
+            spawnPos = XMFLOAT3(victimWorld._41, victimWorld._42 + 1.1f, victimWorld._43);
+        }
+
+        XMFLOAT3 hitRotationOffsetDeg{};
+        if (isRedHitEffect)
+        {
+            // Red hit uses dedicated hit rotation, and faces player at spawn time.
+            hitRotationOffsetDeg = Get_hitRotationOffsetDeg();
+            if (m_playerId != InvalidEntityId)
+            {
+                DirectX::XMFLOAT4X4 playerWorld{};
+                XMStoreFloat4x4(&playerWorld, world->ComputeWorldMatrix(m_playerId));
+                const XMFLOAT3 toPlayer(
+                    playerWorld._41 - spawnPos.x,
+                    (playerWorld._42 + 1.1f) - spawnPos.y,
+                    playerWorld._43 - spawnPos.z);
+                if (LengthSq(toPlayer) > kVectorEpsilonSq)
+                    forward = NormalizeOrFallback(toPlayer, forward);
+            }
+        }
+        else
+        {
+            // Keep legacy white-hit orientation behavior.
+            hitRotationOffsetDeg = Get_slashRotationOffsetDeg();
+            if (Get_useSlashSlotTransformTuning() && attackSlotIndex > 0)
+                hitRotationOffsetDeg = Add(hitRotationOffsetDeg, GetSlashSlotRotationOffsetDeg(attackSlotIndex));
+        }
 
         ApplySpawnTransformTuned(hitSlot,
                                  id,
-                                 hitPos,
+                                 spawnPos,
                                  forward,
                                  upHint,
                                  GetOffsetLocal(hitSlot),
-                                 slashRotationOffsetDeg,
+                                 hitRotationOffsetDeg,
                                  GetScaleMulSafe(hitSlot));
         m_active[hitSlot].push_back({ id, lifeSec, lifeSec, heavyFade, InvalidEntityId });
     }
@@ -957,7 +1005,7 @@ namespace Alice
             attackSlotIndex = m_lastAttackSlotIndex;
         else
             m_lastAttackSlotIndex = attackSlotIndex;
-        SpawnHitFromResolve(hitPos, attackSlotIndex);
+        SpawnHitFromResolve(hitPos, victimId, attackSlotIndex);
     }
 
     void CombatVfxBridgeScript::PrewarmSlot(int slot)
