@@ -81,7 +81,10 @@ namespace Alice
         if (auto* tr = GetTransform())
             pos = tr->position;
 
-        audio->Update3D(m_loopInstanceId, pos, Get_volume(), Get_minDistance(), Get_maxDistance());
+        float volume = Get_volume();
+        if (m_currentMovement != PlayerMovementState::None)
+            volume *= GetMovementStateVolume(m_currentMovement);
+        audio->Update3D(m_loopInstanceId, pos, volume, Get_minDistance(), Get_maxDistance());
     }
 
     void AudioPlayerScript::SetAttackState(PlayerAttackState state)
@@ -121,7 +124,7 @@ namespace Alice
             return;
         }
 
-        const float volume = Get_volume();
+        const float volume = Get_volume() * GetAttackStateVolume(state);
         const float pitch = Get_pitch();
         
         // ?덊듃 ?꾩튂?먯꽌 3D ?ъ깮
@@ -139,7 +142,7 @@ namespace Alice
             {
                 std::string path = GetPathForMovementState(PlayerMovementState::Stop);
                 if (!path.empty())
-                    PlayPathInternal(path, false);
+                    PlayPathInternal(path, false, GetMovementStateVolume(PlayerMovementState::Stop));
             }
             return;
         }
@@ -214,7 +217,50 @@ namespace Alice
         }
     }
 
-    void AudioPlayerScript::PlayPathInternal(const std::string& path, bool isLooping)
+    float AudioPlayerScript::GetAttackStateVolume(PlayerAttackState state) const
+    {
+        switch (state)
+        {
+        case PlayerAttackState::HeavyAttack: return Get_volumeHeavyAttack();
+        case PlayerAttackState::Attack1:     return Get_volumeAttack1();
+        case PlayerAttackState::Attack2:     return Get_volumeAttack2();
+        case PlayerAttackState::Attack3:     return Get_volumeAttack3();
+        case PlayerAttackState::Guard:       return Get_volumeGuard();
+        case PlayerAttackState::Parry:       return Get_volumeParry();
+        default:
+            return 1.0f;
+        }
+    }
+
+    float AudioPlayerScript::GetMovementStateVolume(PlayerMovementState state) const
+    {
+        switch (state)
+        {
+        case PlayerMovementState::Roll:    return Get_volumeRoll();
+        case PlayerMovementState::Run:     return Get_volumeRun();
+        case PlayerMovementState::Dash:    return Get_volumeDash();
+        case PlayerMovementState::Stop:    return Get_volumeStop();
+        case PlayerMovementState::HitRoll: return Get_volumeHitRoll();
+        default:
+            return 1.0f;
+        }
+    }
+
+    float AudioPlayerScript::GetOtherStateVolume(PlayerOtherState state) const
+    {
+        switch (state)
+        {
+        case PlayerOtherState::GuardBreakAlarm: return Get_volumeGuardBreakAlarm();
+        case PlayerOtherState::GuardBreak:      return Get_volumeGuardBreak();
+        case PlayerOtherState::EgoCombine:      return Get_volumeEgoCombine();
+        case PlayerOtherState::Heal:            return Get_volumeHeal();
+        case PlayerOtherState::Death:           return Get_volumeDeath();
+        default:
+            return 1.0f;
+        }
+    }
+
+    void AudioPlayerScript::PlayPathInternal(const std::string& path, bool isLooping, float volumeMul)
     {
         if (path.empty())
             return;
@@ -236,7 +282,7 @@ namespace Alice
             return;
         }
 
-        const float volume = Get_volume();
+        const float volume = Get_volume() * volumeMul;
         const float pitch = Get_pitch();
 
         if (Get_is3D())
@@ -269,13 +315,18 @@ namespace Alice
         }
     }
 
+    void AudioPlayerScript::PlayPathInternal(const std::string& path, bool isLooping)
+    {
+        PlayPathInternal(path, isLooping, 1.0f);
+    }
+
     void AudioPlayerScript::PlayAttackState(PlayerAttackState state)
     {
         if (state == PlayerAttackState::None)
             return;
         std::string path = GetPathForAttackState(state);
         if (!path.empty())
-            PlayPathInternal(path, false);
+            PlayPathInternal(path, false, GetAttackStateVolume(state));
     }
 
     void AudioPlayerScript::PlayMovementState(PlayerMovementState state)
@@ -284,7 +335,7 @@ namespace Alice
             return;
         std::string path = GetPathForMovementState(state);
         if (!path.empty())
-            PlayPathInternal(path, state == PlayerMovementState::Run);
+            PlayPathInternal(path, state == PlayerMovementState::Run, GetMovementStateVolume(state));
     }
 
     void AudioPlayerScript::PlayOtherState(PlayerOtherState state)
@@ -293,7 +344,7 @@ namespace Alice
             return;
         std::string path = GetPathForOtherState(state);
         if (!path.empty())
-            PlayPathInternal(path, false);
+            PlayPathInternal(path, false, GetOtherStateVolume(state));
     }
 
     void AudioPlayerScript::PlaySfxPath(const std::string& path)
@@ -346,11 +397,36 @@ namespace Alice
         m_loopPlaying = false;
     }
 
-    void AudioPlayerScript::PlaySfx1() { PlaySfxPath(GetPathForAttackState(PlayerAttackState::Attack1)); }
-    void AudioPlayerScript::PlaySfx2() { PlaySfxPath(GetPathForAttackState(PlayerAttackState::Attack2)); }
-    void AudioPlayerScript::PlaySfx3() { PlaySfxPath(GetPathForAttackState(PlayerAttackState::Attack3)); }
-    void AudioPlayerScript::PlaySfx4() { PlaySfxPath(GetPathForAttackState(PlayerAttackState::Guard)); }
-    void AudioPlayerScript::PlaySfx5() { PlaySfxPath(GetPathForMovementState(PlayerMovementState::Roll)); }
+    void AudioPlayerScript::PlaySfx1()
+    {
+        std::string path = GetPathForAttackState(PlayerAttackState::Attack1);
+        if (!path.empty())
+            PlayPathInternal(path, false, GetAttackStateVolume(PlayerAttackState::Attack1));
+    }
+    void AudioPlayerScript::PlaySfx2()
+    {
+        std::string path = GetPathForAttackState(PlayerAttackState::Attack2);
+        if (!path.empty())
+            PlayPathInternal(path, false, GetAttackStateVolume(PlayerAttackState::Attack2));
+    }
+    void AudioPlayerScript::PlaySfx3()
+    {
+        std::string path = GetPathForAttackState(PlayerAttackState::Attack3);
+        if (!path.empty())
+            PlayPathInternal(path, false, GetAttackStateVolume(PlayerAttackState::Attack3));
+    }
+    void AudioPlayerScript::PlaySfx4()
+    {
+        std::string path = GetPathForAttackState(PlayerAttackState::Guard);
+        if (!path.empty())
+            PlayPathInternal(path, false, GetAttackStateVolume(PlayerAttackState::Guard));
+    }
+    void AudioPlayerScript::PlaySfx5()
+    {
+        std::string path = GetPathForMovementState(PlayerMovementState::Roll);
+        if (!path.empty())
+            PlayPathInternal(path, false, GetMovementStateVolume(PlayerMovementState::Roll));
+    }
 
     void AudioPlayerScript::PreloadSound(const std::string& path)
     {
