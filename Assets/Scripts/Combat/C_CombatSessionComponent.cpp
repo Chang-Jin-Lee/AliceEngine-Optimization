@@ -22,6 +22,8 @@
 #include "Runtime/Rendering/Components/CameraFollowComponent.h"
 #include "Runtime/Rendering/Components/CameraLookAtComponent.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
+#include "Runtime/Rendering/Components/ComputeEffectComponent.h"
 #include "Runtime/Rendering/SkinnedMeshRegistry.h"
 #include "Runtime/Importing/FbxModel.h"
 #include <assimp/scene.h>
@@ -303,6 +305,127 @@ namespace Alice
 		if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
 			return trace->baseDamage;
 		return 0.0f;
+	}
+
+	static EntityId FindNamedDescendant(World& world, EntityId rootId, const std::string& targetName)
+	{
+		if (rootId == InvalidEntityId || targetName.empty())
+			return InvalidEntityId;
+
+		std::vector<EntityId> stack = world.GetChildren(rootId);
+		while (!stack.empty())
+		{
+			const EntityId id = stack.back();
+			stack.pop_back();
+			if (world.GetEntityName(id) == targetName)
+				return id;
+
+			const auto children = world.GetChildren(id);
+			for (EntityId child : children)
+				stack.push_back(child);
+		}
+		return InvalidEntityId;
+	}
+
+	static EntityId EnsureTrailVfxChild(World& world,
+		EntityId parentId,
+		EntityId cachedId,
+		const std::string& childName,
+		const std::string& effectPath,
+		const DirectX::XMFLOAT3& localOffset,
+		const DirectX::XMFLOAT3& localRotation,
+		const DirectX::XMFLOAT3& localScale,
+		const DirectX::XMFLOAT3& colorTint,
+		float colorScale,
+		float intensityScale,
+		float spawnRateScale)
+	{
+		auto hasTransform = [&](EntityId id) -> bool
+			{
+				return id != InvalidEntityId && world.GetComponent<TransformComponent>(id);
+			};
+
+		if (parentId == InvalidEntityId || effectPath.empty())
+			return InvalidEntityId;
+
+		EntityId vfxId = cachedId;
+		if (!hasTransform(vfxId))
+			vfxId = FindNamedDescendant(world, parentId, childName);
+
+		if (!hasTransform(vfxId))
+		{
+			vfxId = world.CreateEmpty();
+			if (vfxId == InvalidEntityId)
+				return InvalidEntityId;
+			if (!childName.empty())
+				world.SetEntityName(vfxId, childName);
+		}
+
+		world.SetParent(vfxId, parentId, false);
+		if (auto* tr = world.GetComponent<TransformComponent>(vfxId))
+		{
+			tr->position = localOffset;
+			tr->rotation = localRotation;
+			tr->scale = localScale;
+			world.MarkTransformDirty(vfxId);
+		}
+
+		auto* vfx = world.GetComponent<UnityVfxComponent>(vfxId);
+		if (!vfx)
+			vfx = &world.AddComponent<UnityVfxComponent>(vfxId);
+		if (!vfx)
+			return InvalidEntityId;
+
+		vfx->effectPath = effectPath;
+		vfx->useMeshRenderer = true;
+		vfx->useComputeEffect = false;
+		vfx->timeScale = 1.0f;
+		vfx->lifetimeScale = 1.0f;
+		vfx->overrideLoop = false;
+		vfx->loop = true;
+		vfx->sizeScale = 0.025f;
+		vfx->spawnRateScale = std::max(0.0f, spawnRateScale);
+		vfx->enableTrails = true;
+		vfx->colorTint = colorTint;
+		vfx->colorScale = std::max(0.0f, colorScale);
+		vfx->intensityScale = std::max(0.0f, intensityScale);
+		vfx->alphaScale = 1.0f;
+
+		if (auto* compute = world.GetComponent<ComputeEffectComponent>(vfxId))
+		{
+			compute->enabled = false;
+			compute->spawnRate = 0.0f;
+		}
+
+		return vfxId;
+	}
+
+	static void SetTrailVfxActive(World& world, EntityId vfxId, bool active)
+	{
+		if (vfxId == InvalidEntityId)
+			return;
+
+		if (auto* tr = world.GetComponent<TransformComponent>(vfxId))
+		{
+			if (tr->enabled != active || tr->visible != active)
+			{
+				tr->enabled = active;
+				tr->visible = active;
+				world.MarkTransformDirty(vfxId);
+			}
+		}
+
+		if (auto* vfx = world.GetComponent<UnityVfxComponent>(vfxId))
+		{
+			vfx->enabled = active;
+			vfx->emitNewParticles = active;
+		}
+
+		if (auto* compute = world.GetComponent<ComputeEffectComponent>(vfxId))
+		{
+			compute->enabled = false;
+			compute->spawnRate = 0.0f;
+		}
 	}
 
 	namespace
@@ -594,6 +717,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
         if (!m_state)
             m_state.reset(new SessionState());
 		m_state->Init();
+		m_playerRageTrailVfxId = InvalidEntityId;
 
 		if (auto* world = GetWorld())
 			world->SetScriptCombatEnabled(true);
@@ -603,6 +727,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 	{
         if (!m_state)
             m_state.reset(new SessionState());
+		m_playerRageTrailVfxId = InvalidEntityId;
 
 		if (auto* world = GetWorld())
 			world->SetScriptCombatEnabled(true);
@@ -617,7 +742,12 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			m_state->Init();
 
 		if (auto* world = GetWorld())
+		{
+			SetTrailVfxActive(*world, m_playerRageTrailVfxId, false);
 			world->SetScriptCombatEnabled(false);
+		}
+
+		m_playerRageTrailVfxId = InvalidEntityId;
 	}
 
     Combat::ActionState C_CombatSessionComponent::GetPlayerState() const
@@ -4168,6 +4298,27 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		ApplyHitstopToAnim(playerId, m_state->playerHitstopTimer);
 		ApplyHitstopToAnim(bossId, m_state->bossHitstopTimer);
+
+		const bool playerRageTrailActive = m_enablePlayerRageTrailVfx && m_state->playerRageActive;
+		const std::string rageTargetName = !m_playerRageTrailTargetName.empty() ? m_playerRageTrailTargetName : "W_Target";
+		EntityId rageTargetId = FindNamedDescendant(world, playerId, rageTargetName);
+		if (playerRageTrailActive && rageTargetId != InvalidEntityId)
+		{
+			m_playerRageTrailVfxId = EnsureTrailVfxChild(
+				world,
+				rageTargetId,
+				m_playerRageTrailVfxId,
+				m_playerRageTrailChildName,
+				m_playerRageTrailEffectPath,
+				m_playerRageTrailLocalOffset,
+				m_playerRageTrailLocalRotation,
+				m_playerRageTrailLocalScale,
+				m_playerRageTrailColorTint,
+				m_playerRageTrailColorScale,
+				m_playerRageTrailIntensityScale,
+				m_playerRageTrailSpawnRateScale);
+		}
+		SetTrailVfxActive(world, m_playerRageTrailVfxId, playerRageTrailActive && rageTargetId != InvalidEntityId);
 	}
 
 	void C_CombatSessionComponent::PostCombatUpdate(float deltaTime)

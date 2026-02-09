@@ -29,6 +29,9 @@ namespace Alice {
 
         // === Emission Module (단순화) ===
         float spawnRate{ 1.0f };                       // 리스폰 비율 (0..1, 1=항상 스폰)
+        bool emitNewParticles{ true };                 // 신규 파티클 방출 on/off (기존 파티클은 자연 소멸)
+        bool loop{ true };                              // true면 무한 방출, false면 duration 동안만 방출
+        float emissionDurationSec{ 0.25f };            // loop=false일 때 방출 시간(초), <=0이면 1프레임 방출
 
         // === Shape Module ===
         float radius{ 0.5f };                          // 이미터 반경

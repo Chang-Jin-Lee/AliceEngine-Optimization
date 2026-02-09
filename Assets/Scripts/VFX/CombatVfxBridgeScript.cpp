@@ -1,6 +1,7 @@
 #include "CombatVfxBridgeScript.h"
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cmath>
 #include <cctype>
@@ -31,6 +32,11 @@ namespace Alice
         constexpr float kVectorEpsilonSq = 1e-6f;
         const XMFLOAT3 kTintWhite(1.0f, 1.0f, 1.0f);
         const XMFLOAT3 kTintRage(1.0f, 0.0f, 0.0f);
+        const XMFLOAT3 kTintSparkYellow(1.0f, 0.47058824f, 0.0f);
+        const XMFLOAT3 kTintGuardRingOrange(1.0f, 0.45f, 0.0f);
+        const XMFLOAT3 kTintParryRingYellow(1.0f, 0.85f, 0.1f);
+        const XMFLOAT3 kTintBossGroggyRingRed(1.0f, 0.1f, 0.1f);
+        constexpr float kAttack3ExtraSlashLateralOffset = 0.25f;
 
         int ClampInt(int v, int minV, int maxV)
         {
@@ -260,12 +266,14 @@ namespace Alice
             m_prevIsLightAttack = (state == Combat::ActionState::Attack)
                 && !(flags.chargeActive && flags.chargeLevel > 0);
             m_prevPlayerHitActive = flags.hitActive;
+            m_prevBossGroggy = (m_session->GetBossState() == Combat::ActionState::Groggy);
         }
         else
         {
             m_prevIsLightAttack = false;
             m_prevPlayerHitActive = false;
             m_slashSignalOrdinalInAttack = 0;
+            m_prevBossGroggy = false;
         }
         m_prevAttackTraceMask = 0u;
         m_lastAttackSlotIndex = -1;
@@ -282,6 +290,29 @@ namespace Alice
         TryBindResolveDelegate();
         UpdatePathCacheAndPools();
         UpdateSocketTracking();
+
+        if (m_session)
+        {
+            const bool bossGroggyNow = (m_session->GetBossState() == Combat::ActionState::Groggy);
+            if (!m_prevBossGroggy && bossGroggyNow)
+            {
+                XMFLOAT3 bossPointPos{};
+                if (World* world = GetWorld(); world && m_bossId != InvalidEntityId)
+                {
+                    DirectX::XMFLOAT4X4 bossWorld{};
+                    XMStoreFloat4x4(&bossWorld, world->ComputeWorldMatrix(m_bossId));
+                    bossPointPos = XMFLOAT3(bossWorld._41, bossWorld._42, bossWorld._43);
+                }
+                if (!TryGetBossEffectPointPosition(bossPointPos))
+                    ResolveBossEffectPointEntity(true);
+                SpawnHitOverlayAtPosition(bossPointPos, OverlaySpawnKind::BossGroggyRing, -1, false);
+            }
+            m_prevBossGroggy = bossGroggyNow;
+        }
+        else
+        {
+            m_prevBossGroggy = false;
+        }
 
         const bool slashWindowActive = IsSlashWindowActive();
         if (m_prevSlashWindowActive && !slashWindowActive)
@@ -375,17 +406,23 @@ namespace Alice
             m_prevSlashWindowActive = false;
         }
 
+        UpdateComputeOneShotEmission(deltaTime);
         UpdateActive(deltaTime);
     }
 
     void CombatVfxBridgeScript::OnDisable()
     {
         DeactivateAllActive();
+        m_computeOneShotStates.clear();
         UnbindResolveDelegateSafe();
         m_session = nullptr;
+        m_shockWaveId = InvalidEntityId;
+        m_guardShockPointId = InvalidEntityId;
+        m_bossEffectPointId = InvalidEntityId;
 
         m_prevIsLightAttack = false;
         m_prevPlayerHitActive = false;
+        m_prevBossGroggy = false;
         m_hasPrevSocketPos = false;
         m_attackTraceActive = false;
         m_attackTraceComboIndex = -1;
@@ -418,6 +455,9 @@ namespace Alice
             m_session = nullptr;
             m_playerId = InvalidEntityId;
             m_bossId = InvalidEntityId;
+            m_shockWaveId = InvalidEntityId;
+            m_guardShockPointId = InvalidEntityId;
+            m_bossEffectPointId = InvalidEntityId;
             return;
         }
 
@@ -442,10 +482,18 @@ namespace Alice
         if (bossName.empty() && m_session)
             bossName = m_session->Get_m_bossName();
 
+        const EntityId prevPlayerId = m_playerId;
+        const EntityId prevBossId = m_bossId;
         GameObject playerGo = playerName.empty() ? GameObject{} : world->FindGameObject(playerName);
         GameObject bossGo = bossName.empty() ? GameObject{} : world->FindGameObject(bossName);
         m_playerId = playerGo.IsValid() ? playerGo.id() : InvalidEntityId;
         m_bossId = bossGo.IsValid() ? bossGo.id() : InvalidEntityId;
+        if (m_playerId != prevPlayerId)
+        {
+            m_guardShockPointId = InvalidEntityId;
+        }
+        if (m_bossId != prevBossId)
+            m_bossEffectPointId = InvalidEntityId;
 
         if (m_playerId == InvalidEntityId && logWarnings && !m_warnedMissingPlayer)
         {
@@ -457,6 +505,250 @@ namespace Alice
             ALICE_LOG_WARN("[CombatVfxBridge] Missing boss entity: %s", bossName.c_str());
             m_warnedMissingBoss = true;
         }
+    }
+
+    EntityId CombatVfxBridgeScript::ResolveShockWaveEntity(bool logWarnings)
+    {
+        World* world = GetWorld();
+        if (!world)
+        {
+            m_shockWaveId = InvalidEntityId;
+            return InvalidEntityId;
+        }
+
+        if (m_shockWaveId != InvalidEntityId && world->GetComponent<TransformComponent>(m_shockWaveId))
+            return m_shockWaveId;
+
+        const std::array<std::string, 2> candidates{
+            Get_shockWaveEntityName(),
+            "ShockWave"
+        };
+
+        EntityId resolved = InvalidEntityId;
+        for (const std::string& candidate : candidates)
+        {
+            if (candidate.empty())
+                continue;
+
+            GameObject go = world->FindGameObject(candidate);
+            if (go.IsValid())
+            {
+                resolved = go.id();
+                break;
+            }
+        }
+
+        if (resolved == InvalidEntityId)
+        {
+            if (logWarnings && !m_warnedMissingShockWave)
+            {
+                ALICE_LOG_WARN("[CombatVfxBridge] ShockWave entity not found. preferred=%s",
+                               Get_shockWaveEntityName().c_str());
+                m_warnedMissingShockWave = true;
+            }
+            m_shockWaveId = InvalidEntityId;
+            return InvalidEntityId;
+        }
+
+        m_shockWaveId = resolved;
+        return m_shockWaveId;
+    }
+
+    EntityId CombatVfxBridgeScript::ResolveGuardShockPointEntity(bool logWarnings)
+    {
+        World* world = GetWorld();
+        if (!world)
+        {
+            m_guardShockPointId = InvalidEntityId;
+            return InvalidEntityId;
+        }
+
+        if (m_guardShockPointId != InvalidEntityId && world->GetComponent<TransformComponent>(m_guardShockPointId))
+            return m_guardShockPointId;
+
+        const std::array<std::string, 2> candidates{
+            Get_guardShockPointEntityName(),
+            "PlayerEffectPoint"
+        };
+
+        EntityId resolved = InvalidEntityId;
+        if (m_playerId != InvalidEntityId)
+        {
+            const auto children = world->GetChildren(m_playerId);
+            for (const std::string& candidate : candidates)
+            {
+                if (candidate.empty())
+                    continue;
+
+                for (EntityId child : children)
+                {
+                    if (world->GetEntityName(child) == candidate)
+                    {
+                        resolved = child;
+                        break;
+                    }
+                }
+
+                if (resolved != InvalidEntityId)
+                    break;
+            }
+        }
+
+        if (resolved == InvalidEntityId)
+        {
+            for (const std::string& candidate : candidates)
+            {
+                if (candidate.empty())
+                    continue;
+
+                GameObject go = world->FindGameObject(candidate);
+                if (go.IsValid())
+                {
+                    resolved = go.id();
+                    break;
+                }
+            }
+        }
+
+        if (resolved == InvalidEntityId)
+        {
+            if (logWarnings && !m_warnedMissingGuardShockPoint)
+            {
+                ALICE_LOG_WARN("[CombatVfxBridge] Guard shock point not found. preferred=%s",
+                               Get_guardShockPointEntityName().c_str());
+                m_warnedMissingGuardShockPoint = true;
+            }
+            m_guardShockPointId = InvalidEntityId;
+            return InvalidEntityId;
+        }
+
+        m_guardShockPointId = resolved;
+        return m_guardShockPointId;
+    }
+
+    EntityId CombatVfxBridgeScript::ResolveBossEffectPointEntity(bool logWarnings)
+    {
+        World* world = GetWorld();
+        if (!world)
+        {
+            m_bossEffectPointId = InvalidEntityId;
+            return InvalidEntityId;
+        }
+
+        if (m_bossEffectPointId != InvalidEntityId && world->GetComponent<TransformComponent>(m_bossEffectPointId))
+            return m_bossEffectPointId;
+
+        const std::array<std::string, 2> candidates{
+            Get_bossEffectPointEntityName(),
+            "BossEffectPoint"
+        };
+
+        EntityId resolved = InvalidEntityId;
+        if (m_bossId != InvalidEntityId)
+        {
+            const auto children = world->GetChildren(m_bossId);
+            for (const std::string& candidate : candidates)
+            {
+                if (candidate.empty())
+                    continue;
+
+                for (EntityId child : children)
+                {
+                    if (world->GetEntityName(child) == candidate)
+                    {
+                        resolved = child;
+                        break;
+                    }
+                }
+
+                if (resolved != InvalidEntityId)
+                    break;
+            }
+        }
+
+        if (resolved == InvalidEntityId)
+        {
+            for (const std::string& candidate : candidates)
+            {
+                if (candidate.empty())
+                    continue;
+
+                GameObject go = world->FindGameObject(candidate);
+                if (go.IsValid())
+                {
+                    resolved = go.id();
+                    break;
+                }
+            }
+        }
+
+        if (resolved == InvalidEntityId)
+        {
+            if (logWarnings && !m_warnedMissingBossEffectPoint)
+            {
+                ALICE_LOG_WARN("[CombatVfxBridge] Boss effect point not found. preferred=%s",
+                               Get_bossEffectPointEntityName().c_str());
+                m_warnedMissingBossEffectPoint = true;
+            }
+            m_bossEffectPointId = InvalidEntityId;
+            return InvalidEntityId;
+        }
+
+        m_bossEffectPointId = resolved;
+        return m_bossEffectPointId;
+    }
+
+    bool CombatVfxBridgeScript::TryGetGuardShockWavePosition(DirectX::XMFLOAT3& outPos)
+    {
+        World* world = GetWorld();
+        if (!world)
+            return false;
+
+        const EntityId pointId = ResolveGuardShockPointEntity(false);
+        if (pointId == InvalidEntityId)
+            return false;
+
+        DirectX::XMFLOAT4X4 wm{};
+        XMStoreFloat4x4(&wm, world->ComputeWorldMatrix(pointId));
+        outPos = XMFLOAT3(wm._41, wm._42, wm._43);
+        return true;
+    }
+
+    bool CombatVfxBridgeScript::TryGetBossEffectPointPosition(DirectX::XMFLOAT3& outPos)
+    {
+        World* world = GetWorld();
+        if (!world)
+            return false;
+
+        const EntityId pointId = ResolveBossEffectPointEntity(false);
+        if (pointId == InvalidEntityId)
+            return false;
+
+        DirectX::XMFLOAT4X4 wm{};
+        XMStoreFloat4x4(&wm, world->ComputeWorldMatrix(pointId));
+        outPos = XMFLOAT3(wm._41, wm._42, wm._43);
+        return true;
+    }
+
+    void CombatVfxBridgeScript::TriggerShockWaveAtPosition(const DirectX::XMFLOAT3& spawnPos)
+    {
+        World* world = GetWorld();
+        if (!world)
+            return;
+
+        const EntityId shockWaveId = ResolveShockWaveEntity(true);
+        if (shockWaveId == InvalidEntityId)
+            return;
+
+        if (auto* tr = world->GetComponent<TransformComponent>(shockWaveId))
+        {
+            tr->position = spawnPos;
+            tr->enabled = true;
+            tr->visible = true;
+            world->MarkTransformDirty(shockWaveId);
+        }
+
+        SetEntityActiveRecursive(*world, shockWaveId, true, true);
     }
 
     void CombatVfxBridgeScript::TryBindResolveDelegate()
@@ -838,10 +1130,6 @@ namespace Alice
             slashSlot = ResolveSlashSlotForAttackSlotIndex(slashSignalOrdinal);
         }
 
-        const EntityId id = Acquire(slashSlot);
-        if (id == InvalidEntityId)
-            return;
-
         XMFLOAT3 slashOffsetLocal = Get_slashOffsetLocal();
         XMFLOAT3 slashRotationOffsetDeg = Get_slashRotationOffsetDeg();
         float slashScaleMul = GetScaleMulSafe(slashSlot);
@@ -857,52 +1145,70 @@ namespace Alice
 
         World* world = GetWorld();
         if (!world)
-        {
-            Release(slashSlot, id);
             return;
-        }
 
         const bool isHeavySlash = IsHeavyAttackSlotIndex(resolvedAttackSlotIndex);
         const bool applyRageTint = ShouldApplyRageTint(resolvedAttackSlotIndex);
         const bool heavyFade = Get_enableHeavyFadeOut() && isHeavySlash;
         const float lifeSec = ResolveSpawnLifetimeSec(slashSlot, resolvedAttackSlotIndex);
-        if (heavyFade)
-            SetEntityLoopModeRecursive(*world, id, true);
-        SetEntityAlphaRecursive(*world, id, 1.0f);
-        SetEntityColorTintRecursive(*world, id, applyRageTint ? kTintRage : kTintWhite);
+        const bool isAttack3 = (resolvedAttackSlotIndex == 3);
+        const std::array<float, 3> lateralOffsets{
+            0.0f,
+            -kAttack3ExtraSlashLateralOffset,
+            kAttack3ExtraSlashLateralOffset
+        };
+        const int spawnCount = isAttack3 ? 3 : 1;
 
-        if (m_playerId != InvalidEntityId)
-            world->SetParent(id, m_playerId, false);
-        else
-            world->SetParent(id, InvalidEntityId, false);
-
-        TransformComponent* tr = world->GetComponent<TransformComponent>(id);
-        if (!tr)
+        for (int spawnIndex = 0; spawnIndex < spawnCount; ++spawnIndex)
         {
-            Release(slashSlot, id);
-            return;
+            const EntityId id = Acquire(slashSlot);
+            if (id == InvalidEntityId)
+            {
+                if (spawnIndex == 0)
+                    return;
+                continue;
+            }
+
+            if (heavyFade)
+                SetEntityLoopModeRecursive(*world, id, true);
+            SetEntityAlphaRecursive(*world, id, 1.0f);
+            SetEntityColorTintRecursive(*world, id, applyRageTint ? kTintRage : kTintWhite);
+
+            if (m_playerId != InvalidEntityId)
+                world->SetParent(id, m_playerId, false);
+            else
+                world->SetParent(id, InvalidEntityId, false);
+
+            TransformComponent* tr = world->GetComponent<TransformComponent>(id);
+            if (!tr)
+            {
+                Release(slashSlot, id);
+                continue;
+            }
+
+            XMFLOAT3 spawnAnchorLocal = anchorLocal;
+            spawnAnchorLocal.x += lateralOffsets[spawnIndex];
+            const XMFLOAT3 localPos = Add(spawnAnchorLocal, slashOffsetLocal);
+            tr->position = localPos;
+            tr->rotation = XMFLOAT3(
+                XMConvertToRadians(slashRotationOffsetDeg.x),
+                XMConvertToRadians(slashRotationOffsetDeg.y),
+                XMConvertToRadians(slashRotationOffsetDeg.z));
+
+            XMFLOAT3 baseScale = tr->scale;
+            const auto itScale = m_cachedBaseScales[slashSlot].find(id);
+            if (itScale != m_cachedBaseScales[slashSlot].end())
+                baseScale = itScale->second;
+            const float safeScaleMul = (std::max)(0.0f, slashScaleMul);
+            tr->scale = XMFLOAT3(baseScale.x * safeScaleMul, baseScale.y * safeScaleMul, baseScale.z * safeScaleMul);
+            world->MarkTransformDirty(id);
+
+            m_active[slashSlot].push_back({ id, lifeSec, lifeSec, heavyFade, InvalidEntityId });
+
+            // Heavy slash should leave player immediately to keep a stable world afterimage.
+            if (isHeavySlash)
+                FreezeSlashInstanceToWorldAnchor(m_active[slashSlot].back());
         }
-
-        const XMFLOAT3 localPos = Add(anchorLocal, slashOffsetLocal);
-        tr->position = localPos;
-        tr->rotation = XMFLOAT3(
-            XMConvertToRadians(slashRotationOffsetDeg.x),
-            XMConvertToRadians(slashRotationOffsetDeg.y),
-            XMConvertToRadians(slashRotationOffsetDeg.z));
-
-        XMFLOAT3 baseScale = tr->scale;
-        const auto itScale = m_cachedBaseScales[slashSlot].find(id);
-        if (itScale != m_cachedBaseScales[slashSlot].end())
-            baseScale = itScale->second;
-        const float safeScaleMul = (std::max)(0.0f, slashScaleMul);
-        tr->scale = XMFLOAT3(baseScale.x * safeScaleMul, baseScale.y * safeScaleMul, baseScale.z * safeScaleMul);
-        world->MarkTransformDirty(id);
-
-        m_active[slashSlot].push_back({ id, lifeSec, lifeSec, heavyFade, InvalidEntityId });
-
-        // Heavy slash should leave player immediately to keep a stable world afterimage.
-        if (isHeavySlash)
-            FreezeSlashInstanceToWorldAnchor(m_active[slashSlot].back());
     }
 
     void CombatVfxBridgeScript::SpawnHitFromResolve(const DirectX::XMFLOAT3& hitPos,
@@ -927,7 +1233,6 @@ namespace Alice
         if (heavyFade)
             SetEntityLoopModeRecursive(*world, id, true);
         SetEntityAlphaRecursive(*world, id, 1.0f);
-        SetEntityColorTintRecursive(*world, id, applyRageTint ? kTintRage : kTintWhite);
 
         XMFLOAT3 forward = NormalizeOrFallback(GetPlayerForward(), XMFLOAT3(0.0f, 0.0f, 1.0f));
         XMFLOAT3 upHint(0.0f, 1.0f, 0.0f);
@@ -946,6 +1251,10 @@ namespace Alice
         const bool isRedHitEffect =
             ContainsCaseInsensitive(hitPrefabPath, "red_hit")
             || ContainsCaseInsensitive(hitPrefabPath, "red hit");
+        const XMFLOAT3 hitTint = applyRageTint
+            ? kTintRage
+            : (isRedHitEffect ? kTintWhite : kTintSparkYellow);
+        SetEntityColorTintRecursive(*world, id, hitTint);
         if (isRedHitEffect && victimId != InvalidEntityId)
         {
             DirectX::XMFLOAT4X4 victimWorld{};
@@ -987,6 +1296,137 @@ namespace Alice
                                  hitRotationOffsetDeg,
                                  GetScaleMulSafe(hitSlot));
         m_active[hitSlot].push_back({ id, lifeSec, lifeSec, heavyFade, InvalidEntityId });
+        // Heavy attack does not spawn spark overlay.
+        if (!IsHeavyAttackSlotIndex(attackSlotIndex))
+            SpawnHitOverlayAtPosition(hitPos, OverlaySpawnKind::Spark, attackSlotIndex, applyRageTint);
+    }
+
+    void CombatVfxBridgeScript::SpawnHitOverlayAtPosition(const DirectX::XMFLOAT3& spawnPos,
+                                                          CombatVfxBridgeScript::OverlaySpawnKind kind,
+                                                          int attackSlotIndex,
+                                                          bool applyRageTint)
+    {
+        int overlaySlot = HitOverlaySparkSlot;
+        switch (kind)
+        {
+        case OverlaySpawnKind::Spark:
+            overlaySlot = HitOverlaySparkSlot;
+            if (Get_hitOverlayPrefabPath().empty())
+                return;
+            break;
+        case OverlaySpawnKind::Guard:
+            overlaySlot = HitOverlayGuardSlot;
+            if (Get_guardOverlayPrefabPath().empty())
+                return;
+            break;
+        case OverlaySpawnKind::Damage:
+            overlaySlot = HitOverlayDamageSlot;
+            if (Get_damageOverlayPrefabPath().empty())
+                return;
+            break;
+        case OverlaySpawnKind::GuardRing:
+            overlaySlot = HitOverlayGuardRingSlot;
+            if (Get_guardRingOverlayPrefabPath().empty())
+                return;
+            break;
+        case OverlaySpawnKind::GuardBreakRing:
+            overlaySlot = HitOverlayGuardBreakRingSlot;
+            if (Get_guardBreakRingOverlayPrefabPath().empty())
+                return;
+            break;
+        case OverlaySpawnKind::ParryRing:
+            overlaySlot = HitOverlayParryRingSlot;
+            if (Get_parryRingOverlayPrefabPath().empty())
+                return;
+            break;
+        case OverlaySpawnKind::BossGroggyRing:
+            overlaySlot = HitOverlayBossGroggyRingSlot;
+            if (Get_bossGroggyRingOverlayPrefabPath().empty())
+                return;
+            break;
+        default:
+            return;
+        }
+
+        World* world = GetWorld();
+        if (!world)
+            return;
+
+        const EntityId overlayId = Acquire(overlaySlot);
+        if (overlayId == InvalidEntityId)
+            return;
+
+        XMFLOAT3 forward = NormalizeOrFallback(GetPlayerForward(), XMFLOAT3(0.0f, 0.0f, 1.0f));
+        XMFLOAT3 upHint(0.0f, 1.0f, 0.0f);
+        if (m_playerId != InvalidEntityId)
+        {
+            XMFLOAT4X4 wm{};
+            XMStoreFloat4x4(&wm, world->ComputeWorldMatrix(m_playerId));
+            forward = NormalizeOrFallback(XMFLOAT3(wm._31, wm._32, wm._33), forward);
+            upHint = NormalizeOrFallback(XMFLOAT3(wm._21, wm._22, wm._23), XMFLOAT3(0.0f, 1.0f, 0.0f));
+        }
+        if (LengthSq(Cross(upHint, forward)) <= kVectorEpsilonSq)
+            upHint = XMFLOAT3(0.0f, 0.0f, 1.0f);
+
+        XMFLOAT3 overlayTint = applyRageTint ? kTintRage : kTintWhite;
+        switch (kind)
+        {
+        case OverlaySpawnKind::GuardRing:
+        case OverlaySpawnKind::GuardBreakRing:
+            overlayTint = kTintGuardRingOrange;
+            break;
+        case OverlaySpawnKind::ParryRing:
+            overlayTint = kTintParryRingYellow;
+            break;
+        case OverlaySpawnKind::BossGroggyRing:
+            overlayTint = kTintBossGroggyRingRed;
+            break;
+        default:
+            break;
+        }
+
+        SetEntityAlphaRecursive(*world, overlayId, 1.0f);
+        SetEntityColorTintRecursive(*world, overlayId, overlayTint);
+        ApplySpawnTransformTuned(overlaySlot,
+                                 overlayId,
+                                 spawnPos,
+                                 forward,
+                                 upHint,
+                                 GetOffsetLocal(overlaySlot),
+                                 GetRotationOffsetDeg(overlaySlot),
+                                 GetScaleMulSafe(overlaySlot));
+
+        float overlayLifeSec = ResolveSpawnLifetimeSec(overlaySlot, attackSlotIndex);
+
+        // One-shot compute effects should stay alive for emission window + particle lifetime.
+        // This keeps already-emitted particles visible even after emission has stopped.
+        float requiredComputeLifeSec = 0.0f;
+        std::vector<EntityId> stack;
+        stack.push_back(overlayId);
+        while (!stack.empty())
+        {
+            const EntityId current = stack.back();
+            stack.pop_back();
+
+            if (const auto* compute = world->GetComponent<ComputeEffectComponent>(current))
+            {
+                if (!compute->loop)
+                {
+                    const float emissionSec = std::max(0.0f, compute->emissionDurationSec);
+                    const float particleLifeSec = std::max(0.0f, std::max(compute->lifeMin, compute->lifeMax));
+                    requiredComputeLifeSec = std::max(requiredComputeLifeSec, emissionSec + particleLifeSec);
+                }
+            }
+
+            const auto children = world->GetChildren(current);
+            for (EntityId child : children)
+                stack.push_back(child);
+        }
+
+        if (requiredComputeLifeSec > 0.0f)
+            overlayLifeSec = std::max(overlayLifeSec, requiredComputeLifeSec + 0.02f);
+
+        m_active[overlaySlot].push_back({ overlayId, overlayLifeSec, overlayLifeSec, false, InvalidEntityId });
     }
 
     void CombatVfxBridgeScript::OnCombatResolve(EntityId victimId,
@@ -1000,18 +1440,121 @@ namespace Alice
         if (m_playerId == InvalidEntityId || m_bossId == InvalidEntityId)
             ResolveSessionAndActors(false);
 
-        if (attackerId != m_playerId || victimId != m_bossId)
+        const Combat::ResolveResult result = static_cast<Combat::ResolveResult>(resolveResult);
+        const bool playerHitBoss = (attackerId == m_playerId && victimId == m_bossId);
+        const bool bossHitPlayer = (attackerId == m_bossId && victimId == m_playerId);
+
+        if (result == Combat::ResolveResult::Hit)
+        {
+            if (playerHitBoss)
+            {
+                int attackSlotIndex = ResolveCurrentAttackSlotIndexFromDriverMask();
+                if (attackSlotIndex <= 0)
+                    attackSlotIndex = m_lastAttackSlotIndex;
+                else
+                    m_lastAttackSlotIndex = attackSlotIndex;
+                SpawnHitFromResolve(hitPos, victimId, attackSlotIndex);
+                return;
+            }
+
+            if (bossHitPlayer)
+            {
+                TriggerShockWaveAtPosition(hitPos);
+                return;
+            }
+
+            return;
+        }
+
+        if (result == Combat::ResolveResult::Guard && bossHitPlayer)
+        {
+            XMFLOAT3 shockPos = hitPos;
+            if (!TryGetGuardShockWavePosition(shockPos))
+                ResolveGuardShockPointEntity(true);
+            TriggerShockWaveAtPosition(shockPos);
+            SpawnHitOverlayAtPosition(shockPos, OverlaySpawnKind::GuardRing, -1, false);
+            return;
+        }
+
+        if (result == Combat::ResolveResult::GuardBreak && bossHitPlayer)
+        {
+            XMFLOAT3 shockPos = hitPos;
+            if (!TryGetGuardShockWavePosition(shockPos))
+                ResolveGuardShockPointEntity(true);
+            TriggerShockWaveAtPosition(shockPos);
+            SpawnHitOverlayAtPosition(shockPos, OverlaySpawnKind::GuardRing, -1, false);
+            SpawnHitOverlayAtPosition(shockPos, OverlaySpawnKind::GuardBreakRing, -1, false);
+            return;
+        }
+
+        if (result == Combat::ResolveResult::Parry && bossHitPlayer)
+        {
+            XMFLOAT3 parryPos = hitPos;
+            if (!TryGetGuardShockWavePosition(parryPos))
+                ResolveGuardShockPointEntity(true);
+            SpawnHitOverlayAtPosition(parryPos, OverlaySpawnKind::Spark, -1, false);
+            SpawnHitOverlayAtPosition(parryPos, OverlaySpawnKind::ParryRing, -1, false);
+            return;
+        }
+    }
+
+    void CombatVfxBridgeScript::UpdateComputeOneShotEmission(float deltaTime)
+    {
+        World* world = GetWorld();
+        if (!world || m_computeOneShotStates.empty())
             return;
 
-        if (resolveResult != static_cast<std::uint8_t>(Combat::ResolveResult::Hit))
-            return;
+        const float safeDt = (std::max)(0.0f, deltaTime);
+        for (auto it = m_computeOneShotStates.begin(); it != m_computeOneShotStates.end();)
+        {
+            const EntityId id = it->first;
+            ComputeOneShotState& state = it->second;
+            auto* ce = world->GetComponent<ComputeEffectComponent>(id);
+            if (!ce)
+            {
+                it = m_computeOneShotStates.erase(it);
+                continue;
+            }
 
-        int attackSlotIndex = ResolveCurrentAttackSlotIndexFromDriverMask();
-        if (attackSlotIndex <= 0)
-            attackSlotIndex = m_lastAttackSlotIndex;
-        else
-            m_lastAttackSlotIndex = attackSlotIndex;
-        SpawnHitFromResolve(hitPos, victimId, attackSlotIndex);
+            if (!state.baseCaptured)
+            {
+                state.baseSpawnRate = (std::max)(0.0f, ce->spawnRate);
+                state.baseLoop = ce->loop;
+                state.baseCaptured = true;
+            }
+
+            if (!state.armed || !ce->enabled)
+            {
+                ++it;
+                continue;
+            }
+
+            if (state.emissionDurationSec > 0.0f)
+            {
+                state.elapsedSec += safeDt;
+                if (state.elapsedSec >= state.emissionDurationSec)
+                {
+                    ce->spawnRate = 0.0f;
+                    ce->emitNewParticles = false;
+                    state.armed = false;
+                }
+            }
+            else
+            {
+                if (state.oneFrameConsumed)
+                {
+                    ce->spawnRate = 0.0f;
+                    ce->emitNewParticles = false;
+                    state.armed = false;
+                }
+                else
+                {
+                    state.oneFrameConsumed = true;
+                }
+            }
+
+            ++it;
+        }
     }
 
     void CombatVfxBridgeScript::PrewarmSlot(int slot)
@@ -1077,20 +1620,29 @@ namespace Alice
             const int cap = GetPoolSizeSafe(slot);
             if (cap > 0 && static_cast<int>(m_active[slot].size()) >= cap)
             {
-                if (slot < HitDefaultSlot && !m_warnedSlashPoolCapReached)
+                // Reuse oldest active instance in this slot as a ring buffer.
+                // This keeps spawn count bounded while avoiding dropped VFX spawns.
+                auto& activeList = m_active[slot];
+                if (!activeList.empty())
                 {
-                    ALICE_LOG_WARN("[CombatVfxBridge] Slash pool cap reached (%d). Increase slashPoolSize if needed.", cap);
-                    m_warnedSlashPoolCapReached = true;
+                    ActiveInstance recycled = activeList.front();
+                    activeList.erase(activeList.begin());
+
+                    if (recycled.id != InvalidEntityId)
+                        Release(slot, recycled.id);
+                    if (world && recycled.freezeAnchor != InvalidEntityId)
+                        world->DestroyEntity(recycled.freezeAnchor);
+
+                    if (!pool.empty())
+                    {
+                        id = pool.back();
+                        pool.pop_back();
+                    }
                 }
-                if (slot >= HitDefaultSlot && !m_warnedHitPoolCapReached)
-                {
-                    ALICE_LOG_WARN("[CombatVfxBridge] Hit pool cap reached (%d). Increase hitPoolSize if needed.", cap);
-                    m_warnedHitPoolCapReached = true;
-                }
-                return InvalidEntityId;
             }
 
-            id = CreateInstance(slot);
+            if (id == InvalidEntityId)
+                id = CreateInstance(slot);
         }
 
         if (id == InvalidEntityId)
@@ -1451,7 +2003,7 @@ namespace Alice
             GetScaleMulSafe(slot));
     }
 
-    void CombatVfxBridgeScript::SetEntityActiveRecursive(World& world, EntityId id, bool active, bool triggerOneShot) const
+    void CombatVfxBridgeScript::SetEntityActiveRecursive(World& world, EntityId id, bool active, bool triggerOneShot)
     {
         if (id == InvalidEntityId)
             return;
@@ -1480,7 +2032,47 @@ namespace Alice
         }
 
         if (auto* ce = world.GetComponent<ComputeEffectComponent>(id))
+        {
+            ComputeOneShotState& state = m_computeOneShotStates[id];
+            if (active && triggerOneShot)
+            {
+                if (!state.baseCaptured)
+                {
+                    // Capture baseline once. Runtime one-shot logic mutates spawnRate/loop.
+                    state.baseSpawnRate = (std::max)(0.0f, ce->spawnRate);
+                    state.baseLoop = ce->loop;
+                    state.baseCaptured = true;
+                }
+
+                state.armed = true;
+                state.oneFrameConsumed = false;
+                state.elapsedSec = 0.0f;
+                state.emissionDurationSec = (std::max)(0.0f, ce->emissionDurationSec);
+
+                ce->loop = false;
+                ce->spawnRate = (std::max)(0.0f, state.baseSpawnRate);
+                ce->emitNewParticles = true;
+            }
+            else if (!active)
+            {
+                if (state.baseCaptured)
+                {
+                    ce->spawnRate = (std::max)(0.0f, state.baseSpawnRate);
+                    ce->loop = state.baseLoop;
+                }
+                ce->emitNewParticles = false;
+                state.armed = false;
+                state.oneFrameConsumed = false;
+                state.elapsedSec = 0.0f;
+                state.emissionDurationSec = 0.0f;
+            }
+
             ce->enabled = active;
+        }
+        else
+        {
+            m_computeOneShotStates.erase(id);
+        }
 
         const auto children = world.GetChildren(id);
         for (EntityId child : children)
@@ -1550,6 +2142,13 @@ namespace Alice
         case HitStep4Slot: return Get_hitSlotPrefabPath4();
         case HitStep5Slot: return Get_hitSlotPrefabPath5();
         case HitStep6Slot: return Get_hitSlotPrefabPath6();
+        case HitOverlaySparkSlot: return Get_hitOverlayPrefabPath();
+        case HitOverlayGuardSlot: return Get_guardOverlayPrefabPath();
+        case HitOverlayDamageSlot: return Get_damageOverlayPrefabPath();
+        case HitOverlayGuardRingSlot: return Get_guardRingOverlayPrefabPath();
+        case HitOverlayGuardBreakRingSlot: return Get_guardBreakRingOverlayPrefabPath();
+        case HitOverlayParryRingSlot: return Get_parryRingOverlayPrefabPath();
+        case HitOverlayBossGroggyRingSlot: return Get_bossGroggyRingOverlayPrefabPath();
         default: return std::string();
         }
     }
@@ -1613,6 +2212,13 @@ namespace Alice
 
     float CombatVfxBridgeScript::GetScaleMulSafe(int slot) const
     {
+        const bool isRingOverlaySlot = (slot == HitOverlayGuardRingSlot
+            || slot == HitOverlayGuardBreakRingSlot
+            || slot == HitOverlayParryRingSlot
+            || slot == HitOverlayBossGroggyRingSlot);
+        if (isRingOverlaySlot)
+            return 1.0f;
+
         const bool isHitSlot = (slot >= HitDefaultSlot);
         const float v = isHitSlot ? Get_hitScaleMul() : Get_slashScaleMul();
         return (v >= 0.0f) ? v : 0.0f;
@@ -1620,12 +2226,26 @@ namespace Alice
 
     DirectX::XMFLOAT3 CombatVfxBridgeScript::GetOffsetLocal(int slot) const
     {
+        const bool isRingOverlaySlot = (slot == HitOverlayGuardRingSlot
+            || slot == HitOverlayGuardBreakRingSlot
+            || slot == HitOverlayParryRingSlot
+            || slot == HitOverlayBossGroggyRingSlot);
+        if (isRingOverlaySlot)
+            return XMFLOAT3(0.0f, 0.0f, 0.0f);
+
         const bool isHitSlot = (slot >= HitDefaultSlot);
         return isHitSlot ? Get_hitOffsetLocal() : Get_slashOffsetLocal();
     }
 
     DirectX::XMFLOAT3 CombatVfxBridgeScript::GetRotationOffsetDeg(int slot) const
     {
+        const bool isRingOverlaySlot = (slot == HitOverlayGuardRingSlot
+            || slot == HitOverlayGuardBreakRingSlot
+            || slot == HitOverlayParryRingSlot
+            || slot == HitOverlayBossGroggyRingSlot);
+        if (isRingOverlaySlot)
+            return XMFLOAT3(0.0f, 0.0f, 0.0f);
+
         const bool isHitSlot = (slot >= HitDefaultSlot);
         return isHitSlot ? Get_hitRotationOffsetDeg() : Get_slashRotationOffsetDeg();
     }
