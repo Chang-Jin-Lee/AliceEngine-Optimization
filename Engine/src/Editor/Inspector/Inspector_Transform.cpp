@@ -2,6 +2,7 @@
 #include "Editor/Core/EditorCommands.h"
 #include "Editor/Core/EditorUIState.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
 #include "Runtime/Importing/FbxModel.h"
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
 #include <DirectXMath.h>
@@ -175,6 +176,15 @@ namespace Alice
 		{
 			if (ImGui::CollapsingHeader("Animation Status", ImGuiTreeNodeFlags_DefaultOpen))
 			{
+				const bool hasAdvanced = (world.GetComponent<AdvancedAnimationComponent>(_selectedEntity) != nullptr);
+				if (hasAdvanced)
+				{
+					ImGui::TextColored(ImVec4(0.2f, 0.6f, 1.0f, 1.0f), "AdvancedAnimation");
+				}
+				else
+				{
+					ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "SkinnedAnimation");
+				}
 				ImGui::Text("Playing: %s", anim->playing ? "Yes" : "No");
 				ImGui::Text("Speed: %.2f", anim->speed);
 				ImGui::Text("Clip Index: %d", anim->clipIndex);

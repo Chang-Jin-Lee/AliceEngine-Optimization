@@ -276,24 +276,7 @@ namespace Alice
 
 			ImGui::Separator();
 			ImGui::TextUnformatted("Tone Mapping");
-			float tmExposure = 0.0f;
-			float tmMaxNits = 1000.0f;
-			float tmSaturation = 1.0f;
-			float tmContrast = 1.0f;
-			float tmGamma = 1.0f;
-			forward.GetPostProcessParams(tmExposure, tmMaxNits, tmSaturation, tmContrast, tmGamma);
-
-			bool toneMappingChanged = false;
-			toneMappingChanged |= ImGui::SliderFloat("Exposure", &tmExposure, -5.0f, 5.0f, "%.2f");
-			toneMappingChanged |= ImGui::SliderFloat("Saturation", &tmSaturation, 0.0f, 3.0f, "%.2f");
-			toneMappingChanged |= ImGui::SliderFloat("Contrast", &tmContrast, 0.0f, 2.0f, "%.2f");
-			toneMappingChanged |= ImGui::SliderFloat("Gamma", &tmGamma, 0.1f, 3.0f, "%.2f");
-
-			if (toneMappingChanged)
-			{
-				forward.SetPostProcessParams(tmExposure, tmMaxNits, tmSaturation, tmContrast, tmGamma);
-				deferred.SetPostProcessParams(tmExposure, tmMaxNits, tmSaturation, tmContrast, tmGamma);
-			}
+			ImGui::TextWrapped("포스트 프로세스 볼륨으로 조절해야합니다. 포스트프로세스 볼륨을 만들고 Unbound로 조절하세요.");
 
 			if (lightingChanged)
 			{

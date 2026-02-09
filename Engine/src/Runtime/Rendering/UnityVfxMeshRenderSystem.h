@@ -35,6 +35,7 @@ namespace Alice
 
         bool Initialize();
         void Render(const World& world, const Camera& camera, float dtSec);
+        bool PreloadEffect(const std::string& effectPath);
 
     private:
         struct MeshGpu

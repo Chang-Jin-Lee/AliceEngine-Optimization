@@ -13,6 +13,7 @@
 #include "imgui.h"
 
 #include <algorithm>
+#include <cmath>
 #include <DirectXMath.h>
 
 using namespace DirectX;
@@ -202,7 +203,19 @@ namespace Alice
 									}
 									anim->clipIndex = clip;
 
+									const std::string& clipName = names[(size_t)clip];
+									ImGui::Text("Clip Name: %s", clipName.c_str());
+									ImGui::SameLine();
+									if (ImGui::SmallButton("Copy##ClipName"))
+									{
+										ImGui::SetClipboardText(clipName.c_str());
+									}
+									if (ImGui::IsItemHovered())
+										ImGui::SetTooltip("Copy clip name");
+
 									const double dur = mesh->sourceModel->GetClipDurationSec(anim->clipIndex);
+									if (dur > 0.0 && anim->timeSec >= dur)
+										anim->timeSec = std::fmod(anim->timeSec, dur);
 									float timeSec = (float)anim->timeSec;
 									float durF = (dur > 0.0) ? (float)dur : 0.0f;
 

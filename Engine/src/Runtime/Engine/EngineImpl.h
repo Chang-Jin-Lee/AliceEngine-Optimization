@@ -74,6 +74,7 @@
 #include "Runtime/Importing/FbxAsset.h"
 #include <dxgi1_3.h>
 #include <unordered_set>
+#include <unordered_map>
 
 #include "Runtime/Importing/FbxModel.h"
 
@@ -100,9 +101,15 @@ namespace Alice
 		std::uint32_t m_width = 1600;
 		std::uint32_t m_height = 900;
 
+		bool m_borderlessFullscreen = false;
+		RECT m_windowedRect{ 0,0,0,0 };
+		DWORD m_windowedStyle = 0;
+		DWORD m_windowedExStyle = 0;
+
 		bool m_isRunning = false;            // 엔진 자체가 실행중인지 판단
 		bool m_isPlaying = false;            // 재생 / 일시정지 상태 (에디터 모드에서만 사용)
 		bool m_editorMode = true;             // true: 에디터, false: 게임 전용
+		bool m_initCanceled = false;         // 초기화 중 사용자 종료 요청
 		bool m_debugDraw = true;
 		EntityId m_selectedEntity{ InvalidEntityId }; // 현재 선택된 엔티티 (하이러키)
 
@@ -187,6 +194,7 @@ namespace Alice
 		AttackDriverSystem m_attackDriverSystem;
 		AudioSystem m_audioSystem;
 		std::vector<SkinnedDrawCommand> m_skinnedDrawCommands;
+		std::unordered_map<std::string, std::shared_ptr<const std::vector<std::uint8_t>>> m_preloadedBlobs;
 
 		bool m_animUpdatedThisFrame = false;
 
@@ -194,6 +202,7 @@ namespace Alice
 		// Initialize helpers
 		bool InitializeAll(Engine& owner, HINSTANCE hInstance, int nCmdShow);
 		void InitializeMainThreadAndRegistry();
+		void ToggleBorderlessFullscreen();
 		void InitializeDllSearchPath(const std::filesystem::path& exeDir);
 		std::filesystem::path InitializeResolveExeDir();
 		void ApplyEditorModeFromExeName(const std::filesystem::path& exeDir);
@@ -211,6 +220,7 @@ namespace Alice
 		bool InitializeRenderSystems();
 		bool InitializeUI();
 		bool InitializeComputeEffectSystem();
+		bool InitializePreloadAndLoadingScreen(const std::filesystem::path& exeDir);
 		void InitializeCameraAndScriptHotReload();
 		bool InitializeScene(const std::filesystem::path& exeDir);
 		bool InitializePhysicsSystemAndWorldCallbacks();
