@@ -149,7 +149,7 @@
                     "name": "SceneChangekPressScript",
                     "props": {
                         "changeKey": 20,
-                        "targetScenePath": "Assets/Scenes/MainGameLoop/MainGameScene.scene"
+                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/MainGameScene.scene"
                     }
                 }
             ],
