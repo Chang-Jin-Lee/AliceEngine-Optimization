@@ -120,6 +120,14 @@ namespace Alice
     static constexpr int MaxPointLights = 16;
     static constexpr int MaxSpotLights = 16;
     static constexpr int MaxRectLights = 16;
+    // 로컬 라이트 섀도우는 성능을 위해 소수만 활성화
+    static constexpr int MaxShadowedPointLights = 1;
+    static constexpr int MaxShadowedSpotLights = 2;
+    static constexpr int MaxShadowedRectLights = 1;
+    static constexpr int MaxShadowedSpotRectLights = MaxShadowedSpotLights + MaxShadowedRectLights;
+    static constexpr std::uint32_t LocalSpotRectShadowMapSizePx = 512;
+    static constexpr std::uint32_t LocalPointShadowMapSizePx = 256;
+    static constexpr float LocalPointShadowNearZ = 0.05f;
 
     struct PointLightGPU
     {
@@ -127,6 +135,9 @@ namespace Alice
         float range;
         DirectX::XMFLOAT3 color;
         float intensity;
+        int shadowIndex;
+        float shadowStrength;
+        float pad[2];
     };
 
     struct SpotLightGPU
@@ -138,7 +149,9 @@ namespace Alice
         DirectX::XMFLOAT3 color;
         float outerCos;
         float intensity;
-        float pad[3];
+        int shadowIndex;
+        float shadowStrength;
+        float pad0;
     };
 
     struct RectLightGPU
@@ -150,7 +163,9 @@ namespace Alice
         DirectX::XMFLOAT3 color;
         float height;
         float intensity;
-        float pad[3];
+        int shadowIndex;
+        float shadowStrength;
+        float pad0;
     };
 
     struct ExtraLightsCB
