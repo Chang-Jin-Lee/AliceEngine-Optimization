@@ -1591,6 +1591,10 @@ namespace Alice
 		m_scriptSystem.onAfterSceneLoaded.BindObject(&owner, &Engine::EnsureSkinnedMeshesRegisteredForWorld);
 		m_scriptSystem.onTrimVideoMemory.BindObject(&owner, &Engine::TrimVideoMemory);
 		m_scriptSystem.onAfterSceneLoaded.BindObject(&owner, &Engine::RefreshPhysicsForCurrentWorld);
+		m_scriptSystem.onSetDeltaTimeStopped.BindObject(&owner, &Engine::StopDeltaTime);
+		m_scriptSystem.onGetDeltaTimeStopped.BindObject(&owner, &Engine::IsDeltaTimeStopped);
+		m_scriptSystem.onGetGameDeltaTime.BindObject(&owner, &Engine::GetGameDeltaTime);
+		m_scriptSystem.onGetUnscaledDeltaTime.BindObject(&owner, &Engine::GetUnscaledDeltaTime);
 	}
 
 	void Engine::Impl::SavePvdSettings(const std::filesystem::path& exeDir)

@@ -18,6 +18,10 @@ namespace Alice
 
     ALICE_DECLARE_DELEGATE(FOnTrimVideoMemory);
     ALICE_DECLARE_DELEGATE(FOnAfterSceneLoaded);
+    ALICE_DECLARE_DELEGATE_OneParam(FOnSetDeltaTimeStopped, bool);
+    ALICE_DECLARE_DELEGATE_RetVal(FOnGetDeltaTimeStopped, bool);
+    ALICE_DECLARE_DELEGATE_RetVal(FOnGetGameDeltaTime, float);
+    ALICE_DECLARE_DELEGATE_RetVal(FOnGetUnscaledDeltaTime, float);
 
     /// 모든 ScriptComponent 를 매 프레임 업데이트하는 간단한 시스템입니다.
     class ScriptSystem : public IScriptInput, public IScriptScene, public IScriptAudio
@@ -53,6 +57,10 @@ namespace Alice
         bool IsAppActive() const override;
         bool ConsumeAppDeactivated() override;
         bool ConsumeAppActivated() override;
+        void StopDeltaTime(bool stop) override;
+        bool IsDeltaTimeStopped() const override;
+        float GetGameDeltaTime() const override;
+        float GetUnscaledDeltaTime() const override;
 
         std::string GetResolvedPath(const char* originalPath) const;
 
@@ -135,5 +143,9 @@ namespace Alice
         // 씬 로드 직후 엔진 쪽에서 추가 작업
         FOnAfterSceneLoaded onAfterSceneLoaded;
         FOnTrimVideoMemory onTrimVideoMemory;
+        FOnSetDeltaTimeStopped onSetDeltaTimeStopped;
+        FOnGetDeltaTimeStopped onGetDeltaTimeStopped;
+        FOnGetGameDeltaTime onGetGameDeltaTime;
+        FOnGetUnscaledDeltaTime onGetUnscaledDeltaTime;
     };
 }
