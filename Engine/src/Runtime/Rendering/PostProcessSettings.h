@@ -49,6 +49,39 @@ namespace Alice
         bool bOverride_BloomDownsample = false;
         int bloomDownsample = 2;
 
+        // ==== Screen Split (HalfCut) ====
+        // splitAmount: 분할선 기준 위/아래 절반이 이동하는 UV 오프셋 강도 (0 = 비활성)
+        bool bOverride_SplitAmount = false;
+        float splitAmount = 0.0f;
+
+        // splitAngleDeg: 분할선 각도(도). 0이면 수평 분할, 양수는 반시계 회전.
+        bool bOverride_SplitAngleDeg = false;
+        float splitAngleDeg = 0.0f;
+
+        // splitLineOffset: 분할선 위치 오프셋(정규화 공간). 0이면 화면 중심.
+        bool bOverride_SplitLineOffset = false;
+        float splitLineOffset = 0.0f;
+
+        // splitFeather: 분할 경계부 블렌딩 폭(정규화 공간).
+        bool bOverride_SplitFeather = false;
+        float splitFeather = 0.001f;
+
+        // splitFxIntensity: 절단선 수학 기반 하이라이트 강도 (0 = 비활성)
+        bool bOverride_SplitFxIntensity = false;
+        float splitFxIntensity = 0.0f;
+
+        // splitFxWidth: 절단선 주변 영향 폭(정규화 공간)
+        bool bOverride_SplitFxWidth = false;
+        float splitFxWidth = 0.01f;
+
+        // splitFxSpeed: 절단선 방향 흐름 속도
+        bool bOverride_SplitFxSpeed = false;
+        float splitFxSpeed = 30.0f;
+
+        // splitFxTimeSec: 절단선 이펙트 시간(초)
+        bool bOverride_SplitFxTimeSec = false;
+        float splitFxTimeSec = 0.0f;
+
         /// 기본 설정으로 초기화 (모든 override = false)
         PostProcessSettings() = default;
 
@@ -84,6 +117,14 @@ namespace Alice
             settings.bloomGaussianIntensity = 1.0f;
             settings.bloomRadius = 1.0f;
             settings.bloomDownsample = 2;
+            settings.splitAmount = 0.0f;
+            settings.splitAngleDeg = 0.0f;
+            settings.splitLineOffset = 0.0f;
+            settings.splitFeather = 0.001f;
+            settings.splitFxIntensity = 0.0f;
+            settings.splitFxWidth = 0.01f;
+            settings.splitFxSpeed = 30.0f;
+            settings.splitFxTimeSec = 0.0f;
             return settings;
         }
     };
@@ -143,6 +184,14 @@ namespace Alice
             BlendFloat(final.bloomGaussianIntensity, volume.bloomGaussianIntensity, weight, volume.bOverride_BloomGaussianIntensity);
             BlendFloat(final.bloomRadius, volume.bloomRadius, weight, volume.bOverride_BloomRadius);
             BlendInt(final.bloomDownsample, volume.bloomDownsample, weight, volume.bOverride_BloomDownsample);
+            BlendFloat(final.splitAmount, volume.splitAmount, weight, volume.bOverride_SplitAmount);
+            BlendFloat(final.splitAngleDeg, volume.splitAngleDeg, weight, volume.bOverride_SplitAngleDeg);
+            BlendFloat(final.splitLineOffset, volume.splitLineOffset, weight, volume.bOverride_SplitLineOffset);
+            BlendFloat(final.splitFeather, volume.splitFeather, weight, volume.bOverride_SplitFeather);
+            BlendFloat(final.splitFxIntensity, volume.splitFxIntensity, weight, volume.bOverride_SplitFxIntensity);
+            BlendFloat(final.splitFxWidth, volume.splitFxWidth, weight, volume.bOverride_SplitFxWidth);
+            BlendFloat(final.splitFxSpeed, volume.splitFxSpeed, weight, volume.bOverride_SplitFxSpeed);
+            BlendFloat(final.splitFxTimeSec, volume.splitFxTimeSec, weight, volume.bOverride_SplitFxTimeSec);
         }
 
     }
