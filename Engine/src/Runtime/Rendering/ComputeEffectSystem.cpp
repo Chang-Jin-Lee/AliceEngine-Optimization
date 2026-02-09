@@ -686,7 +686,8 @@ namespace Alice
                 mapped.sizePx = ClampFloat(mapped.sizePx * std::max(0.01f, unityFx.sizeScale), 0.1f, 100.0f);
                 mapped.startSpeed = ClampFloat(mapped.startSpeed * std::max(0.01f, unityFx.speedScale), 0.0f, 10.0f);
                 mapped.intensity = ClampFloat(mapped.intensity * std::max(0.0f, unityFx.intensityScale), 0.0f, 10.0f);
-                mapped.spawnRate = ClampFloat(mapped.spawnRate * std::max(0.0f, unityFx.spawnRateScale), 0.0f, 1.0f);
+                const float emissionScale = unityFx.emitNewParticles ? 1.0f : 0.0f;
+                mapped.spawnRate = ClampFloat(mapped.spawnRate * std::max(0.0f, unityFx.spawnRateScale) * emissionScale, 0.0f, 1.0f);
                 mapped.color.x = ClampFloat(mapped.color.x * unityFx.colorTint.x * unityFx.colorScale, 0.0f, 10.0f);
                 mapped.color.y = ClampFloat(mapped.color.y * unityFx.colorTint.y * unityFx.colorScale, 0.0f, 10.0f);
                 mapped.color.z = ClampFloat(mapped.color.z * unityFx.colorTint.z * unityFx.colorScale, 0.0f, 10.0f);

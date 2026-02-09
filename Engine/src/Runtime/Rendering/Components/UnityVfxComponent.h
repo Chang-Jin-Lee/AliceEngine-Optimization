@@ -29,6 +29,7 @@ namespace Alice
         float speedScale{ 1.0f };
         float intensityScale{ 1.0f };  // 컬러/밝기 증폭
         float spawnRateScale{ 1.0f };  // Emission rate 스케일 (0..1)
+        bool emitNewParticles{ true }; // false면 신규 생성만 중단(기존 파티클은 자연 소멸)
 
         // Rendering/material overrides
         DirectX::XMFLOAT3 colorTint{ 1.0f, 1.0f, 1.0f }; // RGB tint
