@@ -169,11 +169,13 @@ namespace Alice
 
         void SetEntityActiveRecursive(World& world, EntityId id, bool active, bool triggerOneShot) const;
         void SetEntityAlphaRecursive(World& world, EntityId id, float alpha) const;
+        void SetEntityColorTintRecursive(World& world, EntityId id, const DirectX::XMFLOAT3& tint) const;
         void SetEntityLoopModeRecursive(World& world, EntityId id, bool loopEnabled) const;
 
         std::string GetPrefabPath(int slot) const;
         int GetPoolSizeSafe(int slot) const;
         float GetLifeTimeSafe(int slot) const;
+        bool ShouldApplyRageTint(int attackSlotIndex) const;
         bool IsHeavyAttackSlotIndex(int attackSlotIndex) const;
         float ResolveSpawnLifetimeSec(int slot, int attackSlotIndex) const;
         float GetScaleMulSafe(int slot) const;

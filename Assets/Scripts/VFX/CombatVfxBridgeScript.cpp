@@ -29,6 +29,8 @@ namespace Alice
         using namespace DirectX;
 
         constexpr float kVectorEpsilonSq = 1e-6f;
+        const XMFLOAT3 kTintWhite(1.0f, 1.0f, 1.0f);
+        const XMFLOAT3 kTintRage(1.0f, 0.0f, 0.0f);
 
         int ClampInt(int v, int minV, int maxV)
         {
@@ -861,11 +863,13 @@ namespace Alice
         }
 
         const bool isHeavySlash = IsHeavyAttackSlotIndex(resolvedAttackSlotIndex);
+        const bool applyRageTint = ShouldApplyRageTint(resolvedAttackSlotIndex);
         const bool heavyFade = Get_enableHeavyFadeOut() && isHeavySlash;
         const float lifeSec = ResolveSpawnLifetimeSec(slashSlot, resolvedAttackSlotIndex);
         if (heavyFade)
             SetEntityLoopModeRecursive(*world, id, true);
         SetEntityAlphaRecursive(*world, id, 1.0f);
+        SetEntityColorTintRecursive(*world, id, applyRageTint ? kTintRage : kTintWhite);
 
         if (m_playerId != InvalidEntityId)
             world->SetParent(id, m_playerId, false);
@@ -918,10 +922,12 @@ namespace Alice
         }
 
         const bool heavyFade = Get_enableHeavyFadeOut() && IsHeavyAttackSlotIndex(attackSlotIndex);
+        const bool applyRageTint = ShouldApplyRageTint(attackSlotIndex);
         const float lifeSec = ResolveSpawnLifetimeSec(hitSlot, attackSlotIndex);
         if (heavyFade)
             SetEntityLoopModeRecursive(*world, id, true);
         SetEntityAlphaRecursive(*world, id, 1.0f);
+        SetEntityColorTintRecursive(*world, id, applyRageTint ? kTintRage : kTintWhite);
 
         XMFLOAT3 forward = NormalizeOrFallback(GetPlayerForward(), XMFLOAT3(0.0f, 0.0f, 1.0f));
         XMFLOAT3 upHint(0.0f, 1.0f, 0.0f);
@@ -1103,6 +1109,7 @@ namespace Alice
             return;
 
         SetEntityAlphaRecursive(*world, id, 1.0f);
+        SetEntityColorTintRecursive(*world, id, kTintWhite);
         SetEntityLoopModeRecursive(*world, id, false);
         SetEntityActiveRecursive(*world, id, false, false);
         if (Get_organizePoolUnderRoot())
@@ -1494,6 +1501,19 @@ namespace Alice
             SetEntityAlphaRecursive(world, child, clampedAlpha);
     }
 
+    void CombatVfxBridgeScript::SetEntityColorTintRecursive(World& world, EntityId id, const DirectX::XMFLOAT3& tint) const
+    {
+        if (id == InvalidEntityId)
+            return;
+
+        if (auto* vfx = world.GetComponent<UnityVfxComponent>(id))
+            vfx->colorTint = tint;
+
+        const auto children = world.GetChildren(id);
+        for (EntityId child : children)
+            SetEntityColorTintRecursive(world, child, tint);
+    }
+
     void CombatVfxBridgeScript::SetEntityLoopModeRecursive(World& world, EntityId id, bool loopEnabled) const
     {
         if (id == InvalidEntityId)
@@ -1573,6 +1593,15 @@ namespace Alice
     bool CombatVfxBridgeScript::IsHeavyAttackSlotIndex(int attackSlotIndex) const
     {
         return (attackSlotIndex > 0) && (attackSlotIndex == Get_heavyAttackSlotIndex());
+    }
+
+    bool CombatVfxBridgeScript::ShouldApplyRageTint(int attackSlotIndex) const
+    {
+        if (!m_session || !m_session->IsPlayerRageActive())
+            return false;
+        if (IsHeavyAttackSlotIndex(attackSlotIndex))
+            return false;
+        return true;
     }
 
     float CombatVfxBridgeScript::ResolveSpawnLifetimeSec(int slot, int attackSlotIndex) const
