@@ -20,6 +20,7 @@
 #include "Runtime/ECS/World.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Importing/FbxImporter.h"
+#include "Runtime/Importing/FbxModel.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
 #include "Runtime/Rendering/Components/DecalComponent.h"
 #include "Runtime/Rendering/Components/CameraComponent.h"
@@ -29,6 +30,7 @@
 #include "Runtime/Rendering/Components/SpotLightComponent.h"
 #include "Runtime/Rendering/Components/RectLightComponent.h"
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
+#include "Runtime/Rendering/CullingTuning.h"
 #include "Runtime/Rendering/ShaderCode/CommonShaderCode.h"
 #include "Runtime/Rendering/ShaderCode/DeferredShader.h"
 #include "Runtime/Rendering/TrailEffectRenderSystem.h"
@@ -343,6 +345,70 @@ namespace Alice
             return (std::fabs(a.x - b.x) <= eps) &&
                    (std::fabs(a.y - b.y) <= eps) &&
                    (std::fabs(a.z - b.z) <= eps);
+        }
+
+        inline void ExtractWorldAxisScales(DirectX::CXMMATRIX worldM, float& outSx, float& outSy, float& outSz)
+        {
+            DirectX::XMFLOAT4X4 m{};
+            DirectX::XMStoreFloat4x4(&m, worldM);
+            outSx = DirectX::XMVectorGetX(DirectX::XMVector3Length(DirectX::XMVectorSet(m._11, m._12, m._13, 0.0f)));
+            outSy = DirectX::XMVectorGetX(DirectX::XMVector3Length(DirectX::XMVectorSet(m._21, m._22, m._23, 0.0f)));
+            outSz = DirectX::XMVectorGetX(DirectX::XMVector3Length(DirectX::XMVectorSet(m._31, m._32, m._33, 0.0f)));
+        }
+
+        inline DirectX::BoundingSphere BuildSphereFromLocalAabb(DirectX::CXMMATRIX worldM,
+                                                                 const DirectX::XMFLOAT3& localMin,
+                                                                 const DirectX::XMFLOAT3& localMax,
+                                                                 float minRadius = CullingTuning::MinCullingSphereRadius)
+        {
+            DirectX::XMFLOAT3 localCenter{
+                (localMin.x + localMax.x) * 0.5f,
+                (localMin.y + localMax.y) * 0.5f,
+                (localMin.z + localMax.z) * 0.5f
+            };
+            DirectX::XMFLOAT3 halfExtents{
+                std::fabs(localMax.x - localMin.x) * 0.5f,
+                std::fabs(localMax.y - localMin.y) * 0.5f,
+                std::fabs(localMax.z - localMin.z) * 0.5f
+            };
+
+            DirectX::XMVECTOR centerWv = DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&localCenter), worldM);
+            DirectX::XMFLOAT3 centerW{};
+            DirectX::XMStoreFloat3(&centerW, centerWv);
+
+            float sx = 1.0f, sy = 1.0f, sz = 1.0f;
+            ExtractWorldAxisScales(worldM, sx, sy, sz);
+
+            const float rx = halfExtents.x * sx;
+            const float ry = halfExtents.y * sy;
+            const float rz = halfExtents.z * sz;
+            float radius = std::sqrt(rx * rx + ry * ry + rz * rz);
+            radius = (std::max)(radius, minRadius);
+
+            return DirectX::BoundingSphere(centerW, radius);
+        }
+
+        inline DirectX::BoundingSphere BuildSkinnedCullingSphere(DirectX::CXMMATRIX worldM, const SkinnedMeshGPU* mesh)
+        {
+            if (mesh && mesh->sourceModel)
+            {
+                DirectX::XMFLOAT3 localMin{};
+                DirectX::XMFLOAT3 localMax{};
+                if (mesh->sourceModel->GetLocalBounds(localMin, localMax))
+                {
+                    return BuildSphereFromLocalAabb(worldM, localMin, localMax);
+                }
+            }
+
+            float sx = 1.0f, sy = 1.0f, sz = 1.0f;
+            ExtractWorldAxisScales(worldM, sx, sy, sz);
+            const float fallbackRadius = (std::max)((std::max)(sx, sy), sz) * CullingTuning::SkinnedFallbackRadiusScale;
+
+            DirectX::XMFLOAT4X4 world{};
+            DirectX::XMStoreFloat4x4(&world, worldM);
+            return DirectX::BoundingSphere(
+                DirectX::XMFLOAT3(world._41, world._42, world._43),
+                (std::max)(fallbackRadius, CullingTuning::MinCullingSphereRadius));
         }
     }
 
@@ -2102,7 +2168,7 @@ namespace Alice
         float sceneRadius = XMVectorGetX(diagonal) * 0.5f;
 
         float r = (std::max)(m_shadowSettings.orthoRadius, sceneRadius);
-        r *= 1.5f;
+        r *= CullingTuning::ShadowSceneRadiusScale;
 
         // 4) lightView/lightProj
         float distFromCenter = r * 3.0f;
@@ -2198,15 +2264,21 @@ namespace Alice
                 if (!world.GetComponent<MaterialComponent>(id)) continue;
                 if (!tr.enabled || !tr.visible) continue;
 
+                XMMATRIX worldM = BuildWorldMatrix(world, id, tr);
+
                 // [프러스텀 컬링] 카메라 시야 밖 오브젝트는 건너뛰기
-                float maxScale = std::max({ tr.scale.x, tr.scale.y, tr.scale.z });
-                BoundingSphere bounds(tr.position, maxScale * 1.5f);
+                const BoundingSphere bounds = BuildSphereFromLocalAabb(
+                    worldM,
+                    XMFLOAT3(-CullingTuning::StaticMeshLocalBoundsExtent,
+                             -CullingTuning::StaticMeshLocalBoundsExtent,
+                             -CullingTuning::StaticMeshLocalBoundsExtent),
+                    XMFLOAT3(CullingTuning::StaticMeshLocalBoundsExtent,
+                             CullingTuning::StaticMeshLocalBoundsExtent,
+                             CullingTuning::StaticMeshLocalBoundsExtent));
                 if (cameraFrustum.Contains(bounds) == DISJOINT)
                 {
-                    //continue; // 화면에 보이지 않으면 렌더링하지 않음
+                    continue; // 화면에 보이지 않으면 렌더링하지 않음
                 }
-
-                XMMATRIX worldM = BuildWorldMatrix(world, id, tr);
 
                 const bool flipped = XMVectorGetX(XMMatrixDeterminant(worldM)) < 0.0f;
                 const bool canStaticInstance = m_shadowInstancedVS &&
@@ -2374,23 +2446,13 @@ namespace Alice
                 if (cmd.transparent) continue;
                 if (cmd.transparent) continue;
 
-                // [프러스텀 컬링] 월드 행렬에서 위치 추출
-                XMFLOAT4X4 worldMatrix;
-                XMStoreFloat4x4(&worldMatrix, cmd.world);
-                XMFLOAT3 position(worldMatrix._41, worldMatrix._42, worldMatrix._43);
-                
-                // 스케일 추정: 월드 행렬의 스케일 성분 추출 (간단한 근사)
-                XMVECTOR scaleVec = XMVectorSet(
-                    XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._11, worldMatrix._12, worldMatrix._13, 0.0f))),
-                    XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._21, worldMatrix._22, worldMatrix._23, 0.0f))),
-                    XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._31, worldMatrix._32, worldMatrix._33, 0.0f))),
-                    0.0f
-                );
-                float maxScale = std::max({ XMVectorGetX(scaleVec), XMVectorGetY(scaleVec), XMVectorGetZ(scaleVec) });
-                BoundingSphere bounds(position, maxScale * 1.5f);
+                std::shared_ptr<SkinnedMeshGPU> mesh =
+                    (m_skinnedRegistry && !cmd.meshKey.empty()) ? m_skinnedRegistry->Find(cmd.meshKey) : nullptr;
+
+                const BoundingSphere bounds = BuildSkinnedCullingSphere(cmd.world, mesh.get());
                 if (cameraFrustum.Contains(bounds) == DISJOINT)
                 {
-                    //continue; // 화면에 보이지 않으면 렌더링하지 않음
+                    continue; // 화면에 보이지 않으면 렌더링하지 않음
                 }
 
                 // 본 1개 + Identity인 경우만 인스턴싱 대상으로 처리
@@ -3029,15 +3091,21 @@ namespace Alice
             const MaterialComponent* mat = world.GetComponent<MaterialComponent>(id);
             if (!mat) continue;
 
+            XMMATRIX worldM = BuildWorldMatrix(world, id, transform);
+
             // [프러스텀 컬링] 카메라 시야 밖 오브젝트는 건너뛰기
-            float maxScale = std::max({ transform.scale.x, transform.scale.y, transform.scale.z });
-            BoundingSphere bounds(transform.position, maxScale * 1.5f); // 1.5f는 안전 계수
+            const BoundingSphere bounds = BuildSphereFromLocalAabb(
+                worldM,
+                XMFLOAT3(-CullingTuning::StaticMeshLocalBoundsExtent,
+                         -CullingTuning::StaticMeshLocalBoundsExtent,
+                         -CullingTuning::StaticMeshLocalBoundsExtent),
+                XMFLOAT3(CullingTuning::StaticMeshLocalBoundsExtent,
+                         CullingTuning::StaticMeshLocalBoundsExtent,
+                         CullingTuning::StaticMeshLocalBoundsExtent));
             if (cameraFrustum.Contains(bounds) == DISJOINT)
             {
-                //continue; // 화면에 보이지 않으면 렌더링하지 않음
+                continue; // 화면에 보이지 않으면 렌더링하지 않음
             }
-
-            XMMATRIX worldM = BuildWorldMatrix(world, id, transform);
             
             // 재질 정보 가져오기
             XMFLOAT4 color = { 1, 1, 1, 1 };
@@ -3248,31 +3316,18 @@ namespace Alice
             {
                 if (!cmd.vertexBuffer || !cmd.indexBuffer || cmd.indexCount == 0) continue;
 
-                // [프러스텀 컬링] 월드 행렬에서 위치 추출
-                XMFLOAT4X4 worldMatrix;
-                XMStoreFloat4x4(&worldMatrix, cmd.world);
-                XMFLOAT3 position(worldMatrix._41, worldMatrix._42, worldMatrix._43);
-                
-                // 스케일 추정: 월드 행렬의 스케일 성분 추출 (간단한 근사)
-                XMVECTOR scaleVec = XMVectorSet(
-                    XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._11, worldMatrix._12, worldMatrix._13, 0.0f))),
-                    XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._21, worldMatrix._22, worldMatrix._23, 0.0f))),
-                    XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._31, worldMatrix._32, worldMatrix._33, 0.0f))),
-                    0.0f
-                );
-                float maxScale = std::max({ XMVectorGetX(scaleVec), XMVectorGetY(scaleVec), XMVectorGetZ(scaleVec) });
-                BoundingSphere bounds(position, maxScale * 1.5f);
+                std::shared_ptr<SkinnedMeshGPU> mesh =
+                    (m_skinnedRegistry && !cmd.meshKey.empty()) ? m_skinnedRegistry->Find(cmd.meshKey) : nullptr;
+
+                const BoundingSphere bounds = BuildSkinnedCullingSphere(cmd.world, mesh.get());
                 if (cameraFrustum.Contains(bounds) == DISJOINT)
                 {
-                    //continue; // 화면에 보이지 않으면 렌더링하지 않음
+                    continue; // 화면에 보이지 않으면 렌더링하지 않음
                 }
 
                 const XMFLOAT4 color(cmd.color.x, cmd.color.y, cmd.color.z, cmd.alpha);
                 const int objectShadingMode = (cmd.shadingMode >= 0) ? cmd.shadingMode : shadingMode;
                 const float ao = (cmd.shadingMode >= 0) ? cmd.ambientOcclusion : m_lightingParameters.ambientOcclusion;
-
-                std::shared_ptr<SkinnedMeshGPU> mesh =
-                    (m_skinnedRegistry && !cmd.meshKey.empty()) ? m_skinnedRegistry->Find(cmd.meshKey) : nullptr;
 
                 const bool canInstance = IsRigidSkinnedCommand(cmd) &&
                                          (cmd.outlineWidth <= 0.0f) &&
@@ -3692,7 +3747,7 @@ namespace Alice
             if (!tr || !tr->enabled || !tr->visible) continue;
 
             float maxScale = std::max({ std::fabs(tr->scale.x), std::fabs(tr->scale.y), std::fabs(tr->scale.z) });
-            BoundingSphere bounds(tr->position, maxScale * 1.8f);
+            BoundingSphere bounds(tr->position, maxScale * CullingTuning::DecalCullingRadiusScale);
             if (cameraFrustum.Contains(bounds) == DISJOINT)
                 continue;
 
@@ -3955,33 +4010,19 @@ namespace Alice
             if (!cmd.vertexBuffer || !cmd.indexBuffer || cmd.indexCount == 0) continue;
             if (!cmd.transparent) continue;
 
-            // [프러스텀 컬링] 월드 행렬에서 위치 추출
-            XMFLOAT4X4 worldMatrix;
-            XMStoreFloat4x4(&worldMatrix, cmd.world);
-            XMFLOAT3 position(worldMatrix._41, worldMatrix._42, worldMatrix._43);
-            
-            // 스케일 추정: 월드 행렬의 스케일 성분 추출 (간단한 근사)
-            XMVECTOR scaleVec = XMVectorSet(
-                XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._11, worldMatrix._12, worldMatrix._13, 0.0f))),
-                XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._21, worldMatrix._22, worldMatrix._23, 0.0f))),
-                XMVectorGetX(XMVector3Length(XMVectorSet(worldMatrix._31, worldMatrix._32, worldMatrix._33, 0.0f))),
-                0.0f
-            );
-            float maxScale = std::max({ XMVectorGetX(scaleVec), XMVectorGetY(scaleVec), XMVectorGetZ(scaleVec) });
-            BoundingSphere bounds(position, maxScale * 1.5f);
+            std::shared_ptr<SkinnedMeshGPU> mesh =
+                (m_skinnedRegistry && !cmd.meshKey.empty()) ? m_skinnedRegistry->Find(cmd.meshKey) : nullptr;
+
+            const BoundingSphere bounds = BuildSkinnedCullingSphere(cmd.world, mesh.get());
             if (cameraFrustum.Contains(bounds) == DISJOINT)
             {
-                //continue; // 화면에 보이지 않으면 렌더링하지 않음
+                continue; // 화면에 보이지 않으면 렌더링하지 않음
             }
 
             const DirectX::XMFLOAT4 color(cmd.color.x, cmd.color.y, cmd.color.z, cmd.alpha);
             const int objectShadingMode = (cmd.shadingMode >= 0) ? cmd.shadingMode : shadingMode;
             const float ao = (cmd.shadingMode >= 0) ? cmd.ambientOcclusion : m_lightingParameters.ambientOcclusion;
             const float outlineWidth = cmd.outlineWidth;
-
-            // FBX 서브셋 머티리얼이 있으면 그걸 우선 사용 (Forward와 동일)
-            std::shared_ptr<SkinnedMeshGPU> mesh =
-                (m_skinnedRegistry && !cmd.meshKey.empty()) ? m_skinnedRegistry->Find(cmd.meshKey) : nullptr;
 
             // 인스턴싱 조건: 본 1개(Identity) + 아웃라인 없음 + 단일 서브셋
             const bool canInstance = IsRigidSkinnedCommand(cmd) &&
