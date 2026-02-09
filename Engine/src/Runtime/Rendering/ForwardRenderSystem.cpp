@@ -788,7 +788,7 @@ namespace Alice
         if (FAILED(m_device->CreateBuffer(&desc, nullptr, m_cbSkybox.ReleaseAndGetAddressOf()))) return false;
 
         // 4. PostProcess 상수 버퍼 생성 (톤매핑용)
-        desc.ByteWidth = sizeof(float) * 4; // exposure, maxHDRNits, padding[2]
+        desc.ByteWidth = static_cast<UINT>((sizeof(PostProcessCB) + 15) / 16 * 16);
         desc.Usage = D3D11_USAGE_DYNAMIC;
         desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
         if (FAILED(m_device->CreateBuffer(&desc, nullptr, m_cbPostProcess.ReleaseAndGetAddressOf()))) return false;
@@ -2317,6 +2317,14 @@ namespace Alice
                 m_postProcessParams.colorGradingGain.y,
                 m_postProcessParams.colorGradingGain.z
             );
+            defaultSettings.splitAmount = m_postProcessParams.splitAmount;
+            defaultSettings.splitAngleDeg = m_postProcessParams.splitAngleDeg;
+            defaultSettings.splitLineOffset = m_postProcessParams.splitLineOffset;
+            defaultSettings.splitFeather = m_postProcessParams.splitFeather;
+            defaultSettings.splitFxIntensity = m_postProcessParams.splitFxIntensity;
+            defaultSettings.splitFxWidth = m_postProcessParams.splitFxWidth;
+            defaultSettings.splitFxSpeed = m_postProcessParams.splitFxSpeed;
+            defaultSettings.splitFxTimeSec = m_postProcessParams.splitFxTimeSec;
 
             const std::string referenceName = ResolvePPVReferenceName(world);
             if (referenceName != m_postProcessVolumeSystem.GetReferenceObjectName())
@@ -2357,6 +2365,14 @@ namespace Alice
                 finalSettings.gain.z,
                 1.0f
             );
+            m_postProcessParams.splitAmount = finalSettings.splitAmount;
+            m_postProcessParams.splitAngleDeg = finalSettings.splitAngleDeg;
+            m_postProcessParams.splitLineOffset = finalSettings.splitLineOffset;
+            m_postProcessParams.splitFeather = finalSettings.splitFeather;
+            m_postProcessParams.splitFxIntensity = finalSettings.splitFxIntensity;
+            m_postProcessParams.splitFxWidth = finalSettings.splitFxWidth;
+            m_postProcessParams.splitFxSpeed = finalSettings.splitFxSpeed;
+            m_postProcessParams.splitFxTimeSec = finalSettings.splitFxTimeSec;
         }
 
         // 6. 에디터 뷰포트 표시용 LDR 텍스처로 톤매핑 (ImGui::Image에서 사용)
@@ -2460,6 +2476,14 @@ namespace Alice
                 m_postProcessParams.colorGradingGain.y,
                 m_postProcessParams.colorGradingGain.z
             );
+            defaultSettings.splitAmount = m_postProcessParams.splitAmount;
+            defaultSettings.splitAngleDeg = m_postProcessParams.splitAngleDeg;
+            defaultSettings.splitLineOffset = m_postProcessParams.splitLineOffset;
+            defaultSettings.splitFeather = m_postProcessParams.splitFeather;
+            defaultSettings.splitFxIntensity = m_postProcessParams.splitFxIntensity;
+            defaultSettings.splitFxWidth = m_postProcessParams.splitFxWidth;
+            defaultSettings.splitFxSpeed = m_postProcessParams.splitFxSpeed;
+            defaultSettings.splitFxTimeSec = m_postProcessParams.splitFxTimeSec;
 
             const std::string referenceName = ResolvePPVReferenceName(world);
             if (referenceName != m_postProcessVolumeSystem.GetReferenceObjectName())
@@ -2498,6 +2522,14 @@ namespace Alice
                 finalSettings.gain.z,
                 1.0f
             );
+            m_postProcessParams.splitAmount = finalSettings.splitAmount;
+            m_postProcessParams.splitAngleDeg = finalSettings.splitAngleDeg;
+            m_postProcessParams.splitLineOffset = finalSettings.splitLineOffset;
+            m_postProcessParams.splitFeather = finalSettings.splitFeather;
+            m_postProcessParams.splitFxIntensity = finalSettings.splitFxIntensity;
+            m_postProcessParams.splitFxWidth = finalSettings.splitFxWidth;
+            m_postProcessParams.splitFxSpeed = finalSettings.splitFxSpeed;
+            m_postProcessParams.splitFxTimeSec = finalSettings.splitFxTimeSec;
         }
 
         if (m_viewportRTV)
@@ -2741,6 +2773,18 @@ namespace Alice
         cbData.colorGradingContrast = m_postProcessParams.colorGradingContrast;
         cbData.colorGradingGamma = m_postProcessParams.colorGradingGamma;
         cbData.colorGradingGain = m_postProcessParams.colorGradingGain;
+        cbData.splitParams = DirectX::XMFLOAT4(
+            m_postProcessParams.splitAmount,
+            m_postProcessParams.splitAngleDeg,
+            m_postProcessParams.splitLineOffset,
+            m_postProcessParams.splitFeather
+        );
+        cbData.splitFxParams = DirectX::XMFLOAT4(
+            m_postProcessParams.splitFxIntensity,
+            m_postProcessParams.splitFxWidth,
+            m_postProcessParams.splitFxSpeed,
+            m_postProcessParams.splitFxTimeSec
+        );
 
         D3D11_MAPPED_SUBRESOURCE mapped;
         if (SUCCEEDED(m_context->Map(m_cbPostProcess.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))

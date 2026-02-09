@@ -73,6 +73,26 @@ namespace Alice
             1.0f 
         };  // Gain: Multiply 스케일 (R,G,B 채널별, 0.0 = 검정, 1.0 = 원본, >1.0 = 밝게, W=1.0)
             // 주의: 이것은 "출력 감마 보정"이 아니라 Color Grading 단계에서 색상을 곱하는 룩 조절 파라미터입니다.
+
+        // HalfCut 화면 분할 연출 파라미터
+        // splitAmount: 분할선 기준 절반 화면 UV 이동량 (0 = 비활성)
+        // splitAngleDeg: 분할선 각도(도, 0 = 수평 분할)
+        // splitLineOffset: 분할선 위치 오프셋(정규화 공간)
+        // splitFeather: 경계부 블렌딩 폭(정규화 공간)
+        float splitAmount = 0.0f;
+        float splitAngleDeg = 0.0f;
+        float splitLineOffset = 0.0f;
+        float splitFeather = 0.001f;
+
+        // Split 절단선 하이라이트/스파크(수학 기반) 파라미터
+        // splitFxIntensity: 0이면 비활성
+        // splitFxWidth: 절단선 주변 영향 폭(정규화 공간)
+        // splitFxSpeed: 절단선 방향 흐름 속도
+        // splitFxTimeSec: 연출 시간(초), 스크립트에서 제어
+        float splitFxIntensity = 0.0f;
+        float splitFxWidth = 0.01f;
+        float splitFxSpeed = 30.0f;
+        float splitFxTimeSec = 0.0f;
     };
 
     /// Bloom 파라미터 구조체
@@ -226,6 +246,8 @@ namespace Alice
 		DirectX::XMFLOAT4 colorGradingContrast;    // Color Grading Contrast: 룩 조절 (R,G,B 채널별, Pivot=0.5 기반, W=1.0)
 		DirectX::XMFLOAT4 colorGradingGamma;       // Color Grading Gamma: 룩/중간톤 조절 (R,G,B 채널별, W=1.0)
 		DirectX::XMFLOAT4 colorGradingGain;       // Color Grading Gain: Multiply 스케일 (R,G,B 채널별, W=1.0)
+        DirectX::XMFLOAT4 splitParams;            // x: splitAmount, y: splitAngleDeg, z: splitLineOffset, w: splitFeather
+        DirectX::XMFLOAT4 splitFxParams;          // x: splitFxIntensity, y: splitFxWidth, z: splitFxSpeed, w: splitFxTimeSec
 	};
 
 	struct BloomCB
