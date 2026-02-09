@@ -709,6 +709,11 @@ float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float
     return lerp(n, level, t * alpha);
 }
 
+float ApplySelfShadowNdotL(float shadedNdotL, float selfShadowStrength)
+{
+    return lerp(1.0f, shadedNdotL, saturate(selfShadowStrength));
+}
+
 float2 Unpack2x8(float v)
 {
     float raw = saturate(v) * 65535.0f;
@@ -905,10 +910,10 @@ float ComputeRectFactor(float3 L, float3 lightDir)
     return saturate(dot(-L, normalize(lightDir)));
 }
 
-float3 EvaluatePBRLight(float3 N, float3 V, float3 L, float3 albedoPBR, float metalness, float roughness, float3 lightColor)
+float3 EvaluatePBRLight(float3 N, float3 V, float3 L, float3 albedoPBR, float metalness, float roughness, float3 lightColor, float ndotlOverride)
 {
     float3 H = normalize(L + V);
-    float NdotL = saturate(dot(N, L));
+    float NdotL = saturate(ndotlOverride);
     float NdotV = saturate(dot(N, V));
     float NdotH = saturate(dot(N, H));
     float VdotH = saturate(dot(V, H));
@@ -1273,13 +1278,13 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     float3 lightColorDir = g_LightColor.rgb * g_intensity;
     float3 directLighting = 0.0f;
     {
-        float3 lit = EvaluatePBRLight(N, V, L, albedoPBR, metalness, roughness, lightColorDir);
         float ndotl = max(dot(N, L), 0.0f);
+        float shadedNdotL = ndotl;
         if (toonPbr && ndotl > 0.0f) {
-            float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
-            if (toonEditable) toonNdotL = lerp(ndotl, toonNdotL, saturate(toonSelfShadowStrength));
-            lit *= toonNdotL / max(ndotl, 1e-4f);
+            shadedNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
         }
+        float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength);
+        float3 lit = EvaluatePBRLight(N, V, L, albedoPBR, metalness, roughness, lightColorDir, selfShadowNdotL);
         directLighting += lit * shadowVis * ao;
     }
 
@@ -1292,13 +1297,13 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float3 Lp = (dist > 0.0001f) ? (toLight / dist) : float3(0, 0, 1);
         float atten = ComputeAttenuation(dist, pl.range);
         float3 lc = pl.color * pl.intensity * atten;
-        float3 lit = EvaluatePBRLight(N, V, Lp, albedoPBR, metalness, roughness, lc);
         float ndotl = max(dot(N, Lp), 0.0f);
+        float shadedNdotL = ndotl;
         if (toonPbr && ndotl > 0.0f) {
-            float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
-            if (toonEditable) toonNdotL = lerp(ndotl, toonNdotL, saturate(toonSelfShadowStrength));
-            lit *= toonNdotL / max(ndotl, 1e-4f);
+            shadedNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
         }
+        float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength);
+        float3 lit = EvaluatePBRLight(N, V, Lp, albedoPBR, metalness, roughness, lc, selfShadowNdotL);
         extraLighting += lit * ao;
     }
 
@@ -1310,13 +1315,13 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float atten = ComputeAttenuation(dist, sl.range);
         float spot = ComputeSpotFactor(Ls, sl.direction, sl.innerCos, sl.outerCos);
         float3 lc = sl.color * sl.intensity * atten * spot;
-        float3 lit = EvaluatePBRLight(N, V, Ls, albedoPBR, metalness, roughness, lc);
         float ndotl = max(dot(N, Ls), 0.0f);
+        float shadedNdotL = ndotl;
         if (toonPbr && ndotl > 0.0f) {
-            float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
-            if (toonEditable) toonNdotL = lerp(ndotl, toonNdotL, saturate(toonSelfShadowStrength));
-            lit *= toonNdotL / max(ndotl, 1e-4f);
+            shadedNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
         }
+        float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength);
+        float3 lit = EvaluatePBRLight(N, V, Ls, albedoPBR, metalness, roughness, lc, selfShadowNdotL);
         extraLighting += lit * ao;
     }
 
@@ -1329,13 +1334,13 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float facing = ComputeRectFactor(Lr, rl.direction);
         float areaScale = max(rl.width * rl.height, 0.01f);
         float3 lc = rl.color * rl.intensity * atten * facing * areaScale;
-        float3 lit = EvaluatePBRLight(N, V, Lr, albedoPBR, metalness, roughness, lc);
         float ndotl = max(dot(N, Lr), 0.0f);
+        float shadedNdotL = ndotl;
         if (toonPbr && ndotl > 0.0f) {
-            float toonNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
-            if (toonEditable) toonNdotL = lerp(ndotl, toonNdotL, saturate(toonSelfShadowStrength));
-            lit *= toonNdotL / max(ndotl, 1e-4f);
+            shadedNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
         }
+        float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength);
+        float3 lit = EvaluatePBRLight(N, V, Lr, albedoPBR, metalness, roughness, lc, selfShadowNdotL);
         extraLighting += lit * ao;
     }
 
@@ -1674,6 +1679,11 @@ float ToonStepEditable(float n, float3 cuts, float3 levels, float3 alphas, float
     return lerp(n, level, t * alpha);
 }
 
+float ApplySelfShadowNdotL(float shadedNdotL, float selfShadowStrength)
+{
+    return lerp(1.0f, shadedNdotL, saturate(selfShadowStrength));
+}
+
 // 텍스처
 Texture2D  g_DiffuseMap : register(t0);
 Texture2D  g_NormalMap  : register(t1);
@@ -1813,17 +1823,28 @@ float4 main(PSIn pIn) : SV_Target
     float3 H = normalize(L + V);
 
     float NdotL = saturate(dot(N, L));
+    const bool toonPbr = (gShadingMode == 5 || gShadingMode == 7);
+    const bool toonEditable = (gShadingMode == 7);
+    float shadedNdotL = NdotL;
+    if (toonPbr && NdotL > 0.0f)
+    {
+        shadedNdotL = toonEditable
+            ? ToonStepEditable(NdotL, gToonPbrCuts.xyz, gToonPbrLevels.xyz, gToonPbrAlphas.xyz, gToonPbrCuts.w, gToonPbrLevels.w, gToonPbrRampIntensity)
+            : ToonLevel(NdotL);
+    }
+    float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL, gToonSelfShadowStrength);
+
     float NdotV = saturate(dot(N, V));
     float NdotH = saturate(dot(N, H));
     float VdotH = saturate(dot(V, H));
 
     float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), albedoLinear, metalness);
     float D = DistributionGGX(NdotH, roughness);
-    float G = GeometrySmith(NdotV, NdotL, roughness);
+    float G = GeometrySmith(NdotV, selfShadowNdotL, roughness);
     float3 F = FresnelSchlick(F0, VdotH);
 
     float3 numerator = D * G * F;
-    float denomSpec = max(4.0f * NdotV * NdotL, 1e-4f);
+    float denomSpec = max(4.0f * NdotV * selfShadowNdotL, 1e-4f);
     float3 specular = numerator / denomSpec;
 
     float3 kS = F;
@@ -1831,18 +1852,7 @@ float4 main(PSIn pIn) : SV_Target
     float3 diffuse = kD * albedoLinear * INV_PI;
 
     float3 radiance = g_LightColor.rgb * g_LightIntensity;
-    float3 direct = (diffuse + specular) * radiance * NdotL * ao;
-
-    const bool toonPbr = (gShadingMode == 5 || gShadingMode == 7);
-    const bool toonEditable = (gShadingMode == 7);
-    if (toonPbr && NdotL > 0.0f)
-    {
-        float toonNdotL = toonEditable
-            ? ToonStepEditable(NdotL, gToonPbrCuts.xyz, gToonPbrLevels.xyz, gToonPbrAlphas.xyz, gToonPbrCuts.w, gToonPbrLevels.w, gToonPbrRampIntensity)
-            : ToonLevel(NdotL);
-        if (toonEditable) toonNdotL = lerp(NdotL, toonNdotL, saturate(gToonSelfShadowStrength));
-        direct *= toonNdotL / max(NdotL, 1e-4f);
-    }
+    float3 direct = (diffuse + specular) * radiance * selfShadowNdotL * ao;
 
     // IBL
     float3 diffuseIBL = kD * g_IBL_Diffuse.Sample(g_Sam, N).rgb * albedoLinear;

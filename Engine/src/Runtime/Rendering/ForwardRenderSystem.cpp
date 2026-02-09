@@ -1101,8 +1101,9 @@ namespace Alice
         data.toonPbrAlphas = toonPbrAlphas;
         data.toonPbrRampIntensity = toonPbrRampIntensity;
         data.toonSelfShadowStrength = toonSelfShadowStrength;
-        data.envDiffuseStrength = envDiffuseStrength;
-        data.envSpecularStrength = envSpecularStrength;
+        const float globalIbl = std::clamp(m_lightingParameters.globalIBLIntensity, 0.0f, 1.0f);
+        data.envDiffuseStrength = std::clamp(envDiffuseStrength * globalIbl, 0.0f, 1.0f);
+        data.envSpecularStrength = std::clamp(envSpecularStrength * globalIbl, 0.0f, 1.0f);
         data.outlineColor  = outlineColor;
         data.outlineWidth  = outlineWidth;
 

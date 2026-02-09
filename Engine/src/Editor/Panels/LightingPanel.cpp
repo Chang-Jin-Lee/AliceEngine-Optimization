@@ -215,7 +215,7 @@ namespace Alice
 			lightingChanged |= Alice::ImGuiSliderFloat(L"Key Intensity (주광)",
 				&lighting.keyIntensity,
 				0.0f,
-				3.0f);
+				20.0f);
 			ImGui::TextUnformatted("Key Rotation (Euler)");
 			static bool keyEulerInit = false;
 			static DirectX::XMFLOAT3 lastKeyDirection = { 0.0f, -1.0f, 0.0f };
@@ -278,15 +278,10 @@ namespace Alice
 			ImGui::TextUnformatted("Tone Mapping");
 			ImGui::TextWrapped("포스트 프로세스 볼륨으로 조절해야합니다. 포스트프로세스 볼륨을 만들고 Unbound로 조절하세요.");
 
-			if (lightingChanged)
-			{
-				forward.GetLightingParameters() = lighting;
-				deferred.GetLightingParameters() = lighting;
-			}
-
 			// === Skybox ===
 			ImGui::Separator();
 			ImGui::TextUnformatted("Skybox");
+			lightingChanged |= ImGui::SliderFloat("Global IBL Intensity", &lighting.globalIBLIntensity, 0.0f, 1.0f, "%.3f");
 
 			static int  lastSkyboxChoice = -1;
 			static int  lastSkyboxResolution = -1;
@@ -390,6 +385,13 @@ namespace Alice
 
 			if (useForwardRendering) EditBgIfOff(forward);
 			else                     EditBgIfOff(deferred);
+
+			if (lightingChanged)
+			{
+				lighting.globalIBLIntensity = std::clamp(lighting.globalIBLIntensity, 0.0f, 1.0f);
+				forward.GetLightingParameters() = lighting;
+				deferred.GetLightingParameters() = lighting;
+			}
 
 		}
 		ImGui::End();
