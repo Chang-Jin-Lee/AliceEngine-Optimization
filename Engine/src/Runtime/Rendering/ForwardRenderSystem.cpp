@@ -1222,6 +1222,10 @@ namespace Alice
             dst.range = (std::max)(light.range, 0.01f);
             dst.color = light.color;
             dst.intensity = light.intensity;
+            dst.shadowIndex = -1;
+            dst.shadowStrength = light.castShadow ? 1.0f : 0.0f;
+            dst.pad[0] = 0.0f;
+            dst.pad[1] = 0.0f;
         }
 
         // Spot lights
@@ -1249,6 +1253,9 @@ namespace Alice
             dst.outerCos = std::cosf(outerRad);
             dst.color = light.color;
             dst.intensity = light.intensity;
+            dst.shadowIndex = -1;
+            dst.shadowStrength = light.castShadow ? 1.0f : 0.0f;
+            dst.pad0 = 0.0f;
         }
 
         // Rect lights
@@ -1273,6 +1280,9 @@ namespace Alice
             dst.height = (std::max)(light.height, 0.01f);
             dst.color = light.color;
             dst.intensity = light.intensity;
+            dst.shadowIndex = -1;
+            dst.shadowStrength = light.castShadow ? 1.0f : 0.0f;
+            dst.pad0 = 0.0f;
         }
 
         D3D11_MAPPED_SUBRESOURCE mapped{};

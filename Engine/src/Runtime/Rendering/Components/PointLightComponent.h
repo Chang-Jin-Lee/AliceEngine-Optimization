@@ -10,6 +10,7 @@ namespace Alice
         DirectX::XMFLOAT3 color { 1.0f, 1.0f, 1.0f };
         float intensity { 1.0f };
         float range { 10.0f };
+        bool castShadow { true };
         bool enabled { true };
     };
 }
