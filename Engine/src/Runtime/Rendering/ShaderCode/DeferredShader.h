@@ -1028,6 +1028,12 @@ float ComputeOutlineEdge(float2 pixelPos, out float3 edgeColor, out float maxOut
 {
     // 1. 픽셀 좌표 정수 변환 (Load 사용을 위해 필수)
     int3 C = int3((int)pixelPos.x, (int)pixelPos.y, 0);
+    uint texWidth = 1;
+    uint texHeight = 1;
+    g_OutlineData.GetDimensions(texWidth, texHeight);
+    int2 maxCoord = int2((int)texWidth - 1, (int)texHeight - 1);
+    float minOutlineDepth = 1.0f;
+    int2 outlineDepthCoord = C.xy;
 
     // 2. 중심 픽셀 로드
     float4 center = g_OutlineData.Load(C);
@@ -1042,6 +1048,13 @@ float ComputeOutlineEdge(float2 pixelPos, out float3 edgeColor, out float maxOut
     {
         colorAccum += center.rgb;
         colorWeight += 1.0f;
+        int2 centerCoord = clamp(C.xy, int2(0, 0), maxCoord);
+        float centerDepth = g_SceneDepth.Load(int3(centerCoord, 0));
+        if (centerDepth < minOutlineDepth)
+        {
+            minOutlineDepth = centerDepth;
+            outlineDepthCoord = centerCoord;
+        }
     }
 
     // 3. 주변 1픽셀 탐색 (최대 두께 및 색상 찾기)
@@ -1064,6 +1077,13 @@ float ComputeOutlineEdge(float2 pixelPos, out float3 edgeColor, out float maxOut
             {
                 colorAccum += s.rgb;
                 colorWeight += 1.0f;
+                int2 sampleCoord = clamp(C.xy + int2(x, y), int2(0, 0), maxCoord);
+                float sampleDepth = g_SceneDepth.Load(int3(sampleCoord, 0));
+                if (sampleDepth < minOutlineDepth)
+                {
+                    minOutlineDepth = sampleDepth;
+                    outlineDepthCoord = sampleCoord;
+                }
             }
         }
     }
@@ -1078,11 +1098,29 @@ float ComputeOutlineEdge(float2 pixelPos, out float3 edgeColor, out float maxOut
     // 평균 색상 계산 (주변 색상들을 섞어서 부드럽게)
     edgeColor = (colorWeight > 0.0f) ? (colorAccum / colorWeight) : center.rgb;
 
-    // 4. Sobel Edge Detection (가변 두께 적용)
+    // 4. 카메라 거리 기반 보정 (멀수록 얇아지되, 근거리 최대 두께는 유지)
+    const float kOutlineReferenceDistance = 3.0f;
+    float distanceScale = 1.0f;
+    if (minOutlineDepth < 0.9999f)
+    {
+        float2 sampleUV = (float2(outlineDepthCoord) + 0.5f) / float2((float)texWidth, (float)texHeight);
+        float2 sampleNdc;
+        sampleNdc.x = sampleUV.x * 2.0f - 1.0f;
+        sampleNdc.y = (1.0f - sampleUV.y) * 2.0f - 1.0f;
+        float4 sampleClip = float4(sampleNdc, minOutlineDepth, 1.0f);
+        float4 samplePosW4 = mul(sampleClip, g_InvViewProj);
+        float3 samplePosW = samplePosW4.xyz / max(samplePosW4.w, 1e-6f);
+        float cameraDistance = max(length(g_EyePosW - samplePosW), 0.1f);
+        distanceScale = min(kOutlineReferenceDistance / cameraDistance, 1.0f);
+    }
+
+    // 5. Sobel Edge Detection (가변 두께 적용)
     // 두께(Alpha)에 따라 탐색 간격(Stride) 결정
     // outline의 최대 두께
     //int stride = clamp((int)(maxOutlineWidth * 120.0f), 1, 8); 
-    int stride = clamp((int)(maxOutlineWidth * 200.0f), 1, 32); 
+    float strideF = maxOutlineWidth * 200.0f * distanceScale;
+    int stride = clamp((int)strideF, 1, 32);
+    float subPixelFade = saturate(strideF);
 
     // Sobel 커널 적용 (Sample 대신 Load 사용)
     float m00 = (g_OutlineData.Load(C + int3(-stride, -stride, 0)).a > 1e-5f) ? 1.0f : 0.0f;
@@ -1101,9 +1139,9 @@ float ComputeOutlineEdge(float2 pixelPos, out float3 edgeColor, out float maxOut
     float gy = (m02 + 2.0f * m12 + m22) - (m00 + 2.0f * m10 + m20);
 
     // 엣지 강도 계산
-    return saturate(sqrt(gx * gx + gy * gy));
+    return saturate(sqrt(gx * gx + gy * gy)) * subPixelFade;
 }
-
+)" R"(
 float4 main(PS_INPUT_QUAD pIn) : SV_Target
 {
     // G-Buffer 가져오기
