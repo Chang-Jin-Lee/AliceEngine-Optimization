@@ -54,7 +54,7 @@ namespace Alice {
         float toonPbrStrength{ 1.0f }; // 0: 부드러운 PBR, 1: 완전 Toon
         bool  toonPbrBlur{ false };    // 계단 사이를 부드럽게 블러 처리
         float toonPbrRampIntensity{ 0.0f }; // 0: 기존, 1: 가장 어두운 밴드 완화
-        float toonSelfShadowStrength{ 1.0f }; // 0: 셀프 음영 최소화, 1: 기존 Toon 셀프 음영
+        float toonSelfShadowStrength{ 1.0f }; // 0: 셀프 음영 최소화, 1: 기본 셀프 음영(PBR/ToonPBR/ToonPBREditable)
 
         Alice_Get_Set(color);
         Alice_Get_Set(alpha);

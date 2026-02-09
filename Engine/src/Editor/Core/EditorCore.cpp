@@ -467,6 +467,7 @@ namespace Alice
 				p["metalness"] = m_cachedLightingParams.metalness;
 				p["roughness"] = m_cachedLightingParams.roughness;
 				p["ambientOcclusion"] = m_cachedLightingParams.ambientOcclusion;
+				p["globalIBLIntensity"] = m_cachedLightingParams.globalIBLIntensity;
 				p["keyIntensity"] = m_cachedLightingParams.keyIntensity;
 				p["fillIntensity"] = m_cachedLightingParams.fillIntensity;
 				p["keyDirection"] = Vec3ToJson(m_cachedLightingParams.keyDirection);

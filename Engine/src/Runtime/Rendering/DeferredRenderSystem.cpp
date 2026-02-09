@@ -4419,8 +4419,9 @@ namespace Alice
             data->gPad1[1] = 0.0f;
             data->gNormalStrength = normalStrength;
             data->gAmbientOcclusion = ambientOcclusion;
-            data->gEnvDiffuseStrength = envDiffuseStrength;
-            data->gEnvSpecularStrength = envSpecularStrength;
+            const float globalIbl = std::clamp(m_lightingParameters.globalIBLIntensity, 0.0f, 1.0f);
+            data->gEnvDiffuseStrength = std::clamp(envDiffuseStrength * globalIbl, 0.0f, 1.0f);
+            data->gEnvSpecularStrength = std::clamp(envSpecularStrength * globalIbl, 0.0f, 1.0f);
             data->gToonPbrCuts = toonPbrCuts;
             data->gToonPbrLevels = toonPbrLevels;
             data->gToonPbrAlphas = toonPbrAlphas;
