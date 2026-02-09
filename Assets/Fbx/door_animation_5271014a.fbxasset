@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/door_animation_5271014a_0.mat"
+    ],
+    "mesh": "door_animation_5271014a",
+    "source_fbx": "Resource/Test/4_Resources/background/door/door_animation.fbx"
+}
