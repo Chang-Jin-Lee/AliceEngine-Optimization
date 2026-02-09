@@ -147,6 +147,8 @@ namespace Alice
 		float bossParryNoDurabilitySec = 0.0f;
 		float playerGuardExitLockSec = 0.0f;
 		float bossGuardExitLockSec = 0.0f;
+		float playerHowlingGuardLockSec = 0.0f;
+		bool playerHowlingGuardActivePrev = false;
 		float playerHitstunDurationSec = 0.0f;
 		float bossHitstunDurationSec = 0.0f;
 		float playerHitstopTimer = 0.0f;
@@ -159,6 +161,7 @@ namespace Alice
 		bool bossGuardHeldAtHitstop = false;
 		float playerHealLoopSec = 0.0f;
 		float playerHealNextTickSec = 0.0f;
+		std::uint64_t playerParrySuccessCount = 0;
 		std::vector<PendingDeferredEvent> pendingDeferred;
 		std::vector<PendingImmediateCommand> pendingImmediate;
 		Combat::BossSignals bossSignals{};
@@ -226,6 +229,8 @@ namespace Alice
 			bossParryNoDurabilitySec = 0.0f;
 			playerGuardExitLockSec = 0.0f;
 			bossGuardExitLockSec = 0.0f;
+			playerHowlingGuardLockSec = 0.0f;
+			playerHowlingGuardActivePrev = false;
 			playerHitstunDurationSec = 0.0f;
 			bossHitstunDurationSec = 0.0f;
 			playerHitstopTimer = 0.0f;
@@ -236,6 +241,7 @@ namespace Alice
 			bossAttackSpeedScale = 1.0f;
 			playerHealLoopSec = 0.0f;
 			playerHealNextTickSec = 0.0f;
+			playerParrySuccessCount = 0;
 			pendingDeferred.clear();
 			pendingImmediate.clear();
 			parryResolvedByVictim.clear();
@@ -594,6 +600,9 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 	void C_CombatSessionComponent::OnDisable()
 	{
+		OnCombatResolved.Unbind();
+		OnCombatResolvedVfx.Unbind();
+
 		if (m_state)
 			m_state->Init();
 
@@ -619,6 +628,11 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
     Combat::ActionFlags C_CombatSessionComponent::GetBossFlags() const
     {
         return m_state ? m_state->boss.flags : Combat::ActionFlags{};
+    }
+
+    std::uint64_t C_CombatSessionComponent::GetPlayerParrySuccessCount() const
+    {
+        return m_state ? m_state->playerParrySuccessCount : 0;
     }
 
     bool C_CombatSessionComponent::IsPlayerRageActive() const
@@ -822,6 +836,15 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			&& (playerHpRatio <= maxHpRatio)
 			&& !blockPlayerActions;
 		const bool playerCanInteract = m_playerInteractionEnabled && !blockPlayerActions;
+		const auto* skinnedRegistry = SkinnedRegistry();
+		constexpr float kGuardExitMoveUnlockSec = 0.5f;
+		constexpr float kGuardTransitionAnimSpeedScale = 1.5f;
+		auto IsPlayerGuardExitMoveLocked = [&]() -> bool
+			{
+				return (m_state->playerGuardExitLockSec > 0.0f)
+					|| (m_state->playerAnim.guardExitActive
+						&& (m_state->playerAnim.guardExitTimer < kGuardExitMoveUnlockSec));
+			};
 
 		auto ResolveGuardExitDuration = [&](EntityId entityId) -> float
 			{
@@ -832,6 +855,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					duration = m_bossGuardExitDurationSec;
 				return std::max(0.0f, duration);
 			};
+
 		auto ResolveGuardEnterDuration = [&](EntityId entityId) -> float
 			{
 				float duration = m_guardEnterDurationSec;
@@ -839,12 +863,27 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					duration = m_playerGuardEnterDurationSec;
 				else if (entityId == bossId && m_bossGuardEnterDurationSec > 0.0f)
 					duration = m_bossGuardEnterDurationSec;
+
+				const AnimConfig cfg = BuildAnimConfig(entityId, playerId, bossId);
+				if (!cfg.guardEnterClip.empty())
+				{
+					const float clipDuration = GetClipDurationSecByName(skinnedRegistry, world, entityId, cfg.guardEnterClip);
+					if (clipDuration > 0.0f)
+						duration = std::max(duration, clipDuration);
+				}
+
+				// Guard-enter (parry) logic window follows animation speed scale.
+				if (duration > 0.0f)
+					duration /= kGuardTransitionAnimSpeedScale;
+
 				return std::max(0.0f, duration);
 			};
 
 		auto BeginGuardExitLock = [&](EntityId entityId, float& lockSec)
 			{
-				const float duration = ResolveGuardExitDuration(entityId);
+				float duration = ResolveGuardExitDuration(entityId);
+				if (entityId == playerId)
+					duration = kGuardExitMoveUnlockSec;
 				if (duration <= 0.0f)
 					return;
 				lockSec = std::max(lockSec, duration);
@@ -884,6 +923,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			{
 				if (lockSec <= 0.0f)
 					return;
+				if (entityId == playerId && !IsPlayerGuardExitMoveLocked())
+					return;
 				intent = {};
 				if (auto* driver = world.GetComponent<AttackDriverComponent>(entityId))
 				{
@@ -894,7 +935,67 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 			};
 
+		// Guard exit recovery can always be canceled by dodge.
+		if (playerIntent.dodgePressed
+			&& (m_state->playerGuardExitLockSec > 0.0f || m_state->playerAnim.guardExitActive))
+		{
+			m_state->playerGuardExitLockSec = 0.0f;
+			m_state->playerAnim.guardExitActive = false;
+			m_state->playerAnim.guardExitTimer = 0.0f;
+			m_state->playerAnim.guardExitAnimDurationSec = 0.0f;
+			if (auto* driver = world.GetComponent<AttackDriverComponent>(playerId))
+			{
+				driver->guardLockRemainingSec = 0.0f;
+				driver->parryOverrideRemainingSec = 0.0f;
+				driver->parryUsedThisPress = false;
+			}
+		}
+
 		ApplyGuardExitLockIntent(playerIntent, m_state->playerGuardExitLockSec, playerId);
+
+		auto ApplyForcedInputLock = [&](Combat::Intent& intent,
+			EntityId entityId,
+			bool forceGuard,
+			bool lockInput,
+			float guardLockSec)
+			{
+				if (!forceGuard && !lockInput)
+					return;
+
+				if (lockInput)
+					intent = {};
+
+				if (forceGuard)
+				{
+					intent.guardHeld = true;
+					intent.guardPressed = false;
+					intent.guardReleased = false;
+					intent.guardHeldSec = std::max(0.0f, intent.guardHeldSec);
+				}
+
+				if (auto* driver = world.GetComponent<AttackDriverComponent>(entityId))
+				{
+					if (driver->attackCancelable)
+						driver->cancelAttackRequested = true;
+					if (forceGuard && guardLockSec > 0.0f)
+						driver->guardLockRemainingSec = std::max(driver->guardLockRemainingSec, guardLockSec);
+					driver->parryOverrideRemainingSec = 0.0f;
+					driver->parryUsedThisPress = false;
+				}
+			};
+
+		if (m_state->playerHowlingGuardLockSec > 0.0f)
+		{
+			ApplyForcedInputLock(playerIntent,
+				playerId,
+				m_phaseHowlingForceGuard,
+				m_phaseHowlingLockInput,
+				m_state->playerHowlingGuardLockSec);
+		}
+		if (IsPlayerGuardExitMoveLocked())
+		{
+			ApplyForcedInputLock(playerIntent, playerId, false, true, 0.0f);
+		}
 
 		if (!playerCanInteract)
 			playerIntent.interactPressed = false;
@@ -995,6 +1096,19 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			playerIntent.runHeld = false;
 		}
 
+		// Re-apply post-filters so heal/interaction gating cannot override forced howl guard lock.
+		if (m_state->playerHowlingGuardLockSec > 0.0f)
+		{
+			ApplyForcedInputLock(playerIntent,
+				playerId,
+				m_phaseHowlingForceGuard,
+				m_phaseHowlingLockInput,
+				m_state->playerHowlingGuardLockSec);
+		}
+		if (IsPlayerGuardExitMoveLocked())
+		{
+			ApplyForcedInputLock(playerIntent, playerId, false, true, 0.0f);
+		}
 		const float rageDurationSec = std::max(0.0f, m_rageDurationSec);
 		if (playerIntent.ragePressed && rageDurationSec > 0.0f)
 		{
@@ -1657,14 +1771,27 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			if (auto* trace = world.GetComponent<WeaponTraceComponent>(bossId))
 				basePushSpeed = std::max(0.0f, trace->guardBreakPushbackSpeed);
 
-			const float pushSpeed = std::max(0.0f, basePushSpeed * std::max(0.0f, m_guardBreakPushbackScale));
-			const float pushDuration = std::max(0.0f, m_guardBreakPushbackDurationSec);
+			const float pushSpeed = std::max(0.0f, basePushSpeed * std::max(0.0f, m_phaseHowlingPushbackScale));
+			const float pushDuration = std::max(0.0f, m_phaseHowlingPushbackDurationSec);
 			if (pushSpeed > 0.0f && pushDuration > 0.0f)
 			{
 				std::vector<Combat::Command> phase2Commands;
 				phase2Commands.push_back({ Combat::CommandType::ApplyPushback,
 					Combat::CmdApplyPushback{ bossId, playerId, pushSpeed, pushDuration } });
 				m_state->apply.ApplyImmediate(world, m_state->fighterMap, m_state->bus, phase2Commands, true);
+			}
+			if (pushDuration > 0.0f && (m_phaseHowlingForceGuard || m_phaseHowlingLockInput))
+			{
+				m_state->playerHowlingGuardLockSec = std::max(m_state->playerHowlingGuardLockSec, pushDuration);
+				if (auto* driver = world.GetComponent<AttackDriverComponent>(playerId))
+				{
+					if (driver->attackCancelable)
+						driver->cancelAttackRequested = true;
+					if (m_phaseHowlingForceGuard)
+						driver->guardLockRemainingSec = std::max(driver->guardLockRemainingSec, pushDuration);
+					driver->parryOverrideRemainingSec = 0.0f;
+					driver->parryUsedThisPress = false;
+				}
 			}
 			// TODO: add dedicated camera shake cue for phase-2 howling.
 		}
@@ -2116,12 +2243,24 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 			};
 
-		auto GetBossAttackMoveDistance = [&](const std::string& clipName) -> float
+		auto GetBossAttackMoveDistance = [&](EntityId entityId, const std::string& clipName) -> float
 			{
 				if (clipName.empty())
 					return 0.0f;
 				if (clipName.find("Dash_Attack") != std::string::npos)
-					return 4.5f;
+				{
+					// Dash to current player gap, clamped to max distance.
+					constexpr float kBossDashMaxDistance = 11.0f;
+					const auto* selfTr = world.GetComponent<TransformComponent>(entityId);
+					const auto* playerTr = world.GetComponent<TransformComponent>(playerId);
+					if (!selfTr || !playerTr)
+						return kBossDashMaxDistance;
+					const float dx = playerTr->position.x - selfTr->position.x;
+					const float dz = playerTr->position.z - selfTr->position.z;
+					const float gap = std::sqrt(dx * dx + dz * dz);
+					constexpr float kBossDashCollisionBias = 2.5f;
+					return std::min(kBossDashMaxDistance, std::max(0.0f, gap + kBossDashCollisionBias));
+				}
 				if (clipName.find("Attack_ABC") != std::string::npos)
 					return 1.5f;
 				if (clipName.find("Attack_BC") != std::string::npos)
@@ -2150,13 +2289,6 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					return;
 				}
 
-				const float dist = GetBossAttackMoveDistance(clipName);
-				if (dist <= 0.0f)
-				{
-					moveState = {};
-					return;
-				}
-
 				const bool isDash = (clipName.find("Dash_Attack") != std::string::npos);
 				float dashClipDuration = 0.0f;
 				if (isDash)
@@ -2173,6 +2305,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 				if (prev != Combat::ActionState::Attack || moveState.clipName != clipName)
 				{
+					const float dist = GetBossAttackMoveDistance(entityId, clipName);
+					if (dist <= 0.0f)
+					{
+						moveState = {};
+						return;
+					}
+
 					moveState.configured = true;
 					moveState.heavy = true;
 					moveState.timerSec = 0.0f;
@@ -2254,6 +2393,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		m_state->player.flags = outPlayer.flags;
 		m_state->boss.state = outBoss.state;
 		m_state->boss.flags = outBoss.flags;
+		if (outPlayer.parryRecoverToIdle)
+		{
+			m_state->playerGuardExitLockSec = 0.0f;
+			m_state->playerAnim.guardExitActive = false;
+			m_state->playerAnim.guardExitTimer = 0.0f;
+			m_state->playerAnim.guardExitAnimDurationSec = 0.0f;
+		}
 		if (auto* driver = world.GetComponent<AttackDriverComponent>(playerId))
 		{
 			if (outPlayer.state != Combat::ActionState::Attack)
@@ -2401,12 +2547,22 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					float dx = inputX;
 					float dz = inputZ;
 					const bool isPlayer = (entityId == playerId);
+					const bool isBoss = (entityId == bossId);
 					const bool isPlayerDodge = isPlayer
 						&& (outPlayer.state == Combat::ActionState::Dodge);
 					const auto* moveHealth = world.GetComponent<HealthComponent>(entityId);
-					const bool pushbackOverrideActive = moveHealth
+					const bool pushbackOverrideActive = !isBoss && moveHealth
 						&& moveHealth->pushbackRemainingSec > 0.0f
 						&& moveHealth->pushbackSpeed > 0.0f;
+					if (isBoss && moveHealth)
+					{
+						if (auto* bossHealth = world.GetComponent<HealthComponent>(entityId))
+						{
+							bossHealth->pushbackRemainingSec = 0.0f;
+							bossHealth->pushbackSpeed = 0.0f;
+							bossHealth->pushbackDir = { 0.0f, 0.0f, 0.0f };
+						}
+					}
 					if (pushbackOverrideActive)
 					{
 						// While pushback is active, ignore normal move requests.
@@ -2419,6 +2575,19 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 							m_state->playerMoveSmoothedDir = {};
 							m_state->playerMoveSmoothedValid = false;
 						}
+						continue;
+					}
+
+					const bool playerMovementLocked = isPlayer
+						&& ((IsPlayerGuardExitMoveLocked())
+							|| (m_phaseHowlingLockInput && m_state->playerHowlingGuardLockSec > 0.0f));
+					if (playerMovementLocked)
+					{
+						cct->desiredVelocity.x = 0.0f;
+						cct->desiredVelocity.z = 0.0f;
+						cct->desiredVelocity.y = 0.0f;
+						m_state->playerMoveSmoothedDir = {};
+						m_state->playerMoveSmoothedValid = false;
 						continue;
 					}
 
@@ -2505,7 +2674,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 					const bool lockFacing = (entityId == playerId
 						&& outPlayer.state == Combat::ActionState::Attack
-						&& m_state->playerAttackFacingLocked);
+						&& m_state->playerAttackFacingLocked)
+						|| isBoss;
 					if (!lockFacing && payload.faceMove && (dx != 0.0f || dz != 0.0f))
 					{
 						if (auto* tr = world.GetComponent<TransformComponent>(entityId))
@@ -2541,7 +2711,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		auto StopIfNotMoving = [&](EntityId entityId, Combat::ActionState state, const SessionState::AttackMoveState& attackMove)
 			{
-				if (state == Combat::ActionState::Move || state == Combat::ActionState::Dodge || (state == Combat::ActionState::Attack && attackMove.active))
+				const bool forcePlayerMotionLock = (entityId == playerId)
+					&& ((IsPlayerGuardExitMoveLocked())
+						|| (m_phaseHowlingLockInput && m_state->playerHowlingGuardLockSec > 0.0f));
+				if (!forcePlayerMotionLock
+					&& (state == Combat::ActionState::Move
+						|| state == Combat::ActionState::Dodge
+						|| (state == Combat::ActionState::Attack && attackMove.active)))
 					return;
 				if (auto* hc = world.GetComponent<HealthComponent>(entityId))
 				{
@@ -2598,6 +2774,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					return false;
 				if (outBoss.state == Combat::ActionState::Groggy)
 					return false;
+				if (outBoss.state == Combat::ActionState::Dead)
+					return false;
 
 				// Boss attacks should keep their initial direction.
 				// Exception: charge attack can track only for the configured early-time window.
@@ -2632,10 +2810,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		if (ShouldTrackBossFacingThisFrame())
 		{
-			const float idleFacingDamping = (outBoss.state == Combat::ActionState::Idle)
-				? std::max(0.0f, m_bossIdleFacingDamping)
-				: 0.0f;
-			FaceTarget(bossId, playerId, idleFacingDamping);
+			const float bossFacingDamping = std::max(0.0f, m_bossIdleFacingDamping);
+			FaceTarget(bossId, playerId, bossFacingDamping);
 		}
 
 		// Root motion unlock/drive is now left to component settings (disable attack-only override).
@@ -2656,6 +2832,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				auto* hc = world.GetComponent<HealthComponent>(entityId);
 				if (!hc || hc->pushbackRemainingSec <= 0.0f || hc->pushbackSpeed <= 0.0f)
 					return;
+				if (entityId == bossId)
+				{
+					hc->pushbackRemainingSec = 0.0f;
+					hc->pushbackSpeed = 0.0f;
+					hc->pushbackDir = { 0.0f, 0.0f, 0.0f };
+					return;
+				}
 				if (hitstopActive)
 					return;
 
@@ -2974,6 +3157,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			bool blendIdleOnAttackEnd,
 			bool hitReactActive,
 			bool suppressGuardExit,
+			bool forceGuardLoopOnly,
 			bool forceGroggyRecoverClip) {
 				auto* anim = world.GetComponent<AdvancedAnimationComponent>(entityId);
 				if (!anim)
@@ -3104,14 +3288,15 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				const bool exitingGuard = !suppressGuardExit && (prev == Combat::ActionState::Guard
 					&& curr != Combat::ActionState::Guard
 					&& (curr == Combat::ActionState::Idle || curr == Combat::ActionState::Move));
-				float guardEnterAnimDurationSec = cfg.guardEnterDurationSec;
+				float guardEnterAnimDurationSec = std::max(0.0f, cfg.guardEnterDurationSec);
 				if (!cfg.guardEnterClip.empty())
 				{
 					const float clipDuration = GetClipDurationSecByName(registry, world, entityId, cfg.guardEnterClip);
 					if (clipDuration > 0.0f)
-						guardEnterAnimDurationSec = clipDuration;
+						guardEnterAnimDurationSec = std::max(guardEnterAnimDurationSec, clipDuration);
 				}
-				if ((enteringGuard || guardEnterPulse)
+				if (!forceGuardLoopOnly
+					&& (enteringGuard || guardEnterPulse)
 					&& !cfg.guardEnterClip.empty()
 					&& guardEnterAnimDurationSec > 0.0f)
 				{
@@ -3132,7 +3317,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				{
 					animState.guardExitActive = true;
 					animState.guardExitTimer = 0.0f;
-					animState.guardExitAnimDurationSec = guardExitAnimDurationSec;
+					animState.guardExitAnimDurationSec = std::max(guardExitAnimDurationSec, kGuardExitMoveUnlockSec);
 					if (guardExitPulse)
 					{
 						animState.guardEnterActive = false;
@@ -3171,6 +3356,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					animState.guardEnterAnimDurationSec = 0.0f;
 					animState.guardExitAnimDurationSec = 0.0f;
 					animState.groggyRecoverActive = false;
+				}
+				if (animState.guardExitActive
+					&& curr == Combat::ActionState::Move
+					&& animState.guardExitTimer >= kGuardExitMoveUnlockSec)
+				{
+					// After guard-exit unlock time, moving input should blend back to locomotion.
+					animState.guardExitActive = false;
+					animState.guardExitAnimDurationSec = 0.0f;
 				}
 
 				std::string clipName;
@@ -3280,25 +3473,36 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 				else if (clipName.empty() && (curr == Combat::ActionState::Guard))
 				{
-					const bool parryWindowActive = driver && driver->parryActive;
-					if (parryWindowActive && !cfg.guardEnterClip.empty())
+					const std::string guardLoop = !cfg.guardLoopClip.empty()
+						? cfg.guardLoopClip
+						: resolveClipByType(AttackDriverNotifyType::Guard);
+					if (forceGuardLoopOnly)
 					{
-						clipName = cfg.guardEnterClip;
-						loop = false;
-					}
-					else if (animState.guardEnterActive)
-					{
-						clipName = cfg.guardEnterClip;
-						loop = false;
+						animState.guardEnterActive = false;
+						animState.guardEnterTimer = 0.0f;
+						animState.guardEnterAnimDurationSec = 0.0f;
+						clipName = guardLoop;
+						loop = true;
 					}
 					else
 					{
-						const std::string guardLoop = !cfg.guardLoopClip.empty()
-							? cfg.guardLoopClip
-							: resolveClipByType(AttackDriverNotifyType::Guard);
-						clipName = guardLoop;
-						const bool guardHeld = driver ? driver->guardInputHeld : false;
-						loop = (curr == Combat::ActionState::Guard) && guardHeld;
+						const bool parryWindowActive = driver && driver->parryActive;
+						if (parryWindowActive && !cfg.guardEnterClip.empty())
+						{
+							clipName = cfg.guardEnterClip;
+							loop = false;
+						}
+						else if (animState.guardEnterActive)
+						{
+							clipName = cfg.guardEnterClip;
+							loop = false;
+						}
+						else
+						{
+							clipName = guardLoop;
+							const bool guardHeld = driver ? driver->guardInputHeld : false;
+							loop = (curr == Combat::ActionState::Guard) && guardHeld;
+						}
 					}
 				}
 
@@ -3377,6 +3581,35 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					if (bossBrain->GetBrainState() == C_BossBrainComponent::BrainState::Orbit && !moveSideClip.empty())
 						moveClipResolved = moveSideClip;
 				}
+				bool reverseBossSideMove = false;
+				float reverseBossSideStartTime = 0.0f;
+				if (entityId == bossId
+					&& curr == Combat::ActionState::Move
+					&& !moveSideClip.empty()
+					&& moveClipResolved == moveSideClip)
+				{
+					const float moveX = intent.move.x;
+					const float moveZ = intent.move.y;
+					const float moveLenSq = moveX * moveX + moveZ * moveZ;
+					if (moveLenSq > 0.0001f)
+					{
+						if (auto* tr = world.GetComponent<TransformComponent>(entityId))
+						{
+							const float yaw = tr->rotation.y - (m_rotationOffsetDeg * kDegToRad);
+							const float rightX = std::cos(yaw);
+							const float rightZ = -std::sin(yaw);
+							const float sideDot = rightX * moveX + rightZ * moveZ;
+							reverseBossSideMove = (sideDot > 0.0f);
+						}
+					}
+
+					if (reverseBossSideMove)
+					{
+						reverseBossSideStartTime = GetClipDurationSecByName(registry, world, entityId, moveClipResolved);
+						if (reverseBossSideStartTime <= 0.0f)
+							reverseBossSideStartTime = 0.5f;
+					}
+				}
 
 				const bool isLocomotion = (curr == Combat::ActionState::Idle || curr == Combat::ActionState::Move);
 				AdvancedAnimLayer locomotionBase{};
@@ -3391,10 +3624,10 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					locomotionBase.loopA = true;
 					locomotionBase.loopB = true;
 					locomotionBase.speedA = 1.0f;
-					locomotionBase.speedB = 1.0f;
+					locomotionBase.speedB = reverseBossSideMove ? -1.0f : 1.0f;
 					locomotionBase.blend01 = moveBlend;
 					locomotionBase.timeA = 0.0f;
-					locomotionBase.timeB = 0.0f;
+					locomotionBase.timeB = reverseBossSideMove ? reverseBossSideStartTime : 0.0f;
 
 					if (animState.overrideActive && !wantsOverride)
 					{
@@ -3411,7 +3644,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					anim->base.loopA = true;
 					anim->base.loopB = true;
 					anim->base.speedA = 1.0f;
-					anim->base.speedB = 1.0f;
+					anim->base.speedB = reverseBossSideMove ? -1.0f : 1.0f;
 					anim->base.blend01 = moveBlend;
 				}
 
@@ -3442,7 +3675,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						: cfg.guardExitDurationSec;
 					if (guardExitDuration > 0.0f)
 					{
-					wantsReverse = true;
+						wantsReverse = true;
 						reverseStartTime = guardExitDuration;
 					}
 				}
@@ -3460,6 +3693,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 				if (wantsReverse && overrideSpeed > 0.0f)
 					overrideSpeed = -overrideSpeed;
+				if (animState.guardEnterActive || animState.guardExitActive)
+					overrideSpeed *= kGuardTransitionAnimSpeedScale;
 				float blendSec = (entityId == bossId)
 					? std::max(0.0f, m_bossAnimBlendSec)
 					: std::max(0.0f, m_animBlendSec);
@@ -3542,11 +3777,25 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					animState.blendingToOverride = false;
 					animState.blendTimer = 0.0f;
 
+					const bool preferMoveTarget =
+						(!animState.savedBase.clipB.empty())
+						&& (animState.savedBase.clipB != animState.savedBase.clipA)
+						&& (curr == Combat::ActionState::Move || animState.savedBase.blend01 >= 0.5f);
+					const std::string& blendTargetClip = preferMoveTarget
+						? animState.savedBase.clipB
+						: animState.savedBase.clipA;
+					const float blendTargetSpeed = preferMoveTarget
+						? animState.savedBase.speedB
+						: animState.savedBase.speedA;
+					const bool blendTargetLoop = preferMoveTarget
+						? animState.savedBase.loopB
+						: animState.savedBase.loopA;
+
 					anim->base.autoAdvance = true;
-					anim->base.clipB = animState.savedBase.clipA;
+					anim->base.clipB = blendTargetClip;
 					anim->base.timeB = 0.0f;
-					anim->base.speedB = animState.savedBase.speedA;
-					anim->base.loopB = animState.savedBase.loopA;
+					anim->base.speedB = blendTargetSpeed;
+					anim->base.loopB = blendTargetLoop;
 					anim->base.blend01 = 0.0f;
 					};
 
@@ -3681,11 +3930,20 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				prev = curr;
 			};
 
-        const bool playerGuardEnterPulse = playerGuardPressed;
+		const bool playerHowlingGuardActive = m_phaseHowlingForceGuard
+			&& (m_state->playerHowlingGuardLockSec > 0.0f);
+		const bool playerHowlingGuardJustEnded = m_state->playerHowlingGuardActivePrev
+			&& !playerHowlingGuardActive;
+		const bool suppressPlayerGuardExitAnim =
+			playerHowlingGuardActive || playerHowlingGuardJustEnded || outPlayer.parryRecoverToIdle;
+		const bool forcePlayerGuardLoopOnly = playerHowlingGuardActive;
+
+		const bool playerGuardEnterPulse = playerGuardPressed;
 		ApplyAnimByState(playerId, playerIntent, outPlayer.state, m_state->prevPlayerState, m_state->playerAnim, m_state->playerMoveBlend,
-            playerGuardEnterPulse, false, m_state->playerChargeActive, outPlayer.attackRestarted, playerAttackEndedOnFinal, false, false, false);
-        ApplyAnimByState(bossId, bossIntentCompat, outBoss.state, m_state->prevBossState, m_state->bossAnim, m_state->bossMoveBlend,
-            false, false, m_state->bossChargeActive, outBoss.attackRestarted, false, bossOut.hitReactActive, false, bossOut.groggyRecoverActive);
+			playerGuardEnterPulse, false, m_state->playerChargeActive, outPlayer.attackRestarted, playerAttackEndedOnFinal, false, suppressPlayerGuardExitAnim, forcePlayerGuardLoopOnly, false);
+		ApplyAnimByState(bossId, bossIntentCompat, outBoss.state, m_state->prevBossState, m_state->bossAnim, m_state->bossMoveBlend,
+			false, false, m_state->bossChargeActive, outBoss.attackRestarted, false, bossOut.hitReactActive, false, false, bossOut.groggyRecoverActive);
+		m_state->playerHowlingGuardActivePrev = playerHowlingGuardActive;
 
 		auto ApplyHitstopVelocityStop = [&](EntityId entityId, float timerSec)
 			{
@@ -3769,6 +4027,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		m_state->bossParryNoDurabilitySec = std::max(0.0f, m_state->bossParryNoDurabilitySec - bossLogicDt);
 		m_state->playerGuardExitLockSec = std::max(0.0f, m_state->playerGuardExitLockSec - playerLogicDt);
 		m_state->bossGuardExitLockSec = std::max(0.0f, m_state->bossGuardExitLockSec - bossLogicDt);
+		m_state->playerHowlingGuardLockSec = std::max(0.0f, m_state->playerHowlingGuardLockSec - playerLogicDt);
 
 		auto BuildResolveSnapshot = [&](Combat::Fighter& fighter,
 			Combat::ActionState state,
@@ -4005,17 +4264,26 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			const Combat::ResolveResult resolveResult = resolvedDetail.result;
 
 			// SFX/VFX hook (resolved hit result):
-			// - Use hit.hitPosWS / hit.hitNormalWS for impact location and orientation.
+			// - Use hit.hitPosWS for impact location.
 			// - Use resolveResult to branch: Parry, Guard, GuardBreak, Hit.
 			// - Good place to fire: parry spark + clang, guard block spark, hit blood, guard-break burst.
 			// - If you need attacker/weapon position, fetch sockets from AdvancedAnimationComponent here.
 			// - For footsteps/attack whoosh, use anim notifies (AdvancedAnimationComponent::AddNotify).
 
 			// Notify external scripts about resolve result
-			if (OnCombatResolved.IsBound() && resolveResult != Combat::ResolveResult::None)
+			if (resolveResult != Combat::ResolveResult::None)
 			{
-				OnCombatResolved.Execute(hit.victimOwner, hit.attackerOwner, 
-					static_cast<std::uint8_t>(resolveResult), hit.damage, hit.hitPosWS);
+				if (OnCombatResolved.IsBound())
+				{
+					OnCombatResolved.Execute(hit.victimOwner, hit.attackerOwner,
+						static_cast<std::uint8_t>(resolveResult), hit.damage, hit.hitPosWS);
+				}
+
+				if (OnCombatResolvedVfx.IsBound())
+				{
+					OnCombatResolvedVfx.Execute(hit.victimOwner, hit.attackerOwner,
+						static_cast<std::uint8_t>(resolveResult), hit.damage, hit.hitPosWS);
+				}
 			}
 
 			if (m_enableCombatLogs)
@@ -4060,6 +4328,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			const bool wasGuarded = (resolveResult == Combat::ResolveResult::Guard);
 			const bool wasGuardBreak = (resolveResult == Combat::ResolveResult::GuardBreak);
 			const bool wasHit = (resolveResult == Combat::ResolveResult::Hit);
+			if (parrySuccess && hit.victimOwner == playerId)
+				++m_state->playerParrySuccessCount;
 			if (wasHit && hit.victimOwner == bossId)
 			{
 				nextBossSignals.hitThisFrame = true;
@@ -4202,6 +4472,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				const float scale = std::max(0.0f, m_guardBreakPushbackScale);
 				payload.speed *= scale;
 				payload.durationSec = std::max(0.0f, m_guardBreakPushbackDurationSec);
+				if (bossId != InvalidEntityId
+					&& (payload.attacker == bossId || payload.victim == bossId))
+				{
+					const EntityId target = (payload.attacker == bossId) ? payload.victim : payload.attacker;
+					cmd.type = Combat::CommandType::ApplyPushback;
+					cmd.payload = Combat::CmdApplyPushback{ bossId, target, payload.speed, payload.durationSec };
+				}
 			}
 			if (wasGuardBreak)
 			{
@@ -4217,12 +4494,25 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				immediate.erase(std::remove_if(immediate.begin(), immediate.end(),
 					[&](const Combat::Command& cmd)
 					{
-						if (cmd.type != Combat::CommandType::ForceCancelAttack)
-							return false;
-						const auto& payload = std::get<Combat::CmdForceCancelAttack>(cmd.payload);
-						return payload.target == bossId;
+						if (cmd.type == Combat::CommandType::ForceCancelAttack)
+						{
+							const auto& payload = std::get<Combat::CmdForceCancelAttack>(cmd.payload);
+							return payload.target == bossId;
+						}
+						if (cmd.type == Combat::CommandType::ApplyPushback)
+						{
+							const auto& payload = std::get<Combat::CmdApplyPushback>(cmd.payload);
+							return payload.victim == bossId;
+						}
+						return false;
 					}),
 					immediate.end());
+				if (auto* hc = world.GetComponent<HealthComponent>(bossId))
+				{
+					hc->pushbackRemainingSec = 0.0f;
+					hc->pushbackSpeed = 0.0f;
+					hc->pushbackDir = { 0.0f, 0.0f, 0.0f };
+				}
 			}
 			m_state->apply.ApplyImmediate(world, m_state->fighterMap, m_state->bus, immediate, false);
 

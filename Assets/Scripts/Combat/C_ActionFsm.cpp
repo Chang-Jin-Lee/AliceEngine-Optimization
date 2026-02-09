@@ -30,12 +30,18 @@ namespace Alice::Combat
         m_dodgeDirValid = false;
         m_dodgeMoveTimer = 0.0f;
         m_dodgeMoveStopped = false;
+        m_parrySuccessLatched = false;
+        m_guardReentryRequiresRelease = false;
     }
 
     void ActionFsm::Enter(ActionState next, bool force)
     {
         if (m_state != next || force)
         {
+            if (next == ActionState::Guard)
+                m_parrySuccessLatched = false;
+            else if (m_state == ActionState::Guard)
+                m_parrySuccessLatched = false;
             m_state = next;
             m_stateTime = 0.0f;
             m_prevHitActive = false;
@@ -79,16 +85,28 @@ namespace Alice::Combat
                 Enter(ActionState::Hitstun);
         }
 
-        const float guardEnterDurationSec = std::max(0.0f, sensors.guardEnterDurationSec);
+        float guardEnterDurationSec = std::max(0.0f, sensors.guardEnterDurationSec);
+        if (guardEnterDurationSec <= 0.0f)
+            guardEnterDurationSec = std::max(0.0f, intent.parryTapWindowSec);
+
+        if (m_guardReentryRequiresRelease && !intent.guardHeld && !intent.guardPressed)
+            m_guardReentryRequiresRelease = false;
+        const bool guardHeldInput = !m_guardReentryRequiresRelease && intent.guardHeld;
+        const bool guardPressedInput = !m_guardReentryRequiresRelease && intent.guardPressed;
+
+        const bool parrySuccess = HasEvent(events, CombatEventType::OnParrySuccess);
+        if (parrySuccess && m_state == ActionState::Guard)
+            m_parrySuccessLatched = true;
+
         const bool hasMove = (Abs(intent.move.x) + Abs(intent.move.y)) > 0.001f;
-        if (m_state == ActionState::Guard && intent.guardPressed && !sensors.weakActive)
+        if (m_state == ActionState::Guard && guardPressedInput && !sensors.weakActive)
         {
             Enter(ActionState::Guard, true);
         }
         const bool guardEnterActive = (m_state == ActionState::Guard)
             && (guardEnterDurationSec > 0.0f)
             && (m_stateTime < guardEnterDurationSec);
-        const bool wantsGuard = ((intent.guardHeld || intent.guardPressed || sensors.guardLockActive) || guardEnterActive)
+        const bool wantsGuard = ((guardHeldInput || guardPressedInput || sensors.guardLockActive) || guardEnterActive)
             && !sensors.weakActive;
         const bool wantsInteract = intent.interactPressed && sensors.interactAvailable;
         const bool wantsHealStart = intent.itemPressed && sensors.healAllowed;
@@ -246,6 +264,15 @@ namespace Alice::Combat
                     }
                 }
             }
+            else if (m_state == ActionState::Guard
+                && m_parrySuccessLatched
+                && !guardEnterActive)
+            {
+                Enter(ActionState::Idle);
+                m_guardReentryRequiresRelease = true;
+                out.parryRecoverToIdle = true;
+                out.commands.push_back({ CommandType::RequestMove, CmdRequestMove{ self, {0.0f, 0.0f}, 0.0f, true, false } });
+            }
             else if (m_state == ActionState::Attack)
             {
                 if (sensors.attackWindowActive)
@@ -261,7 +288,6 @@ namespace Alice::Combat
                     && sensors.attackCancelable
                     && wantsGuard;
                 const bool canDodgeCancel = postWindow
-                    && sensors.attackCancelable
                     && intent.dodgePressed
                     && sensors.stamina >= 10.0f;
                 const float restartLateRatio = 0.7f;

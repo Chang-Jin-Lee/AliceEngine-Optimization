@@ -8,6 +8,13 @@
         "Assets/Fbx/zeldaPosed001.fbxasset",
         "Assets/Fbx/Zombie_Run.fbxasset",
         "Assets/Fbx/BoxHuman.fbxasset",
-        "Assets/Fbx/Tree.fbxasset"
+        "Assets/Fbx/Tree.fbxasset",
+        "Assets/Prefabs/(01)White_Attack_SlashC.prefab",
+        "Assets/Prefabs/(02)Red_Attack_SlashA.prefab",
+        "Assets/Prefabs/(02)Red_HIT.prefab",
+        "Assets/Prefabs/(01)White_HIT.prefab",
+        "Assets/Prefabs/dust.prefab",
+        "Assets/Prefabs/GAS.prefab",
+        "Assets/Prefabs/(03)Guard_RingA.prefab"
     ]
 }
