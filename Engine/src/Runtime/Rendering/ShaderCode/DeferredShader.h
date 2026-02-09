@@ -969,7 +969,7 @@ float ComputePointShadowDepth(float distanceToLight, float nearPlane, float farP
     return m33 + m43 / max(distanceToLight, nearPlane + 1e-4f);
 }
 
-float CalcLocalPointShadowFactor(float3 posW, float3 lightPos, float lightRange, int shadowIndex)
+float CalcLocalPointShadowFactor(float3 posW, float3 lightPos, float lightRange, int shadowIndex, float3 N, float3 L)
 {
     if (shadowIndex < 0 || shadowIndex >= g_PointShadowCount)
         return 1.0f;
@@ -982,10 +982,41 @@ float CalcLocalPointShadowFactor(float3 posW, float3 lightPos, float lightRange,
         return 1.0f;
 
     float3 dir = toPixel / dist;
-    float sampleDepth = g_LocalShadowCubeArray.SampleLevel(g_SamplerLinear, float4(dir, shadowIndex), 0.0f).r;
-    float currentDepth = ComputePointShadowDepth(dist, g_PointShadowNearZ, lightRange);
-    const float bias = 0.0025f;
-    return (currentDepth - bias <= sampleDepth) ? 1.0f : 0.0f;
+    // Point shadow is rendered as six 90-degree perspective faces.
+    // The stored depth corresponds to face-space Z (dominant axis), not radial length.
+    float faceDepth = max(max(abs(toPixel.x), abs(toPixel.y)), abs(toPixel.z));
+    float currentDepth = ComputePointShadowDepth(faceDepth, g_PointShadowNearZ, lightRange);
+    float invMapSize = 1.0f / max(g_PointShadowMapSize, 1.0f);
+    float normalizedDist = saturate(dist / max(lightRange, 1e-4f));
+    float ndotl = saturate(dot(normalize(N), normalize(L)));
+    float slope = 1.0f - ndotl;
+    float baseBias = invMapSize * lerp(0.28f, 0.52f, normalizedDist) + 0.00015f;
+    float slopeBias = slope * (invMapSize * 0.75f + 0.00035f);
+    float bias = min(baseBias + slopeBias, 0.0065f);
+
+    float3 basisUp = (abs(dir.z) < 0.999f) ? float3(0.0f, 0.0f, 1.0f) : float3(0.0f, 1.0f, 0.0f);
+    float3 tangent = normalize(cross(basisUp, dir));
+    float3 bitangent = normalize(cross(dir, tangent));
+    float kernelRadius = invMapSize * (0.75f + 0.45f * normalizedDist);
+
+    const float2 kernel[9] =
+    {
+        float2(0.0f, 0.0f),
+        float2(1.0f, 0.0f), float2(-1.0f, 0.0f),
+        float2(0.0f, 1.0f), float2(0.0f, -1.0f),
+        float2(1.0f, 1.0f), float2(-1.0f, 1.0f),
+        float2(1.0f, -1.0f), float2(-1.0f, -1.0f)
+    };
+
+    float visible = 0.0f;
+    [unroll] for (int i = 0; i < 9; ++i)
+    {
+        float3 offset = (kernel[i].x * tangent + kernel[i].y * bitangent) * kernelRadius;
+        float3 sampleDir = normalize(dir + offset);
+        float sampleDepth = g_LocalShadowCubeArray.SampleLevel(g_SamplerLinear, float4(sampleDir, shadowIndex), 0.0f).r;
+        visible += (currentDepth - bias <= sampleDepth) ? 1.0f : 0.0f;
+    }
+    return visible / 9.0f;
 }
 
 float3 EvaluatePBRLight(float3 N, float3 V, float3 L, float3 albedoPBR, float metalness, float roughness, float3 lightColor, float ndotlOverride)
@@ -1347,7 +1378,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
              float dist = length(toLight);
              float3 Lp = (dist > 0.0001f) ? (toLight / dist) : float3(0, 0, 1);
              float atten = ComputeAttenuation(dist, pl.range);
-             float localShadow = (pl.shadowIndex >= 0) ? CalcLocalPointShadowFactor(posW, pl.position, pl.range, pl.shadowIndex) : 1.0f;
+             float localShadow = (pl.shadowIndex >= 0) ? CalcLocalPointShadowFactor(posW, pl.position, pl.range, pl.shadowIndex, N, Lp) : 1.0f;
              localShadow = lerp(1.0f, localShadow, saturate(pl.shadowStrength));
              float3 lc = pl.color * pl.intensity * atten * localShadow;
              AccumulateLegacy(N, V, Lp, lc, 1.0f, shadingMode, shininess, totalDiffuse, totalSpecular);
@@ -1419,14 +1450,14 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         float3 Lp = (dist > 0.0001f) ? (toLight / dist) : float3(0, 0, 1);
         float atten = ComputeAttenuation(dist, pl.range);
         float3 lc = pl.color * pl.intensity * atten;
-        float localShadow = (pl.shadowIndex >= 0) ? CalcLocalPointShadowFactor(posW, pl.position, pl.range, pl.shadowIndex) : 1.0f;
+        float localShadow = (pl.shadowIndex >= 0) ? CalcLocalPointShadowFactor(posW, pl.position, pl.range, pl.shadowIndex, N, Lp) : 1.0f;
         localShadow = lerp(1.0f, localShadow, saturate(pl.shadowStrength));
         float ndotl = max(dot(N, Lp), 0.0f);
         float shadedNdotL = ndotl;
         if (toonPbr && ndotl > 0.0f) {
             shadedNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
         }
-        float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength);
+        float selfShadowNdotL = (ndotl > 0.0f) ? ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength) : 0.0f;
         float3 lit = EvaluatePBRLight(N, V, Lp, albedoPBR, metalness, roughness, lc, selfShadowNdotL);
         extraLighting += lit * ao * localShadow;
     }
@@ -1446,7 +1477,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         if (toonPbr && ndotl > 0.0f) {
             shadedNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
         }
-        float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength);
+        float selfShadowNdotL = (ndotl > 0.0f) ? ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength) : 0.0f;
         float3 lit = EvaluatePBRLight(N, V, Ls, albedoPBR, metalness, roughness, lc, selfShadowNdotL);
         extraLighting += lit * ao * localShadow;
     }
@@ -1467,7 +1498,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         if (toonPbr && ndotl > 0.0f) {
             shadedNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
         }
-        float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength);
+        float selfShadowNdotL = (ndotl > 0.0f) ? ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength) : 0.0f;
         float3 lit = EvaluatePBRLight(N, V, Lr, albedoPBR, metalness, roughness, lc, selfShadowNdotL);
         extraLighting += lit * ao * localShadow;
     }
