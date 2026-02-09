@@ -852,7 +852,7 @@ cbuffer DirectionalLightBuffer : register(b3)
 #define MAX_POINT_SHADOW_LIGHTS 1
 #define MAX_SPOT_SHADOW_LIGHTS 2
 #define MAX_RECT_SHADOW_LIGHTS 1
-#define MAX_SPOT_RECT_SHADOWS 4
+#define MAX_SPOT_RECT_SHADOWS (MAX_SPOT_SHADOW_LIGHTS + MAX_RECT_SHADOW_LIGHTS)
 
 struct PointLight
 {
@@ -982,7 +982,7 @@ float CalcLocalPointShadowFactor(float3 posW, float3 lightPos, float lightRange,
         return 1.0f;
 
     float3 dir = toPixel / dist;
-    float sampleDepth = g_LocalShadowCubeArray.SampleLevel(g_Sam, float4(dir, shadowIndex), 0.0f).r;
+    float sampleDepth = g_LocalShadowCubeArray.SampleLevel(g_SamplerLinear, float4(dir, shadowIndex), 0.0f).r;
     float currentDepth = ComputePointShadowDepth(dist, g_PointShadowNearZ, lightRange);
     const float bias = 0.0025f;
     return (currentDepth - bias <= sampleDepth) ? 1.0f : 0.0f;

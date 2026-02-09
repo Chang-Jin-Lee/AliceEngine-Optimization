@@ -498,6 +498,8 @@ namespace Alice
         // Shadow depth bias RS
         Microsoft::WRL::ComPtr<ID3D11RasterizerState>   m_shadowRasterizerState;
         Microsoft::WRL::ComPtr<ID3D11RasterizerState>   m_shadowRasterizerStateReversed;
+        Microsoft::WRL::ComPtr<ID3D11RasterizerState>   m_localShadowRasterizerState;
+        Microsoft::WRL::ComPtr<ID3D11RasterizerState>   m_localShadowRasterizerStateReversed;
         // 아웃라인용 (Cull Front) 래스터라이저
         Microsoft::WRL::ComPtr<ID3D11RasterizerState>   m_rsCullFront;
 
