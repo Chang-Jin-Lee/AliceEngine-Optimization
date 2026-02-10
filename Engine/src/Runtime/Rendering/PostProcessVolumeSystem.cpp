@@ -521,6 +521,14 @@ namespace Alice
             target.bloomRadius = volumeSettings.bloomRadius;
         if (volumeSettings.bOverride_BloomDownsample)
             target.bloomDownsample = volumeSettings.bloomDownsample;
+        if (volumeSettings.bOverride_ImpactBlurIntensity)
+            target.impactBlurIntensity = volumeSettings.impactBlurIntensity;
+        if (volumeSettings.bOverride_ImpactBlurRadius)
+            target.impactBlurRadius = volumeSettings.impactBlurRadius;
+        if (volumeSettings.bOverride_ImpactBlurCenterX)
+            target.impactBlurCenterX = volumeSettings.impactBlurCenterX;
+        if (volumeSettings.bOverride_ImpactBlurCenterY)
+            target.impactBlurCenterY = volumeSettings.impactBlurCenterY;
         if (volumeSettings.bOverride_SplitAmount)
             target.splitAmount = volumeSettings.splitAmount;
         if (volumeSettings.bOverride_SplitAngleDeg)

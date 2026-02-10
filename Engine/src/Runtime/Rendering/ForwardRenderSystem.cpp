@@ -2371,6 +2371,10 @@ namespace Alice
             defaultSettings.splitFxWidth = m_postProcessParams.splitFxWidth;
             defaultSettings.splitFxSpeed = m_postProcessParams.splitFxSpeed;
             defaultSettings.splitFxTimeSec = m_postProcessParams.splitFxTimeSec;
+            defaultSettings.impactBlurIntensity = m_postProcessParams.impactBlurIntensity;
+            defaultSettings.impactBlurRadius = m_postProcessParams.impactBlurRadius;
+            defaultSettings.impactBlurCenterX = m_postProcessParams.impactBlurCenterX;
+            defaultSettings.impactBlurCenterY = m_postProcessParams.impactBlurCenterY;
 
             const std::string referenceName = ResolvePPVReferenceName(world);
             if (referenceName != m_postProcessVolumeSystem.GetReferenceObjectName())
@@ -2419,6 +2423,10 @@ namespace Alice
             m_postProcessParams.splitFxWidth = finalSettings.splitFxWidth;
             m_postProcessParams.splitFxSpeed = finalSettings.splitFxSpeed;
             m_postProcessParams.splitFxTimeSec = finalSettings.splitFxTimeSec;
+            m_postProcessParams.impactBlurIntensity = finalSettings.impactBlurIntensity;
+            m_postProcessParams.impactBlurRadius = finalSettings.impactBlurRadius;
+            m_postProcessParams.impactBlurCenterX = finalSettings.impactBlurCenterX;
+            m_postProcessParams.impactBlurCenterY = finalSettings.impactBlurCenterY;
         }
 
         // 6. 에디터 뷰포트 표시용 LDR 텍스처로 톤매핑 (ImGui::Image에서 사용)
@@ -2530,6 +2538,10 @@ namespace Alice
             defaultSettings.splitFxWidth = m_postProcessParams.splitFxWidth;
             defaultSettings.splitFxSpeed = m_postProcessParams.splitFxSpeed;
             defaultSettings.splitFxTimeSec = m_postProcessParams.splitFxTimeSec;
+            defaultSettings.impactBlurIntensity = m_postProcessParams.impactBlurIntensity;
+            defaultSettings.impactBlurRadius = m_postProcessParams.impactBlurRadius;
+            defaultSettings.impactBlurCenterX = m_postProcessParams.impactBlurCenterX;
+            defaultSettings.impactBlurCenterY = m_postProcessParams.impactBlurCenterY;
 
             const std::string referenceName = ResolvePPVReferenceName(world);
             if (referenceName != m_postProcessVolumeSystem.GetReferenceObjectName())
@@ -2576,6 +2588,10 @@ namespace Alice
             m_postProcessParams.splitFxWidth = finalSettings.splitFxWidth;
             m_postProcessParams.splitFxSpeed = finalSettings.splitFxSpeed;
             m_postProcessParams.splitFxTimeSec = finalSettings.splitFxTimeSec;
+            m_postProcessParams.impactBlurIntensity = finalSettings.impactBlurIntensity;
+            m_postProcessParams.impactBlurRadius = finalSettings.impactBlurRadius;
+            m_postProcessParams.impactBlurCenterX = finalSettings.impactBlurCenterX;
+            m_postProcessParams.impactBlurCenterY = finalSettings.impactBlurCenterY;
         }
 
         if (m_viewportRTV)
@@ -2830,6 +2846,12 @@ namespace Alice
             m_postProcessParams.splitFxWidth,
             m_postProcessParams.splitFxSpeed,
             m_postProcessParams.splitFxTimeSec
+        );
+        cbData.impactBlurParams = DirectX::XMFLOAT4(
+            m_postProcessParams.impactBlurIntensity,
+            m_postProcessParams.impactBlurRadius,
+            m_postProcessParams.impactBlurCenterX,
+            m_postProcessParams.impactBlurCenterY
         );
 
         D3D11_MAPPED_SUBRESOURCE mapped;

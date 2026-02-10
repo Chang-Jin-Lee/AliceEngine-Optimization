@@ -49,6 +49,22 @@ namespace Alice
         bool bOverride_BloomDownsample = false;
         int bloomDownsample = 2;
 
+        // ==== Impact Blur ====
+        // impactBlurIntensity: 0 = 비활성, 값이 클수록 강함
+        bool bOverride_ImpactBlurIntensity = false;
+        float impactBlurIntensity = 0.0f;
+
+        // impactBlurRadius: 화면 정규화 반경(0~1 권장)
+        bool bOverride_ImpactBlurRadius = false;
+        float impactBlurRadius = 0.25f;
+
+        // impactBlurCenterX/Y: 화면 중심점(UV, 0~1)
+        bool bOverride_ImpactBlurCenterX = false;
+        float impactBlurCenterX = 0.5f;
+
+        bool bOverride_ImpactBlurCenterY = false;
+        float impactBlurCenterY = 0.5f;
+
         // ==== Screen Split (HalfCut) ====
         // splitAmount: 분할선 기준 위/아래 절반이 이동하는 UV 오프셋 강도 (0 = 비활성)
         bool bOverride_SplitAmount = false;
@@ -117,6 +133,10 @@ namespace Alice
             settings.bloomGaussianIntensity = 1.0f;
             settings.bloomRadius = 1.0f;
             settings.bloomDownsample = 2;
+            settings.impactBlurIntensity = 0.0f;
+            settings.impactBlurRadius = 0.25f;
+            settings.impactBlurCenterX = 0.5f;
+            settings.impactBlurCenterY = 0.5f;
             settings.splitAmount = 0.0f;
             settings.splitAngleDeg = 0.0f;
             settings.splitLineOffset = 0.0f;
@@ -184,6 +204,10 @@ namespace Alice
             BlendFloat(final.bloomGaussianIntensity, volume.bloomGaussianIntensity, weight, volume.bOverride_BloomGaussianIntensity);
             BlendFloat(final.bloomRadius, volume.bloomRadius, weight, volume.bOverride_BloomRadius);
             BlendInt(final.bloomDownsample, volume.bloomDownsample, weight, volume.bOverride_BloomDownsample);
+            BlendFloat(final.impactBlurIntensity, volume.impactBlurIntensity, weight, volume.bOverride_ImpactBlurIntensity);
+            BlendFloat(final.impactBlurRadius, volume.impactBlurRadius, weight, volume.bOverride_ImpactBlurRadius);
+            BlendFloat(final.impactBlurCenterX, volume.impactBlurCenterX, weight, volume.bOverride_ImpactBlurCenterX);
+            BlendFloat(final.impactBlurCenterY, volume.impactBlurCenterY, weight, volume.bOverride_ImpactBlurCenterY);
             BlendFloat(final.splitAmount, volume.splitAmount, weight, volume.bOverride_SplitAmount);
             BlendFloat(final.splitAngleDeg, volume.splitAngleDeg, weight, volume.bOverride_SplitAngleDeg);
             BlendFloat(final.splitLineOffset, volume.splitLineOffset, weight, volume.bOverride_SplitLineOffset);
