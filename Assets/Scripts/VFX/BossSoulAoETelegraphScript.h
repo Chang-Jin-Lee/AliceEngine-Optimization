@@ -24,6 +24,10 @@ namespace Alice
         ALICE_PROPERTY(int, telegraphSlotIndex, 8);
         ALICE_PROPERTY(float, alphaIdle, 0.0f);
         ALICE_PROPERTY(float, alphaPeak, 1.0f);
+        ALICE_PROPERTY(bool, useAttackWindowPlateau, false);
+        ALICE_PROPERTY(bool, holdPeakWhileActive, false);
+        ALICE_PROPERTY(float, alphaFadeInSpeed, 0.0f);
+        ALICE_PROPERTY(float, alphaFadeOutSpeed, 0.0f);
         ALICE_PROPERTY(bool, useSlotPeakTiming, false);
         ALICE_PROPERTY(float, soulPeakTimeSec, -1.0f);
         ALICE_PROPERTY(float, soulDurationFallbackSec, 2.4f);
@@ -51,8 +55,11 @@ namespace Alice
         EntityId m_aoeId = InvalidEntityId;
         EntityId m_howlDustVfxId = InvalidEntityId;
         float m_howlDustAlpha = 0.0f;
+        float m_appliedAlpha = 0.0f;
+        bool m_alphaInitialized = false;
         float m_soulStartSec = 0.0f;
         float m_slotStartSec = 0.0f;
+        float m_slotEndSec = 0.0f;
         bool m_hasTiming = false;
         bool m_warnedMissingBoss = false;
         bool m_warnedMissingAoe = false;

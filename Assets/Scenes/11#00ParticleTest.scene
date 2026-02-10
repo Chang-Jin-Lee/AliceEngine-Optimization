@@ -7543,8 +7543,8 @@
                         "m_testTraceMaxSec": 1.2000000476837158,
                         "m_testTraceMinSec": 0.4000000059604645,
                         "m_traceDelaySec": 0.5,
-                        "m_traceMaxHoldMaxSec": 6.0,
-                        "m_traceMaxHoldMinSec": 3.0,
+                        "m_traceMaxHoldMaxSec": 4.0,
+                        "m_traceMaxHoldMinSec": 1.5,
                         "m_turnInPlaceAngleDeg": 65.0,
                         "m_usePhaseRules": true,
                         "m_walkDashTimeoutSec": 5.0

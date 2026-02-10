@@ -178,6 +178,7 @@ namespace Alice
 		std::vector<PendingDeferredEvent> pendingDeferred;
 		std::vector<PendingImmediateCommand> pendingImmediate;
 		Combat::BossSignals bossSignals{};
+		bool bossGroggyFatalConsumed = false;
 
 		struct ParryLockKey
 		{
@@ -261,6 +262,7 @@ namespace Alice
 			pendingImmediate.clear();
 			parryResolvedByVictim.clear();
 			bossSignals = {};
+			bossGroggyFatalConsumed = false;
 			fatal = {};
 		}
 	};
@@ -1057,6 +1059,12 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						duration = std::max(duration, clipDuration);
 				}
 
+				if (entityId == playerId)
+				{
+					const float speedScale = std::max(0.0001f, m_playerGuardEnterSpeedScale);
+					duration /= speedScale;
+				}
+
 				return std::max(0.0f, duration);
 			};
 
@@ -1115,21 +1123,40 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 			};
 
-		// Guard exit recovery can always be canceled by dodge.
-		if (playerIntent.dodgePressed
+		auto CancelPlayerGuardExitRecovery = [&]()
+			{
+				m_state->playerGuardExitLockSec = 0.0f;
+				m_state->playerAnim.guardExitActive = false;
+				m_state->playerAnim.guardExitTimer = 0.0f;
+				m_state->playerAnim.guardExitAnimDurationSec = 0.0f;
+				m_state->playerAnim.parryExitParryWindowActive = false;
+				if (auto* driver = world.GetComponent<AttackDriverComponent>(playerId))
+				{
+					driver->guardLockRemainingSec = 0.0f;
+					driver->parryOverrideRemainingSec = 0.0f;
+					driver->parryUsedThisPress = false;
+					// Start a fresh guard session so re-entry can open a new parry window.
+					driver->guardSessionActive = false;
+					driver->parryTapCredit = 1;
+				}
+			};
+
+		const bool playerGuardExitRecovering =
+			(m_state->playerGuardExitLockSec > 0.0f || m_state->playerAnim.guardExitActive);
+
+		// Guard exit recovery can be canceled by dodge or by re-guard.
+		if (playerIntent.dodgePressed && playerGuardExitRecovering)
+		{
+			CancelPlayerGuardExitRecovery();
+		}
+
+		if ((playerIntent.guardPressed || playerIntent.guardHeld)
 			&& (m_state->playerGuardExitLockSec > 0.0f || m_state->playerAnim.guardExitActive))
 		{
-			m_state->playerGuardExitLockSec = 0.0f;
-			m_state->playerAnim.guardExitActive = false;
-			m_state->playerAnim.guardExitTimer = 0.0f;
-			m_state->playerAnim.guardExitAnimDurationSec = 0.0f;
-			m_state->playerAnim.parryExitParryWindowActive = false;
-			if (auto* driver = world.GetComponent<AttackDriverComponent>(playerId))
-			{
-				driver->guardLockRemainingSec = 0.0f;
-				driver->parryOverrideRemainingSec = 0.0f;
-				driver->parryUsedThisPress = false;
-			}
+			CancelPlayerGuardExitRecovery();
+			if (!playerIntent.guardPressed && playerIntent.guardHeld)
+				playerIntent.guardPressed = true;
+			playerIntent.guardReleased = false;
 		}
 
 		ApplyGuardExitLockIntent(playerIntent, m_state->playerGuardExitLockSec, playerId);
@@ -1418,6 +1445,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			}
 		}
 		if (!m_state->fatal.active
+			&& !m_state->bossGroggyFatalConsumed
 			&& playerIntent.lightAttackPressed
 			&& m_state->boss.state == Combat::ActionState::Groggy
 			&& m_state->bossGroggyEnterBlendBlockSec <= 0.0f)
@@ -1450,6 +1478,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				{
 					fatalTriggered = true;
 					forceFatalAttack = true;
+					m_state->bossGroggyFatalConsumed = true;
 					m_state->fatal.active = true;
 					m_state->fatal.timerSec = 0.0f;
 					m_state->fatal.hasTarget = true;
@@ -1680,10 +1709,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			camSpring->distance = zoomInDistance;
 		}
 
-		const bool playerSuperArmorEarly = (m_state->player.state == Combat::ActionState::Attack
-			&& m_state->playerLastAttackHeavy)
-			|| m_state->playerChargeActive;
-		m_state->player.canBeHitstunned = m_playerCanBeHitstunned && !playerSuperArmorEarly;
+		m_state->player.canBeHitstunned = m_playerCanBeHitstunned;
 
 		float healEnterDurationSec = 0.0f;
 		float healExitDurationSec = 0.0f;
@@ -2788,10 +2814,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		{
 			m_state->bossHitstunDurationSec = 0.0f;
 		}
-		const bool playerSuperArmor = (outPlayer.state == Combat::ActionState::Attack
-			&& m_state->playerLastAttackHeavy)
-			|| m_state->playerChargeActive;
-		m_state->player.canBeHitstunned = m_playerCanBeHitstunned && !playerSuperArmor;
+		m_state->player.canBeHitstunned = m_playerCanBeHitstunned;
 		m_state->playerSnapshot = m_state->player.Snapshot();
 		m_state->bossSnapshot = m_state->boss.Snapshot();
 
@@ -2810,11 +2833,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		{
 			if (bossBrain)
 				bossBrain->ForceCompleteIntent();
+			m_state->bossGroggyFatalConsumed = false;
 			m_state->bossGroggyEnterBlendBlockSec =
 				std::max(0.0f, m_bossGroggyEnterBlendSec);
 		}
 		else if (outBoss.state != Combat::ActionState::Groggy)
 		{
+			m_state->bossGroggyFatalConsumed = false;
 			m_state->bossGroggyEnterBlendBlockSec = 0.0f;
 		}
 
@@ -3518,7 +3543,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					if (!bossBrain->GetDieClip().empty()) deadClip = bossBrain->GetDieClip();
 				}
 
-				const bool chargeActiveNow = chargeActive;
+				const bool chargeActiveNow = chargeActive
+					&& curr != Combat::ActionState::Hitstun;
 				if (!chargeActiveNow)
 				{
 					animState.chargeEnterActive = false;
@@ -3630,7 +3656,17 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						animState.parryClip = parryClip;
 					}
 				}
-				const bool playerParryAnimActive = isPlayerEntity && animState.parryOverrideActive;
+				bool playerParryAnimActive = isPlayerEntity && animState.parryOverrideActive;
+				if (curr == Combat::ActionState::Hitstun && playerParryAnimActive)
+				{
+					animState.parryOverrideActive = false;
+					animState.parryHardCutPending = false;
+					animState.parryTimer = 0.0f;
+					animState.parryDurationSec = 0.0f;
+					animState.parryRecoverBlendPending = false;
+					animState.parryExitParryWindowActive = false;
+					playerParryAnimActive = false;
+				}
 
 				// Attack clip slow-motion was removed.
 				// auto ResolveOverrideSpeed = [&](EntityId targetId,
@@ -3791,7 +3827,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					clipName = groggyRecoverClip;
 					loop = false;
 				}
-				if (chargeActive)
+				if (clipName.empty() && chargeActiveNow)
 				{
 					if (animState.chargeEnterActive && !cfg.chargeEnterClip.empty())
 					{
@@ -4061,7 +4097,16 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 
 				float attackSpeedScale = 1.0f;
-				if (entityId == playerId && curr == Combat::ActionState::Attack
+				if (entityId == playerId
+					&& curr == Combat::ActionState::Attack
+					&& m_state->playerRageActive
+					&& !m_state->playerLastAttackHeavy
+					&& !cfg.rageAttackClip.empty()
+					&& clipName == cfg.rageAttackClip)
+				{
+					attackSpeedScale = std::max(0.0f, m_playerRageLightAttackSpeedScale);
+				}
+				else if (entityId == playerId && curr == Combat::ActionState::Attack
 					&& m_state->playerLastAttackHeavy && m_state->playerLastAttackChargeLevel > 0)
 				{
 					const bool heavyClipMatch =
@@ -4078,6 +4123,15 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				float overrideSpeed = 1.0f;
 				if (attackSpeedScale != 1.0f)
 					overrideSpeed = attackSpeedScale;
+				const bool playerGuardEnterClipActive = isPlayerEntity
+					&& curr == Combat::ActionState::Guard
+					&& !cfg.guardEnterClip.empty()
+					&& clipName == cfg.guardEnterClip
+					&& (animState.guardEnterActive || (driver && driver->parryActive));
+				if (playerGuardEnterClipActive)
+				{
+					overrideSpeed *= std::max(0.0001f, m_playerGuardEnterSpeedScale);
+				}
 				float reverseStartTime = 0.0f;
 				bool wantsReverse = false;
 				if (animState.guardExitActive && !cfg.guardExitClip.empty())
@@ -4544,10 +4598,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		m_state->player.id = playerId;
 		m_state->player.team = Combat::Team::Player;
-		const bool playerSuperArmorResolve = (m_state->player.state == Combat::ActionState::Attack
-			&& m_state->playerLastAttackHeavy)
-			|| m_state->playerChargeActive;
-		m_state->player.canBeHitstunned = m_playerCanBeHitstunned && !playerSuperArmorResolve;
+		m_state->player.canBeHitstunned = m_playerCanBeHitstunned;
 		m_state->boss.id = bossId;
 		m_state->boss.team = Combat::Team::Enemy;
 		m_state->boss.canBeHitstunned = false;
@@ -4750,6 +4801,26 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			};
 
 		const float hitstopSec = std::max(0.0f, m_hitstopSec);
+		auto IsBossChargeAttackHit = [&](const Combat::HitEvent& hit) -> bool
+			{
+				if (hit.attackerOwner != bossId)
+					return false;
+
+				if (bossBrain && bossBrain->GetActivePattern() == C_BossBrainComponent::PatternType::Charge)
+					return true;
+
+				if (m_state->bossChargeActive)
+					return true;
+
+				std::string attackClip = m_state->bossAnim.attackClip;
+				if (attackClip.empty())
+					return false;
+
+				return (attackClip.find("Charge_Attack") != std::string::npos)
+					|| (attackClip.find("Charge") != std::string::npos)
+					|| (attackClip.find("charge") != std::string::npos);
+			};
+
 		auto ApplyHitstopTimer = [&](EntityId entityId)
 			{
 				if (hitstopSec <= 0.0f)
@@ -4800,6 +4871,18 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			const Combat::FighterSnapshot& bossSnap = m_state->bossSnapshot;
 			Combat::FighterSnapshot attacker = (hit.attackerOwner == playerId) ? playerSnap : bossSnap;
 			Combat::FighterSnapshot victim = (hit.victimOwner == playerId) ? playerSnap : bossSnap;
+			const bool bossChargeAttackHit = IsBossChargeAttackHit(hit);
+
+			// Boss charge attack is an exception attack:
+			// - Unblockable (guard ignored)
+			// - Undodgeable (invuln/dodge ignored)
+			// - Parry remains available through parryWindowActive.
+			if (bossChargeAttackHit
+				&& hit.victimOwner == playerId)
+			{
+				victim.flags.guardActive = false;
+				victim.flags.invulnActive = false;
+			}
 
 			float chargeScale = 1.0f;
 			if (hit.attackerOwner == playerId && m_state->playerLastAttackHeavy)
@@ -4931,15 +5014,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					}),
 					immediate.end());
 			}
-			const bool suppressHitstun = (hit.victimOwner == playerId && !victim.canBeHitstunned);
 			float hitAnimDuration = 0.0f;
-			if (wasHit && !suppressHitstun)
+			if (wasHit)
 			{
 				const AnimConfig hitCfg = BuildAnimConfig(hit.victimOwner, playerId, bossId);
 				if (!hitCfg.hitClip.empty())
 					hitAnimDuration = GetClipDurationSecByName(registry, world, hit.victimOwner, hitCfg.hitClip);
 			}
-			if (wasHit && !suppressHitstun)
+			if (wasHit)
 			{
 				const float hitDuration = (hitAnimDuration > 0.0f) ? hitAnimDuration : 0.4f;
 				if (hit.victimOwner == playerId)
@@ -4978,7 +5060,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						Combat::CmdApplyPushback{ hit.attackerOwner, hit.victimOwner, speed, basePushDuration } });
 				}
 			}
-			if (wasHit && !suppressHitstun && basePushSpeed > 0.0f)
+			if (wasHit && basePushSpeed > 0.0f)
 			{
 				const float scale = std::max(0.0f, m_hitPushbackScale);
 				const float speed = basePushSpeed * scale;
@@ -5076,8 +5158,6 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		for (const auto& ev : resolved.deferred)
 		{
-			if (suppressHitstun && ev.type == Combat::CombatEventType::OnHit)
-				continue;
 			if (ev.type == Combat::CombatEventType::OnHit)
 			{
 				const float invulnSec = std::max(0.0f, m_hitInvulnSec);

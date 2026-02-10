@@ -87,6 +87,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_chargeScale3, 1.8f);
         ALICE_PROPERTY(float, m_lightComboWindowSec, 0.5f);
         ALICE_PROPERTY(float, m_chargeCombo2Speed, 0.7f);
+        ALICE_PROPERTY(float, m_playerRageLightAttackSpeedScale, 1.5f);
         ALICE_PROPERTY(float, m_rageDurationSec, 30.0f);
         // Player rage trail (red) on weapon target.
         ALICE_PROPERTY(bool, m_enablePlayerRageTrailVfx, true);
@@ -162,6 +163,7 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_playerParryClip, "rig|Tia_Parrying");
         ALICE_PROPERTY(float, m_playerGuardEnterDurationSec, 0.0f);
         ALICE_PROPERTY(float, m_playerGuardExitDurationSec, 0.0f);
+        ALICE_PROPERTY(float, m_playerGuardEnterSpeedScale, 1.5f);
         ALICE_PROPERTY(float, m_playerGuardTransitionBlendSec, 0.5f);
         ALICE_PROPERTY(float, m_playerParryRecoverBlendSec, 0.1f);
         ALICE_PROPERTY(std::string, m_bossIdleClip, "");

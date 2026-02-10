@@ -25,6 +25,7 @@ namespace Alice
 
         ALICE_PROPERTY(std::string, m_weaponCombinedName, "EGO_Blade(combined)");
         ALICE_PROPERTY(std::string, m_eyeName, "Heal_EYE");
+        ALICE_PROPERTY(std::string, m_playerHealEffectName, "PlayerHealEffect");
         ALICE_PROPERTY(std::string, m_shardNamesCsv, "WB_Base,WB_Back,WB_FrontA,WB_FrontB,WB_FrontC,WB_FrontD");
         ALICE_PROPERTY(float, m_enterFadeRatio, 0.7f);
         ALICE_PROPERTY(float, m_exitFadeRatio, 0.7f);
@@ -54,6 +55,7 @@ namespace Alice
 
         EntityId m_weaponCombined = InvalidEntityId;
         EntityId m_eye = InvalidEntityId;
+        EntityId m_playerHealEffect = InvalidEntityId;
         std::vector<ShardState> m_shards;
 
         bool m_initialized = false;
@@ -90,6 +92,7 @@ namespace Alice
         void SetEnabled(EntityId id, bool enabled);
         void SetVisible(EntityId id, bool visible);
         void SetMaterialAlpha(EntityId id, float alpha);
+        void SetUnityVfxAlpha(EntityId id, float alpha);
         float GetMaterialAlpha(EntityId id, float fallback) const;
     };
 }
