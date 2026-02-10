@@ -70,15 +70,17 @@ namespace Alice
         bool EnsureParticlePool(const std::string& presetName, std::uint32_t particleCount);
         bool EnsureEmitterBufferCapacity(const std::string& presetName, std::uint32_t emitterCount);
         
-        void UpdateConstantBuffer(std::uint32_t emitterCount);
+        void UpdateConstantBuffer(std::uint32_t emitterCount, std::uint32_t particleCount);
         void DispatchClear(ID3D11ComputeShader* clearShader);
         void DispatchParticlesUpdate(ID3D11ComputeShader* updateShader, 
                                      ID3D11UnorderedAccessView* particleUAV,
-                                     ID3D11ShaderResourceView* emitterSRV);
+                                     ID3D11ShaderResourceView* emitterSRV,
+                                     std::uint32_t particleCount);
         void DispatchParticlesDraw(ID3D11ComputeShader* drawShader, 
-                                  ID3D11ShaderResourceView* particleSRV,
-                                  ID3D11ShaderResourceView* emitterSRV,
-                                  ID3D11ShaderResourceView* sceneDepthSRV);
+                                   ID3D11ShaderResourceView* particleSRV,
+                                   std::uint32_t particleCount,
+                                   ID3D11ShaderResourceView* emitterSRV,
+                                   ID3D11ShaderResourceView* sceneDepthSRV);
         void UnbindCS();
         
         // 파티클 셰이더 세트 등록 (타입별)

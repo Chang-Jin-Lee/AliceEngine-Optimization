@@ -87,19 +87,25 @@ namespace Alice
         ALICE_PROPERTY(float, m_chargeScale3, 1.8f);
         ALICE_PROPERTY(float, m_lightComboWindowSec, 0.5f);
         ALICE_PROPERTY(float, m_chargeCombo2Speed, 0.7f);
+        ALICE_PROPERTY(float, m_playerRageLightAttackSpeedScale, 1.5f);
         ALICE_PROPERTY(float, m_rageDurationSec, 30.0f);
-        // Player rage trail (black) on weapon target.
+        // Player rage trail (red) on weapon target.
         ALICE_PROPERTY(bool, m_enablePlayerRageTrailVfx, true);
         ALICE_PROPERTY(std::string, m_playerRageTrailTargetName, "W_Target");
         ALICE_PROPERTY(std::string, m_playerRageTrailChildName, "W_Target_RageTrailVfx");
         ALICE_PROPERTY(std::string, m_playerRageTrailEffectPath, "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json");
-        ALICE_PROPERTY(DirectX::XMFLOAT3, m_playerRageTrailColorTint, DirectX::XMFLOAT3(0.05f, 0.05f, 0.05f));
-        ALICE_PROPERTY(float, m_playerRageTrailColorScale, 1.0f);
-        ALICE_PROPERTY(float, m_playerRageTrailIntensityScale, 0.0f);
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_playerRageTrailColorTint, DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(float, m_playerRageTrailColorScale, 5.0f);
+        ALICE_PROPERTY(float, m_playerRageTrailIntensityScale, 2.0f);
         ALICE_PROPERTY(float, m_playerRageTrailSpawnRateScale, 1.5f);
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_playerRageTrailLocalOffset, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_playerRageTrailLocalRotation, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
-        ALICE_PROPERTY(DirectX::XMFLOAT3, m_playerRageTrailLocalScale, DirectX::XMFLOAT3(0.025f, 0.025f, 0.025f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_playerRageTrailLocalScale, DirectX::XMFLOAT3(0.018f, 0.018f, 0.018f));
+        ALICE_PROPERTY(float, m_playerRageTrailSizeScale, 0.018f);
+        ALICE_PROPERTY(float, m_playerRageTrailEmitMinSpeed, 0.15f);
+        // Charge stage one-shot compute VFX on Player(Tia) child (e.g. "Charging").
+        ALICE_PROPERTY(std::string, m_playerChargeStageVfxName, "Charging");
+        ALICE_PROPERTY(float, m_playerChargeStagePulseSec, 0.05f);
 
         // Animation blending
         ALICE_PROPERTY(float, m_animBlendSec, 0.12f);
@@ -157,7 +163,8 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_playerParryClip, "rig|Tia_Parrying");
         ALICE_PROPERTY(float, m_playerGuardEnterDurationSec, 0.0f);
         ALICE_PROPERTY(float, m_playerGuardExitDurationSec, 0.0f);
-        ALICE_PROPERTY(float, m_playerGuardTransitionBlendSec, 0.5f);
+        ALICE_PROPERTY(float, m_playerGuardEnterSpeedScale, 1.5f);
+        ALICE_PROPERTY(float, m_playerGuardTransitionBlendSec, 0.12f);
         ALICE_PROPERTY(float, m_playerParryRecoverBlendSec, 0.1f);
         ALICE_PROPERTY(std::string, m_bossIdleClip, "");
         ALICE_PROPERTY(std::string, m_bossMoveClip, "");
@@ -216,6 +223,11 @@ namespace Alice
         EntityId ResolveEntity(uint64_t guid) const;
         EntityId ResolveEntityByName(const std::string& name) const;
         EntityId m_playerRageTrailVfxId = InvalidEntityId;
+        DirectX::XMFLOAT3 m_playerRageTrailPrevPos{ 0.0f, 0.0f, 0.0f };
+        bool m_playerRageTrailPrevPosValid = false;
+        EntityId m_playerChargeStageVfxId = InvalidEntityId;
+        int m_playerChargeStagePrevLevel = 0;
+        float m_playerChargeStagePulseRemainSec = 0.0f;
 
         struct AnimConfig
         {

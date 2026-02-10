@@ -43,7 +43,7 @@
         "port": 5425
     },
     "skybox": {
-        "choice": 4,
+        "choice": 0,
         "customDir": "",
         "customPrefix": "",
         "resolution": 0
