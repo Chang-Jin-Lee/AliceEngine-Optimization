@@ -7,6 +7,7 @@
 #include "Runtime/UI/BindWidget.h"
 #include "BoxDeligateScript.h"
 #include "Runtime/ECS/GameObject.h"
+#include "Runtime/Gameplay/Combat/HealthComponent.h"
 
 namespace Alice
 {
@@ -133,11 +134,24 @@ namespace Alice
 
     void BossHPScript::Update(float deltaTime)
     {
-
-        // changeValue 콜백으로 이미 갱신되므로 Update에서는 추가 처리 불필요
-        // (콜백 기반이 아닌 폴링이 필요하면 여기서 처리)
-        if (!TargetGauge)
+        World* w = GetWorld();
+        if (!w || !TargetGauge)
             return;
+
+        // HealthComponent를 직접 읽기 (healthEntityName이 설정된 경우)
+        if (!Get_healthEntityName().empty())
+        {
+            GameObject healthGo = w->FindGameObject(Get_healthEntityName());
+            if (healthGo.IsValid())
+            {
+                if (auto* health = w->GetComponent<HealthComponent>(healthGo.id()))
+                {
+                    const float max = std::max(1e-6f, health->maxHealth);
+                    TargetGauge->value = std::clamp(health->currentHealth / max, 0.0f, 1.0f);
+                    nowValue = TargetGauge->value;
+                }
+            }
+        }
 
         if (deltaTime <= 0.0f)
             return;

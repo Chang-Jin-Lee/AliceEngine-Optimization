@@ -2,6 +2,7 @@
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/ECS/World.h"
 #include "Runtime/ECS/GameObject.h"
+#include "Runtime/Gameplay/Combat/HealthComponent.h"
 #include "Runtime/UI/UIEmptyGaugeEffectComponent.h"
 #include "Runtime/UI/UIWidgetComponent.h"
 #include "Runtime/UI/UITextComponent.h"
@@ -17,6 +18,7 @@ namespace Alice
         m_elapsed = 0.0f;
         m_scriptElapsed = 0.0f;
         m_isShowing = false;
+        m_deathTriggered = false;
         m_dieTextEntityId = InvalidEntityId;
 
         World* w = GetWorld();
@@ -48,8 +50,33 @@ namespace Alice
 
         if (!m_isShowing)
         {
-            auto* input = Input();
-            if (input && input->GetKeyDown(static_cast<KeyCode>(m_triggerKey)))
+            bool shouldTrigger = false;
+            World* w = GetWorld();
+            if (Get_triggerOnDeath() && !m_deathTriggered && w)
+            {
+                const std::string& healthName = Get_healthEntityName();
+                if (!healthName.empty())
+                {
+                    GameObject healthGo = w->FindGameObject(healthName);
+                    if (healthGo.IsValid())
+                    {
+                        if (auto* health = w->GetComponent<HealthComponent>(healthGo.id()))
+                        {
+                            if (health->currentHealth <= 0.0f)
+                                shouldTrigger = true;
+                        }
+                    }
+                }
+            }
+
+            if (!shouldTrigger)
+            {
+                auto* input = Input();
+                if (input && input->GetKeyDown(static_cast<KeyCode>(m_triggerKey)))
+                    shouldTrigger = true;
+            }
+
+            if (shouldTrigger)
             {
                 auto* dieParams = gameObject().GetComponent<UIDieLineParamsComponent>();
                 if (!dieParams)
@@ -73,6 +100,8 @@ namespace Alice
                 }
                 m_isShowing = true;
                 m_elapsed = 0.0f;
+                if (Get_triggerOnDeath())
+                    m_deathTriggered = true;
             }
             return;
         }

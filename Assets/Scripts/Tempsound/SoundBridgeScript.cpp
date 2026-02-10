@@ -1,7 +1,6 @@
 #include "SoundBridgeScript.h"
 #include "AudioEventBusScript.h"
 #include "AudioSoundState.h"
-#include "AudioBossScript.h"
 
 #include "../Combat/C_CombatSessionComponent.h"
 #include "../Combat/C_CombatContracts.h"
@@ -60,24 +59,6 @@ namespace Alice
             {
                 if (sc.scriptName == "AudioEventBusScript" && sc.instance)
                     return static_cast<AudioEventBusScript*>(sc.instance.get());
-            }
-            return nullptr;
-        }
-
-        AudioBossScript* FindAudioBoss(World& world, const std::string& name)
-        {
-            if (name.empty())
-                return nullptr;
-            GameObject go = world.FindGameObject(name);
-            if (!go.IsValid())
-                return nullptr;
-            auto* scripts = world.GetScripts(go.id());
-            if (!scripts)
-                return nullptr;
-            for (auto& sc : *scripts)
-            {
-                if (sc.scriptName == "AudioBossScript" && sc.instance)
-                    return static_cast<AudioBossScript*>(sc.instance.get());
             }
             return nullptr;
         }
@@ -175,16 +156,29 @@ namespace Alice
             switch (state)
             {
             case Combat::ActionState::Attack:
-                if (chargeActive && chargeLevel > 0)
-                    bus->RequestPlayerAttackSfx(PlayerAttackState::HeavyAttack);
-                else
                 {
-                    switch (attackComboIndex)
+                    // 보스가 그로기 상태인지 확인
+                    const Combat::ActionState bossState = session->GetBossState();
+                    if (bossState == Combat::ActionState::Groggy)
                     {
-                    case 1: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
-                    case 2: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack2); break;
-                    case 3: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack3); break;
-                    default: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
+                        // 그로기어택 사운드 재생
+                        bus->RequestPlayerOtherSfx(PlayerOtherState::GroggyAttack);
+                    }
+                    else
+                    {
+                        // 일반 공격 사운드 재생
+                        if (chargeActive && chargeLevel > 0)
+                            bus->RequestPlayerAttackSfx(PlayerAttackState::HeavyAttack);
+                        else
+                        {
+                            switch (attackComboIndex)
+                            {
+                            case 1: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
+                            case 2: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack2); break;
+                            case 3: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack3); break;
+                            default: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
+                            }
+                        }
                     }
                 }
                 if (Get_combo2ExtraEnabled() && attackComboIndex == 3 && !(chargeActive && chargeLevel > 0))
@@ -278,15 +272,6 @@ namespace Alice
                 
                 if (bossBrain)
                 {
-                    AudioBossScript* audioBoss = FindAudioBoss(*world, Get_audioBossEntityName());
-                    const float attackADelay1 = audioBoss ? audioBoss->Get_attackADelay1Sec() : 0.2f;
-                    const float attackBDelay2 = audioBoss ? audioBoss->Get_attackBDelay2Sec() : 0.2f;
-                    const float attackBDelay3 = audioBoss ? audioBoss->Get_attackBDelay3Sec() : 0.6f;
-                    const float attackCDelay1 = audioBoss ? audioBoss->Get_attackCDelay1Sec() : 0.2f;
-                    const float attackCDelay2 = audioBoss ? audioBoss->Get_attackCDelay2Sec() : 0.8f;
-                    const float attackCDelay3 = audioBoss ? audioBoss->Get_attackCDelay3Sec() : 1.6f;
-                    const float attackCDelayABC = audioBoss ? audioBoss->Get_attackCDelayABCSec() : 0.0f;
-
                     const auto pattern = bossBrain->GetActivePattern();
                     switch (pattern)
                     {
@@ -305,23 +290,25 @@ namespace Alice
                         bus->RequestBossAttackSfx(BossAttackState::SoulSwordAttack);
                         break;
                     case C_BossBrainComponent::PatternType::AttackA:
-                        // AttackA: 상태별 딜레이 사용 (인스펙터 설정)
-                        bus->RequestBossAttackSfxDelayed(BossAttackState::Attack1, attackADelay1);
+                        // AttackA: 바로 1번 재생
+                        bus->RequestBossAttackSfxDelayed(BossAttackState::Attack1, 0.2f);
                         break;
                     case C_BossBrainComponent::PatternType::AttackB:
                         {
-                            // AttackB: 상태별 딜레이 사용 (인스펙터 설정)
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, attackBDelay2);
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, attackBDelay3);
+                            // AttackB: Attack1 사운드 즉시 + 1초 후 Attack2 사운드
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, 0.2f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, 0.4f);
                         }
                         break;
                     case C_BossBrainComponent::PatternType::AttackC:
                         {
-                            // AttackC: 상태별 딜레이 사용 (인스펙터 설정)
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack1, attackCDelay1);
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, attackCDelay2);
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, attackCDelay3);
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::AttackABC, attackCDelayABC);
+                            // AttackC: Attack1 사운드 즉시 + 1초 후 Attack2 사운드 + Attack2 실행 후 1초 뒤 Attack3 사운드
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack1, 0.2f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, 0.8f);
+                            // Attack2가 1초 후 실행되므로, Attack3는 2초 후 실행 (1초 + 1초)
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, 1.6f);
+                            // AttackABC 사운드도 재생
+                            bus->RequestBossAttackSfx(BossAttackState::AttackABC);
                         }
                         break;
                     default:

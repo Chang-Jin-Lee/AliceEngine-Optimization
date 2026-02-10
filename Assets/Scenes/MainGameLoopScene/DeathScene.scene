@@ -11,6 +11,8 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
                 "metalness": 0.0,
                 "normalStrength": 1.0,
                 "outlineColor": {
@@ -21,14 +23,20 @@
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
                 "shadingMode": -1,
+                "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
                 "toonPbrCut2": 0.5,
                 "toonPbrCut3": 0.949999988079071,
                 "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
                 "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
                 "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
                 "transparent": false
             },
             "SkinnedAnimation": {
@@ -71,8 +79,13 @@
                     "name": "SceneChangekPressScript",
                     "props": {
                         "changeKey": 20,
-                        "targetScenePath": "Assets/Scenes/TestSound/soundTestScene.scene"
+                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/Main.scene"
                     }
+                },
+                {
+                    "enabled": true,
+                    "name": "VisibleMouseScript",
+                    "props": {}
                 }
             ],
             "Transform": {
@@ -164,7 +177,7 @@
                 "rotation": {
                     "x": 0.0,
                     "y": 0.0,
-                    "z": 0.0
+                    "z": -0.0
                 },
                 "scale": {
                     "x": 1.0,
@@ -178,12 +191,12 @@
                 "alignV": "Top",
                 "color": {
                     "w": 1.0,
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
                 "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
-                "fontSize": 120.0,
+                "fontSize": 60.0,
                 "lineSpacing": 0.0,
                 "maxWidth": 0.0,
                 "text": "You Die",
@@ -197,7 +210,153 @@
                     "y": 0.5
                 },
                 "anchorMin": {
-                    "x": 0.5,
+                    "x": -0.20000000298023224,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 109.4000015258789,
+                    "y": 80.19999694824219
+                },
+                "sortOrder": 2,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Text"
+            },
+            "_parentGuid": "8502091812053165844",
+            "guid": "4571602271963953200",
+            "name": "UI_Text"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "SceneChangeButtonScript",
+                    "props": {
+                        "TextWidgetName": "UI_Text",
+                        "UnderLineWidgetName": "UI_Image",
+                        "buttonWidgetName": "UI_Button",
+                        "rootWidgetName": "UI_Button",
+                        "showButtonImageOnHoverOnly": false,
+                        "showUnderImageOnHoverOnly": false,
+                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/Main.scene",
+                        "uiSoundEntityName": "SoundObject",
+                        "underImageHoverPath": "",
+                        "underImageNormalPath": ""
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIButton": {
+                "disabledTexture": "",
+                "disabledTint": {
+                    "w": 1.0,
+                    "x": 0.4000000059604645,
+                    "y": 0.4000000059604645,
+                    "z": 0.4000000059604645
+                },
+                "enabled": true,
+                "hoveredTexture": "",
+                "hoveredTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "normalTexture": "",
+                "normalTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "pressedTexture": "",
+                "pressedTint": {
+                    "w": 1.0,
+                    "x": 0.8500000238418579,
+                    "y": 0.8500000238418579,
+                    "z": 0.8500000238418579
+                },
+                "state": "Normal"
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 24.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Button",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.6000000238418579,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.6000000238418579,
                     "y": 0.5
                 },
                 "pivot": {
@@ -214,8 +373,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 109.4000015258789,
-                    "y": 80.0
+                    "x": 500.0,
+                    "y": 60.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -227,10 +386,10 @@
                 "shaderName": "Default",
                 "space": "Screen",
                 "visibility": "Visible",
-                "widgetName": "UI_Text"
+                "widgetName": "UI_Button"
             },
-            "guid": "4571602271963953200",
-            "name": "UI_Text"
+            "guid": "8502091812053165844",
+            "name": "UI_Button"
         }
     ],
     "sceneName": "DeathScene",

@@ -36,7 +36,7 @@
                     "name": "TimeStopScript",
                     "props": {
                         "pauseAudioOnStop": true,
-                        "timeStopped": true,
+                        "timeStopped": false,
                         "toggleKey": 42
                     }
                 }
@@ -149,7 +149,7 @@
                     "name": "SceneChangekPressScript",
                     "props": {
                         "changeKey": 20,
-                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/MainGameScene.scene"
+                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/Main.scene"
                     }
                 }
             ],

@@ -10,8 +10,12 @@
                         "UnderLineWidgetName": "UI_Image",
                         "buttonWidgetName": "UI_StartButton",
                         "rootWidgetName": "UI_StartButton",
+                        "showButtonImageOnHoverOnly": false,
+                        "showUnderImageOnHoverOnly": false,
                         "targetScenePath": "Assets/Scenes/UI/tmpBossScene2.scene",
-                        "uiSoundEntityName": "SoundObject"
+                        "uiSoundEntityName": "SoundObject",
+                        "underImageHoverPath": "",
+                        "underImageNormalPath": ""
                     }
                 }
             ],
@@ -634,7 +638,7 @@
                 "widgetName": "UI_Image"
             },
             "guid": "8067992724437108823",
-            "name": "UI_Image"
+            "name": "UI_Death"
         },
         {
             "Scripts": [

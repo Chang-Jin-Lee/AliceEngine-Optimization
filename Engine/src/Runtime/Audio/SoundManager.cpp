@@ -308,8 +308,8 @@ namespace Alice::Sound
         // 모든 소리 정지
         if (g_MasterGroup) g_MasterGroup->stop();
 
-        StopBGM();
-        StopAllSFX();
+        //StopBGM();
+        //StopAllSFX();
 
         for (auto& pair : g_Inst3D)
         {
