@@ -21,6 +21,7 @@
 #include "Runtime/Rendering/Components/CameraComponent.h"
 #include "Runtime/Rendering/Components/CameraFollowComponent.h"
 #include "Runtime/Rendering/Components/CameraLookAtComponent.h"
+#include "Runtime/Rendering/Components/CameraSpringArmComponent.h"
 #include "Runtime/Rendering/Components/SkinnedMeshComponent.h"
 #include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
@@ -137,6 +138,7 @@ namespace Alice
 		bool playerMoveSmoothedValid = false;
 		bool playerLockOnActive = false;
 		EntityId playerLockOnTarget = InvalidEntityId;
+		bool playerHowlingForcedLockOn = false;
 		bool playerAttackFacingLocked = false;
 		float playerAttackFacingYawRad = 0.0f;
 		bool playerLastAttackHeavy = false;
@@ -220,6 +222,7 @@ namespace Alice
 			playerMoveSmoothedValid = false;
 			playerLockOnActive = false;
 			playerLockOnTarget = InvalidEntityId;
+			playerHowlingForcedLockOn = false;
 			playerAttackFacingLocked = false;
 			playerAttackFacingYawRad = 0.0f;
 			playerLastAttackHeavy = false;
@@ -338,6 +341,7 @@ namespace Alice
 		const DirectX::XMFLOAT3& colorTint,
 		float colorScale,
 		float intensityScale,
+		float sizeScale,
 		float spawnRateScale)
 	{
 		auto hasTransform = [&](EntityId id) -> bool
@@ -383,7 +387,7 @@ namespace Alice
 		vfx->lifetimeScale = 1.0f;
 		vfx->overrideLoop = false;
 		vfx->loop = true;
-		vfx->sizeScale = 0.025f;
+		vfx->sizeScale = std::max(0.0f, sizeScale);
 		vfx->spawnRateScale = std::max(0.0f, spawnRateScale);
 		vfx->enableTrails = true;
 		vfx->colorTint = colorTint;
@@ -400,7 +404,7 @@ namespace Alice
 		return vfxId;
 	}
 
-	static void SetTrailVfxActive(World& world, EntityId vfxId, bool active)
+	static void SetTrailVfxActive(World& world, EntityId vfxId, bool active, bool emitParticles)
 	{
 		if (vfxId == InvalidEntityId)
 			return;
@@ -418,7 +422,7 @@ namespace Alice
 		if (auto* vfx = world.GetComponent<UnityVfxComponent>(vfxId))
 		{
 			vfx->enabled = active;
-			vfx->emitNewParticles = active;
+			vfx->emitNewParticles = active && emitParticles;
 		}
 
 		if (auto* compute = world.GetComponent<ComputeEffectComponent>(vfxId))
@@ -718,6 +722,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
             m_state.reset(new SessionState());
 		m_state->Init();
 		m_playerRageTrailVfxId = InvalidEntityId;
+		m_playerRageTrailPrevPosValid = false;
 
 		if (auto* world = GetWorld())
 			world->SetScriptCombatEnabled(true);
@@ -728,6 +733,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
         if (!m_state)
             m_state.reset(new SessionState());
 		m_playerRageTrailVfxId = InvalidEntityId;
+		m_playerRageTrailPrevPosValid = false;
 
 		if (auto* world = GetWorld())
 			world->SetScriptCombatEnabled(true);
@@ -743,11 +749,12 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		if (auto* world = GetWorld())
 		{
-			SetTrailVfxActive(*world, m_playerRageTrailVfxId, false);
+			SetTrailVfxActive(*world, m_playerRageTrailVfxId, false, false);
 			world->SetScriptCombatEnabled(false);
 		}
 
 		m_playerRageTrailVfxId = InvalidEntityId;
+		m_playerRageTrailPrevPosValid = false;
 	}
 
     Combat::ActionState C_CombatSessionComponent::GetPlayerState() const
@@ -789,6 +796,10 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 	{
 		if (m_state)
 			m_state->Init();
+		if (auto* world = GetWorld())
+			SetTrailVfxActive(*world, m_playerRageTrailVfxId, false, false);
+		m_playerRageTrailVfxId = InvalidEntityId;
+		m_playerRageTrailPrevPosValid = false;
 	}
 	void C_CombatSessionComponent::Update(float deltaTime)
 	{
@@ -1050,6 +1061,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			Combat::Intent filtered{};
 			filtered.move = playerIntent.move;
 			filtered.dodgePressed = playerIntent.dodgePressed;
+			filtered.lockOnToggle = playerIntent.lockOnToggle;
 			filtered.runHeld = playerIntent.runHeld;
 			playerIntent = filtered;
 
@@ -1468,6 +1480,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		const EntityId cameraId = ResolvePrimaryCamera(world);
 		auto* camFollow = (cameraId != InvalidEntityId) ? world.GetComponent<CameraFollowComponent>(cameraId) : nullptr;
 		auto* camLookAt = (cameraId != InvalidEntityId) ? world.GetComponent<CameraLookAtComponent>(cameraId) : nullptr;
+		auto* camSpring = (cameraId != InvalidEntityId) ? world.GetComponent<CameraSpringArmComponent>(cameraId) : nullptr;
 		auto* camTr = (cameraId != InvalidEntityId) ? world.GetComponent<TransformComponent>(cameraId) : nullptr;
 
 		MoveBasis camBasis{};
@@ -1489,8 +1502,33 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				camBasis = BuildYawBasis(yawRad);
 		}
 
+		const bool bossPhaseHowlingActive = bossBrain
+			&& (bossBrain->GetActivePattern() == C_BossBrainComponent::PatternType::Special);
+
 		const bool canLockOn = (camFollow && camFollow->enableLockOn);
-		if (playerIntent.lockOnToggle && canLockOn)
+		if (bossPhaseHowlingActive)
+		{
+			m_state->playerHowlingForcedLockOn = true;
+			m_state->playerLockOnActive = true;
+			m_state->playerLockOnTarget = bossId;
+		}
+		else if (m_state->playerHowlingForcedLockOn)
+		{
+			m_state->playerHowlingForcedLockOn = false;
+			m_state->playerLockOnActive = false;
+			m_state->playerLockOnTarget = InvalidEntityId;
+
+			if (camSpring && camSpring->enabled && camFollow)
+			{
+				const float defaultDistance = std::clamp(
+					camFollow->baseDistance,
+					camSpring->minDistance,
+					camSpring->maxDistance);
+				camSpring->desiredDistance = defaultDistance;
+				camSpring->distance = defaultDistance;
+			}
+		}
+		else if (playerIntent.lockOnToggle && canLockOn)
 		{
 			if (m_state->playerLockOnActive)
 			{
@@ -1530,6 +1568,16 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				camLookAt->targetName = m_bossName.empty() ? std::string("Enemy") : m_bossName;
 				camLookAt->targetYOffset = m_lockOnTargetYOffset;
 			}
+		}
+
+		if (bossPhaseHowlingActive && camSpring && camSpring->enabled)
+		{
+			const float zoomInDistance = std::clamp(
+				camSpring->minDistance,
+				camSpring->minDistance,
+				camSpring->maxDistance);
+			camSpring->desiredDistance = zoomInDistance;
+			camSpring->distance = zoomInDistance;
 		}
 
 		const bool playerSuperArmorEarly = (m_state->player.state == Combat::ActionState::Attack
@@ -1907,8 +1955,6 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			bossOut.flags.chargeLevel = bossIntent.chargeLevel;
 		}
 
-		const bool bossPhaseHowlingActive = bossBrain
-			&& (bossBrain->GetActivePattern() == C_BossBrainComponent::PatternType::Special);
 		if (bossPhaseHowlingActive)
 			bossOut.flags.hitActive = false;
 		if (bossBrain && bossBrain->ConsumePhase2HowlingStarted())
@@ -4302,7 +4348,12 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		const bool playerRageTrailActive = m_enablePlayerRageTrailVfx && m_state->playerRageActive;
 		const std::string rageTargetName = !m_playerRageTrailTargetName.empty() ? m_playerRageTrailTargetName : "W_Target";
 		EntityId rageTargetId = FindNamedDescendant(world, playerId, rageTargetName);
-		if (playerRageTrailActive && rageTargetId != InvalidEntityId)
+		// W_Target can be socket-driven and live outside the player hierarchy in some scenes.
+		if (rageTargetId == InvalidEntityId)
+			rageTargetId = ResolveEntityByName(rageTargetName);
+		const bool rageTrailEnabled = playerRageTrailActive && rageTargetId != InvalidEntityId;
+		bool rageTrailEmit = false;
+		if (rageTrailEnabled)
 		{
 			m_playerRageTrailVfxId = EnsureTrailVfxChild(
 				world,
@@ -4316,9 +4367,34 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				m_playerRageTrailColorTint,
 				m_playerRageTrailColorScale,
 				m_playerRageTrailIntensityScale,
+				m_playerRageTrailSizeScale,
 				m_playerRageTrailSpawnRateScale);
+
+			if (const auto* rageTargetTr = world.GetComponent<TransformComponent>(rageTargetId))
+			{
+				const float safeDt = std::max(deltaTime, 0.0001f);
+				const float minSpeed = std::max(0.0f, m_playerRageTrailEmitMinSpeed);
+				if (m_playerRageTrailPrevPosValid)
+				{
+					const float dx = rageTargetTr->position.x - m_playerRageTrailPrevPos.x;
+					const float dy = rageTargetTr->position.y - m_playerRageTrailPrevPos.y;
+					const float dz = rageTargetTr->position.z - m_playerRageTrailPrevPos.z;
+					const float speed = std::sqrt(dx * dx + dy * dy + dz * dz) / safeDt;
+					rageTrailEmit = (speed >= minSpeed);
+				}
+				m_playerRageTrailPrevPos = rageTargetTr->position;
+				m_playerRageTrailPrevPosValid = true;
+			}
+			else
+			{
+				m_playerRageTrailPrevPosValid = false;
+			}
 		}
-		SetTrailVfxActive(world, m_playerRageTrailVfxId, playerRageTrailActive && rageTargetId != InvalidEntityId);
+		else
+		{
+			m_playerRageTrailPrevPosValid = false;
+		}
+		SetTrailVfxActive(world, m_playerRageTrailVfxId, rageTrailEnabled, rageTrailEmit);
 	}
 
 	void C_CombatSessionComponent::PostCombatUpdate(float deltaTime)
@@ -4793,15 +4869,6 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				{
 					immediate.push_back({ Combat::CommandType::ApplyPushback,
 						Combat::CmdApplyPushback{ hit.attackerOwner, hit.victimOwner, speed, pushDuration } });
-				}
-			}
-			if (wasHit)
-			{
-				const float invulnSec = std::max(0.0f, m_hitPushbackDurationSec);
-				if (invulnSec > 0.0f)
-				{
-					if (auto* hc = world.GetComponent<HealthComponent>(hit.victimOwner))
-						hc->invulnRemaining = std::max(hc->invulnRemaining, invulnSec);
 				}
 			}
 			if (parrySuccess)

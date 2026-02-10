@@ -2,19 +2,19 @@
     "Transform": {
         "enabled": true,
         "position": {
-            "x": 8.390564918518066,
-            "y": 1.467850685119629,
-            "z": -0.965904712677002
+            "x": -80.0,
+            "y": 0.0,
+            "z": -47.631797790527344
         },
         "rotation": {
-            "x": 1.5707963705062866,
+            "x": 0.0,
             "y": 0.0,
             "z": 0.0
         },
         "scale": {
-            "x": 0.20000000298023224,
-            "y": 0.20000000298023224,
-            "z": 0.20000000298023224
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
         },
         "visible": true
     },
@@ -23,22 +23,22 @@
         "colorScale": 1.0,
         "colorTint": {
             "x": 1.0,
-            "y": 0.0,
-            "z": 0.0
+            "y": 1.0,
+            "z": 1.0
         },
         "dissolveOffset": 0.0,
-        "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_31_LightShield__Effect_31_Ring__OneShot/effect.json",
+        "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_47_ParticleBlast/effect.json",
         "emitNewParticles": true,
         "enableTrails": true,
         "enabled": true,
         "hdrColorClamp": 1.0,
         "intensityScale": 1.0,
-        "lifetimeScale": 5.0,
-        "loop": false,
+        "lifetimeScale": 1.0,
+        "loop": true,
         "noiseScale": 1.0,
         "overrideLoop": true,
         "rampScale": 1.0,
-        "sizeScale": 1.0,
+        "sizeScale": 2.747999906539917,
         "spawnRateScale": 1.0,
         "speedScale": 1.0,
         "timeScale": 1.0,
@@ -48,6 +48,6 @@
         "useMeshRenderer": true,
         "uvScrollScale": 1.0
     },
-    "name": "ONESHOT_DECOMP_(Opt)Effect_31_LightShield__Effect_31_Ring",
+    "name": "(Opt)Effect_47_ParticleBlast",
     "version": 1
 }
