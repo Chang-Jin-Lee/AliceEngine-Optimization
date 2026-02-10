@@ -456,19 +456,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.06753364205360413,
-                    "y": 2.332676410675049,
-                    "z": -0.0531802773475647
+                    "x": -0.06669142842292786,
+                    "y": 2.3331236839294434,
+                    "z": -0.05261005461215973
                 },
                 "rotation": {
-                    "x": -0.1392209231853485,
-                    "y": 0.9115499258041382,
-                    "z": 0.016508786007761955
+                    "x": -0.13895346224308014,
+                    "y": 0.9129648804664612,
+                    "z": 0.016100525856018066
                 },
                 "scale": {
-                    "x": 0.009999996051192284,
-                    "y": 0.009999996051192284,
-                    "z": 0.00999999325722456
+                    "x": 0.009999996982514858,
+                    "y": 0.00999999325722456,
+                    "z": 0.009999994188547134
                 },
                 "visible": false
             },
@@ -551,19 +551,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.2966393828392029,
-                    "y": 1.5005486011505127,
-                    "z": 0.12638342380523682
+                    "x": 0.2968076169490814,
+                    "y": 1.5005522966384888,
+                    "z": 0.12636013329029083
                 },
                 "rotation": {
-                    "x": -0.440975159406662,
-                    "y": 1.10737943649292,
-                    "z": 0.010949015617370605
+                    "x": -0.4399227797985077,
+                    "y": 1.1082130670547485,
+                    "z": 0.010781040415167809
                 },
                 "scale": {
-                    "x": 0.009999999776482582,
-                    "y": 0.009999998845160007,
-                    "z": 0.009999999776482582
+                    "x": 0.009999998845160007,
+                    "y": 0.009999997913837433,
+                    "z": 0.009999998845160007
                 },
                 "visible": false
             },
@@ -646,19 +646,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.30273371934890747,
-                    "y": 1.7237149477005005,
-                    "z": 0.22329919040203094
+                    "x": -0.3022003769874573,
+                    "y": 1.7243505716323853,
+                    "z": 0.2240191549062729
                 },
                 "rotation": {
-                    "x": 0.24667082726955414,
-                    "y": -0.9843680262565613,
-                    "z": 2.127169370651245
+                    "x": 0.2469378411769867,
+                    "y": -0.9841586947441101,
+                    "z": 2.124563694000244
                 },
                 "scale": {
-                    "x": 0.009999995119869709,
-                    "y": 0.00999999325722456,
-                    "z": 0.009999990463256836
+                    "x": 0.009999992325901985,
+                    "y": 0.009999994188547134,
+                    "z": 0.009999992325901985
                 },
                 "visible": false
             },
@@ -741,19 +741,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.1503087729215622,
-                    "y": 1.7183281183242798,
-                    "z": -0.36402684450149536
+                    "x": 0.15009857714176178,
+                    "y": 1.718570351600647,
+                    "z": -0.3637131452560425
                 },
                 "rotation": {
-                    "x": 0.05378464236855507,
-                    "y": -3.0862433910369873,
-                    "z": -2.489264726638794
+                    "x": 0.05443694815039635,
+                    "y": -3.0843982696533203,
+                    "z": -2.4887077808380127
                 },
                 "scale": {
-                    "x": 0.010000001639127731,
-                    "y": 0.009999999776482582,
-                    "z": 0.010000001639127731
+                    "x": 0.009999995119869709,
+                    "y": 0.009999995119869709,
+                    "z": 0.009999998845160007
                 },
                 "visible": false
             },
@@ -836,19 +836,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.150827094912529,
-                    "y": 0.610072135925293,
-                    "z": 0.44844484329223633
+                    "x": 0.1502164602279663,
+                    "y": 0.6101008653640747,
+                    "z": 0.4478248953819275
                 },
                 "rotation": {
-                    "x": -0.43964871764183044,
-                    "y": 1.5981913805007935,
-                    "z": 2.8937196731567383
+                    "x": -0.43988439440727234,
+                    "y": 1.59771728515625,
+                    "z": 2.8955509662628174
                 },
                 "scale": {
-                    "x": 0.010000023990869522,
-                    "y": 0.01000002957880497,
-                    "z": 0.010000057518482208
+                    "x": 0.010000024922192097,
+                    "y": 0.010000031441450119,
+                    "z": 0.010000059381127357
                 },
                 "visible": false
             },
@@ -931,19 +931,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.1979140192270279,
-                    "y": 0.656692624092102,
-                    "z": -0.24037043750286102
+                    "x": 0.19825588166713715,
+                    "y": 0.6565605401992798,
+                    "z": -0.24074141681194305
                 },
                 "rotation": {
-                    "x": -0.0879625454545021,
-                    "y": 0.9731027483940125,
-                    "z": -2.9912455081939697
+                    "x": -0.08520030975341797,
+                    "y": 0.9732320308685303,
+                    "z": -2.9905126094818115
                 },
                 "scale": {
-                    "x": 0.010000033304095268,
-                    "y": 0.010000025853514671,
-                    "z": 0.010000026784837246
+                    "x": 0.010000032372772694,
+                    "y": 0.010000024922192097,
+                    "z": 0.010000025853514671
                 },
                 "visible": false
             },
@@ -3194,11 +3194,25 @@
                         "m_autoResolveByName": true,
                         "m_blockPlayerActionsDuringGimmick": true,
                         "m_bossAnimBlendSec": 0.11999999731779099,
+                        "m_bossBoostAttackSpeedScale": 1.5,
+                        "m_bossBoostDashVfxName": "BossDeshEffect",
                         "m_bossChargeEnterClip": "",
                         "m_bossChargeFacingTrackSec": 2.200000047683716,
                         "m_bossChargeLoopClip": "",
                         "m_bossDashMoveStartSec": 0.6000000238418579,
+                        "m_bossDeathFreezeTimeSec": 3.890000104904175,
                         "m_bossDodgeClip": "",
+                        "m_bossGapAdvanceADistance": 1.0,
+                        "m_bossGapAdvanceBDistance": 0.699999988079071,
+                        "m_bossGapAdvanceCDistance": 0.800000011920929,
+                        "m_bossGapMinSegmentSec": 0.029999999329447746,
+                        "m_bossGapStepDistance": 0.5,
+                        "m_bossGapTurnABCFollow1Deg": 35.0,
+                        "m_bossGapTurnABCFollow2Deg": 25.0,
+                        "m_bossGapTurnABCStartDeg": 65.0,
+                        "m_bossGapTurnAStartDeg": 65.0,
+                        "m_bossGapTurnBCFollowDeg": 25.0,
+                        "m_bossGapTurnBCStartDeg": 35.0,
                         "m_bossGroggyEnterBlendSec": 1.5,
                         "m_bossGroggyGainHeavy": 16.0,
                         "m_bossGroggyGainLight": 8.0,
@@ -3218,12 +3232,14 @@
                         "m_bossIdleClip": "Boss|Boss|Idle",
                         "m_bossIdleFacingDamping": 6.0,
                         "m_bossInteractionClip": "",
+                        "m_bossKickAttackSpeedScale": 1.5,
                         "m_bossLightAttackClip": "Boss|Boss|Attack_A",
                         "m_bossLightAttackClip1": "Boss|Boss|Attack_A",
                         "m_bossLightAttackClip2": "Boss|Boss|Attack_BC",
                         "m_bossLightAttackClip3": "Boss|Boss|Attack_ABC",
                         "m_bossMoveClip": "Boss|Boss|Walk_Forward",
                         "m_bossName": "Boss",
+                        "m_bossSoulFacingTrackSec": 0.5,
                         "m_chargeCombo2Speed": 0.699999988079071,
                         "m_chargeEnterClip": "",
                         "m_chargeLoopClip": "rig|Tia_Charging",
@@ -3232,6 +3248,7 @@
                         "m_chargeScale2": 1.399999976158142,
                         "m_chargeScale3": 1.7999999523162842,
                         "m_debugAttackMoveTime": false,
+                        "m_debugBossGapWarp": false,
                         "m_dodgeClip": "rig|Tia_Rolling",
                         "m_enableCombatLogs": true,
                         "m_enableLogs": false,
@@ -3351,7 +3368,7 @@
                         "m_playerRageTrailSizeScale": 0.017999999225139618,
                         "m_playerRageTrailSpawnRateScale": 1.5,
                         "m_playerRageTrailTargetName": "W_Target",
-                        "m_rageDurationSec": 30.0,
+                        "m_rageDurationSec": 15.0,
                         "m_rotationOffsetDeg": 180.0
                     }
                 },
@@ -3489,7 +3506,7 @@
         },
         {
             "Camera": {
-                "FOV": 59.99998474121094,
+                "FOV": 59.99996566772461,
                 "Far Plane": 1000.0,
                 "Near Plane": 0.10000000149011612,
                 "aspectOverride": 0.0,
@@ -4837,17 +4854,17 @@
                 "enabled": true,
                 "position": {
                     "x": -2.77107572555542,
-                    "y": 1.0828373432159424,
-                    "z": -2.7081639766693115
+                    "y": 1.0828372240066528,
+                    "z": -2.7081637382507324
                 },
                 "rotation": {
                     "x": 0.6770186424255371,
                     "y": -1.073560118675232,
-                    "z": 0.6360159516334534
+                    "z": 0.6360160112380981
                 },
                 "scale": {
-                    "x": 0.9999999403953552,
-                    "y": 0.9999997019767761,
+                    "x": 0.9999998211860657,
+                    "y": 0.9999995827674866,
                     "z": 1.0
                 },
                 "visible": true
@@ -7401,17 +7418,17 @@
                 "enabled": true,
                 "position": {
                     "x": -2.77107572555542,
-                    "y": 1.0828373432159424,
-                    "z": -2.7081639766693115
+                    "y": 1.0828372240066528,
+                    "z": -2.7081637382507324
                 },
                 "rotation": {
                     "x": 0.6770186424255371,
                     "y": -1.073560118675232,
-                    "z": 0.6360159516334534
+                    "z": 0.6360160112380981
                 },
                 "scale": {
-                    "x": 0.9999999403953552,
-                    "y": 0.9999997019767761,
+                    "x": 0.9999998211860657,
+                    "y": 0.9999995827674866,
                     "z": 1.0
                 },
                 "visible": true
@@ -7668,8 +7685,8 @@
                     "loopB": true,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 1.8300449848175049,
-                    "timeB": 0.2967124581336975
+                    "timeA": 1.7748299837112427,
+                    "timeB": 1.1081666946411133
                 },
                 "enabled": true,
                 "ik": {
@@ -7719,7 +7736,7 @@
                         "endTimeSec": 0.9490000009536743,
                         "source": "Explicit",
                         "startTimeSec": 0.8159999847412109,
-                        "traceSlotMask": 3,
+                        "traceSlotMask": 259,
                         "type": "Attack"
                     },
                     {
@@ -7729,7 +7746,7 @@
                         "endTimeSec": 1.093000054359436,
                         "source": "Explicit",
                         "startTimeSec": 0.9589999914169312,
-                        "traceSlotMask": 5,
+                        "traceSlotMask": 261,
                         "type": "Attack"
                     },
                     {
@@ -7739,7 +7756,7 @@
                         "endTimeSec": 1.9919999837875366,
                         "source": "Explicit",
                         "startTimeSec": 1.8339999914169312,
-                        "traceSlotMask": 9,
+                        "traceSlotMask": 265,
                         "type": "Attack"
                     },
                     {
@@ -7749,7 +7766,7 @@
                         "endTimeSec": 0.9490000009536743,
                         "source": "Explicit",
                         "startTimeSec": 0.8159999847412109,
-                        "traceSlotMask": 3,
+                        "traceSlotMask": 259,
                         "type": "Attack"
                     },
                     {
@@ -7759,7 +7776,7 @@
                         "endTimeSec": 1.7269999980926514,
                         "source": "Explicit",
                         "startTimeSec": 1.5889999866485596,
-                        "traceSlotMask": 5,
+                        "traceSlotMask": 261,
                         "type": "Attack"
                     },
                     {
@@ -7769,7 +7786,7 @@
                         "endTimeSec": 2.6110000610351563,
                         "source": "Explicit",
                         "startTimeSec": 2.4630000591278076,
-                        "traceSlotMask": 9,
+                        "traceSlotMask": 265,
                         "type": "Attack"
                     },
                     {
@@ -7789,27 +7806,17 @@
                         "endTimeSec": 1.0160000324249268,
                         "source": "Explicit",
                         "startTimeSec": 0.7260000109672546,
-                        "traceSlotMask": 1,
+                        "traceSlotMask": 257,
                         "type": "Attack"
                     },
                     {
                         "canBeInterrupted": true,
                         "clipName": "Boss|Boss|Dash_Attack",
                         "enabled": true,
-                        "endTimeSec": 0.6000000238418579,
+                        "endTimeSec": 0.6669999957084656,
                         "source": "Explicit",
-                        "startTimeSec": 0.37599998712539673,
+                        "startTimeSec": 0.10000000149011612,
                         "traceSlotMask": 33,
-                        "type": "Attack"
-                    },
-                    {
-                        "canBeInterrupted": true,
-                        "clipName": "Boss|Boss|Charge_Attack",
-                        "enabled": true,
-                        "endTimeSec": 2.489000082015991,
-                        "source": "Explicit",
-                        "startTimeSec": 2.0,
-                        "traceSlotMask": 1,
                         "type": "Attack"
                     },
                     {
@@ -7818,8 +7825,8 @@
                         "enabled": true,
                         "endTimeSec": 3.5999999046325684,
                         "source": "Explicit",
-                        "startTimeSec": 2.450000047683716,
-                        "traceSlotMask": 65,
+                        "startTimeSec": 2.0,
+                        "traceSlotMask": 1,
                         "type": "Attack"
                     },
                     {
@@ -7841,6 +7848,16 @@
                         "startTimeSec": 1.7999999523162842,
                         "traceSlotMask": 129,
                         "type": "Attack"
+                    },
+                    {
+                        "canBeInterrupted": true,
+                        "clipName": "Boss|Boss|Side_Attack",
+                        "enabled": true,
+                        "endTimeSec": 0.7149999737739563,
+                        "source": "Explicit",
+                        "startTimeSec": 0.5130000114440918,
+                        "traceSlotMask": 769,
+                        "type": "Attack"
                     }
                 ],
                 "traceGuid": "114063308901302750",
@@ -7851,7 +7868,9 @@
                     "16405204166734133664",
                     "15197116109027465385",
                     "16524424592176446637",
-                    "5715975000735700923"
+                    "5715975000735700923",
+                    "13465079152717718685",
+                    "1434297730293859900"
                 ]
             },
             "CharacterController": {
@@ -7973,7 +7992,7 @@
                         "m_backAttackTriggerSec": 1.2000000476837158,
                         "m_brainActivated": false,
                         "m_chargeHoldSec": 0.5,
-                        "m_chargeIntervalSec": 30.0,
+                        "m_chargeIntervalSec": 20.0,
                         "m_chargeLevel": 2,
                         "m_chargeRangeMax": 4.0,
                         "m_chargeRerollSec": 5.0,
@@ -8042,15 +8061,15 @@
                         "m_traceMaxHoldMinSec": 1.5,
                         "m_turnInPlaceAngleDeg": 65.0,
                         "m_usePhaseRules": true,
-                        "m_walkDashTimeoutSec": 5.0
+                        "m_walkDashTimeoutSec": 2.0
                     }
                 }
             ],
             "SkinnedAnimation": {
-                "clipIndex": 3,
+                "clipIndex": 4,
                 "playing": false,
                 "speed": 1.0,
-                "timeSec": 2.7160000801086426
+                "timeSec": 0.0
             },
             "SkinnedMesh": {
                 "boneCount": 58,
@@ -8309,19 +8328,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.105704665184021,
-                    "y": 1.081920862197876,
-                    "z": 0.25936055183410645
+                    "x": -0.10615987330675125,
+                    "y": 1.0819683074951172,
+                    "z": 0.258277952671051
                 },
                 "rotation": {
-                    "x": -0.005827281158417463,
-                    "y": 2.2311360836029053,
-                    "z": -0.8683802485466003
+                    "x": -0.005942647811025381,
+                    "y": 2.2321407794952393,
+                    "z": -0.8652621507644653
                 },
                 "scale": {
                     "x": 1.499998927116394,
-                    "y": 1.4999990463256836,
-                    "z": 1.4999984502792358
+                    "y": 1.499998927116394,
+                    "z": 1.499998688697815
                 },
                 "visible": true
             },
@@ -8354,7 +8373,7 @@
                         "enabled": true,
                         "localPos": {
                             "x": 0.0,
-                            "y": 2.6600000858306885,
+                            "y": 4.150000095367432,
                             "z": 0.0
                         },
                         "localRotDeg": {
@@ -8362,7 +8381,7 @@
                             "y": 0.0,
                             "z": 0.0
                         },
-                        "name": "X+",
+                        "name": "BossWeapon1",
                         "pathControlLocalPos": {
                             "x": 0.0,
                             "y": 0.0,
@@ -8393,7 +8412,7 @@
                         "enabled": true,
                         "localPos": {
                             "x": 0.0,
-                            "y": 3.8499999046325684,
+                            "y": 3.509999990463257,
                             "z": 0.0
                         },
                         "localRotDeg": {
@@ -8401,7 +8420,7 @@
                             "y": 0.0,
                             "z": 0.0
                         },
-                        "name": "X-",
+                        "name": "BossWeapon2",
                         "pathControlLocalPos": {
                             "x": 0.0,
                             "y": 0.0,
@@ -8419,7 +8438,7 @@
                             "y": 0.0,
                             "z": 0.0
                         },
-                        "radius": 0.5,
+                        "radius": 0.75,
                         "type": "Sphere"
                     },
                     {
@@ -8432,7 +8451,7 @@
                         "enabled": true,
                         "localPos": {
                             "x": 0.0,
-                            "y": 1.899999976158142,
+                            "y": 2.890000104904175,
                             "z": 0.0
                         },
                         "localRotDeg": {
@@ -8440,7 +8459,7 @@
                             "y": 0.0,
                             "z": 0.0
                         },
-                        "name": "Base",
+                        "name": "BossWeapon3",
                         "pathControlLocalPos": {
                             "x": 0.0,
                             "y": 0.0,
@@ -8458,7 +8477,7 @@
                             "y": 0.0,
                             "z": 0.0
                         },
-                        "radius": 0.5,
+                        "radius": 0.75,
                         "type": "Sphere"
                     },
                     {
@@ -8471,7 +8490,7 @@
                         "enabled": true,
                         "localPos": {
                             "x": 0.0,
-                            "y": 1.2699999809265137,
+                            "y": 2.309999942779541,
                             "z": 0.0
                         },
                         "localRotDeg": {
@@ -8479,7 +8498,7 @@
                             "y": 0.0,
                             "z": 0.0
                         },
-                        "name": "Shape",
+                        "name": "BossWeapon4",
                         "pathControlLocalPos": {
                             "x": 0.0,
                             "y": 0.0,
@@ -8497,7 +8516,7 @@
                             "y": 0.0,
                             "z": 0.0
                         },
-                        "radius": 0.5,
+                        "radius": 0.75,
                         "type": "Sphere"
                     },
                     {
@@ -8510,7 +8529,7 @@
                         "enabled": true,
                         "localPos": {
                             "x": 0.0,
-                            "y": 0.6499999761581421,
+                            "y": 1.649999976158142,
                             "z": 0.0
                         },
                         "localRotDeg": {
@@ -8518,7 +8537,7 @@
                             "y": 0.0,
                             "z": 0.0
                         },
-                        "name": "Shape",
+                        "name": "BossWeapon5",
                         "pathControlLocalPos": {
                             "x": 0.0,
                             "y": 0.0,
@@ -8536,7 +8555,7 @@
                             "y": 0.0,
                             "z": 0.0
                         },
-                        "radius": 0.5,
+                        "radius": 0.75,
                         "type": "Sphere"
                     },
                     {
@@ -8549,7 +8568,7 @@
                         "enabled": true,
                         "localPos": {
                             "x": 0.0,
-                            "y": 0.0,
+                            "y": 0.949999988079071,
                             "z": 0.0
                         },
                         "localRotDeg": {
@@ -8557,7 +8576,7 @@
                             "y": 0.0,
                             "z": 0.0
                         },
-                        "name": "Shape",
+                        "name": "BossWeapon6",
                         "pathControlLocalPos": {
                             "x": 0.0,
                             "y": 0.0,
@@ -8575,7 +8594,7 @@
                             "y": 0.0,
                             "z": 0.0
                         },
-                        "radius": 0.30000001192092896,
+                        "radius": 0.75,
                         "type": "Sphere"
                     },
                     {
@@ -8588,7 +8607,7 @@
                         "enabled": true,
                         "localPos": {
                             "x": 0.0,
-                            "y": 3.240000009536743,
+                            "y": 0.25,
                             "z": 0.0
                         },
                         "localRotDeg": {
@@ -8596,7 +8615,7 @@
                             "y": 0.0,
                             "z": 0.0
                         },
-                        "name": "Shape",
+                        "name": "BossWeapon7",
                         "pathControlLocalPos": {
                             "x": 0.0,
                             "y": 0.0,
@@ -8870,7 +8889,7 @@
                 "enabled": true,
                 "position": {
                     "x": 0.0,
-                    "y": -1.0,
+                    "y": -0.5,
                     "z": 0.0
                 },
                 "rotation": {
@@ -8880,7 +8899,7 @@
                 },
                 "scale": {
                     "x": 100.0,
-                    "y": 1.0,
+                    "y": 0.5,
                     "z": 100.0
                 },
                 "visible": true
@@ -9687,6 +9706,7 @@
                         "soulDurationFallbackSec": 2.4000000953674316,
                         "soulPeakTimeSec": -1.0,
                         "telegraphSlotIndex": 8,
+                        "treatBoostAsActiveWhenDashClip": true,
                         "useAttackWindowPlateau": true,
                         "useSlotPeakTiming": false
                     }
@@ -9710,6 +9730,7 @@
                         "soulDurationFallbackSec": 3.5999999046325684,
                         "soulPeakTimeSec": -1.0,
                         "telegraphSlotIndex": 7,
+                        "treatBoostAsActiveWhenDashClip": true,
                         "useAttackWindowPlateau": true,
                         "useSlotPeakTiming": false
                     }
@@ -9733,6 +9754,7 @@
                         "soulDurationFallbackSec": 1.2000000476837158,
                         "soulPeakTimeSec": -1.0,
                         "telegraphSlotIndex": 6,
+                        "treatBoostAsActiveWhenDashClip": true,
                         "useAttackWindowPlateau": true,
                         "useSlotPeakTiming": false
                     }
@@ -10025,7 +10047,7 @@
                 "active": false,
                 "attackInstanceId": 505,
                 "baseDamage": 10.0,
-                "debugDraw": true,
+                "debugDraw": false,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
                 "debugPathMarkerRadius": 0.05000000074505806,
@@ -10212,8 +10234,8 @@
                             "y": 0.0,
                             "z": 0.0
                         },
-                        "radius": 0.8500000238418579,
-                        "type": "Capsule"
+                        "radius": 1.3200000524520874,
+                        "type": "Sphere"
                     }
                 ],
                 "subSteps": 1,
@@ -47271,6 +47293,950 @@
             "_parentGuid": "8917386486070800600",
             "guid": "3698161819418156158",
             "name": "__CombatVfxPool_61"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "WeaponTrace": {
+                "active": false,
+                "attackInstanceId": 21,
+                "baseDamage": 10.0,
+                "debugDraw": true,
+                "debugPathGridSteps": 6,
+                "debugPathGuide": true,
+                "debugPathMarkerRadius": 0.05000000074505806,
+                "guardBreakPushbackDuration": 0.25,
+                "guardBreakPushbackSpeed": 3.0,
+                "guardBreakWeakSec": 1.5,
+                "guardDurabilityCost": 0.0,
+                "guardLockSec": 0.25,
+                "ownerGuid": "11831490326238347819",
+                "ownerNameDebug": "Boss",
+                "parryGroggyGain": 10.0,
+                "parryLockSec": 0.0,
+                "queryLayerBits": 0,
+                "shapes": [
+                    {
+                        "boxHalfExtents": {
+                            "x": 1.0,
+                            "y": 0.5,
+                            "z": 12.0
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 0.6299999952316284,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "Shape",
+                        "pathControlLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathEnabled": false,
+                        "pathEndLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathMode": "Linear",
+                        "pathStartLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "radius": 0.7599999904632568,
+                        "type": "Sphere"
+                    }
+                ],
+                "subSteps": 1,
+                "targetLayerBits": 0,
+                "teamId": 1,
+                "traceBasisGuid": "0"
+            },
+            "_parentGuid": "11831490326238347819",
+            "guid": "13465079152717718685",
+            "name": "Attack_Body"
+        },
+        {
+            "Collider": {
+                "capsuleAlignYAxis": true,
+                "capsuleHalfHeight": 0.5,
+                "capsuleRadius": 0.5,
+                "debugDraw": false,
+                "dynamicFriction": 0.5,
+                "halfExtents": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "ignoreLayers": 0,
+                "isTrigger": false,
+                "layerBits": 1,
+                "offset": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "radius": 0.5,
+                "restitution": 0.0,
+                "staticFriction": 0.5,
+                "type": "Box"
+            },
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -30.0,
+                    "y": 5.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.5,
+                    "y": 10.0,
+                    "z": 30.0
+                },
+                "visible": true
+            },
+            "guid": "15947405918965449485",
+            "name": "DummyWall"
+        },
+        {
+            "Collider": {
+                "capsuleAlignYAxis": true,
+                "capsuleHalfHeight": 0.5,
+                "capsuleRadius": 0.5,
+                "debugDraw": false,
+                "dynamicFriction": 0.5,
+                "halfExtents": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "ignoreLayers": 0,
+                "isTrigger": false,
+                "layerBits": 1,
+                "offset": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "radius": 0.5,
+                "restitution": 0.0,
+                "staticFriction": 0.5,
+                "type": "Box"
+            },
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 30.0,
+                    "y": 5.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.5,
+                    "y": 10.0,
+                    "z": 30.0
+                },
+                "visible": true
+            },
+            "guid": "2749810836816028589",
+            "name": "DummyWall"
+        },
+        {
+            "Collider": {
+                "capsuleAlignYAxis": true,
+                "capsuleHalfHeight": 0.5,
+                "capsuleRadius": 0.5,
+                "debugDraw": false,
+                "dynamicFriction": 0.5,
+                "halfExtents": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "ignoreLayers": 0,
+                "isTrigger": false,
+                "layerBits": 1,
+                "offset": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "radius": 0.5,
+                "restitution": 0.0,
+                "staticFriction": 0.5,
+                "type": "Box"
+            },
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 5.0,
+                    "z": 30.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 1.5707963705062866,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.5,
+                    "y": 10.0,
+                    "z": 30.0
+                },
+                "visible": true
+            },
+            "guid": "7606572980517209640",
+            "name": "DummyWall"
+        },
+        {
+            "Collider": {
+                "capsuleAlignYAxis": true,
+                "capsuleHalfHeight": 0.5,
+                "capsuleRadius": 0.5,
+                "debugDraw": false,
+                "dynamicFriction": 0.5,
+                "halfExtents": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "ignoreLayers": 0,
+                "isTrigger": false,
+                "layerBits": 1,
+                "offset": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "radius": 0.5,
+                "restitution": 0.0,
+                "staticFriction": 0.5,
+                "type": "Box"
+            },
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 5.0,
+                    "z": -30.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 1.5707963705062866,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.5,
+                    "y": 10.0,
+                    "z": 30.0
+                },
+                "visible": true
+            },
+            "guid": "4088036684502234960",
+            "name": "DummyWall"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "WeaponTrace": {
+                "active": false,
+                "attackInstanceId": 21,
+                "baseDamage": 10.0,
+                "debugDraw": true,
+                "debugPathGridSteps": 6,
+                "debugPathGuide": true,
+                "debugPathMarkerRadius": 0.05000000074505806,
+                "guardBreakPushbackDuration": 0.25,
+                "guardBreakPushbackSpeed": 3.0,
+                "guardBreakWeakSec": 1.5,
+                "guardDurabilityCost": 0.0,
+                "guardLockSec": 0.25,
+                "ownerGuid": "11831490326238347819",
+                "ownerNameDebug": "Boss",
+                "parryGroggyGain": 10.0,
+                "parryLockSec": 0.0,
+                "queryLayerBits": 0,
+                "shapes": [
+                    {
+                        "boxHalfExtents": {
+                            "x": 1.0,
+                            "y": 0.5,
+                            "z": 12.0
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 0.6299999952316284,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "Shape",
+                        "pathControlLocalPos": {
+                            "x": 0.0,
+                            "y": 0.30000001192092896,
+                            "z": 3.5
+                        },
+                        "pathEnabled": true,
+                        "pathEndLocalPos": {
+                            "x": 2.049999952316284,
+                            "y": 0.30000001192092896,
+                            "z": 0.7699999809265137
+                        },
+                        "pathMode": "QuadraticBezier",
+                        "pathStartLocalPos": {
+                            "x": -1.6200000047683716,
+                            "y": 0.30000001192092896,
+                            "z": 0.8600000143051147
+                        },
+                        "radius": 0.800000011920929,
+                        "type": "Sphere"
+                    }
+                ],
+                "subSteps": 1,
+                "targetLayerBits": 0,
+                "teamId": 1,
+                "traceBasisGuid": "0"
+            },
+            "_parentGuid": "11831490326238347819",
+            "guid": "1434297730293859900",
+            "name": "Attack_Side"
+        },
+        {
+            "Collider": {
+                "capsuleAlignYAxis": true,
+                "capsuleHalfHeight": 0.5,
+                "capsuleRadius": 0.5,
+                "debugDraw": false,
+                "dynamicFriction": 0.5,
+                "halfExtents": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "ignoreLayers": 0,
+                "isTrigger": false,
+                "layerBits": 1,
+                "offset": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "radius": 0.5,
+                "restitution": 0.0,
+                "staticFriction": 0.5,
+                "type": "Box"
+            },
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -10.0,
+                    "y": 5.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 10.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "11556009620237404966",
+            "name": "DummyWall"
+        },
+        {
+            "Collider": {
+                "capsuleAlignYAxis": true,
+                "capsuleHalfHeight": 0.5,
+                "capsuleRadius": 0.5,
+                "debugDraw": false,
+                "dynamicFriction": 0.5,
+                "halfExtents": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "ignoreLayers": 0,
+                "isTrigger": false,
+                "layerBits": 1,
+                "offset": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "radius": 0.5,
+                "restitution": 0.0,
+                "staticFriction": 0.5,
+                "type": "Box"
+            },
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 5.0,
+                    "z": -10.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 10.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "2973390043186117406",
+            "name": "DummyWall"
+        },
+        {
+            "Collider": {
+                "capsuleAlignYAxis": true,
+                "capsuleHalfHeight": 0.5,
+                "capsuleRadius": 0.5,
+                "debugDraw": false,
+                "dynamicFriction": 0.5,
+                "halfExtents": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "ignoreLayers": 0,
+                "isTrigger": false,
+                "layerBits": 1,
+                "offset": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "radius": 0.5,
+                "restitution": 0.0,
+                "staticFriction": 0.5,
+                "type": "Box"
+            },
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 5.0,
+                    "z": 10.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 10.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "17514492918570459386",
+            "name": "DummyWall"
+        },
+        {
+            "Collider": {
+                "capsuleAlignYAxis": true,
+                "capsuleHalfHeight": 0.5,
+                "capsuleRadius": 0.5,
+                "debugDraw": false,
+                "dynamicFriction": 0.5,
+                "halfExtents": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "ignoreLayers": 0,
+                "isTrigger": false,
+                "layerBits": 1,
+                "offset": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "radius": 0.5,
+                "restitution": 0.0,
+                "staticFriction": 0.5,
+                "type": "Box"
+            },
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 10.0,
+                    "y": 5.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 10.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "11481080561199797712",
+            "name": "DummyWall"
         }
     ],
     "sceneName": "#00Effect",

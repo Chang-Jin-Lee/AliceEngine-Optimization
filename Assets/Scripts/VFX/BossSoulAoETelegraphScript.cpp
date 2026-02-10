@@ -19,6 +19,7 @@
 #include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/Importing/FbxModel.h"
 #include "Runtime/Scripting/ScriptFactory.h"
+#include "../Combat/C_BossBrainComponent.h"
 #include <assimp/scene.h>
 
 namespace Alice
@@ -137,6 +138,9 @@ namespace Alice
         float targetAlpha = idleAlpha;
         float soulTimeSec = 0.0f;
         const bool inSoul = TryGetCurrentSoulTimeSec(soulTimeSec);
+        const bool treatBoostAsActive = Get_treatBoostAsActiveWhenDashClip()
+            && (Get_soulClipName().find("Dash_Attack") != std::string::npos)
+            && IsBoostPatternActive();
 
         if (inSoul)
         {
@@ -206,6 +210,10 @@ namespace Alice
                     targetAlpha = peakAlpha + (idleAlpha - peakAlpha) * t;
                 }
             }
+        }
+        else if (treatBoostAsActive)
+        {
+            targetAlpha = peakAlpha;
         }
 
         const float targetClamped = std::clamp(targetAlpha, 0.0f, 1.0f);
@@ -636,6 +644,34 @@ namespace Alice
             durationSec /= speedAbs;
 
         return (durationSec > 0.0f) ? durationSec : 0.0f;
+    }
+
+    bool BossSoulAoETelegraphScript::IsBoostPatternActive() const
+    {
+        World* world = GetWorld();
+        if (!world || m_bossId == InvalidEntityId)
+            return false;
+
+        auto* scripts = world->GetScripts(m_bossId);
+        if (!scripts)
+            return false;
+
+        for (const auto& sc : *scripts)
+        {
+            if (sc.scriptName != "C_BossBrainComponent" || !sc.instance)
+                continue;
+
+            const auto* brain = static_cast<const C_BossBrainComponent*>(sc.instance.get());
+            if (!brain)
+                continue;
+
+            const C_BossBrainComponent::PatternType pattern = brain->GetActivePattern();
+            return pattern == C_BossBrainComponent::PatternType::BoostAttackA
+                || pattern == C_BossBrainComponent::PatternType::BoostAttackB
+                || pattern == C_BossBrainComponent::PatternType::BoostAttackC;
+        }
+
+        return false;
     }
 
     bool BossSoulAoETelegraphScript::TryGetCurrentClipTimeSec(const std::string& clipName, float& outTimeSec) const

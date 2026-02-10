@@ -27,12 +27,14 @@
             "keyIntensity": 1.0,
             "metalness": 0.0,
             "roughness": 0.5,
+            "shadowStrength": 1.0,
             "shininess": 32.0,
             "specularColor": [
                 1.0,
                 1.0,
                 1.0
-            ]
+            ],
+            "toonShadowStrength": 1.0
         },
         "shadingMode": 4,
         "useFillLight": true
@@ -43,7 +45,7 @@
         "port": 5425
     },
     "skybox": {
-        "choice": 0,
+        "choice": 1,
         "customDir": "",
         "customPrefix": "",
         "resolution": 0

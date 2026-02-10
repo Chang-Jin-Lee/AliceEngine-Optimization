@@ -449,6 +449,39 @@ namespace Alice
 		}
 	}
 
+	static void SetSimpleVfxActive(World& world, EntityId vfxId, bool active)
+	{
+		if (vfxId == InvalidEntityId)
+			return;
+
+		if (auto* tr = world.GetComponent<TransformComponent>(vfxId))
+		{
+			if (tr->enabled != active || tr->visible != active)
+			{
+				tr->enabled = active;
+				tr->visible = active;
+				world.MarkTransformDirty(vfxId);
+			}
+		}
+
+		if (auto* vfx = world.GetComponent<UnityVfxComponent>(vfxId))
+		{
+			vfx->enabled = active;
+			vfx->emitNewParticles = active;
+			if (active)
+			{
+				if (vfx->alphaScale <= 0.0f)
+					vfx->alphaScale = 1.0f;
+			}
+		}
+
+		if (auto* compute = world.GetComponent<ComputeEffectComponent>(vfxId))
+		{
+			compute->enabled = active;
+			compute->emitNewParticles = active;
+		}
+	}
+
 	namespace
 	{
 		static bool TryParseIndex(const std::string& key, int& outIdx)
@@ -743,6 +776,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		m_playerChargeStageVfxId = InvalidEntityId;
 		m_playerChargeStagePrevLevel = 0;
 		m_playerChargeStagePulseRemainSec = 0.0f;
+		m_bossBoostDashVfxId = InvalidEntityId;
+		m_bossBoostDashVfxForced = false;
 
 		if (auto* world = GetWorld())
 			world->SetScriptCombatEnabled(true);
@@ -757,6 +792,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		m_playerChargeStageVfxId = InvalidEntityId;
 		m_playerChargeStagePrevLevel = 0;
 		m_playerChargeStagePulseRemainSec = 0.0f;
+		m_bossBoostDashVfxId = InvalidEntityId;
+		m_bossBoostDashVfxForced = false;
 
 		if (auto* world = GetWorld())
 			world->SetScriptCombatEnabled(true);
@@ -778,6 +815,10 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				if (auto* compute = world->GetComponent<ComputeEffectComponent>(m_playerChargeStageVfxId))
 					compute->emitNewParticles = false;
 			}
+			if (m_bossBoostDashVfxId != InvalidEntityId && m_bossBoostDashVfxForced)
+			{
+				SetSimpleVfxActive(*world, m_bossBoostDashVfxId, false);
+			}
 			world->SetScriptCombatEnabled(false);
 		}
 
@@ -786,6 +827,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		m_playerChargeStageVfxId = InvalidEntityId;
 		m_playerChargeStagePrevLevel = 0;
 		m_playerChargeStagePulseRemainSec = 0.0f;
+		m_bossBoostDashVfxId = InvalidEntityId;
+		m_bossBoostDashVfxForced = false;
 	}
 
     Combat::ActionState C_CombatSessionComponent::GetPlayerState() const
@@ -835,12 +878,18 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				if (auto* compute = world->GetComponent<ComputeEffectComponent>(m_playerChargeStageVfxId))
 					compute->emitNewParticles = false;
 			}
+			if (m_bossBoostDashVfxId != InvalidEntityId && m_bossBoostDashVfxForced)
+			{
+				SetSimpleVfxActive(*world, m_bossBoostDashVfxId, false);
+			}
 		}
 		m_playerRageTrailVfxId = InvalidEntityId;
 		m_playerRageTrailPrevPosValid = false;
 		m_playerChargeStageVfxId = InvalidEntityId;
 		m_playerChargeStagePrevLevel = 0;
 		m_playerChargeStagePulseRemainSec = 0.0f;
+		m_bossBoostDashVfxId = InvalidEntityId;
+		m_bossBoostDashVfxForced = false;
 	}
 	void C_CombatSessionComponent::Update(float deltaTime)
 	{
@@ -975,6 +1024,18 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			if (auto* brain = dynamic_cast<C_BossBrainComponent*>(script))
 				bossBrain = brain;
 		}
+		auto IsBossBoostPattern = [&](C_BossBrainComponent::PatternType pattern) -> bool
+			{
+				switch (pattern)
+				{
+				case C_BossBrainComponent::PatternType::BoostAttackA:
+				case C_BossBrainComponent::PatternType::BoostAttackB:
+				case C_BossBrainComponent::PatternType::BoostAttackC:
+					return true;
+				default:
+					return false;
+				}
+			};
 		if (auto* script = FindScriptOnEntity(world, GetOwnerId(), "C_BossCombatSessionComponent"))
 		{
 			if (auto* session = dynamic_cast<C_BossCombatSessionComponent*>(script))
@@ -1251,6 +1312,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		else if (playerInHealLoop)
 		{
 			Combat::Intent filtered{};
+			filtered.dodgePressed = playerIntent.dodgePressed;
 			filtered.itemPressed = playerIntent.itemPressed;
 			filtered.itemHeld = playerIntent.itemHeld;
 			filtered.itemReleased = playerIntent.itemReleased;
@@ -2025,6 +2087,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		{
 			outPlayer = m_state->playerFsm.Update(playerId, playerIntent, sPlayer, ePlayer, playerLogicDt);
 		}
+		if (outPlayer.parryRecoverToIdle)
+			BeginGuardExitLock(playerId, m_state->playerGuardExitLockSec);
 
 		Combat::BossOutput bossOut{};
 		if (bossSession)
@@ -2181,6 +2245,42 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			&& (m_state->prevBossState != Combat::ActionState::Attack
 				|| (!bossOut.attackClip.empty() && bossOut.attackClip != m_state->bossAnim.attackClip));
 		m_state->bossChargeActive = outBoss.flags.chargeActive;
+		const bool bossBoostAttackActive = bossBrain
+			&& (outBoss.state == Combat::ActionState::Attack)
+			&& IsBossBoostPattern(bossBrain->GetActivePattern());
+		auto HasBoostDashVfx = [&](EntityId id) -> bool
+			{
+				return id != InvalidEntityId
+					&& (world.GetComponent<UnityVfxComponent>(id)
+						|| world.GetComponent<ComputeEffectComponent>(id));
+			};
+		if (!HasBoostDashVfx(m_bossBoostDashVfxId))
+		{
+			m_bossBoostDashVfxId = InvalidEntityId;
+			const std::string vfxName = !m_bossBoostDashVfxName.empty()
+				? m_bossBoostDashVfxName
+				: "BossDeshEffect";
+			if (!vfxName.empty())
+			{
+				m_bossBoostDashVfxId = FindNamedDescendant(world, bossId, vfxName);
+				if (m_bossBoostDashVfxId == InvalidEntityId)
+					m_bossBoostDashVfxId = ResolveEntityByName(vfxName);
+			}
+		}
+		if (bossBoostAttackActive)
+		{
+			if (m_bossBoostDashVfxId != InvalidEntityId && !m_bossBoostDashVfxForced)
+			{
+				SetSimpleVfxActive(world, m_bossBoostDashVfxId, true);
+				m_bossBoostDashVfxForced = true;
+			}
+		}
+		else if (m_bossBoostDashVfxForced)
+		{
+			if (m_bossBoostDashVfxId != InvalidEntityId)
+				SetSimpleVfxActive(world, m_bossBoostDashVfxId, false);
+			m_bossBoostDashVfxForced = false;
+		}
 
 		if (!playerHitstopActive)
 		{
@@ -2793,7 +2893,9 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				if (clipName.empty())
 					return segments;
 				const float minSegmentSec = std::max(0.0f, m_bossGapMinSegmentSec);
-				const float stepDistance = std::max(0.0f, m_bossGapStepDistance);
+				const float attackADistance = std::max(0.0f, m_bossGapAdvanceADistance);
+				const float attackBDistance = std::max(0.0f, m_bossGapAdvanceBDistance);
+				const float attackCDistance = std::max(0.0f, m_bossGapAdvanceCDistance);
 				auto TryPushSegment = [&](float startSec,
 					float endSec,
 					float yawOffsetDeg,
@@ -2808,23 +2910,23 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				if (clipName.find("Attack_ABC") != std::string::npos)
 				{
 					if (windows.size() >= 1)
-						TryPushSegment(0.0f, windows[0].startSec, m_bossGapTurnABCStartDeg, 0.0f);
+						TryPushSegment(0.0f, windows[0].startSec, m_bossGapTurnABCStartDeg, attackADistance);
 					if (windows.size() >= 2)
-						TryPushSegment(windows[0].endSec, windows[1].startSec, m_bossGapTurnABCFollow1Deg, stepDistance);
+						TryPushSegment(windows[0].endSec, windows[1].startSec, m_bossGapTurnABCFollow1Deg, attackBDistance);
 					if (windows.size() >= 3)
-						TryPushSegment(windows[1].endSec, windows[2].startSec, m_bossGapTurnABCFollow2Deg, stepDistance);
+						TryPushSegment(windows[1].endSec, windows[2].startSec, m_bossGapTurnABCFollow2Deg, attackCDistance);
 				}
 				else if (clipName.find("Attack_BC") != std::string::npos)
 				{
 					if (windows.size() >= 1)
-						TryPushSegment(0.0f, windows[0].startSec, m_bossGapTurnBCStartDeg, stepDistance);
+						TryPushSegment(0.0f, windows[0].startSec, m_bossGapTurnBCStartDeg, attackBDistance);
 					if (windows.size() >= 2)
-						TryPushSegment(windows[0].endSec, windows[1].startSec, m_bossGapTurnBCFollowDeg, stepDistance);
+						TryPushSegment(windows[0].endSec, windows[1].startSec, m_bossGapTurnBCFollowDeg, attackCDistance);
 				}
 				else if (clipName.find("Attack_A") != std::string::npos)
 				{
 					if (!windows.empty())
-						TryPushSegment(0.0f, windows[0].startSec, m_bossGapTurnAStartDeg, 0.0f);
+						TryPushSegment(0.0f, windows[0].startSec, m_bossGapTurnAStartDeg, attackADistance);
 				}
 				return segments;
 			};
@@ -3343,7 +3445,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					return false;
 
 				// Boss attacks should keep their initial direction.
-				// Exception: charge attack can track only for the configured early-time window.
+				// Exceptions: charge/soul attack can track only for the configured early-time window.
 				if (outBoss.state != Combat::ActionState::Attack)
 					return true;
 
@@ -3356,7 +3458,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				const bool chargeClip = (attackClip.find("Charge") != std::string::npos)
 					|| (attackClip.find("charge") != std::string::npos);
 				const bool isChargeAttack = chargePatternActive || chargeClip;
-				if (!isChargeAttack)
+				const bool soulPatternActive = bossBrain
+					&& (bossBrain->GetActivePattern() == C_BossBrainComponent::PatternType::Ranged);
+				const bool soulClip = (attackClip.find("Soul_Attack") != std::string::npos)
+					|| (attackClip.find("SoulAttack") != std::string::npos)
+					|| (attackClip.find("soul_attack") != std::string::npos)
+					|| (attackClip.find("soulattack") != std::string::npos);
+				const bool isSoulAttack = soulPatternActive || soulClip;
+				if (!isChargeAttack && !isSoulAttack)
 					return false;
 
 				if (attackClip.empty())
@@ -3366,7 +3475,11 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				if (!TryGetClipTime(bossId, attackClip, clipTimeSec))
 					return false;
 
-				const float trackSec = std::max(0.0f, m_bossChargeFacingTrackSec);
+				float trackSec = 0.0f;
+				if (isChargeAttack)
+					trackSec = std::max(trackSec, std::max(0.0f, m_bossChargeFacingTrackSec));
+				if (isSoulAttack)
+					trackSec = std::max(trackSec, std::max(0.0f, m_bossSoulFacingTrackSec));
 				if (trackSec <= 0.0f)
 					return false;
 
@@ -3708,9 +3821,11 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			float& moveBlend,
 			bool guardEnterPulse,
 			bool guardExitPulse,
+			bool guardExitParryWindowPulse,
 			bool parrySuccessPulse,
 			bool chargeActive,
 			bool attackRestartPulse,
+			bool forceHardCutTransition,
 			bool blendIdleOnAttackEnd,
 			bool hitReactActive,
 			bool suppressGuardExit,
@@ -3955,7 +4070,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					animState.guardExitActive = true;
 					animState.guardExitTimer = 0.0f;
 					animState.guardExitAnimDurationSec = guardExitAnimDurationSec;
-					animState.parryExitParryWindowActive = false;
+					animState.parryExitParryWindowActive = guardExitParryWindowPulse;
 					if (guardExitPulse)
 					{
 						animState.guardEnterActive = false;
@@ -4354,23 +4469,32 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 				else if (entityId == bossId && curr == Combat::ActionState::Attack)
 				{
-					bool isBossKickClip = false;
-					if (bossBrain)
+					const bool bossBoostPatternActive = bossBrain
+						&& IsBossBoostPattern(bossBrain->GetActivePattern());
+					if (bossBoostPatternActive)
 					{
-						const std::string& kickClip = bossBrain->GetPatternClip(C_BossBrainComponent::PatternType::Kick);
-						if (!kickClip.empty())
-							isBossKickClip = (clipName == kickClip);
+						attackSpeedScale = std::max(0.0f, m_bossBoostAttackSpeedScale);
 					}
-
-					if (!isBossKickClip && !clipName.empty())
+					else
 					{
-						isBossKickClip = (clipName.find("Kick_Attack") != std::string::npos)
-							|| (clipName.find("Kick") != std::string::npos)
-							|| (clipName.find("kick") != std::string::npos);
-					}
+						bool isBossKickClip = false;
+						if (bossBrain)
+						{
+							const std::string& kickClip = bossBrain->GetPatternClip(C_BossBrainComponent::PatternType::Kick);
+							if (!kickClip.empty())
+								isBossKickClip = (clipName == kickClip);
+						}
 
-					if (isBossKickClip)
-						attackSpeedScale = std::max(0.0f, m_bossKickAttackSpeedScale);
+						if (!isBossKickClip && !clipName.empty())
+						{
+							isBossKickClip = (clipName.find("Kick_Attack") != std::string::npos)
+								|| (clipName.find("Kick") != std::string::npos)
+								|| (clipName.find("kick") != std::string::npos);
+						}
+
+						if (isBossKickClip)
+							attackSpeedScale = std::max(0.0f, m_bossKickAttackSpeedScale);
+					}
 				}
 				if (entityId == playerId)
 					m_state->playerAttackSpeedScale = attackSpeedScale;
@@ -4431,6 +4555,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					: std::max(0.0f, m_animBlendSec);
 				// Force hard-cut for player attack state (attack start + combo step changes).
 				if (entityId == playerId && curr == Combat::ActionState::Attack)
+					blendSec = 0.0f;
+				if (isPlayerEntity && forceHardCutTransition)
 					blendSec = 0.0f;
 				const bool bossChargePatternActive = (entityId == bossId)
 					&& bossBrain
@@ -4771,9 +4897,9 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		const bool playerGuardEnterPulse = playerGuardPressed;
 		ApplyAnimByState(playerId, playerIntent, outPlayer.state, m_state->prevPlayerState, m_state->playerAnim, m_state->playerMoveBlend,
-			playerGuardEnterPulse, false, playerParrySuccessPulse, m_state->playerChargeActive, outPlayer.attackRestarted, playerAttackEndedOnFinal, false, suppressPlayerGuardExitAnim, forcePlayerGuardLoopOnly, false);
+			playerGuardEnterPulse, outPlayer.parryRecoverToIdle, outPlayer.parryRecoverToIdle, playerParrySuccessPulse, m_state->playerChargeActive, outPlayer.attackRestarted, outPlayer.attackMotionCanceled, playerAttackEndedOnFinal, false, suppressPlayerGuardExitAnim, forcePlayerGuardLoopOnly, false);
 		ApplyAnimByState(bossId, bossIntentCompat, outBoss.state, m_state->prevBossState, m_state->bossAnim, m_state->bossMoveBlend,
-			false, false, false, m_state->bossChargeActive, outBoss.attackRestarted, false, bossOut.hitReactActive, false, false, bossOut.groggyRecoverActive);
+			false, false, false, false, m_state->bossChargeActive, outBoss.attackRestarted, false, false, bossOut.hitReactActive, false, false, bossOut.groggyRecoverActive);
 		m_state->playerHowlingGuardActivePrev = playerHowlingGuardActive;
 
 		auto ApplyHitstopVelocityStop = [&](EntityId entityId, float timerSec)
