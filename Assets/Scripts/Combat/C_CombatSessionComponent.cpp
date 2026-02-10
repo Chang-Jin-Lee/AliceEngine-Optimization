@@ -104,6 +104,19 @@ namespace Alice
 			float speed = 0.0f;
 			std::string clipName{};
 		};
+		struct BossGapAttackMoveState
+		{
+			bool active = false;
+			std::string clipName{};
+			int segmentIndex = -1;
+			float segmentStartSec = 0.0f;
+			float segmentEndSec = 0.0f;
+			float segmentStartYawRad = 0.0f;
+			DirectX::XMFLOAT3 segmentPlayerSnapshotPos{ 0.0f, 0.0f, 0.0f };
+			float segmentTargetYawRad = 0.0f;
+			float segmentForwardDistance = 0.0f;
+			float segmentMoveSpeed = 0.0f;
+		};
 		struct PendingDeferredEvent
 		{
 			Combat::CombatEvent ev{};
@@ -131,6 +144,7 @@ namespace Alice
 		AnimOverrideState bossAnim{};
 		AttackMoveState playerAttackMove{};
 		AttackMoveState bossAttackMove{};
+		BossGapAttackMoveState bossGapAttackMove{};
 		float playerMoveBlend = 0.0f;
 		float bossMoveBlend = 0.0f;
 		float bossGroggyEnterBlendBlockSec = 0.0f;
@@ -216,6 +230,7 @@ namespace Alice
 			bossAnim = {};
 			playerAttackMove = {};
 			bossAttackMove = {};
+			bossGapAttackMove = {};
 			playerMoveBlend = 0.0f;
 			bossMoveBlend = 0.0f;
 			bossGroggyEnterBlendBlockSec = 0.0f;
@@ -2081,6 +2096,26 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			bossOut.flags.chargeLevel = bossIntent.chargeLevel;
 		}
 
+		bool bossKickAttackActive = false;
+		if (bossOut.state == Combat::ActionState::Attack)
+		{
+			std::string kickClip;
+			if (bossBrain)
+				kickClip = bossBrain->GetPatternClip(C_BossBrainComponent::PatternType::Kick);
+
+			if (!kickClip.empty())
+				bossKickAttackActive = (bossOut.attackClip == kickClip);
+
+			if (!bossKickAttackActive && !bossOut.attackClip.empty())
+			{
+				bossKickAttackActive = (bossOut.attackClip.find("Kick_Attack") != std::string::npos)
+					|| (bossOut.attackClip.find("Kick") != std::string::npos)
+					|| (bossOut.attackClip.find("kick") != std::string::npos);
+			}
+		}
+		if (bossKickAttackActive)
+			bossOut.flags.hitActive = true;
+
 		if (bossPhaseHowlingActive)
 			bossOut.flags.hitActive = false;
 		if (bossBrain && bossBrain->ConsumePhase2HowlingStarted())
@@ -2598,11 +2633,11 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					return std::min(kBossDashMaxDistance, std::max(0.0f, gap + kBossDashCollisionBias));
 				}
 				if (clipName.find("Attack_ABC") != std::string::npos)
-					return 1.5f;
+					return 0.0f;
 				if (clipName.find("Attack_BC") != std::string::npos)
-					return 1.0f;
+					return 0.0f;
 				if (clipName.find("Attack_A") != std::string::npos)
-					return 0.5f;
+					return 0.0f;
 				if (clipName.find("Attack_B") != std::string::npos)
 					return 0.5f;
 				if (clipName.find("Attack_C") != std::string::npos)
@@ -2683,6 +2718,116 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						Combat::CmdRequestMove{ entityId, moveState.dir, moveState.speed, false, false } });
 				}
 			};
+		struct AttackWindow
+		{
+			float startSec = 0.0f;
+			float endSec = 0.0f;
+		};
+		struct BossGapSegmentSpec
+		{
+			float startSec = 0.0f;
+			float endSec = 0.0f;
+			float yawOffsetDeg = 0.0f;
+			float forwardDistance = 0.0f;
+		};
+		auto ResetBossGapAttackMove = [&]()
+			{
+				m_state->bossGapAttackMove = {};
+			};
+		auto ResolveDriverClipName = [&](const AttackDriverClip& clip,
+			const AdvancedAnimationComponent* anim) -> std::string
+			{
+				switch (clip.source)
+				{
+				case AttackDriverClipSource::BaseA:
+					return anim ? anim->base.clipA : std::string{};
+				case AttackDriverClipSource::BaseB:
+					return anim ? anim->base.clipB : std::string{};
+				case AttackDriverClipSource::UpperA:
+					return anim ? anim->upper.clipA : std::string{};
+				case AttackDriverClipSource::UpperB:
+					return anim ? anim->upper.clipB : std::string{};
+				case AttackDriverClipSource::Additive:
+					return anim ? anim->additive.clip : std::string{};
+				case AttackDriverClipSource::Explicit:
+				default:
+					return clip.clipName;
+				}
+			};
+		auto CollectAttackWindowsForClip = [&](EntityId entityId,
+			const std::string& clipName) -> std::vector<AttackWindow>
+			{
+				std::vector<AttackWindow> windows;
+				if (clipName.empty())
+					return windows;
+				const auto* driver = world.GetComponent<AttackDriverComponent>(entityId);
+				if (!driver)
+					return windows;
+				const auto* anim = world.GetComponent<AdvancedAnimationComponent>(entityId);
+				for (const auto& clip : driver->clips)
+				{
+					if (!clip.enabled || clip.type != AttackDriverNotifyType::Attack)
+						continue;
+					const std::string resolvedName = ResolveDriverClipName(clip, anim);
+					if (resolvedName.empty() || resolvedName != clipName)
+						continue;
+					float startSec = std::max(0.0f, clip.startTimeSec);
+					float endSec = std::max(0.0f, clip.endTimeSec);
+					if (endSec < startSec)
+						std::swap(startSec, endSec);
+					windows.push_back({ startSec, endSec });
+				}
+				std::sort(windows.begin(), windows.end(),
+					[](const AttackWindow& lhs, const AttackWindow& rhs)
+					{
+						if (lhs.startSec == rhs.startSec)
+							return lhs.endSec < rhs.endSec;
+						return lhs.startSec < rhs.startSec;
+					});
+				return windows;
+			};
+		auto BuildBossGapSegments = [&](const std::string& clipName,
+			const std::vector<AttackWindow>& windows) -> std::vector<BossGapSegmentSpec>
+			{
+				std::vector<BossGapSegmentSpec> segments;
+				if (clipName.empty())
+					return segments;
+				const float minSegmentSec = std::max(0.0f, m_bossGapMinSegmentSec);
+				const float stepDistance = std::max(0.0f, m_bossGapStepDistance);
+				auto TryPushSegment = [&](float startSec,
+					float endSec,
+					float yawOffsetDeg,
+					float forwardDistance)
+					{
+						const float clampedStart = std::max(0.0f, startSec);
+						const float clampedEnd = std::max(0.0f, endSec);
+						if ((clampedEnd - clampedStart) <= minSegmentSec)
+							return;
+						segments.push_back({ clampedStart, clampedEnd, yawOffsetDeg, std::max(0.0f, forwardDistance) });
+					};
+				if (clipName.find("Attack_ABC") != std::string::npos)
+				{
+					if (windows.size() >= 1)
+						TryPushSegment(0.0f, windows[0].startSec, m_bossGapTurnABCStartDeg, 0.0f);
+					if (windows.size() >= 2)
+						TryPushSegment(windows[0].endSec, windows[1].startSec, m_bossGapTurnABCFollow1Deg, stepDistance);
+					if (windows.size() >= 3)
+						TryPushSegment(windows[1].endSec, windows[2].startSec, m_bossGapTurnABCFollow2Deg, stepDistance);
+				}
+				else if (clipName.find("Attack_BC") != std::string::npos)
+				{
+					if (windows.size() >= 1)
+						TryPushSegment(0.0f, windows[0].startSec, m_bossGapTurnBCStartDeg, stepDistance);
+					if (windows.size() >= 2)
+						TryPushSegment(windows[0].endSec, windows[1].startSec, m_bossGapTurnBCFollowDeg, stepDistance);
+				}
+				else if (clipName.find("Attack_A") != std::string::npos)
+				{
+					if (!windows.empty())
+						TryPushSegment(0.0f, windows[0].startSec, m_bossGapTurnAStartDeg, 0.0f);
+				}
+				return segments;
+			};
 
 		// TEMP: disable attack-driven forward move while tuning.
 		// UpdateAttackMove(m_state->playerAttackMove,
@@ -2711,6 +2856,98 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			bossAttackClipForMove,
 			bossCommands,
 			bossLogicDt);
+		if (outBoss.state != Combat::ActionState::Attack
+			|| bossHitstopActive
+			|| bossAttackClipForMove.empty())
+		{
+			ResetBossGapAttackMove();
+		}
+		else
+		{
+			float clipTimeSec = 0.0f;
+			auto* bossTr = world.GetComponent<TransformComponent>(bossId);
+			auto* playerTr = world.GetComponent<TransformComponent>(playerId);
+			if (!bossTr || !playerTr || !TryGetClipTime(bossId, bossAttackClipForMove, clipTimeSec))
+			{
+				ResetBossGapAttackMove();
+			}
+			else
+			{
+				const std::vector<AttackWindow> windows = CollectAttackWindowsForClip(bossId, bossAttackClipForMove);
+				const std::vector<BossGapSegmentSpec> segments = BuildBossGapSegments(bossAttackClipForMove, windows);
+				int segmentIndex = -1;
+				for (size_t i = 0; i < segments.size(); ++i)
+				{
+					if (clipTimeSec >= segments[i].startSec && clipTimeSec < segments[i].endSec)
+					{
+						segmentIndex = static_cast<int>(i);
+						break;
+					}
+				}
+				if (segmentIndex < 0)
+				{
+					ResetBossGapAttackMove();
+				}
+				else
+				{
+					const BossGapSegmentSpec& segment = segments[static_cast<size_t>(segmentIndex)];
+					const bool enteringSegment = !m_state->bossGapAttackMove.active
+						|| m_state->bossGapAttackMove.clipName != bossAttackClipForMove
+						|| m_state->bossGapAttackMove.segmentIndex != segmentIndex;
+					if (enteringSegment)
+					{
+						m_state->bossGapAttackMove.active = true;
+						m_state->bossGapAttackMove.clipName = bossAttackClipForMove;
+						m_state->bossGapAttackMove.segmentIndex = segmentIndex;
+						m_state->bossGapAttackMove.segmentStartSec = segment.startSec;
+						m_state->bossGapAttackMove.segmentEndSec = segment.endSec;
+						m_state->bossGapAttackMove.segmentStartYawRad = bossTr->rotation.y;
+						m_state->bossGapAttackMove.segmentPlayerSnapshotPos = playerTr->position;
+						const float segDuration = std::max(0.0f, segment.endSec - segment.startSec);
+						m_state->bossGapAttackMove.segmentForwardDistance = std::max(0.0f, segment.forwardDistance);
+						m_state->bossGapAttackMove.segmentMoveSpeed =
+							(segDuration > 0.0f)
+							? (m_state->bossGapAttackMove.segmentForwardDistance / segDuration)
+							: 0.0f;
+						float baseYawRad = m_state->bossGapAttackMove.segmentStartYawRad;
+						const float toPlayerX = m_state->bossGapAttackMove.segmentPlayerSnapshotPos.x - bossTr->position.x;
+						const float toPlayerZ = m_state->bossGapAttackMove.segmentPlayerSnapshotPos.z - bossTr->position.z;
+						if ((std::abs(toPlayerX) + std::abs(toPlayerZ)) > 0.0001f)
+						{
+							const float offsetRad = m_rotationOffsetDeg * kDegToRad;
+							baseYawRad = std::atan2(toPlayerX, toPlayerZ) + offsetRad;
+						}
+						m_state->bossGapAttackMove.segmentTargetYawRad = baseYawRad
+							+ (segment.yawOffsetDeg * kDegToRad);
+					}
+
+					const float segStart = m_state->bossGapAttackMove.segmentStartSec;
+					const float segEnd = m_state->bossGapAttackMove.segmentEndSec;
+					const float segDuration = std::max(0.0001f, segEnd - segStart);
+					float t = std::clamp((clipTimeSec - segStart) / segDuration, 0.0f, 1.0f);
+					if (m_debugBossGapWarp)
+						t = 1.0f;
+					constexpr float kPi = 3.14159265359f;
+					constexpr float kTwoPi = 6.28318530718f;
+					float yawDelta = m_state->bossGapAttackMove.segmentTargetYawRad
+						- m_state->bossGapAttackMove.segmentStartYawRad;
+					while (yawDelta > kPi) yawDelta -= kTwoPi;
+					while (yawDelta < -kPi) yawDelta += kTwoPi;
+					const float interpolatedYaw = m_state->bossGapAttackMove.segmentStartYawRad + yawDelta * t;
+					bossTr->SetRotation(0.0f, interpolatedYaw * kRadToDeg, 0.0f);
+
+					if (m_state->bossGapAttackMove.segmentForwardDistance > 0.0f
+						&& m_state->bossGapAttackMove.segmentMoveSpeed > 0.0f)
+					{
+						const float forwardYaw = interpolatedYaw - (m_rotationOffsetDeg * kDegToRad);
+						const Combat::Vec2 moveDir{ std::sin(forwardYaw), std::cos(forwardYaw) };
+						bossCommands.push_back({ Combat::CommandType::RequestMove,
+							Combat::CmdRequestMove{ bossId, moveDir, m_state->bossGapAttackMove.segmentMoveSpeed, false, false } });
+						m_state->bossAttackMove.active = true;
+					}
+				}
+			}
+		}
 		if (outBoss.state == Combat::ActionState::Move)
 		{
 			bossCommands.push_back({ Combat::CommandType::RequestMove,
@@ -4115,6 +4352,26 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					if (heavyClipMatch)
 						attackSpeedScale = std::max(0.0f, m_chargeCombo2Speed);
 				}
+				else if (entityId == bossId && curr == Combat::ActionState::Attack)
+				{
+					bool isBossKickClip = false;
+					if (bossBrain)
+					{
+						const std::string& kickClip = bossBrain->GetPatternClip(C_BossBrainComponent::PatternType::Kick);
+						if (!kickClip.empty())
+							isBossKickClip = (clipName == kickClip);
+					}
+
+					if (!isBossKickClip && !clipName.empty())
+					{
+						isBossKickClip = (clipName.find("Kick_Attack") != std::string::npos)
+							|| (clipName.find("Kick") != std::string::npos)
+							|| (clipName.find("kick") != std::string::npos);
+					}
+
+					if (isBossKickClip)
+						attackSpeedScale = std::max(0.0f, m_bossKickAttackSpeedScale);
+				}
 				if (entityId == playerId)
 					m_state->playerAttackSpeedScale = attackSpeedScale;
 				else if (entityId == bossId)
@@ -4174,6 +4431,18 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					: std::max(0.0f, m_animBlendSec);
 				// Force hard-cut for player attack state (attack start + combo step changes).
 				if (entityId == playerId && curr == Combat::ActionState::Attack)
+					blendSec = 0.0f;
+				const bool bossChargePatternActive = (entityId == bossId)
+					&& bossBrain
+					&& (bossBrain->GetActivePattern() == C_BossBrainComponent::PatternType::Charge);
+				const bool bossChargeAttackClip = (entityId == bossId)
+					&& (curr == Combat::ActionState::Attack)
+					&& ((clipName.find("Charge_Attack") != std::string::npos)
+						|| (clipName.find("Charge") != std::string::npos)
+						|| (clipName.find("charge") != std::string::npos));
+				const bool bossChargeBlendHardCut = (entityId == bossId)
+					&& (chargeActiveNow || bossChargePatternActive || bossChargeAttackClip);
+				if (bossChargeBlendHardCut)
 					blendSec = 0.0f;
 				const bool playerGuardEnterToLoopTransition = isPlayerEntity
 					&& !cfg.guardEnterClip.empty()
@@ -4420,6 +4689,26 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				{
 					anim->base.speedA = overrideSpeed;
 					anim->base.speedB = overrideSpeed;
+				}
+				const bool lockBossDeadAtFreezeFrame = (entityId == bossId)
+					&& (curr == Combat::ActionState::Dead)
+					&& !deadClip.empty()
+					&& (clipName == deadClip)
+					&& animState.overrideActive
+					&& !animState.blending;
+				if (lockBossDeadAtFreezeFrame)
+				{
+					const float freezeTimeSec = std::max(0.0f, m_bossDeathFreezeTimeSec);
+					const bool reachedFreeze = (freezeTimeSec <= 0.0f)
+						|| (anim->base.timeA >= freezeTimeSec)
+						|| (anim->base.timeB >= freezeTimeSec);
+					if (reachedFreeze)
+					{
+						anim->base.timeA = freezeTimeSec;
+						anim->base.timeB = freezeTimeSec;
+						anim->base.speedA = 0.0f;
+						anim->base.speedB = 0.0f;
+					}
 				}
 				const float timerStep = animDt * std::abs(overrideSpeed);
 				if (animState.guardEnterActive)

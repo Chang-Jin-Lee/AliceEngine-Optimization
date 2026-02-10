@@ -283,6 +283,8 @@ namespace Alice
                     }
                     if (next != BrainState::Idle)
                         m_idleTargetSec = 0.0f;
+                    if (next != BrainState::Retreat)
+                        m_retreatSingleStep = false;
                 }
             };
 
@@ -507,6 +509,10 @@ namespace Alice
             auto StartRetreat = [&](float targetDist)
                 {
                     m_retreatTargetDist = std::max(0.0f, targetDist);
+                    const float closeThreshold = std::max(
+                        std::max(0.0f, m_idleRetreatTriggerDist),
+                        std::max(0.0f, m_postAttackRetreatTriggerDist));
+                    m_retreatSingleStep = (closeThreshold > 0.0f) && (dist <= closeThreshold);
                     EnterState(BrainState::Retreat);
                 };
             auto PeekPendingPattern = [&]() -> PatternType
@@ -825,12 +831,15 @@ namespace Alice
 
                 if (allowDecision && PeekQueuedPattern() == PatternType::None && m_attackCooldownTimer <= 0.0f)
                 {
-                    const float closeRange = std::max(0.0f, m_kickRange);
+                    const float sideHarassRange = std::max(0.0f, m_kickRange);
+                    const float kickHarassRange = sideHarassRange * 0.5f;
                     PatternType nextPattern = PatternType::None;
                     const PatternType prevPattern = m_lastPattern;
-                    if (dist <= closeRange)
+                    const bool canUseKick = targetInFront && dist <= kickHarassRange;
+                    const bool canUseSideHarass = !targetInFront && dist <= sideHarassRange;
+                    if (canUseKick || canUseSideHarass)
                     {
-                        const PatternType harass = targetInFront ? PatternType::Kick : PatternType::Side;
+                        const PatternType harass = canUseKick ? PatternType::Kick : PatternType::Side;
                         if (IsTransitionAllowed(prevPattern, harass))
                         {
                             nextPattern = harass;
@@ -937,9 +946,12 @@ namespace Alice
             }
             else if (m_state == BrainState::Retreat)
             {
-                if (m_retreatTargetDist <= 0.0f || dist >= m_retreatTargetDist)
+                const bool retreatCompleted = (m_retreatTargetDist <= 0.0f) || (dist >= m_retreatTargetDist);
+                const bool retreatSingleStepDone = m_retreatSingleStep && (m_stateTimer > 0.0f);
+                if (retreatCompleted || retreatSingleStepDone)
                 {
                     m_retreatTargetDist = 0.0f;
+                    m_retreatSingleStep = false;
                     EnterState(BrainState::Orbit);
                 }
             }
@@ -1375,9 +1387,11 @@ namespace Alice
             };
 
         const float closeRange = std::max(0.0f, m_kickRange);
+        const float kickRange = closeRange * 0.5f;
         const float meleeRange = std::max(closeRange, m_meleeDistance);
         const float midRange = std::max(meleeRange, m_dashRangeMax);
 
+        const bool inKickRange = dist <= kickRange;
         const bool inClose = dist <= closeRange;
         const bool inMelee = dist <= meleeRange;
         const bool inMid = dist <= midRange;
@@ -1399,7 +1413,10 @@ namespace Alice
         if (inClose)
         {
             if (targetInFront)
-                PushUnique(PatternType::Kick);
+            {
+                if (inKickRange)
+                    PushUnique(PatternType::Kick);
+            }
             else
                 PushUnique(PatternType::Dash);
             PushCycle();
@@ -1508,7 +1525,7 @@ namespace Alice
         case PatternType::Side:
             return std::max(0.0f, m_backAttackRange);
         case PatternType::Kick:
-            return std::max(0.0f, m_kickRange);
+            return std::max(0.0f, m_kickRange * 0.5f);
         case PatternType::Charge:
             return std::max(0.0f, m_chargeRangeMax);
         case PatternType::Dash:
@@ -1673,6 +1690,7 @@ namespace Alice
         m_decision.sectorLockedSec = 0.0f;
         m_decision.lockedSector = Sector::Unknown;
         m_retreatTargetDist = 0.0f;
+        m_retreatSingleStep = false;
         m_traceTargetSec = 0.0f;
         m_faceTargetSuppressTimer = 0.0f;
         m_deactivateAfterCurrentAttack = false;
@@ -1846,6 +1864,7 @@ namespace Alice
         m_testRetreatTimer = 0.0f;
         m_idleTargetSec = 0.0f;
         m_retreatTargetDist = 0.0f;
+        m_retreatSingleStep = false;
         m_debugLabel = m_brainActivated ? "Idle" : "Standby | Idle | Inactive";
         m_traceEnterDist = 0.0f;
         m_traceTargetSec = 0.0f;

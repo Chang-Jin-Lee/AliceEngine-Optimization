@@ -166,6 +166,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_playerGuardEnterSpeedScale, 1.5f);
         ALICE_PROPERTY(float, m_playerGuardTransitionBlendSec, 0.12f);
         ALICE_PROPERTY(float, m_playerParryRecoverBlendSec, 0.1f);
+        ALICE_PROPERTY(float, m_bossDeathFreezeTimeSec, 3.89f);
         ALICE_PROPERTY(std::string, m_bossIdleClip, "");
         ALICE_PROPERTY(std::string, m_bossMoveClip, "");
         ALICE_PROPERTY(std::string, m_bossLightAttackClip, "");
@@ -196,6 +197,16 @@ namespace Alice
         ALICE_PROPERTY(float, m_heavyAttackMoveDurationSec, 0.05f);
         ALICE_PROPERTY(float, m_bossChargeFacingTrackSec, 0.6f);
         ALICE_PROPERTY(float, m_bossDashMoveStartSec, -1.0f);
+        ALICE_PROPERTY(float, m_bossKickAttackSpeedScale, 1.5f);
+        ALICE_PROPERTY(float, m_bossGapStepDistance, 0.5f);
+        ALICE_PROPERTY(float, m_bossGapTurnAStartDeg, 65.0f);
+        ALICE_PROPERTY(float, m_bossGapTurnBCStartDeg, 35.0f);
+        ALICE_PROPERTY(float, m_bossGapTurnBCFollowDeg, 25.0f);
+        ALICE_PROPERTY(float, m_bossGapTurnABCStartDeg, 65.0f);
+        ALICE_PROPERTY(float, m_bossGapTurnABCFollow1Deg, 35.0f);
+        ALICE_PROPERTY(float, m_bossGapTurnABCFollow2Deg, 25.0f);
+        ALICE_PROPERTY(float, m_bossGapMinSegmentSec, 0.03f);
+        ALICE_PROPERTY(bool, m_debugBossGapWarp, false);
         ALICE_PROPERTY(float, m_bossIdleFacingDamping, 6.0f);
         ALICE_PROPERTY(bool, m_debugAttackMoveTime, false);
 
