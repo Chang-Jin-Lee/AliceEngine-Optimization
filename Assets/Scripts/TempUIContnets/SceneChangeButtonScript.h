@@ -32,9 +32,16 @@ namespace Alice
         ALICE_PROPERTY(bool, showUnderImageOnHoverOnly, false);
         // If true, hide the button image when not hovered (alpha = 0).
         ALICE_PROPERTY(bool, showButtonImageOnHoverOnly, false);
+        // Optional fade effect before scene change.
+        ALICE_PROPERTY(std::string, fadeEntityName, "");
+        ALICE_PROPERTY(bool, useFadeOnClick, true);
+        // If < 0, auto-compute from FadeInOutScript fadeSpeed/startAlpha.
+        ALICE_PROPERTY(float, sceneChangeDelaySec, -1.0f);
 
     private:
         void ApplyChildColors(AliceUI::UIButtonState state);
+        void RequestSceneChange();
+        float ComputeAutoDelaySec() const;
 
         UIButtonComponent* changeSceneButton = nullptr;
         EntityId m_buttonEntityId = InvalidEntityId;
@@ -42,6 +49,7 @@ namespace Alice
         EntityId m_underLineEntityId = InvalidEntityId;
         AliceUI::UIButtonState m_prevButtonState = AliceUI::UIButtonState::Normal;
         class UISoundScript* m_uiSound = nullptr;
+        class FadeInOutScript* m_fade = nullptr;
 
         bool isChangeSceneRequested = false;
         bool m_pendingSceneChange = false;

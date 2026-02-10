@@ -207,6 +207,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_fatalHoldSec, 2.0f);
         ALICE_PROPERTY(float, m_fatalDamageScale, 1.5f);
         ALICE_PROPERTY(float, m_groggyAttackStartDelaySec, 2.8f);
+        ALICE_PROPERTY(float, m_groggyAttackSfxDelaySec, 0.0f);
 
         void ForceReset();
         ALICE_FUNC(ForceReset);

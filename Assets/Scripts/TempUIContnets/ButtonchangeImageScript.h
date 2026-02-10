@@ -6,16 +6,15 @@
 namespace Alice
 {
     // 간단한 예제 스크립트입니다. 필요에 맞게 수정해서 사용하세요.
-    class ReturnButtonScript : public IScript
+    class ButtonchangeImageScript : public IScript
     {
-        ALICE_BODY(ReturnButtonScript);
+        ALICE_BODY(ButtonchangeImageScript);
 
     public:
         void Start() override;
         void Update(float deltaTime) override;
 
-        // --- 변수 리플렉션 예시 (에디터에서 수정 가능) ---
-        ALICE_PROPERTY(float, m_exampleValue, 1.0f);
+
 
     };
 }

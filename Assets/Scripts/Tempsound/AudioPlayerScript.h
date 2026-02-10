@@ -18,6 +18,7 @@ namespace Alice
         void Update(float deltaTime) override;
 
         ALICE_PROPERTY(std::string, busEntityName, std::string("AudioBus"));
+        ALICE_PROPERTY(std::string, sessionEntityName, "SceneManager"); // C_CombatSessionComponent를 찾기 위한 엔티티 이름
         ALICE_PROPERTY(bool, useBus, true);
         ALICE_PROPERTY(bool, is3D, true);
         ALICE_PROPERTY(float, volume, 1.0f);
@@ -34,6 +35,11 @@ namespace Alice
         ALICE_PROPERTY(std::string, pathAttack3, "Resource/Test/4_Resources/sound/SFX/플레이어/공격 3/Player_Attack_03.wav");
         ALICE_PROPERTY(std::string, pathGuard, "Resource/Test/4_Resources/sound/SFX/플레이어/가드/Player_Guard_01.mp3");
         ALICE_PROPERTY(std::string, pathParry, "Resource/Test/4_Resources/sound/SFX/플레이어/패링/Player_Parry_01.wav");
+        
+        // 광폭화 공격 경로 (광폭화 상태일 때 Attack1/2/3 대신 사용)
+        ALICE_PROPERTY(std::string, pathRageAttack1, "Resource/Test/4_Resources/sound/SFX/플레이어/광폭화 공격/Player_Attack_01.wav");
+        ALICE_PROPERTY(std::string, pathRageAttack2, "Resource/Test/4_Resources/sound/SFX/플레이어/광폭화 공격/Player_Attack_02.wav");
+        ALICE_PROPERTY(std::string, pathRageAttack3, "Resource/Test/4_Resources/sound/SFX/플레이어/광폭화 공격/Player_Attack_03.wav");
 
         // 플레이어 움직임 상태별 경로
         ALICE_PROPERTY(std::string, pathRoll, "Resource/Test/4_Resources/sound/SFX/플레이어/구르기/Player_Rolling_01.mp3");
@@ -47,7 +53,7 @@ namespace Alice
         ALICE_PROPERTY(std::string, pathGuardBreak, "Resource/Test/4_Resources/sound/SFX/플레이어/가드 브레이크/Player_GuardBreak_01.mp3");
         ALICE_PROPERTY(std::string, pathEgoCombine, "Resource/Test/4_Resources/sound/SFX/플레이어/에고웨폰 재결합/Player_Weapon_Gather_01.wav");
         ALICE_PROPERTY(std::string, pathHeal, "Resource/Sound/SFX/플레이어/회복/Player_Healing_01.wav");
-        ALICE_PROPERTY(std::string, pathGroggyAttack, "Resource/Sound/SFX/플레이어/그로기어택/Player_GroggyAttack_01.wav");
+        ALICE_PROPERTY(std::string, pathGroggyAttack, "Resource/Test/4_Resources/sound/SFX/플레이어/그로기어택/Player_GroggyAttack_01.mp3");
         ALICE_PROPERTY(std::string, pathDeath, "Resource/Sound/SFX/플레이어/사망/Player_Death_01.wav");
 
         /// 공격 상태 → OnPlayerAttackSfxRequest 델리게이트로 바인딩
