@@ -664,6 +664,7 @@ namespace Alice
 	{
 		ID3D11RenderTargetView* overlayRTV = nullptr;
 		ID3D11DepthStencilView* overlayDSV = nullptr;
+		ID3D11DepthStencilView* unityVfxDSV = nullptr;
 
 		if (m_editorMode)
 		{
@@ -671,17 +672,23 @@ namespace Alice
 			{
 				overlayRTV = m_forwardRenderSystem->GetViewportRTV();
 				overlayDSV = nullptr;
+				unityVfxDSV = m_forwardRenderSystem->GetSceneDSV();
 			}
 			else if (!m_useForwardRendering && m_deferredRenderSystem)
 			{
 				overlayRTV = m_deferredRenderSystem->GetViewportRTV();
 				overlayDSV = nullptr;
+				unityVfxDSV = m_deferredRenderSystem->GetSceneDSV();
 			}
 		}
 		else
 		{
 			overlayRTV = m_renderDevice ? m_renderDevice->GetBackBufferRTV() : nullptr;
 			overlayDSV = nullptr;
+			if (m_useForwardRendering && m_forwardRenderSystem)
+				unityVfxDSV = m_forwardRenderSystem->GetSceneDSV();
+			else if (!m_useForwardRendering && m_deferredRenderSystem)
+				unityVfxDSV = m_deferredRenderSystem->GetSceneDSV();
 		}
 
 		if (overlayRTV)
@@ -716,7 +723,18 @@ namespace Alice
 		}
 
 		if (m_effectSystem) m_effectSystem->Render(m_world, m_camera);
-		if (m_unityVfxMeshRenderSystem) m_unityVfxMeshRenderSystem->Render(m_world, m_camera, m_gameDeltaTime);
+		if (m_unityVfxMeshRenderSystem)
+		{
+			auto* ctx = m_renderDevice ? m_renderDevice->GetImmediateContext() : nullptr;
+			if (ctx && overlayRTV && unityVfxDSV)
+				ctx->OMSetRenderTargets(1, &overlayRTV, unityVfxDSV);
+
+			m_unityVfxMeshRenderSystem->Render(m_world, m_camera, m_gameDeltaTime);
+
+			// Keep legacy overlay behavior for other overlay systems.
+			if (ctx && overlayRTV)
+				ctx->OMSetRenderTargets(1, &overlayRTV, overlayDSV);
+		}
 		if (m_trailRenderSystem) m_trailRenderSystem->Render(m_world, m_camera);
 
 		// 에디터 모드에서는 뷰포트 RTV를 SRV로 읽어야 하므로 백버퍼로 복귀
