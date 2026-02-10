@@ -37,6 +37,8 @@ namespace Alice
         const XMFLOAT3 kTintParryRingYellow(1.0f, 0.85f, 0.1f);
         const XMFLOAT3 kTintBossGroggyRingRed(1.0f, 0.1f, 0.1f);
         constexpr float kAttack3ExtraSlashLateralOffset = 0.25f;
+        constexpr float kAttack3ExtraSlashRollOffsetDeg = 20.0f;
+        constexpr bool kAttack3EnableLeftExtraSlash = false;
 
         int ClampInt(int v, int minV, int maxV)
         {
@@ -1157,10 +1159,18 @@ namespace Alice
             -kAttack3ExtraSlashLateralOffset,
             kAttack3ExtraSlashLateralOffset
         };
+        const std::array<float, 3> rollOffsetsDeg{
+            0.0f,
+            -kAttack3ExtraSlashRollOffsetDeg,
+            kAttack3ExtraSlashRollOffsetDeg
+        };
         const int spawnCount = isAttack3 ? 3 : 1;
 
         for (int spawnIndex = 0; spawnIndex < spawnCount; ++spawnIndex)
         {
+            if (isAttack3 && !kAttack3EnableLeftExtraSlash && spawnIndex == 1)
+                continue;
+
             const EntityId id = Acquire(slashSlot);
             if (id == InvalidEntityId)
             {
@@ -1189,11 +1199,13 @@ namespace Alice
             XMFLOAT3 spawnAnchorLocal = anchorLocal;
             spawnAnchorLocal.x += lateralOffsets[spawnIndex];
             const XMFLOAT3 localPos = Add(spawnAnchorLocal, slashOffsetLocal);
+            XMFLOAT3 spawnRotationOffsetDeg = slashRotationOffsetDeg;
+            spawnRotationOffsetDeg.z += rollOffsetsDeg[spawnIndex];
             tr->position = localPos;
             tr->rotation = XMFLOAT3(
-                XMConvertToRadians(slashRotationOffsetDeg.x),
-                XMConvertToRadians(slashRotationOffsetDeg.y),
-                XMConvertToRadians(slashRotationOffsetDeg.z));
+                XMConvertToRadians(spawnRotationOffsetDeg.x),
+                XMConvertToRadians(spawnRotationOffsetDeg.y),
+                XMConvertToRadians(spawnRotationOffsetDeg.z));
 
             XMFLOAT3 baseScale = tr->scale;
             const auto itScale = m_cachedBaseScales[slashSlot].find(id);
