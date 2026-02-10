@@ -1031,6 +1031,14 @@ namespace Alice
                         world->MarkTransformDirty(inst.id);
                     }
                 }
+
+                if (inst.fadeOut && world && inst.totalSec > 0.0f)
+                {
+                    const float clampedRemaining = std::clamp(inst.remainingSec, 0.0f, inst.totalSec);
+                    const float alphaRatio = clampedRemaining / inst.totalSec;
+                    ApplyEntityAlphaFadeRecursive(*world, slot, inst.id, alphaRatio);
+                }
+
                 if (inst.remainingSec <= 0.0f)
                 {
                     Release(slot, inst.id);
@@ -2319,6 +2327,26 @@ namespace Alice
         const auto children = world.GetChildren(id);
         for (EntityId child : children)
             SetEntityLoopModeRecursive(world, child, loopEnabled);
+    }
+
+    void CombatVfxBridgeScript::ApplyEntityAlphaFadeRecursive(World& world, int slot, EntityId id, float alphaRatio) const
+    {
+        if (id == InvalidEntityId || slot < 0 || slot >= SlotCount)
+            return;
+
+        const float clampedRatio = std::clamp(alphaRatio, 0.0f, 1.0f);
+        if (auto* vfx = world.GetComponent<UnityVfxComponent>(id))
+        {
+            float baseAlpha = vfx->alphaScale;
+            const auto it = m_cachedBaseAlphas[slot].find(id);
+            if (it != m_cachedBaseAlphas[slot].end())
+                baseAlpha = it->second;
+            vfx->alphaScale = baseAlpha * clampedRatio;
+        }
+
+        const auto children = world.GetChildren(id);
+        for (EntityId child : children)
+            ApplyEntityAlphaFadeRecursive(world, slot, child, clampedRatio);
     }
 
     void CombatVfxBridgeScript::CacheEntityAlphaRecursive(World& world, int slot, EntityId id)

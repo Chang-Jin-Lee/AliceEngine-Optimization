@@ -164,7 +164,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_playerGuardEnterDurationSec, 0.0f);
         ALICE_PROPERTY(float, m_playerGuardExitDurationSec, 0.0f);
         ALICE_PROPERTY(float, m_playerGuardEnterSpeedScale, 1.5f);
-        ALICE_PROPERTY(float, m_playerGuardTransitionBlendSec, 0.5f);
+        ALICE_PROPERTY(float, m_playerGuardTransitionBlendSec, 0.12f);
         ALICE_PROPERTY(float, m_playerParryRecoverBlendSec, 0.1f);
         ALICE_PROPERTY(std::string, m_bossIdleClip, "");
         ALICE_PROPERTY(std::string, m_bossMoveClip, "");
