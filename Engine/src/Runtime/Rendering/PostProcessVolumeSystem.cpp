@@ -545,6 +545,10 @@ namespace Alice
             target.splitFxSpeed = volumeSettings.splitFxSpeed;
         if (volumeSettings.bOverride_SplitFxTimeSec)
             target.splitFxTimeSec = volumeSettings.splitFxTimeSec;
+        if (volumeSettings.bOverride_SplitFxColorA)
+            target.splitFxColorA = volumeSettings.splitFxColorA;
+        if (volumeSettings.bOverride_SplitFxColorB)
+            target.splitFxColorB = volumeSettings.splitFxColorB;
 
         return target;
     }

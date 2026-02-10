@@ -94,6 +94,8 @@ cbuffer PostProcessConstantBuffer : register(b2)
                                       // 주의: 이것은 "출력 감마 보정"이 아니라 Color Grading 단계에서 색상을 곱하는 룩 조절 파라미터입니다.
     float4 g_SplitParams;            // x: splitAmount, y: splitAngleDeg, z: splitLineOffset, w: splitFeather
     float4 g_SplitFxParams;          // x: splitFxIntensity, y: splitFxWidth, z: splitFxSpeed, w: splitFxTimeSec
+    float4 g_SplitFxColorA;          // rgb: core/glow color, w: reserved
+    float4 g_SplitFxColorB;          // rgb: fringe/spark color, w: reserved
     float4 g_ImpactBlurParams;       // x: intensity, y: radius, z: centerX, w: centerY
 };
 
@@ -219,8 +221,8 @@ float3 ApplySplitCutFx(float3 color, float2 uv)
     float sparks = saturate((n0 * 0.65f + n1 * 0.35f) * 1.9f - 1.0f);
     sparks *= sparks;
 
-    float3 glowColor = float3(2.8f, 1.2f, 0.45f);
-    float3 fringeColor = float3(0.10f, 1.05f, 0.95f);
+    float3 glowColor = max(g_SplitFxColorA.rgb, 0.0f);
+    float3 fringeColor = max(g_SplitFxColorB.rgb, 0.0f);
 
     float glow = edgeBand * (0.35f + sparks * 1.25f);
     float dark = core * 0.55f;
@@ -317,6 +319,8 @@ cbuffer PostProcessConstantBuffer : register(b2)
                                       // 주의: 이것은 "출력 감마 보정"이 아니라 Color Grading 단계에서 색상을 곱하는 룩 조절 파라미터입니다.
     float4 g_SplitParams;            // x: splitAmount, y: splitAngleDeg, z: splitLineOffset, w: splitFeather
     float4 g_SplitFxParams;          // x: splitFxIntensity, y: splitFxWidth, z: splitFxSpeed, w: splitFxTimeSec
+    float4 g_SplitFxColorA;          // rgb: core/glow color, w: reserved
+    float4 g_SplitFxColorB;          // rgb: fringe/spark color, w: reserved
     float4 g_ImpactBlurParams;       // x: intensity, y: radius, z: centerX, w: centerY
 };
 
@@ -439,8 +443,8 @@ float3 ApplySplitCutFx(float3 color, float2 uv)
     float sparks = saturate((n0 * 0.65f + n1 * 0.35f) * 1.9f - 1.0f);
     sparks *= sparks;
 
-    float3 glowColor = float3(2.8f, 1.2f, 0.45f);
-    float3 fringeColor = float3(0.10f, 1.05f, 0.95f);
+    float3 glowColor = max(g_SplitFxColorA.rgb, 0.0f);
+    float3 fringeColor = max(g_SplitFxColorB.rgb, 0.0f);
 
     float glow = edgeBand * (0.35f + sparks * 1.25f);
     float dark = core * 0.55f;

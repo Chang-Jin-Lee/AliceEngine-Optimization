@@ -98,6 +98,13 @@ namespace Alice
         bool bOverride_SplitFxTimeSec = false;
         float splitFxTimeSec = 0.0f;
 
+        // splitFxColorA/B: 절단선 색상(핵심/보조)
+        bool bOverride_SplitFxColorA = false;
+        DirectX::XMFLOAT3 splitFxColorA = { 2.8f, 1.2f, 0.45f };
+
+        bool bOverride_SplitFxColorB = false;
+        DirectX::XMFLOAT3 splitFxColorB = { 0.10f, 1.05f, 0.95f };
+
         /// 기본 설정으로 초기화 (모든 override = false)
         PostProcessSettings() = default;
 
@@ -145,6 +152,8 @@ namespace Alice
             settings.splitFxWidth = 0.01f;
             settings.splitFxSpeed = 30.0f;
             settings.splitFxTimeSec = 0.0f;
+            settings.splitFxColorA = { 2.8f, 1.2f, 0.45f };
+            settings.splitFxColorB = { 0.10f, 1.05f, 0.95f };
             return settings;
         }
     };
@@ -216,6 +225,8 @@ namespace Alice
             BlendFloat(final.splitFxWidth, volume.splitFxWidth, weight, volume.bOverride_SplitFxWidth);
             BlendFloat(final.splitFxSpeed, volume.splitFxSpeed, weight, volume.bOverride_SplitFxSpeed);
             BlendFloat(final.splitFxTimeSec, volume.splitFxTimeSec, weight, volume.bOverride_SplitFxTimeSec);
+            BlendFloat3(final.splitFxColorA, volume.splitFxColorA, weight, volume.bOverride_SplitFxColorA);
+            BlendFloat3(final.splitFxColorB, volume.splitFxColorB, weight, volume.bOverride_SplitFxColorB);
         }
 
     }

@@ -762,7 +762,11 @@ namespace Alice
             .property("bOverride_SplitFxSpeed", &PostProcessSettings::bOverride_SplitFxSpeed)
             .property("splitFxSpeed", &PostProcessSettings::splitFxSpeed)
             .property("bOverride_SplitFxTimeSec", &PostProcessSettings::bOverride_SplitFxTimeSec)
-            .property("splitFxTimeSec", &PostProcessSettings::splitFxTimeSec);
+            .property("splitFxTimeSec", &PostProcessSettings::splitFxTimeSec)
+            .property("bOverride_SplitFxColorA", &PostProcessSettings::bOverride_SplitFxColorA)
+            .property("splitFxColorA", &PostProcessSettings::splitFxColorA)
+            .property("bOverride_SplitFxColorB", &PostProcessSettings::bOverride_SplitFxColorB)
+            .property("splitFxColorB", &PostProcessSettings::splitFxColorB);
 
         // === ComputeEffectComponent ��� ===
         rttr::registration::class_<ComputeEffectComponent>("ComputeEffectComponent")

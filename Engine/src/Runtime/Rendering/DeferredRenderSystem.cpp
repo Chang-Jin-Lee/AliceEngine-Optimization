@@ -3185,6 +3185,16 @@ namespace Alice
                 defaultSettings.splitFxWidth = m_postProcessParams.splitFxWidth;
                 defaultSettings.splitFxSpeed = m_postProcessParams.splitFxSpeed;
                 defaultSettings.splitFxTimeSec = m_postProcessParams.splitFxTimeSec;
+                defaultSettings.splitFxColorA = DirectX::XMFLOAT3(
+                    m_postProcessParams.splitFxColorA.x,
+                    m_postProcessParams.splitFxColorA.y,
+                    m_postProcessParams.splitFxColorA.z
+                );
+                defaultSettings.splitFxColorB = DirectX::XMFLOAT3(
+                    m_postProcessParams.splitFxColorB.x,
+                    m_postProcessParams.splitFxColorB.y,
+                    m_postProcessParams.splitFxColorB.z
+                );
                 // Bloom 기본 설정
                 defaultSettings.bloomThreshold = m_bloomSettings.threshold;
                 defaultSettings.bloomKnee = m_bloomSettings.knee;
@@ -3242,6 +3252,18 @@ namespace Alice
             m_postProcessParams.splitFxWidth = finalSettings.splitFxWidth;
             m_postProcessParams.splitFxSpeed = finalSettings.splitFxSpeed;
             m_postProcessParams.splitFxTimeSec = finalSettings.splitFxTimeSec;
+            m_postProcessParams.splitFxColorA = DirectX::XMFLOAT4(
+                finalSettings.splitFxColorA.x,
+                finalSettings.splitFxColorA.y,
+                finalSettings.splitFxColorA.z,
+                1.0f
+            );
+            m_postProcessParams.splitFxColorB = DirectX::XMFLOAT4(
+                finalSettings.splitFxColorB.x,
+                finalSettings.splitFxColorB.y,
+                finalSettings.splitFxColorB.z,
+                1.0f
+            );
             // Bloom 설정 적용
             m_bloomSettings.threshold = finalSettings.bloomThreshold;
             m_bloomSettings.knee = finalSettings.bloomKnee;
@@ -3434,6 +3456,16 @@ namespace Alice
                 defaultSettings.splitFxWidth = m_postProcessParams.splitFxWidth;
                 defaultSettings.splitFxSpeed = m_postProcessParams.splitFxSpeed;
                 defaultSettings.splitFxTimeSec = m_postProcessParams.splitFxTimeSec;
+                defaultSettings.splitFxColorA = DirectX::XMFLOAT3(
+                    m_postProcessParams.splitFxColorA.x,
+                    m_postProcessParams.splitFxColorA.y,
+                    m_postProcessParams.splitFxColorA.z
+                );
+                defaultSettings.splitFxColorB = DirectX::XMFLOAT3(
+                    m_postProcessParams.splitFxColorB.x,
+                    m_postProcessParams.splitFxColorB.y,
+                    m_postProcessParams.splitFxColorB.z
+                );
                 defaultSettings.impactBlurIntensity = m_postProcessParams.impactBlurIntensity;
                 defaultSettings.impactBlurRadius = m_postProcessParams.impactBlurRadius;
                 defaultSettings.impactBlurCenterX = m_postProcessParams.impactBlurCenterX;
@@ -3486,6 +3518,18 @@ namespace Alice
             m_postProcessParams.splitFxWidth = finalSettings.splitFxWidth;
             m_postProcessParams.splitFxSpeed = finalSettings.splitFxSpeed;
             m_postProcessParams.splitFxTimeSec = finalSettings.splitFxTimeSec;
+            m_postProcessParams.splitFxColorA = DirectX::XMFLOAT4(
+                finalSettings.splitFxColorA.x,
+                finalSettings.splitFxColorA.y,
+                finalSettings.splitFxColorA.z,
+                1.0f
+            );
+            m_postProcessParams.splitFxColorB = DirectX::XMFLOAT4(
+                finalSettings.splitFxColorB.x,
+                finalSettings.splitFxColorB.y,
+                finalSettings.splitFxColorB.z,
+                1.0f
+            );
             m_postProcessParams.impactBlurIntensity = finalSettings.impactBlurIntensity;
             m_postProcessParams.impactBlurRadius = finalSettings.impactBlurRadius;
             m_postProcessParams.impactBlurCenterX = finalSettings.impactBlurCenterX;
@@ -5433,6 +5477,16 @@ namespace Alice
 		defaultSettings.splitFxWidth = m_postProcessParams.splitFxWidth;
 		defaultSettings.splitFxSpeed = m_postProcessParams.splitFxSpeed;
 		defaultSettings.splitFxTimeSec = m_postProcessParams.splitFxTimeSec;
+		defaultSettings.splitFxColorA = DirectX::XMFLOAT3(
+			m_postProcessParams.splitFxColorA.x,
+			m_postProcessParams.splitFxColorA.y,
+			m_postProcessParams.splitFxColorA.z
+		);
+		defaultSettings.splitFxColorB = DirectX::XMFLOAT3(
+			m_postProcessParams.splitFxColorB.x,
+			m_postProcessParams.splitFxColorB.y,
+			m_postProcessParams.splitFxColorB.z
+		);
 		defaultSettings.impactBlurIntensity = m_postProcessParams.impactBlurIntensity;
 		defaultSettings.impactBlurRadius = m_postProcessParams.impactBlurRadius;
 		defaultSettings.impactBlurCenterX = m_postProcessParams.impactBlurCenterX;
@@ -5494,6 +5548,18 @@ namespace Alice
 		m_postProcessParams.splitFxWidth = finalSettings.splitFxWidth;
 		m_postProcessParams.splitFxSpeed = finalSettings.splitFxSpeed;
 		m_postProcessParams.splitFxTimeSec = finalSettings.splitFxTimeSec;
+		m_postProcessParams.splitFxColorA = DirectX::XMFLOAT4(
+			finalSettings.splitFxColorA.x,
+			finalSettings.splitFxColorA.y,
+			finalSettings.splitFxColorA.z,
+			1.0f
+		);
+		m_postProcessParams.splitFxColorB = DirectX::XMFLOAT4(
+			finalSettings.splitFxColorB.x,
+			finalSettings.splitFxColorB.y,
+			finalSettings.splitFxColorB.z,
+			1.0f
+		);
 		m_postProcessParams.impactBlurIntensity = finalSettings.impactBlurIntensity;
 		m_postProcessParams.impactBlurRadius = finalSettings.impactBlurRadius;
 		m_postProcessParams.impactBlurCenterX = finalSettings.impactBlurCenterX;
@@ -5681,6 +5747,8 @@ namespace Alice
             m_postProcessParams.splitFxSpeed,
             m_postProcessParams.splitFxTimeSec
         );
+        cbData.splitFxColorA = m_postProcessParams.splitFxColorA;
+        cbData.splitFxColorB = m_postProcessParams.splitFxColorB;
         cbData.impactBlurParams = DirectX::XMFLOAT4(
             m_postProcessParams.impactBlurIntensity,
             m_postProcessParams.impactBlurRadius,
@@ -6127,6 +6195,8 @@ namespace Alice
 				m_postProcessParams.splitFxSpeed,
 				m_postProcessParams.splitFxTimeSec
 			);
+			postProcessCB.splitFxColorA = m_postProcessParams.splitFxColorA;
+			postProcessCB.splitFxColorB = m_postProcessParams.splitFxColorB;
 			postProcessCB.impactBlurParams = DirectX::XMFLOAT4(
 				m_postProcessParams.impactBlurIntensity,
 				m_postProcessParams.impactBlurRadius,
