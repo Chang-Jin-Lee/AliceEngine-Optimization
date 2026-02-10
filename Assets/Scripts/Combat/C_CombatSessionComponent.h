@@ -103,6 +103,13 @@ namespace Alice
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_playerRageTrailLocalScale, DirectX::XMFLOAT3(0.018f, 0.018f, 0.018f));
         ALICE_PROPERTY(float, m_playerRageTrailSizeScale, 0.018f);
         ALICE_PROPERTY(float, m_playerRageTrailEmitMinSpeed, 0.15f);
+        ALICE_PROPERTY(float, m_trailTailOffFallbackSec, 0.25f);
+        // Boss attack trail on BossWeapon.
+        ALICE_PROPERTY(bool, m_enableBossAttackTrailVfx, true);
+        ALICE_PROPERTY(std::string, m_bossAttackTrailTargetName, "BossWeapon");
+        ALICE_PROPERTY(std::string, m_bossAttackTrailChildName, "Boss_AttackTrailVfx1");
+        ALICE_PROPERTY(std::string, m_bossAttackTrailChildName2, "Boss_AttackTrailVfx2");
+        ALICE_PROPERTY(float, m_bossAttackTrailTailOffSec, 3.0f);
         // Charge stage one-shot compute VFX on Player(Tia) child (e.g. "Charging").
         ALICE_PROPERTY(std::string, m_playerChargeStageVfxName, "Charging");
         ALICE_PROPERTY(float, m_playerChargeStagePulseSec, 0.05f);
@@ -241,6 +248,10 @@ namespace Alice
         EntityId m_playerRageTrailVfxId = InvalidEntityId;
         DirectX::XMFLOAT3 m_playerRageTrailPrevPos{ 0.0f, 0.0f, 0.0f };
         bool m_playerRageTrailPrevPosValid = false;
+        float m_playerRageTrailTailOffRemainSec = 0.0f;
+        EntityId m_bossAttackTrailVfxId = InvalidEntityId;
+        EntityId m_bossAttackTrailVfxId2 = InvalidEntityId;
+        float m_bossAttackTrailTailOffRemainSec = 0.0f;
         EntityId m_playerChargeStageVfxId = InvalidEntityId;
         int m_playerChargeStagePrevLevel = 0;
         float m_playerChargeStagePulseRemainSec = 0.0f;
