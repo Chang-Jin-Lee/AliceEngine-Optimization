@@ -2064,7 +2064,25 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				basePushSpeed = std::max(0.0f, trace->guardBreakPushbackSpeed);
 
 			const float pushSpeed = std::max(0.0f, basePushSpeed * std::max(0.0f, m_phaseHowlingPushbackScale));
-			const float pushDuration = std::max(0.0f, m_phaseHowlingPushbackDurationSec);
+			float howlingDurationSec = 0.0f;
+			const std::string& howlingClip = bossBrain->GetPatternClip(C_BossBrainComponent::PatternType::Special);
+			if (!howlingClip.empty())
+				howlingDurationSec = std::max(0.0f, GetClipDurationSecByName(registry, world, bossId, howlingClip));
+
+			if (howlingDurationSec <= 0.0f)
+			{
+				if (auto* driver = world.GetComponent<AttackDriverComponent>(bossId))
+				{
+					if (driver->attackStateDurationSec > 0.0f)
+						howlingDurationSec = driver->attackStateDurationSec;
+					else if (driver->attackStateDurationAutoSec > 0.0f)
+						howlingDurationSec = driver->attackStateDurationAutoSec;
+				}
+			}
+
+			const float pushDuration = (howlingDurationSec > 0.0f)
+				? howlingDurationSec
+				: std::max(0.0f, m_phaseHowlingPushbackDurationSec);
 			if (pushSpeed > 0.0f && pushDuration > 0.0f)
 			{
 				std::vector<Combat::Command> phase2Commands;
