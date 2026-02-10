@@ -1,0 +1,458 @@
+{
+    "entities": [
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "CameraHalfCutDemo",
+                    "props": {
+                        "m_cutVfxEulerOffsetDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "m_cutVfxAnchorAName": "LeftCube",
+                        "m_cutVfxAnchorBName": "RightCube",
+                        "m_cutVfxBaseAlpha": 1.0,
+                        "m_cutVfxBaseIntensity": 1.0,
+                        "m_cutVfxBaseSpawnRate": 1.0,
+                        "m_cutVfxDespawnDelaySec": 0.800000011920929,
+                        "m_cutVfxFadeOutSec": 0.2199999988079071,
+                        "m_cutVfxForwardDistance": 9.0,
+                        "m_cutVfxUseAnchorMidpoint": true,
+                        "m_cutVfxLocalOffset": {
+                            "x": 0.0,
+                            "y": -0.3499999940395355,
+                            "z": 0.0
+                        },
+                        "m_cutVfxMidpointOffset": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "m_cutVfxPrefabPath": "Assets/Prefabs/(04)Charging.prefab",
+                        "m_cutVfxScale": {
+                            "x": 0.75,
+                            "y": 0.75,
+                            "z": 0.75
+                        },
+                        "m_cutVfxTriggerSec": 0.07999999821186066,
+                        "m_cutVfxForceOneShot": false,
+                        "m_angleDeg": 12.0,
+                        "m_attackSec": 0.07999999821186066,
+                        "m_autoCreateVolume": true,
+                        "m_cameraName": "MainCamera",
+                        "m_feather": 0.0020000000949949026,
+                        "m_holdSec": 0.05000000074505806,
+                        "m_lineOffset": 0.0,
+                        "m_peakAmount": 0.07999999821186066,
+                        "m_peakBloomGaussianIntensity": 2.200000047683716,
+                        "m_peakBloomIntensity": 2.5999999046325684,
+                        "m_peakBloomKnee": 0.6499999761581421,
+                        "m_peakBloomRadius": 1.7999999523162842,
+                        "m_peakBloomThreshold": 0.3499999940395355,
+                        "m_peakExposure": 3.5,
+                        "m_postProcessVolumeName": "CameraHalfCutVolume",
+                        "m_releaseSec": 0.2199999988079071,
+                        "m_shakeAmplitude": 0.15000000596046448,
+                        "m_shakeDecay": 2.200000047683716,
+                        "m_shakeDuration": 0.23000000417232513,
+                        "m_shakeFrequency": 30.0,
+                        "m_spawnCutVfx": true,
+                        "m_splitFxEnabled": true,
+                        "m_splitFxIntensity": 1.850000023841858,
+                        "m_splitFxSpeed": 44.0,
+                        "m_splitFxTimeScale": 1.0,
+                        "m_splitFxWidth": 0.012000000104308128,
+                        "m_triggerKey": 1,
+                        "m_useFovCurveAsset": true,
+                        "m_fovCurvePath": "Assets/Curves/UI/FadeInOut.uicurve",
+                        "m_fovCurveTimeScale": 1.0,
+                        "m_fovCurveValueScale": 1.0,
+                        "m_fovCurveValueBias": 0.0,
+                        "m_fovCurveClamp01": true,
+                        "m_volumePriority": 500,
+                        "m_zoomFov": 18.0
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "6875178953805225652",
+            "name": "CameraHalfCutController"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.949999988079071,
+                    "y": 0.3499999940395355,
+                    "z": 0.3499999940395355
+                },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": false,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -1.2000000476837158,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "17782471007914569014",
+            "name": "LeftCube"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.25,
+                    "y": 0.800000011920929,
+                    "z": 1.0
+                },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": false,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 1.2000000476837158,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "64660960338499047",
+            "name": "RightCube"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.23000000417232513,
+                    "y": 0.23000000417232513,
+                    "z": 0.23000000417232513
+                },
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.8999999761581421,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": false,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": -1.100000023841858,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 12.0,
+                    "y": 0.30000001192092896,
+                    "z": 5.0
+                },
+                "visible": true
+            },
+            "guid": "7785286238415942333",
+            "name": "Ground"
+        },
+        {
+            "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 5000.0,
+                "Near Plane": 0.10000000149011612,
+                "aspectOverride": 0.0,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 2.4052348136901855,
+                    "z": -9.0
+                },
+                "rotation": {
+                    "x": 0.2313976287841797,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "9804082005314421307",
+            "name": "MainCamera"
+        },
+        {
+            "DebugDrawBox": {
+                "boundsMax": {
+                    "x": 5.0,
+                    "y": 5.0,
+                    "z": 5.0
+                },
+                "boundsMin": {
+                    "x": -5.0,
+                    "y": -5.0,
+                    "z": -5.0
+                },
+                "color": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 1.0,
+                    "z": 0.0
+                },
+                "depthTest": false,
+                "enabled": true
+            },
+            "PostProcessVolume": {
+                "blendRadius": 0.0,
+                "blendWeight": 1.0,
+                "boxSize": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "priority": 500,
+                "referenceObjectName": "",
+                "settings": {
+                    "bOverride_BloomDownsample": false,
+                    "bOverride_BloomGaussianIntensity": false,
+                    "bOverride_BloomIntensity": false,
+                    "bOverride_BloomKnee": false,
+                    "bOverride_BloomRadius": false,
+                    "bOverride_BloomThreshold": false,
+                    "bOverride_ColorGradingContrast": false,
+                    "bOverride_ColorGradingGain": false,
+                    "bOverride_ColorGradingGamma": false,
+                    "bOverride_ColorGradingSaturation": false,
+                    "bOverride_Exposure": false,
+                    "bOverride_MaxHDRNits": false,
+                    "bOverride_SplitAmount": true,
+                    "bOverride_SplitAngleDeg": true,
+                    "bOverride_SplitFeather": true,
+                    "bOverride_SplitLineOffset": true,
+                    "bloomDownsample": 2,
+                    "bloomGaussianIntensity": 1.0,
+                    "bloomIntensity": 0.0,
+                    "bloomKnee": 0.5,
+                    "bloomRadius": 1.0,
+                    "bloomThreshold": 1.0,
+                    "contrast": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "exposure": 0.0,
+                    "gain": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "gamma": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "maxHDRNits": 1000.0,
+                    "saturation": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "splitAmount": 0.0,
+                    "splitAngleDeg": 12.0,
+                    "splitFeather": 0.0020000000949949026,
+                    "splitLineOffset": 0.0
+                },
+                "shape": "Box",
+                "unbound": true,
+                "useReferenceObject": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "8963134015403500598",
+            "name": "CameraHalfCutVolume"
+        }
+    ],
+    "sceneName": "CameraHalfCut",
+    "version": 1
+}

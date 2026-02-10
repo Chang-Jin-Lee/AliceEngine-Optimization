@@ -395,6 +395,9 @@ struct PointLight
     float  range;
     float3 color;
     float  intensity;
+    int    shadowIndex;
+    float  shadowStrength;
+    float2 pad;
 };
 
 struct SpotLight
@@ -406,6 +409,8 @@ struct SpotLight
     float3 color;
     float  outerCos;
     float  intensity;
+    int    shadowIndex;
+    float  shadowStrength;
     float  pad0;
 };
 
@@ -418,6 +423,8 @@ struct RectLight
     float3 color;
     float  height;
     float  intensity;
+    int    shadowIndex;
+    float  shadowStrength;
     float  pad0;
 };
 
@@ -490,10 +497,10 @@ void AccumulateBlinnPhong(float3 N, float3 V, float3 L, float3 lightColor, float
     }
 }
 
-float3 EvaluatePBRLight(float3 N, float3 V, float3 L, float3 albedo, float metalness, float roughness, float3 lightColor)
+float3 EvaluatePBRLight(float3 N, float3 V, float3 L, float3 albedo, float metalness, float roughness, float3 lightColor, float ndotlOverride)
 {
     float3 H = normalize(V + L);
-    float NdotL = max(dot(N, L), 0.0f);
+    float NdotL = saturate(ndotlOverride);
     float NdotV = max(dot(N, V), 0.0f);
     float NdotH = max(dot(N, H), 0.0f);
     float VdotH = max(dot(V, H), 0.0f);
@@ -585,10 +592,14 @@ float ToonPbrNdotL(float n)
 {
     if (gShadingMode == 7)
     {
-         float toon = ToonStepEditable(n, gToonPbrCuts.xyz, gToonPbrLevels.xyz, gToonPbrAlphas.xyz, gToonPbrCuts.w, gToonPbrLevels.w, gToonPbrRampIntensity);
-         return lerp(n, toon, saturate(gToonSelfShadowStrength));
+         return ToonStepEditable(n, gToonPbrCuts.xyz, gToonPbrLevels.xyz, gToonPbrAlphas.xyz, gToonPbrCuts.w, gToonPbrLevels.w, gToonPbrRampIntensity);
     }
     return ToonLevel(n);
+}
+
+float ApplySelfShadowNdotL(float shadedNdotL)
+{
+    return lerp(1.0f, shadedNdotL, saturate(gToonSelfShadowStrength));
 }
 
 float DitherThreshold(float2 pos)
@@ -854,12 +865,13 @@ float4 main(PSInput input) : SV_TARGET
         float3 lightColor = gKeyLightColor * gKeyLightIntensity;
         {
             float NdotL = max(dot(Np, Lp), 0.0f);
-            float3 lit = EvaluatePBRLight(Np, Vp, Lp, albedo, metalness, roughness, lightColor);
+            float shadedNdotL = NdotL;
             if (toonPbr && NdotL > 0.0f)
             {
-                float toonNdotL = ToonPbrNdotL(NdotL);
-                lit *= toonNdotL / max(NdotL, 1e-4f);
+                shadedNdotL = ToonPbrNdotL(NdotL);
             }
+            float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL);
+            float3 lit = EvaluatePBRLight(Np, Vp, Lp, albedo, metalness, roughness, lightColor, selfShadowNdotL);
             Lo += lit * shadow;
         }
 
@@ -872,12 +884,13 @@ float4 main(PSInput input) : SV_TARGET
             float atten = ComputeAttenuation(dist, pl.range);
             float3 lc = pl.color * pl.intensity * atten;
             float NdotL = max(dot(Np, L), 0.0f);
-            float3 lit = EvaluatePBRLight(Np, Vp, L, albedo, metalness, roughness, lc);
+            float shadedNdotL = NdotL;
             if (toonPbr && NdotL > 0.0f)
             {
-                float toonNdotL = ToonPbrNdotL(NdotL);
-                lit *= toonNdotL / max(NdotL, 1e-4f);
+                shadedNdotL = ToonPbrNdotL(NdotL);
             }
+            float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL);
+            float3 lit = EvaluatePBRLight(Np, Vp, L, albedo, metalness, roughness, lc, selfShadowNdotL);
             Lo += lit;
         }
 
@@ -891,12 +904,13 @@ float4 main(PSInput input) : SV_TARGET
             float spot = ComputeSpotFactor(L, sl.direction, sl.innerCos, sl.outerCos);
             float3 lc = sl.color * sl.intensity * atten * spot;
             float NdotL = max(dot(Np, L), 0.0f);
-            float3 lit = EvaluatePBRLight(Np, Vp, L, albedo, metalness, roughness, lc);
+            float shadedNdotL = NdotL;
             if (toonPbr && NdotL > 0.0f)
             {
-                float toonNdotL = ToonPbrNdotL(NdotL);
-                lit *= toonNdotL / max(NdotL, 1e-4f);
+                shadedNdotL = ToonPbrNdotL(NdotL);
             }
+            float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL);
+            float3 lit = EvaluatePBRLight(Np, Vp, L, albedo, metalness, roughness, lc, selfShadowNdotL);
             Lo += lit;
         }
 
@@ -911,12 +925,13 @@ float4 main(PSInput input) : SV_TARGET
             float areaScale = max(rl.width * rl.height, 0.01f);
             float3 lc = rl.color * rl.intensity * atten * facing * areaScale;
             float NdotL = max(dot(Np, L), 0.0f);
-            float3 lit = EvaluatePBRLight(Np, Vp, L, albedo, metalness, roughness, lc);
+            float shadedNdotL = NdotL;
             if (toonPbr && NdotL > 0.0f)
             {
-                float toonNdotL = ToonPbrNdotL(NdotL);
-                lit *= toonNdotL / max(NdotL, 1e-4f);
+                shadedNdotL = ToonPbrNdotL(NdotL);
             }
+            float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL);
+            float3 lit = EvaluatePBRLight(Np, Vp, L, albedo, metalness, roughness, lc, selfShadowNdotL);
             Lo += lit;
         }
 

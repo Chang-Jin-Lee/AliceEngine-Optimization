@@ -8,10 +8,32 @@
 
 #include "imgui.h"
 
+#include <algorithm>
 #include <commdlg.h>
+#include <filesystem>
+#include <string>
 
 namespace Alice
 {
+	namespace
+	{
+		inline bool MaterialAssetEditorFilter(const std::string& propName)
+		{
+			// assetPath/albedoTexturePath/shadingMode는 특별 UI 처리
+			// shadow/toon ramp/self shadow는 커스텀 UI 처리
+			return propName != "assetPath" && propName != "albedoTexturePath" && propName != "shadingMode" &&
+			       propName != "shadowStrength" && propName != "toonPbrRampIntensity" &&
+			       propName != "toonSelfShadowStrength";
+		}
+
+		inline std::string NormalizePathKey(const std::filesystem::path& p)
+		{
+			std::string s = p.lexically_normal().generic_string();
+			std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+			return s;
+		}
+	}
+
 	void EditorCore::DrawMaterialAssetEditorWindow(World& world)
 	{
 		// === Material Asset Editor (.mat 더블클릭 시) ===
@@ -24,10 +46,64 @@ namespace Alice
 			ImGui::Separator();
 
 			bool changed = false;
-			changed |= ImGui::ColorEdit3("Base Color", &g_MaterialEditorData.color.x);
-			changed |= ImGui::SliderFloat("Alpha", &g_MaterialEditorData.alpha, 0.0f, 1.0f);
-			changed |= ImGui::SliderFloat("Roughness", &g_MaterialEditorData.roughness, 0.0f, 1.0f);
-			changed |= ImGui::SliderFloat("Metalness", &g_MaterialEditorData.metalness, 0.0f, 1.0f);
+
+			struct ShadingItem
+			{
+				const char* label;
+				int value;
+			};
+			const ShadingItem shadingItems[] = {
+				{ "Global", -1 },
+				{ "Lambert", 0 },
+				{ "Phong", 1 },
+				{ "Blinn-Phong", 2 },
+				{ "Toon", 3 },
+				{ "PBR", 4 },
+				{ "ToonPBR", 5 },
+				{ "ToonPBREditable", 7 },
+				{ "OnlyTextureWithOutline", 6 }
+			};
+			int shadingIndex = 0;
+			for (int i = 0; i < (int)std::size(shadingItems); ++i)
+			{
+				if (shadingItems[i].value == g_MaterialEditorData.shadingMode)
+				{
+					shadingIndex = i;
+					break;
+				}
+			}
+			if (ImGui::Combo("Shading", &shadingIndex, [](void* data, int idx, const char** out_text) {
+				auto* items = static_cast<const ShadingItem*>(data);
+				*out_text = items[idx].label;
+				return true;
+				}, (void*)shadingItems, (int)std::size(shadingItems)))
+			{
+				g_MaterialEditorData.shadingMode = shadingItems[shadingIndex].value;
+				changed = true;
+			}
+
+			float shadowIntensity = g_MaterialEditorData.shadowStrength;
+			if (ImGui::SliderFloat("Shadow Intensity", &shadowIntensity, 0.0f, 1.0f, "%.3f"))
+			{
+				g_MaterialEditorData.shadowStrength = std::clamp(shadowIntensity, 0.0f, 1.0f);
+				changed = true;
+			}
+
+			float toonRamp = g_MaterialEditorData.toonPbrRampIntensity;
+			if (ImGui::SliderFloat("Toon Ramp Intensity", &toonRamp, 0.0f, 1.0f, "%.3f"))
+			{
+				g_MaterialEditorData.toonPbrRampIntensity = std::clamp(toonRamp, 0.0f, 1.0f);
+				changed = true;
+			}
+
+			float selfShadow = g_MaterialEditorData.toonSelfShadowStrength;
+			if (ImGui::SliderFloat("Self Shadow", &selfShadow, 0.0f, 1.0f, "%.3f"))
+			{
+				g_MaterialEditorData.toonSelfShadowStrength = std::clamp(selfShadow, 0.0f, 1.0f);
+				changed = true;
+			}
+
+			changed |= ReflectionUI::RenderInspector(g_MaterialEditorData, MaterialAssetEditorFilter).changed;
 
 			ImGui::Separator();
 			ImGui::Text("Albedo Texture");
@@ -78,19 +154,41 @@ namespace Alice
 				MaterialFile::Save(g_MaterialEditorPath, g_MaterialEditorData);
 
 				// 2) 이 에셋을 참조하는 모든 엔티티의 MaterialComponent 를 갱신
-				const std::string targetPath = g_MaterialEditorPath.string();
+				//    - 부분 복사 대신 파일 재로드로 모든 필드를 동기화
+				const std::filesystem::path targetAbsPath = std::filesystem::absolute(g_MaterialEditorPath).lexically_normal();
+				const std::string targetAbsKey = NormalizePathKey(targetAbsPath);
+				std::filesystem::path targetLogicalPath = ResourceManager::NormalizeResourcePathAbsoluteToLogical(targetAbsPath);
+				const std::string targetLogicalKey = NormalizePathKey(targetLogicalPath);
+
 				const auto& allMats = world.GetComponents<MaterialComponent>();
 				for (const auto& [id, matConst] : allMats)
 				{
 					MaterialComponent* mat = world.GetComponent<MaterialComponent>(id);
 					if (!mat) continue;
-					if (mat->assetPath == targetPath)
+
+					bool match = false;
+					if (!mat->assetPath.empty())
 					{
-						mat->color = g_MaterialEditorData.color;
-						mat->alpha = g_MaterialEditorData.alpha;
-						mat->roughness = g_MaterialEditorData.roughness;
-						mat->metalness = g_MaterialEditorData.metalness;
-						mat->albedoTexturePath = g_MaterialEditorData.albedoTexturePath;
+						const std::filesystem::path matAssetPath = std::filesystem::path(mat->assetPath).lexically_normal();
+						const std::string matAssetKey = NormalizePathKey(matAssetPath);
+
+						if (matAssetKey == targetAbsKey || matAssetKey == targetLogicalKey)
+						{
+							match = true;
+						}
+						else
+						{
+							// 논리 경로/상대 경로로 참조 중인 경우 절대 경로로 한 번 더 비교
+							const std::filesystem::path resolved = ResourceManager::Get().Resolve(matAssetPath).lexically_normal();
+							const std::string resolvedKey = NormalizePathKey(resolved);
+							if (resolvedKey == targetAbsKey)
+								match = true;
+						}
+					}
+
+					if (match)
+					{
+						MaterialFile::Load(targetAbsPath, *mat, &ResourceManager::Get());
 					}
 				}
 

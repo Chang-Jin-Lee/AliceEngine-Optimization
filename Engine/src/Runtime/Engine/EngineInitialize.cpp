@@ -132,6 +132,9 @@ namespace Alice
 		return s.substr(start, end - start);
 	}
 
+	bool HasParentTraversalRuntime(const std::string& s);
+	bool IsAllowedLogicalPathRuntime(const std::string& s);
+
 	std::string NormalizeLogicalPathRuntime(const std::string& s)
 	{
 		std::string temp = s;
@@ -143,6 +146,53 @@ namespace Alice
 		if (normalized.rfind("./", 0) == 0)
 			normalized = normalized.substr(2);
 		return normalized;
+	}
+
+	std::string NormalizeDerivedLogicalPathRuntime(const std::string& raw)
+	{
+		const std::string trimmed = TrimAsciiRuntime(raw);
+		if (trimmed.empty())
+			return {};
+
+		const std::string normalized = NormalizeLogicalPathRuntime(trimmed);
+		if (normalized.empty() || HasParentTraversalRuntime(normalized))
+			return {};
+		if (IsAllowedLogicalPathRuntime(normalized))
+			return normalized;
+
+		const std::filesystem::path p(normalized);
+		if (!p.is_absolute())
+			return {};
+
+		const std::string abs = p.generic_string();
+		std::string lower = abs;
+		for (char& c : lower)
+			c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+
+		auto MakeLogical = [&](const std::string& needle, const std::string& prefix) -> std::string
+		{
+			const auto pos = lower.find(needle);
+			if (pos == std::string::npos)
+				return {};
+			const std::size_t relOff = pos + needle.size();
+			if (relOff >= abs.size())
+				return std::string(prefix);
+			return NormalizeLogicalPathRuntime(std::string(prefix) + abs.substr(relOff));
+		};
+
+		const std::string assets = MakeLogical("/assets/", "Assets/");
+		if (!assets.empty() && IsAllowedLogicalPathRuntime(assets) && !HasParentTraversalRuntime(assets))
+			return assets;
+
+		const std::string resource = MakeLogical("/resource/", "Resource/");
+		if (!resource.empty() && IsAllowedLogicalPathRuntime(resource) && !HasParentTraversalRuntime(resource))
+			return resource;
+
+		const std::string cooked = MakeLogical("/cooked/", "Cooked/");
+		if (!cooked.empty() && IsAllowedLogicalPathRuntime(cooked) && !HasParentTraversalRuntime(cooked))
+			return cooked;
+
+		return {};
 	}
 
 	bool HasParentTraversalRuntime(const std::string& s)
@@ -318,6 +368,84 @@ namespace Alice
 			return ok;
 		}
 
+		bool TryCollectPrefabEffectPaths(const std::string& prefabPath, std::vector<std::string>& outPaths) const
+		{
+			outPaths.clear();
+
+			std::string text;
+			if (!resources.LoadText(prefabPath, text) || text.empty())
+			{
+				ALICE_LOG_WARN("Preload: prefab load failed: %s", prefabPath.c_str());
+				return false;
+			}
+
+			nlohmann::json root;
+			try
+			{
+				root = nlohmann::json::parse(text);
+			}
+			catch (...)
+			{
+				ALICE_LOG_WARN("Preload: prefab parse failed: %s", prefabPath.c_str());
+				return false;
+			}
+
+			if (!root.is_object())
+			{
+				ALICE_LOG_WARN("Preload: prefab root is not object: %s", prefabPath.c_str());
+				return false;
+			}
+
+			std::unordered_set<std::string> seen;
+			auto AppendEffectPath = [&](const std::string& rawPath)
+			{
+				const std::string logical = NormalizeDerivedLogicalPathRuntime(rawPath);
+				if (logical.empty())
+				{
+					ALICE_LOG_WARN("Preload: invalid UnityVfx.effectPath in prefab \"%s\": %s",
+						prefabPath.c_str(), rawPath.c_str());
+					return;
+				}
+
+				const std::string lower = ToLowerAsciiRuntime(logical);
+				if (!EndsWithAsciiRuntime(lower, "effect.json"))
+				{
+					ALICE_LOG_WARN("Preload: UnityVfx.effectPath is not effect.json in prefab \"%s\": %s",
+						prefabPath.c_str(), logical.c_str());
+					return;
+				}
+
+				if (seen.insert(lower).second)
+					outPaths.push_back(logical);
+			};
+
+			auto ScanEntity = [&](const nlohmann::json& entity)
+			{
+				auto itUnityVfx = entity.find("UnityVfx");
+				if (itUnityVfx == entity.end() || !itUnityVfx->is_object())
+					return;
+
+				auto itEffectPath = itUnityVfx->find("effectPath");
+				if (itEffectPath == itUnityVfx->end() || !itEffectPath->is_string())
+					return;
+
+				AppendEffectPath(itEffectPath->get<std::string>());
+			};
+
+			ScanEntity(root);
+			auto itEntities = root.find("entities");
+			if (itEntities != root.end() && itEntities->is_array())
+			{
+				for (const auto& entity : *itEntities)
+				{
+					if (entity.is_object())
+						ScanEntity(entity);
+				}
+			}
+
+			return true;
+		}
+
 		bool PrecomputeAnimationForMesh(const std::string& meshKey, const std::shared_ptr<SkinnedMeshGPU>& mesh)
 		{
 			if (meshKey.empty())
@@ -358,12 +486,25 @@ namespace Alice
 
 			if (EndsWithAsciiRuntime(lower, "effect.json"))
 			{
+				bool ok = false;
 				if (allowGpu && vfx)
 				{
-					if (vfx->PreloadEffect(path))
-						return true;
+					ok = vfx->PreloadEffect(path) || ok;
 				}
-				return PreloadBlob(path);
+				ok = PreloadBlob(path) || ok;
+				return ok;
+			}
+
+			if (ext == ".prefab")
+			{
+				bool ok = PreloadBlob(path);
+				std::vector<std::string> effectPaths;
+				if (!TryCollectPrefabEffectPaths(path, effectPaths))
+					return ok;
+
+				for (const auto& effectPath : effectPaths)
+					ok = PreloadByType(effectPath, allowGpu) || ok;
+				return ok;
 			}
 
 			if (ext == ".fbxasset")
@@ -536,10 +677,13 @@ namespace Alice
 						lighting.roughness = p["roughness"].get<float>();
 					if (p.contains("ambientOcclusion") && p["ambientOcclusion"].is_number())
 						lighting.ambientOcclusion = p["ambientOcclusion"].get<float>();
+					if (p.contains("globalIBLIntensity") && p["globalIBLIntensity"].is_number())
+						lighting.globalIBLIntensity = p["globalIBLIntensity"].get<float>();
 					if (p.contains("shadowStrength") && p["shadowStrength"].is_number())
 						lighting.shadowStrength = p["shadowStrength"].get<float>();
 					if (p.contains("toonShadowStrength") && p["toonShadowStrength"].is_number())
 						lighting.toonShadowStrength = p["toonShadowStrength"].get<float>();
+					lighting.globalIBLIntensity = std::clamp(lighting.globalIBLIntensity, 0.0f, 1.0f);
 					lighting.shadowStrength = std::clamp(lighting.shadowStrength, 0.0f, 1.0f);
 					lighting.toonShadowStrength = std::clamp(lighting.toonShadowStrength, 0.0f, 1.0f);
 
@@ -607,6 +751,7 @@ namespace Alice
 			p["metalness"] = lighting.metalness;
 			p["roughness"] = lighting.roughness;
 			p["ambientOcclusion"] = lighting.ambientOcclusion;
+			p["globalIBLIntensity"] = lighting.globalIBLIntensity;
 			p["shadowStrength"] = lighting.shadowStrength;
 			p["toonShadowStrength"] = lighting.toonShadowStrength;
 			p["keyIntensity"] = lighting.keyIntensity;
