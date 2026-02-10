@@ -663,6 +663,7 @@ namespace Alice
             .property("color", &PointLightComponent::color)
             .property("intensity", &PointLightComponent::intensity)
             .property("range", &PointLightComponent::range)
+            .property("castShadow", &PointLightComponent::castShadow)
             .property("enabled", &PointLightComponent::enabled);
 
         // === SpotLightComponent ��� ===
@@ -673,6 +674,7 @@ namespace Alice
             .property("range", &SpotLightComponent::range)
             .property("innerAngleDeg", &SpotLightComponent::innerAngleDeg)
             .property("outerAngleDeg", &SpotLightComponent::outerAngleDeg)
+            .property("castShadow", &SpotLightComponent::castShadow)
             .property("enabled", &SpotLightComponent::enabled);
 
         // === RectLightComponent ��� ===
@@ -683,6 +685,7 @@ namespace Alice
             .property("width", &RectLightComponent::width)
             .property("height", &RectLightComponent::height)
             .property("range", &RectLightComponent::range)
+            .property("castShadow", &RectLightComponent::castShadow)
             .property("enabled", &RectLightComponent::enabled);
 
         // === PostProcessVolumeComponent ��� ===
@@ -733,7 +736,24 @@ namespace Alice
             .property("bOverride_BloomRadius", &PostProcessSettings::bOverride_BloomRadius)
             .property("bloomRadius", &PostProcessSettings::bloomRadius)
             .property("bOverride_BloomDownsample", &PostProcessSettings::bOverride_BloomDownsample)
-            .property("bloomDownsample", &PostProcessSettings::bloomDownsample);
+            .property("bloomDownsample", &PostProcessSettings::bloomDownsample)
+            // HalfCut screen split
+            .property("bOverride_SplitAmount", &PostProcessSettings::bOverride_SplitAmount)
+            .property("splitAmount", &PostProcessSettings::splitAmount)
+            .property("bOverride_SplitAngleDeg", &PostProcessSettings::bOverride_SplitAngleDeg)
+            .property("splitAngleDeg", &PostProcessSettings::splitAngleDeg)
+            .property("bOverride_SplitLineOffset", &PostProcessSettings::bOverride_SplitLineOffset)
+            .property("splitLineOffset", &PostProcessSettings::splitLineOffset)
+            .property("bOverride_SplitFeather", &PostProcessSettings::bOverride_SplitFeather)
+            .property("splitFeather", &PostProcessSettings::splitFeather)
+            .property("bOverride_SplitFxIntensity", &PostProcessSettings::bOverride_SplitFxIntensity)
+            .property("splitFxIntensity", &PostProcessSettings::splitFxIntensity)
+            .property("bOverride_SplitFxWidth", &PostProcessSettings::bOverride_SplitFxWidth)
+            .property("splitFxWidth", &PostProcessSettings::splitFxWidth)
+            .property("bOverride_SplitFxSpeed", &PostProcessSettings::bOverride_SplitFxSpeed)
+            .property("splitFxSpeed", &PostProcessSettings::splitFxSpeed)
+            .property("bOverride_SplitFxTimeSec", &PostProcessSettings::bOverride_SplitFxTimeSec)
+            .property("splitFxTimeSec", &PostProcessSettings::splitFxTimeSec);
 
         // === ComputeEffectComponent ��� ===
         rttr::registration::class_<ComputeEffectComponent>("ComputeEffectComponent")

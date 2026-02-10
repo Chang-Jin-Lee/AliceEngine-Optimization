@@ -12,6 +12,7 @@ namespace Alice
         float width { 1.0f };
         float height { 1.0f };
         float range { 10.0f };
+        bool castShadow { true };
         bool enabled { true };
     };
 }

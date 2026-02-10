@@ -73,6 +73,26 @@ namespace Alice
             1.0f 
         };  // Gain: Multiply 스케일 (R,G,B 채널별, 0.0 = 검정, 1.0 = 원본, >1.0 = 밝게, W=1.0)
             // 주의: 이것은 "출력 감마 보정"이 아니라 Color Grading 단계에서 색상을 곱하는 룩 조절 파라미터입니다.
+
+        // HalfCut 화면 분할 연출 파라미터
+        // splitAmount: 분할선 기준 절반 화면 UV 이동량 (0 = 비활성)
+        // splitAngleDeg: 분할선 각도(도, 0 = 수평 분할)
+        // splitLineOffset: 분할선 위치 오프셋(정규화 공간)
+        // splitFeather: 경계부 블렌딩 폭(정규화 공간)
+        float splitAmount = 0.0f;
+        float splitAngleDeg = 0.0f;
+        float splitLineOffset = 0.0f;
+        float splitFeather = 0.001f;
+
+        // Split 절단선 하이라이트/스파크(수학 기반) 파라미터
+        // splitFxIntensity: 0이면 비활성
+        // splitFxWidth: 절단선 주변 영향 폭(정규화 공간)
+        // splitFxSpeed: 절단선 방향 흐름 속도
+        // splitFxTimeSec: 연출 시간(초), 스크립트에서 제어
+        float splitFxIntensity = 0.0f;
+        float splitFxWidth = 0.01f;
+        float splitFxSpeed = 30.0f;
+        float splitFxTimeSec = 0.0f;
     };
 
     /// Bloom 파라미터 구조체
@@ -103,6 +123,7 @@ namespace Alice
         float             metalness    { 0.0f };                // 0.0 = 비금속, 1.0 = 금속
         float             roughness    { 0.5f };                // 0.0 = 거울, 1.0 = 거친 표면
         float             ambientOcclusion { 1.0f };            // AO (0.0 ~ 1.0)
+        float             globalIBLIntensity { 1.0f };          // 전역 IBL 강도 (0.0 ~ 1.0)
         float             shadowStrength { 1.0f };              // 전역 그림자 강도 (0~1)
         float             toonShadowStrength { 1.0f };          // ToonPBREditable 전용 그림자 강도 (0~1)
 
@@ -119,6 +140,14 @@ namespace Alice
     static constexpr int MaxPointLights = 16;
     static constexpr int MaxSpotLights = 16;
     static constexpr int MaxRectLights = 16;
+    // 로컬 라이트 섀도우는 성능을 위해 소수만 활성화
+    static constexpr int MaxShadowedPointLights = 1;
+    static constexpr int MaxShadowedSpotLights = 2;
+    static constexpr int MaxShadowedRectLights = 1;
+    static constexpr int MaxShadowedSpotRectLights = MaxShadowedSpotLights + MaxShadowedRectLights;
+    static constexpr std::uint32_t LocalSpotRectShadowMapSizePx = 512;
+    static constexpr std::uint32_t LocalPointShadowMapSizePx = 512;
+    static constexpr float LocalPointShadowNearZ = 0.05f;
 
     struct PointLightGPU
     {
@@ -126,6 +155,9 @@ namespace Alice
         float range;
         DirectX::XMFLOAT3 color;
         float intensity;
+        int shadowIndex;
+        float shadowStrength;
+        float pad[2];
     };
 
     struct SpotLightGPU
@@ -137,7 +169,9 @@ namespace Alice
         DirectX::XMFLOAT3 color;
         float outerCos;
         float intensity;
-        float pad[3];
+        int shadowIndex;
+        float shadowStrength;
+        float pad0;
     };
 
     struct RectLightGPU
@@ -149,7 +183,9 @@ namespace Alice
         DirectX::XMFLOAT3 color;
         float height;
         float intensity;
-        float pad[3];
+        int shadowIndex;
+        float shadowStrength;
+        float pad0;
     };
 
     struct ExtraLightsCB
@@ -197,7 +233,7 @@ namespace Alice
         DirectX::XMFLOAT4 toonPbrLevels { 0.1f, 0.4f, 0.7f, 0.0f };  // level1, level2, level3, blur(0/1)
         DirectX::XMFLOAT4 toonPbrAlphas { 1.0f, 1.0f, 1.0f, 1.0f };  // level1~3 alpha, w: shadowStrength
         float             toonPbrRampIntensity { 0.0f };            // 0: 기존, 1: 가장 어두운 밴드 완화
-        float             toonSelfShadowStrength { 1.0f };          // 0: 셀프 음영 최소화, 1: 기존 Toon 셀프 음영
+        float             toonSelfShadowStrength { 1.0f };          // 0: 셀프 음영 최소화, 1: 기본 셀프 음영(PBR/ToonPBR/ToonPBREditable)
 
         // 선택적인 알베도 텍스처 경로 (.alice 단일 포맷 또는 원본 이미지 경로)
         std::string       albedoTexturePath;
@@ -226,6 +262,8 @@ namespace Alice
 		DirectX::XMFLOAT4 colorGradingContrast;    // Color Grading Contrast: 룩 조절 (R,G,B 채널별, Pivot=0.5 기반, W=1.0)
 		DirectX::XMFLOAT4 colorGradingGamma;       // Color Grading Gamma: 룩/중간톤 조절 (R,G,B 채널별, W=1.0)
 		DirectX::XMFLOAT4 colorGradingGain;       // Color Grading Gain: Multiply 스케일 (R,G,B 채널별, W=1.0)
+        DirectX::XMFLOAT4 splitParams;            // x: splitAmount, y: splitAngleDeg, z: splitLineOffset, w: splitFeather
+        DirectX::XMFLOAT4 splitFxParams;          // x: splitFxIntensity, y: splitFxWidth, z: splitFxSpeed, w: splitFxTimeSec
 	};
 
 	struct BloomCB
@@ -402,7 +440,7 @@ namespace Alice
         DirectX::XMFLOAT4 toonPbrLevels;  // Offset: 272 -> 288 (w: blur)
         DirectX::XMFLOAT4 toonPbrAlphas;  // Offset: 288 -> 304 (alpha1~3, w: shadowStrength)
         float             toonPbrRampIntensity; // Offset: 304 -> 308
-        float             toonSelfShadowStrength; // Offset: 308 -> 312 (ToonPBREditable 셀프 음영 강도)
+        float             toonSelfShadowStrength; // Offset: 308 -> 312 (PBR/ToonPBR/ToonPBREditable 셀프 음영 강도)
         
         // 아웃라인 파라미터 (모든 쉐이딩 모드에서 사용 가능, 16바이트 경계에서 시작)
         DirectX::XMFLOAT3 outlineColor;  // 아웃라인 색상 (Offset: 312 -> 324)

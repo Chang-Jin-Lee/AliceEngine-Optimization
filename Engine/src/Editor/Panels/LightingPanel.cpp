@@ -122,13 +122,12 @@ namespace Alice
 			outPitchDeg = std::asin(y) * kRadToDeg;
 		}
 
-		DirectX::XMFLOAT3 YawPitchRollDegToDirection(float yawDeg, float pitchDeg, float rollDeg)
+		DirectX::XMFLOAT3 YawPitchDegToDirection(float yawDeg, float pitchDeg)
 		{
 			using namespace DirectX;
 			const float yaw = yawDeg * kDegToRad;
 			const float pitch = pitchDeg * kDegToRad;
-			const float roll = rollDeg * kDegToRad;
-			const XMMATRIX rot = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+			const XMMATRIX rot = XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f);
 			const XMVECTOR forward = XMVectorSet(0.0f, 0.0f, -1.0f, 0.0f);
 			XMFLOAT3 out;
 			XMStoreFloat3(&out, XMVector3Normalize(XMVector3TransformNormal(forward, rot)));
@@ -215,13 +214,12 @@ namespace Alice
 			lightingChanged |= Alice::ImGuiSliderFloat(L"Key Intensity (주광)",
 				&lighting.keyIntensity,
 				0.0f,
-				3.0f);
-			ImGui::TextUnformatted("Key Rotation (Euler)");
+				20.0f);
+			ImGui::TextUnformatted("Key Rotation (Yaw/Pitch)");
 			static bool keyEulerInit = false;
 			static DirectX::XMFLOAT3 lastKeyDirection = { 0.0f, -1.0f, 0.0f };
 			static float keyYawDeg = 0.0f;
 			static float keyPitchDeg = 0.0f;
-			static float keyRollDeg = 0.0f;
 
 			const DirectX::XMFLOAT3 normalizedKeyDir = NormalizeDirectionSafe(lighting.keyDirection);
 			if (!keyEulerInit || !NearlyEqualDirection(normalizedKeyDir, lastKeyDirection))
@@ -234,11 +232,10 @@ namespace Alice
 			bool keyDirectionChanged = false;
 			keyDirectionChanged |= DragWithInputAngle("Yaw (deg)", keyYawDeg, -180.0f, 180.0f);
 			keyDirectionChanged |= DragWithInputAngle("Pitch (deg)", keyPitchDeg, -89.9f, 89.9f);
-			keyDirectionChanged |= DragWithInputAngle("Roll (deg)", keyRollDeg, -180.0f, 180.0f);
 
 			if (keyDirectionChanged)
 			{
-				lighting.keyDirection = YawPitchRollDegToDirection(keyYawDeg, keyPitchDeg, keyRollDeg);
+				lighting.keyDirection = YawPitchDegToDirection(keyYawDeg, keyPitchDeg);
 				lastKeyDirection = lighting.keyDirection;
 				lightingChanged = true;
 			}
@@ -278,15 +275,10 @@ namespace Alice
 			ImGui::TextUnformatted("Tone Mapping");
 			ImGui::TextWrapped("포스트 프로세스 볼륨으로 조절해야합니다. 포스트프로세스 볼륨을 만들고 Unbound로 조절하세요.");
 
-			if (lightingChanged)
-			{
-				forward.GetLightingParameters() = lighting;
-				deferred.GetLightingParameters() = lighting;
-			}
-
 			// === Skybox ===
 			ImGui::Separator();
 			ImGui::TextUnformatted("Skybox");
+			lightingChanged |= ImGui::SliderFloat("Global IBL Intensity", &lighting.globalIBLIntensity, 0.0f, 1.0f, "%.3f");
 
 			static int  lastSkyboxChoice = -1;
 			static int  lastSkyboxResolution = -1;
@@ -390,6 +382,13 @@ namespace Alice
 
 			if (useForwardRendering) EditBgIfOff(forward);
 			else                     EditBgIfOff(deferred);
+
+			if (lightingChanged)
+			{
+				lighting.globalIBLIntensity = std::clamp(lighting.globalIBLIntensity, 0.0f, 1.0f);
+				forward.GetLightingParameters() = lighting;
+				deferred.GetLightingParameters() = lighting;
+			}
 
 		}
 		ImGui::End();
