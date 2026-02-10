@@ -6,6 +6,7 @@
 #include <string>
 #include <cctype>
 #include <cstdlib>
+#include <vector>
 
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/Foundation/Logger.h"
@@ -426,6 +427,15 @@ namespace Alice
 		if (vfxId == InvalidEntityId)
 			return;
 
+		if (auto* vfx = world.GetComponent<UnityVfxComponent>(vfxId))
+		{
+			const bool wasEnabled = vfx->enabled;
+			if (active && !wasEnabled)
+				vfx->playId += 1; // Reset runtime so stale trails do not reappear on re-enable.
+			vfx->enabled = active;
+			vfx->emitNewParticles = active && emitParticles;
+		}
+
 		if (auto* tr = world.GetComponent<TransformComponent>(vfxId))
 		{
 			if (tr->enabled != active || tr->visible != active)
@@ -434,12 +444,6 @@ namespace Alice
 				tr->visible = active;
 				world.MarkTransformDirty(vfxId);
 			}
-		}
-
-		if (auto* vfx = world.GetComponent<UnityVfxComponent>(vfxId))
-		{
-			vfx->enabled = active;
-			vfx->emitNewParticles = active && emitParticles;
 		}
 
 		if (auto* compute = world.GetComponent<ComputeEffectComponent>(vfxId))
@@ -480,6 +484,30 @@ namespace Alice
 			compute->enabled = active;
 			compute->emitNewParticles = active;
 		}
+	}
+
+	static float ResolveTrailTailOffSec(World& world, EntityId vfxId, float fallbackSec)
+	{
+		float tailSec = std::max(0.0f, fallbackSec);
+		if (vfxId == InvalidEntityId)
+			return tailSec;
+
+		if (const auto* vfx = world.GetComponent<UnityVfxComponent>(vfxId))
+		{
+			const float lifeScale = std::max(0.01f, vfx->lifetimeScale);
+			const float trailLifeScale = std::max(0.01f, vfx->trailLifeScale);
+			const float scale = std::max(lifeScale, trailLifeScale);
+			tailSec = std::max(tailSec, 0.25f * scale);
+		}
+
+		if (const auto* compute = world.GetComponent<ComputeEffectComponent>(vfxId))
+		{
+			const float emissionSec = std::max(0.0f, compute->emissionDurationSec);
+			const float particleLifeSec = std::max(0.0f, std::max(compute->lifeMin, compute->lifeMax));
+			tailSec = std::max(tailSec, emissionSec + particleLifeSec);
+		}
+
+		return tailSec;
 	}
 
 	namespace
@@ -773,6 +801,10 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		m_state->Init();
 		m_playerRageTrailVfxId = InvalidEntityId;
 		m_playerRageTrailPrevPosValid = false;
+		m_playerRageTrailTailOffRemainSec = 0.0f;
+		m_bossAttackTrailVfxId = InvalidEntityId;
+		m_bossAttackTrailVfxId2 = InvalidEntityId;
+		m_bossAttackTrailTailOffRemainSec = 0.0f;
 		m_playerChargeStageVfxId = InvalidEntityId;
 		m_playerChargeStagePrevLevel = 0;
 		m_playerChargeStagePulseRemainSec = 0.0f;
@@ -789,6 +821,10 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
             m_state.reset(new SessionState());
 		m_playerRageTrailVfxId = InvalidEntityId;
 		m_playerRageTrailPrevPosValid = false;
+		m_playerRageTrailTailOffRemainSec = 0.0f;
+		m_bossAttackTrailVfxId = InvalidEntityId;
+		m_bossAttackTrailVfxId2 = InvalidEntityId;
+		m_bossAttackTrailTailOffRemainSec = 0.0f;
 		m_playerChargeStageVfxId = InvalidEntityId;
 		m_playerChargeStagePrevLevel = 0;
 		m_playerChargeStagePulseRemainSec = 0.0f;
@@ -810,6 +846,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		if (auto* world = GetWorld())
 		{
 			SetTrailVfxActive(*world, m_playerRageTrailVfxId, false, false);
+			SetTrailVfxActive(*world, m_bossAttackTrailVfxId, false, false);
+			SetTrailVfxActive(*world, m_bossAttackTrailVfxId2, false, false);
 			if (m_playerChargeStageVfxId != InvalidEntityId)
 			{
 				if (auto* compute = world->GetComponent<ComputeEffectComponent>(m_playerChargeStageVfxId))
@@ -824,6 +862,10 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		m_playerRageTrailVfxId = InvalidEntityId;
 		m_playerRageTrailPrevPosValid = false;
+		m_playerRageTrailTailOffRemainSec = 0.0f;
+		m_bossAttackTrailVfxId = InvalidEntityId;
+		m_bossAttackTrailVfxId2 = InvalidEntityId;
+		m_bossAttackTrailTailOffRemainSec = 0.0f;
 		m_playerChargeStageVfxId = InvalidEntityId;
 		m_playerChargeStagePrevLevel = 0;
 		m_playerChargeStagePulseRemainSec = 0.0f;
@@ -873,6 +915,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		if (auto* world = GetWorld())
 		{
 			SetTrailVfxActive(*world, m_playerRageTrailVfxId, false, false);
+			SetTrailVfxActive(*world, m_bossAttackTrailVfxId, false, false);
+			SetTrailVfxActive(*world, m_bossAttackTrailVfxId2, false, false);
 			if (m_playerChargeStageVfxId != InvalidEntityId)
 			{
 				if (auto* compute = world->GetComponent<ComputeEffectComponent>(m_playerChargeStageVfxId))
@@ -885,6 +929,10 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		}
 		m_playerRageTrailVfxId = InvalidEntityId;
 		m_playerRageTrailPrevPosValid = false;
+		m_playerRageTrailTailOffRemainSec = 0.0f;
+		m_bossAttackTrailVfxId = InvalidEntityId;
+		m_bossAttackTrailVfxId2 = InvalidEntityId;
+		m_bossAttackTrailTailOffRemainSec = 0.0f;
 		m_playerChargeStageVfxId = InvalidEntityId;
 		m_playerChargeStagePrevLevel = 0;
 		m_playerChargeStagePulseRemainSec = 0.0f;
@@ -1031,6 +1079,22 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				case C_BossBrainComponent::PatternType::BoostAttackA:
 				case C_BossBrainComponent::PatternType::BoostAttackB:
 				case C_BossBrainComponent::PatternType::BoostAttackC:
+					return true;
+				default:
+					return false;
+				}
+			};
+		auto IsBossAttackTrailPattern = [&](C_BossBrainComponent::PatternType pattern) -> bool
+			{
+				switch (pattern)
+				{
+				case C_BossBrainComponent::PatternType::AttackA:
+				case C_BossBrainComponent::PatternType::AttackB:
+				case C_BossBrainComponent::PatternType::AttackC:
+				case C_BossBrainComponent::PatternType::BoostAttackA:
+				case C_BossBrainComponent::PatternType::BoostAttackB:
+				case C_BossBrainComponent::PatternType::BoostAttackC:
+				case C_BossBrainComponent::PatternType::Side:
 					return true;
 				default:
 					return false;
@@ -4933,15 +4997,16 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		ApplyHitstopToAnim(playerId, m_state->playerHitstopTimer);
 		ApplyHitstopToAnim(bossId, m_state->bossHitstopTimer);
 
+		const float commonTrailTailFallbackSec = std::max(0.0f, m_trailTailOffFallbackSec);
 		const bool playerRageTrailActive = m_enablePlayerRageTrailVfx && m_state->playerRageActive;
 		const std::string rageTargetName = !m_playerRageTrailTargetName.empty() ? m_playerRageTrailTargetName : "W_Target";
 		EntityId rageTargetId = FindNamedDescendant(world, playerId, rageTargetName);
 		// W_Target can be socket-driven and live outside the player hierarchy in some scenes.
 		if (rageTargetId == InvalidEntityId)
 			rageTargetId = ResolveEntityByName(rageTargetName);
-		const bool rageTrailEnabled = playerRageTrailActive && rageTargetId != InvalidEntityId;
-		bool rageTrailEmit = false;
-		if (rageTrailEnabled)
+		const bool rageTrailAllowed = playerRageTrailActive && rageTargetId != InvalidEntityId;
+		bool rageTrailShouldEmit = false;
+		if (rageTrailAllowed)
 		{
 			m_playerRageTrailVfxId = EnsureTrailVfxChild(
 				world,
@@ -4968,7 +5033,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					const float dy = rageTargetTr->position.y - m_playerRageTrailPrevPos.y;
 					const float dz = rageTargetTr->position.z - m_playerRageTrailPrevPos.z;
 					const float speed = std::sqrt(dx * dx + dy * dy + dz * dz) / safeDt;
-					rageTrailEmit = (speed >= minSpeed);
+					rageTrailShouldEmit = (speed >= minSpeed);
 				}
 				m_playerRageTrailPrevPos = rageTargetTr->position;
 				m_playerRageTrailPrevPosValid = true;
@@ -4982,7 +5047,132 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		{
 			m_playerRageTrailPrevPosValid = false;
 		}
-		SetTrailVfxActive(world, m_playerRageTrailVfxId, rageTrailEnabled, rageTrailEmit);
+
+		bool rageTrailActive = false;
+		bool rageTrailEmit = false;
+		if (m_enablePlayerRageTrailVfx
+			&& m_playerRageTrailVfxId != InvalidEntityId
+			&& rageTrailShouldEmit)
+		{
+			rageTrailActive = true;
+			rageTrailEmit = true;
+			m_playerRageTrailTailOffRemainSec = ResolveTrailTailOffSec(world, m_playerRageTrailVfxId, commonTrailTailFallbackSec);
+		}
+		else if (m_enablePlayerRageTrailVfx
+			&& m_playerRageTrailVfxId != InvalidEntityId
+			&& m_playerRageTrailTailOffRemainSec > 0.0f)
+		{
+			m_playerRageTrailTailOffRemainSec = std::max(0.0f, m_playerRageTrailTailOffRemainSec - std::max(0.0f, deltaTime));
+			rageTrailActive = true;
+			rageTrailEmit = false;
+		}
+		else
+		{
+			m_playerRageTrailTailOffRemainSec = 0.0f;
+		}
+		SetTrailVfxActive(world, m_playerRageTrailVfxId, rageTrailActive, rageTrailEmit);
+
+		const std::string bossTrailTargetName = !m_bossAttackTrailTargetName.empty()
+			? m_bossAttackTrailTargetName
+			: "BossWeapon";
+		const std::string bossTrailChildName = !m_bossAttackTrailChildName.empty()
+			? m_bossAttackTrailChildName
+			: "Boss_AttackTrailVfx1";
+		const std::string bossTrailChildName2 = !m_bossAttackTrailChildName2.empty()
+			? m_bossAttackTrailChildName2
+			: "Boss_AttackTrailVfx2";
+		EntityId bossTrailTargetId = FindNamedDescendant(world, bossId, bossTrailTargetName);
+		if (bossTrailTargetId == InvalidEntityId)
+			bossTrailTargetId = ResolveEntityByName(bossTrailTargetName);
+
+		auto HasTrailTransform = [&](EntityId id) -> bool
+			{
+				return id != InvalidEntityId && world.GetComponent<TransformComponent>(id);
+			};
+		auto ResolveBossTrailVfx = [&](EntityId& ioId,
+			const std::string& preferredName,
+			const std::string& fallbackName,
+			EntityId avoidId)
+			{
+				if (HasTrailTransform(ioId))
+					return;
+				ioId = InvalidEntityId;
+
+				auto TryResolveName = [&](const std::string& name) -> EntityId
+					{
+						if (name.empty())
+							return InvalidEntityId;
+						EntityId id = InvalidEntityId;
+						if (bossTrailTargetId != InvalidEntityId)
+							id = FindNamedDescendant(world, bossTrailTargetId, name);
+						if (id == InvalidEntityId)
+							id = ResolveEntityByName(name);
+						if (id == avoidId)
+							return InvalidEntityId;
+						return id;
+					};
+
+				ioId = TryResolveName(preferredName);
+				if (ioId == InvalidEntityId
+					&& !fallbackName.empty()
+					&& fallbackName != preferredName)
+				{
+					ioId = TryResolveName(fallbackName);
+				}
+			};
+
+		ResolveBossTrailVfx(m_bossAttackTrailVfxId, bossTrailChildName, "Boss_AttackTrailVfx1", InvalidEntityId);
+		ResolveBossTrailVfx(m_bossAttackTrailVfxId2, bossTrailChildName2, "Boss_AttackTrailVfx2", m_bossAttackTrailVfxId);
+
+		bool bossTrailActive = false;
+		bool bossTrailEmit = false;
+		bool bossTrailPatternActive = false;
+		if (outBoss.state == Combat::ActionState::Attack)
+		{
+			if (bossBrain)
+			{
+				bossTrailPatternActive = IsBossAttackTrailPattern(bossBrain->GetActivePattern());
+			}
+			if (!bossTrailPatternActive)
+			{
+				const std::string attackClip = !m_state->bossAnim.attackClip.empty()
+					? m_state->bossAnim.attackClip
+					: bossOut.attackClip;
+				bossTrailPatternActive = (attackClip.find("Attack_A") != std::string::npos)
+					|| (attackClip.find("Attack_BC") != std::string::npos)
+					|| (attackClip.find("Attack_ABC") != std::string::npos)
+					|| (attackClip.find("Side_Attack") != std::string::npos);
+			}
+		}
+
+		const bool bossTrailShouldEmit = bossTrailPatternActive && outBoss.flags.hitActive;
+		const float bossTailFallbackSec = std::max(commonTrailTailFallbackSec, std::max(0.0f, m_bossAttackTrailTailOffSec));
+		const bool hasBossTrailVfx = HasTrailTransform(m_bossAttackTrailVfxId)
+			|| HasTrailTransform(m_bossAttackTrailVfxId2);
+		if (m_enableBossAttackTrailVfx
+			&& hasBossTrailVfx
+			&& bossTrailShouldEmit)
+		{
+			bossTrailActive = true;
+			bossTrailEmit = true;
+			m_bossAttackTrailTailOffRemainSec = std::max(
+				ResolveTrailTailOffSec(world, m_bossAttackTrailVfxId, bossTailFallbackSec),
+				ResolveTrailTailOffSec(world, m_bossAttackTrailVfxId2, bossTailFallbackSec));
+		}
+		else if (m_enableBossAttackTrailVfx
+			&& hasBossTrailVfx
+			&& m_bossAttackTrailTailOffRemainSec > 0.0f)
+		{
+			m_bossAttackTrailTailOffRemainSec = std::max(0.0f, m_bossAttackTrailTailOffRemainSec - std::max(0.0f, deltaTime));
+			bossTrailActive = true;
+			bossTrailEmit = false;
+		}
+		else
+		{
+			m_bossAttackTrailTailOffRemainSec = 0.0f;
+		}
+		SetTrailVfxActive(world, m_bossAttackTrailVfxId, bossTrailActive, bossTrailEmit);
+		SetTrailVfxActive(world, m_bossAttackTrailVfxId2, bossTrailActive, bossTrailEmit);
 	}
 
 	void C_CombatSessionComponent::PostCombatUpdate(float deltaTime)

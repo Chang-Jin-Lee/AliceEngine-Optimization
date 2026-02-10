@@ -1,0 +1,53 @@
+{
+    "Transform": {
+        "enabled": false,
+        "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 0.02500000037252903,
+            "y": 0.02500000037252903,
+            "z": 0.02500000037252903
+        },
+        "visible": false
+    },
+    "UnityVfx": {
+        "alphaScale": 1.0,
+        "colorScale": 1.0,
+        "colorTint": {
+            "x": 0.05000000074505806,
+            "y": 0.05000000074505806,
+            "z": 0.05000000074505806
+        },
+        "dissolveOffset": 0.0,
+        "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json",
+        "emitNewParticles": false,
+        "enableTrails": true,
+        "enabled": false,
+        "hdrColorClamp": 1.0,
+        "intensityScale": 0.0,
+        "lifetimeScale": 1.0,
+        "loop": true,
+        "noiseScale": 1.0,
+        "overrideLoop": false,
+        "rampScale": 1.0,
+        "sizeScale": 0.017999999225139618,
+        "spawnRateScale": 1.5,
+        "speedScale": 1.0,
+        "timeScale": 1.0,
+        "trailLifeScale": 1.0,
+        "trailWidthScale": 1.0,
+        "useComputeEffect": false,
+        "useMeshRenderer": true,
+        "uvScrollScale": 1.0
+    },
+    "name": "W_Target_RageTrailVfx",
+    "version": 1
+}
