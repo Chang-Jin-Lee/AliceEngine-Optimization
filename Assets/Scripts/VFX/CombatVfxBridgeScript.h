@@ -33,6 +33,7 @@ namespace Alice
         ALICE_PROPERTY(std::string, bossEntityName, "Boss");
         ALICE_PROPERTY(std::string, weaponTraceEntityName, "W_Target");
         ALICE_PROPERTY(std::string, shockWaveEntityName, "ShockWave");
+        ALICE_PROPERTY(std::string, shockBlastPrefabPath, "Assets/Prefabs/(00)WhiteShockBlast.prefab");
         ALICE_PROPERTY(std::string, guardShockPointEntityName, "PlayerEffectPoint");
         ALICE_PROPERTY(std::string, bossEffectPointEntityName, "BossEffectPoint");
 
@@ -72,11 +73,14 @@ namespace Alice
         // Pool settings
         ALICE_PROPERTY(int, slashPoolSize, 3);
         ALICE_PROPERTY(int, hitPoolSize, 3);
+        ALICE_PROPERTY(int, shockBlastPoolSize, 6);
         ALICE_PROPERTY(bool, prewarm, true);
 
         // Lifetime (sec)
         ALICE_PROPERTY(float, slashLifeTimeSec, 0.8f);
         ALICE_PROPERTY(float, hitLifeTimeSec, 0.6f);
+        ALICE_PROPERTY(float, shockBlastLifeTimeSec, 1.0f);
+        ALICE_PROPERTY(float, bossGroggyRingOverlayLifeTimeSec, 6.0f);
         ALICE_PROPERTY(bool, enableHeavyFadeOut, true);
         ALICE_PROPERTY(int, heavyAttackSlotIndex, 4);
         ALICE_PROPERTY(float, heavyFadeDurationSec, 1.0f);
@@ -178,7 +182,9 @@ namespace Alice
         EntityId ResolveBossEffectPointEntity(bool logWarnings);
         bool TryGetGuardShockWavePosition(DirectX::XMFLOAT3& outPos);
         bool TryGetBossEffectPointPosition(DirectX::XMFLOAT3& outPos);
-        void TriggerShockWaveAtPosition(const DirectX::XMFLOAT3& spawnPos);
+        void TriggerShockWaveAtPosition(const DirectX::XMFLOAT3& spawnPos,
+                                        bool spawnShockWave = true,
+                                        bool spawnShockBlast = true);
         void OnCombatResolve(EntityId victimId,
                              EntityId attackerId,
                              std::uint8_t resolveResult,
@@ -187,7 +193,7 @@ namespace Alice
 
         void PrewarmSlot(int slot);
         void ClearSlot(int slot);
-        EntityId Acquire(int slot);
+        EntityId Acquire(int slot, bool triggerOneShot = true);
         void Release(int slot, EntityId id);
         EntityId CreateInstance(int slot);
         EntityId EnsurePoolRoot();
@@ -217,9 +223,12 @@ namespace Alice
                                  const DirectX::XMFLOAT3& upHint);
 
         void SetEntityActiveRecursive(World& world, EntityId id, bool active, bool triggerOneShot);
-        void SetEntityAlphaRecursive(World& world, EntityId id, float alpha) const;
         void SetEntityColorTintRecursive(World& world, EntityId id, const DirectX::XMFLOAT3& tint) const;
         void SetEntityLoopModeRecursive(World& world, EntityId id, bool loopEnabled) const;
+        void CacheEntityAlphaRecursive(World& world, int slot, EntityId id);
+        void RestoreEntityAlphaRecursive(World& world, int slot, EntityId id) const;
+        void EraseCachedAlphaRecursive(World& world, int slot, EntityId id);
+        float ComputeOneShotKeepAliveSec(EntityId rootId);
 
         std::string GetPrefabPath(int slot) const;
         int GetPoolSizeSafe(int slot) const;
@@ -258,7 +267,8 @@ namespace Alice
             HitOverlayGuardBreakRingSlot = 18,
             HitOverlayParryRingSlot = 19,
             HitOverlayBossGroggyRingSlot = 20,
-            SlotCount = 21,
+            ShockBlastSlot = 21,
+            SlotCount = 22,
             SlashStepSlotCount = 6
         };
 
@@ -275,6 +285,7 @@ namespace Alice
         std::array<std::vector<ActiveInstance>, SlotCount> m_active{};
         std::array<std::string, SlotCount> m_cachedPaths{};
         std::array<std::unordered_map<EntityId, DirectX::XMFLOAT3>, SlotCount> m_cachedBaseScales{};
+        std::array<std::unordered_map<EntityId, float>, SlotCount> m_cachedBaseAlphas{};
         std::unordered_map<EntityId, ComputeOneShotState> m_computeOneShotStates{};
         std::unordered_map<EntityId, std::uint32_t> m_traceAttackInstanceSeen{};
         std::uint32_t m_prevAttackTraceMask = 0u;
