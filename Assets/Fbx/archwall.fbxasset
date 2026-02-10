@@ -1,0 +1,10 @@
+{
+    "materials": [
+        "Assets/Materials/archwall_0.mat",
+        "Assets/Materials/archwall_1.mat",
+        "Assets/Materials/archwall_2.mat",
+        "Assets/Materials/archwall_3.mat"
+    ],
+    "mesh": "archwall",
+    "source_fbx": "Resource/Test/4_Resources/background/archwall.fbx"
+}

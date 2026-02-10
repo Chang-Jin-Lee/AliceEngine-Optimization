@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/statue_0.mat"
+    ],
+    "mesh": "statue",
+    "source_fbx": "Resource/Test/4_Resources/background/statue/statue.fbx"
+}

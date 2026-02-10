@@ -201,8 +201,8 @@ namespace Alice
         ALICE_PROPERTY(float, m_distBand10, 10.0f);
         // ALICE_PROPERTY(float, m_attackSectorHoldSec, 0.6f); // unused
         ALICE_PROPERTY(float, m_traceDelaySec, 0.5f);
-        ALICE_PROPERTY(float, m_traceMaxHoldMinSec, 3.0f);
-        ALICE_PROPERTY(float, m_traceMaxHoldMaxSec, 6.0f);
+        ALICE_PROPERTY(float, m_traceMaxHoldMinSec, 1.5f);
+        ALICE_PROPERTY(float, m_traceMaxHoldMaxSec, 4.0f);
         ALICE_PROPERTY(float, m_actionDelaySec, 0.3f);
         ALICE_PROPERTY(float, m_rotationOffsetDeg, 180.0f);
         // ALICE_PROPERTY(float, m_dashCooldownSec, 10.0f); // unused

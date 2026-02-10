@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/lattice_front_0.mat"
+    ],
+    "mesh": "lattice_front",
+    "source_fbx": "Resource/Test/4_Resources/background/0209scene/lattice_front.fbx"
+}

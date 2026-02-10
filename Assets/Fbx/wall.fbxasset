@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/wall_0.mat"
+    ],
+    "mesh": "wall",
+    "source_fbx": "Resource/Test/4_Resources/background/wall/wall.fbx"
+}
