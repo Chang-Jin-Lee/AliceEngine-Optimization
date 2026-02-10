@@ -310,5 +310,6 @@ namespace Alice
         std::deque<PatternType> m_followupQueue;
         float m_traceTargetSec = 0.0f;
         float m_retreatTargetDist = 0.0f;
+        bool m_retreatSingleStep = false;
     };
 }
