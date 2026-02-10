@@ -34,9 +34,16 @@ namespace Alice
         ALICE_PROPERTY(std::string, underImageHoverPath, "");
         ALICE_PROPERTY(bool, showUnderImageOnHoverOnly, false);
         ALICE_PROPERTY(bool, showButtonImageOnHoverOnly, false);
+        // Optional fallback path if the button UIImage has no texturePath in the scene.
+        ALICE_PROPERTY(std::string, buttonImageNormalPath, "");
         // Optional: close/toggle a target window when the button is clicked.
         ALICE_PROPERTY(std::string, clickTargetWidgetName, "");
         ALICE_PROPERTY(bool, clickToggleTarget, false);
+        ALICE_PROPERTY(bool, clickSetVisible, true);
+        // If set, disable input on this root (and its children) while click target is visible.
+        ALICE_PROPERTY(std::string, blockInputRootWidgetName, "");
+        ALICE_PROPERTY(bool, blockInputWhenTargetVisible, true);
+        ALICE_PROPERTY(bool, enableClick, true);
 
 
     private:
@@ -55,8 +62,13 @@ namespace Alice
 
         DirectX::XMFLOAT4 m_textNormalColor{ 0.06f, 0.06f, 0.06f, 0.93f };
         DirectX::XMFLOAT4 m_lineNormalColor{ 0.1f, 0.1f, 0.1f, 0.93f };
+        std::string m_lineNormalTexturePath;
         DirectX::XMFLOAT4 m_buttonNormalColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+        std::string m_buttonNormalTexturePath;
         DirectX::XMFLOAT4 m_hoverColor{ 1.0f, 1.0f, 1.0f, 1.0f };
         DirectX::XMFLOAT4 m_pressedColor{ 0.85f, 0.85f, 0.85f, 1.0f };
+        bool m_loggedEmptyButtonPath = false;
     };
 }
+
+

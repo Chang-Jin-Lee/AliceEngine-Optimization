@@ -1,4 +1,4 @@
-﻿#include "AudioPlayerScript.h"
+#include "AudioPlayerScript.h"
 
 #include "AudioEventBusScript.h"
 #include "TempSoundPath.h"
@@ -78,8 +78,20 @@ namespace Alice
             return;
 
         DirectX::XMFLOAT3 pos{ 0.0f, 0.0f, 0.0f };
-        if (auto* tr = GetTransform())
-            pos = tr->position;
+        if (!Get_targetEntityName().empty())
+        {
+            GameObject targetGo = GetWorld()->FindGameObject(Get_targetEntityName());
+            if (targetGo.IsValid())
+            {
+                if (auto* tr = GetWorld()->GetComponent<TransformComponent>(targetGo.id()))
+                    pos = tr->position;
+            }
+        }
+        else
+        {
+            if (auto* tr = GetTransform())
+                pos = tr->position;
+        }
 
         float volume = Get_volume();
         if (m_currentMovement != PlayerMovementState::None)
@@ -211,6 +223,7 @@ namespace Alice
         case PlayerOtherState::GuardBreak:      return Get_pathGuardBreak();
         case PlayerOtherState::EgoCombine:      return Get_pathEgoCombine();
         case PlayerOtherState::Heal:            return Get_pathHeal();
+        case PlayerOtherState::GroggyAttack:    return Get_pathGroggyAttack();
         case PlayerOtherState::Death:           return Get_pathDeath();
         default:
             return "";
@@ -254,6 +267,7 @@ namespace Alice
         case PlayerOtherState::GuardBreak:      return Get_volumeGuardBreak();
         case PlayerOtherState::EgoCombine:      return Get_volumeEgoCombine();
         case PlayerOtherState::Heal:            return Get_volumeHeal();
+        case PlayerOtherState::GroggyAttack:    return Get_volumeGroggyAttack();
         case PlayerOtherState::Death:           return Get_volumeDeath();
         default:
             return 1.0f;
@@ -288,8 +302,20 @@ namespace Alice
         if (Get_is3D())
         {
             DirectX::XMFLOAT3 pos{ 0.0f, 0.0f, 0.0f };
-            if (auto* tr = GetTransform())
-                pos = tr->position;
+            if (!Get_targetEntityName().empty())
+            {
+                GameObject targetGo = GetWorld()->FindGameObject(Get_targetEntityName());
+                if (targetGo.IsValid())
+                {
+                    if (auto* tr = GetWorld()->GetComponent<TransformComponent>(targetGo.id()))
+                        pos = tr->position;
+                }
+            }
+            else
+            {
+                if (auto* tr = GetTransform())
+                    pos = tr->position;
+            }
 
             if (isLooping)
             {

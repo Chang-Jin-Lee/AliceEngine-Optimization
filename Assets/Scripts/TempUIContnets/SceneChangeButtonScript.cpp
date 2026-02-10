@@ -104,7 +104,12 @@ namespace Alice
         if (m_buttonEntityId != InvalidEntityId)
         {
             if (auto* imgComp = w->GetComponent<UIImageComponent>(m_buttonEntityId))
+            {
                 m_buttonNormalColor = imgComp->color;
+                m_buttonNormalTexturePath = imgComp->texturePath;
+                if (Get_showButtonImageOnHoverOnly())
+                    imgComp->texturePath.clear();
+            }
         }
 
 
@@ -210,31 +215,44 @@ namespace Alice
             {
                 const std::string& normalPath = Get_underImageNormalPath();
                 const std::string& hoverPath = Get_underImageHoverPath();
-                if (!normalPath.empty() || !hoverPath.empty())
+                const bool hasPaths = !normalPath.empty() || !hoverPath.empty();
+                if (hasPaths || Get_showUnderImageOnHoverOnly())
                 {
-                    const std::string& desired = isHovered
-                        ? (hoverPath.empty() ? normalPath : hoverPath)
-                        : normalPath;
-                    if (!desired.empty() && imgComp->texturePath != desired)
+                    std::string desired;
+                    if (Get_showUnderImageOnHoverOnly())
+                    {
+                        if (isHovered)
+                            desired = hoverPath.empty() ? normalPath : hoverPath;
+                        else
+                            desired.clear();
+                    }
+                    else
+                    {
+                        desired = isHovered
+                            ? (hoverPath.empty() ? normalPath : hoverPath)
+                            : (normalPath.empty() ? hoverPath : normalPath);
+                    }
+
+                    if (imgComp->texturePath != desired)
                         imgComp->texturePath = desired;
                 }
 
-                DirectX::XMFLOAT4 color = *lineColor;
-                if (Get_showUnderImageOnHoverOnly() && !isHovered)
-                    color.w = 0.0f;
-                imgComp->color = color;
+                imgComp->color = *lineColor;
             }
 
         }
 
-        if (m_buttonEntityId != InvalidEntityId && Get_showButtonImageOnHoverOnly())
+        if (m_buttonEntityId != InvalidEntityId)
         {
             if (auto* imgComp = w->GetComponent<UIImageComponent>(m_buttonEntityId))
             {
-                DirectX::XMFLOAT4 color = m_buttonNormalColor;
-                if (!isHovered)
-                    color.w = 0.0f;
-                imgComp->color = color;
+                if (Get_showButtonImageOnHoverOnly())
+                {
+                    const std::string desired = isHovered ? m_buttonNormalTexturePath : std::string();
+                    if (imgComp->texturePath != desired)
+                        imgComp->texturePath = desired;
+                }
+                imgComp->color = m_buttonNormalColor;
             }
         }
     }

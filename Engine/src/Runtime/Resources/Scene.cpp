@@ -1,4 +1,4 @@
-﻿#include "Runtime/Resources/Scene.h"
+#include "Runtime/Resources/Scene.h"
 #include "Runtime/Resources/ResourceManager.h"
 #include "Runtime/Resources/SceneFile.h"
 #include "Runtime/Audio/SoundManager.h"

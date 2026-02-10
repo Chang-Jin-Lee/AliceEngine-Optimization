@@ -30,6 +30,7 @@ namespace Alice
         ALICE_PROPERTY(float, minDistance, 1.0f);
         ALICE_PROPERTY(float, maxDistance, 50.0f);
         ALICE_PROPERTY(bool, loop, false);
+        ALICE_PROPERTY(std::string, targetEntityName, ""); // 3D 사운드 위치를 가져올 대상 엔티티 이름 (비어있으면 스크립트가 붙은 엔티티 사용)
 
         // 보스 공격 상태별 경로 (ImGui Inspector에서 설정 가능)
         ALICE_PROPERTY(std::string, pathAttackAlarm, "Resource/Test/4_Resources/sound/SFX/보스/공격 전조 알림/Boss_Attack_Alarm_01.mp3");

@@ -436,7 +436,7 @@ float4 main(PSInput Input) : SV_Target
     float currentMaxAlpha = lerp(0.0f, 0.8f, progress);
 
     float center = 0.5f;
-    float halfThickness = 0.1f;
+      float halfThickness = 0.2f;
     float mask1 = smoothstep(center - halfThickness - currentSoftness, center - halfThickness, uv.y);
     float mask2 = smoothstep(center + halfThickness, center + halfThickness + currentSoftness, uv.y);
     float lineIntensity = saturate(mask1 - mask2);

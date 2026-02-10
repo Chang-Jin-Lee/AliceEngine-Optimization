@@ -49,6 +49,7 @@ namespace Alice
         DirectX::XMFLOAT4 m_textNormalColor{ 0.06f, 0.06f, 0.06f, 0.93f };
         DirectX::XMFLOAT4 m_lineNormalColor{ 0.1f, 0.1f, 0.1f, 0.93f };
         DirectX::XMFLOAT4 m_buttonNormalColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+        std::string m_buttonNormalTexturePath;
         DirectX::XMFLOAT4 m_hoverColor{ 1.0f, 1.0f, 1.0f, 1.0f };
         DirectX::XMFLOAT4 m_pressedColor{ 0.85f, 0.85f, 0.85f, 1.0f };
     };

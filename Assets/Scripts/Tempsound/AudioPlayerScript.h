@@ -25,6 +25,7 @@ namespace Alice
         ALICE_PROPERTY(float, minDistance, 1.0f);
         ALICE_PROPERTY(float, maxDistance, 50.0f);
         ALICE_PROPERTY(bool, loop, false);
+        ALICE_PROPERTY(std::string, targetEntityName, ""); // 3D 사운드 위치를 가져올 대상 엔티티 이름 (비어있으면 스크립트가 붙은 엔티티 사용)
 
         // 플레이어 공격 상태별 경로 (ImGui Inspector에서 설정 가능)
         ALICE_PROPERTY(std::string, pathHeavyAttack, "Resource/Test/4_Resources/sound/SFX/플레이어/강공격/Player_HeavyAttack_01.mp3");
@@ -46,6 +47,7 @@ namespace Alice
         ALICE_PROPERTY(std::string, pathGuardBreak, "Resource/Test/4_Resources/sound/SFX/플레이어/가드 브레이크/Player_GuardBreak_01.mp3");
         ALICE_PROPERTY(std::string, pathEgoCombine, "Resource/Test/4_Resources/sound/SFX/플레이어/에고웨폰 재결합/Player_Weapon_Gather_01.wav");
         ALICE_PROPERTY(std::string, pathHeal, "Resource/Sound/SFX/플레이어/회복/Player_Healing_01.wav");
+        ALICE_PROPERTY(std::string, pathGroggyAttack, "Resource/Sound/SFX/플레이어/그로기어택/Player_GroggyAttack_01.wav");
         ALICE_PROPERTY(std::string, pathDeath, "Resource/Sound/SFX/플레이어/사망/Player_Death_01.wav");
 
         /// 공격 상태 → OnPlayerAttackSfxRequest 델리게이트로 바인딩
@@ -65,6 +67,7 @@ namespace Alice
         ALICE_PROPERTY(float, volumeGuardBreak, 1.0f);
         ALICE_PROPERTY(float, volumeEgoCombine, 1.0f);
         ALICE_PROPERTY(float, volumeHeal, 1.0f);
+        ALICE_PROPERTY(float, volumeGroggyAttack, 1.0f);
         ALICE_PROPERTY(float, volumeDeath, 1.0f);
 
         void SetAttackState(PlayerAttackState state);

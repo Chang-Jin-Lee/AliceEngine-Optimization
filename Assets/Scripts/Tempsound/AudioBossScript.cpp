@@ -133,8 +133,20 @@ namespace Alice
             if (audio)
             {
                 DirectX::XMFLOAT3 pos{ 0.0f, 0.0f, 0.0f };
-                if (auto* tr = GetTransform())
-                    pos = tr->position;
+                if (!Get_targetEntityName().empty())
+                {
+                    GameObject targetGo = GetWorld()->FindGameObject(Get_targetEntityName());
+                    if (targetGo.IsValid())
+                    {
+                        if (auto* tr = GetWorld()->GetComponent<TransformComponent>(targetGo.id()))
+                            pos = tr->position;
+                    }
+                }
+                else
+                {
+                    if (auto* tr = GetTransform())
+                        pos = tr->position;
+                }
                 float volume = Get_volume();
                 if (m_currentMovement != BossMovementState::None)
                     volume *= GetMovementStateVolume(m_currentMovement);
@@ -167,8 +179,20 @@ namespace Alice
                     if (Get_is3D())
                     {
                         DirectX::XMFLOAT3 pos{ 0.0f, 0.0f, 0.0f };
-                        if (auto* tr = GetTransform())
-                            pos = tr->position;
+                        if (!Get_targetEntityName().empty())
+                        {
+                            GameObject targetGo = GetWorld()->FindGameObject(Get_targetEntityName());
+                            if (targetGo.IsValid())
+                            {
+                                if (auto* tr = GetWorld()->GetComponent<TransformComponent>(targetGo.id()))
+                                    pos = tr->position;
+                            }
+                        }
+                        else
+                        {
+                            if (auto* tr = GetTransform())
+                                pos = tr->position;
+                        }
                         const float volume = it->volume * GetAttackStateVolume(it->state);
                         audio->Play3D(L"", it->key, pos, volume, it->pitch, false);
                     }
@@ -395,8 +419,20 @@ namespace Alice
                 volume *= GetOtherStateVolume(otherState);
 
             DirectX::XMFLOAT3 pos{ 0.0f, 0.0f, 0.0f };
-            if (auto* tr = GetTransform())
-                pos = tr->position;
+            if (!Get_targetEntityName().empty())
+            {
+                GameObject targetGo = GetWorld()->FindGameObject(Get_targetEntityName());
+                if (targetGo.IsValid())
+                {
+                    if (auto* tr = GetWorld()->GetComponent<TransformComponent>(targetGo.id()))
+                        pos = tr->position;
+                }
+            }
+            else
+            {
+                if (auto* tr = GetTransform())
+                    pos = tr->position;
+            }
 
             if (isLooping)
             {
