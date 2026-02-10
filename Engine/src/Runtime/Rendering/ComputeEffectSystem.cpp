@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <limits>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -62,6 +63,20 @@ namespace Alice
         static float ClampFloat(float v, float lo, float hi)
         {
             return std::max(lo, std::min(hi, v));
+        }
+
+        static std::uint32_t ResolvePoolParticleCount(const std::string& presetName, std::uint32_t baseCount)
+        {
+            const std::uint32_t safeBase = (std::max)(baseCount, 1u);
+            if (presetName == "Sparks" || presetName == "Explosion")
+            {
+                constexpr std::uint32_t kScale = 2u;
+                const std::uint32_t maxCount = (std::numeric_limits<std::uint32_t>::max)();
+                if (safeBase > (maxCount / kScale))
+                    return maxCount;
+                return safeBase * kScale;
+            }
+            return safeBase;
         }
 
         static XMFLOAT3 SafeNormalize(const XMFLOAT3& v, const XMFLOAT3& fallback)
@@ -498,30 +513,12 @@ namespace Alice
             return false;
         }
 
-        if (!RegisterParticleShaderSet("Smoke",
-                                       ComputeEffectShader::ParticleClearCS,
-                                       ComputeEffectShader::SmokeUpdateCS,
-                                       ComputeEffectShader::SmokeDrawCS))
-        {
-            ALICE_LOG_ERRORF("ComputeEffectSystem::Initialize: RegisterParticleShaderSet(Smoke) failed.");
-            return false;
-        }
-
         if (!RegisterParticleShaderSet("Vortex",
                                        ComputeEffectShader::ParticleClearCS,
                                        ComputeEffectShader::VortexUpdateCS,
                                        ComputeEffectShader::VortexDrawCS))
         {
             ALICE_LOG_ERRORF("ComputeEffectSystem::Initialize: RegisterParticleShaderSet(Vortex) failed.");
-            return false;
-        }
-
-        if (!RegisterParticleShaderSet("Snow",
-                                       ComputeEffectShader::ParticleClearCS,
-                                       ComputeEffectShader::SnowUpdateCS,
-                                       ComputeEffectShader::SnowDrawCS))
-        {
-            ALICE_LOG_ERRORF("ComputeEffectSystem::Initialize: RegisterParticleShaderSet(Snow) failed.");
             return false;
         }
 
@@ -841,7 +838,8 @@ namespace Alice
                 continue;
 
             // 프리셋별 파티클 풀 확보
-            if (!EnsureParticlePool(presetName, m_particleCount))
+            const std::uint32_t particleCountForPreset = ResolvePoolParticleCount(presetName, m_particleCount);
+            if (!EnsureParticlePool(presetName, particleCountForPreset))
             {
                 ALICE_LOG_ERRORF("ComputeEffectSystem::Execute: EnsureParticlePool failed (preset=%s)", presetName.c_str());
                 continue;
@@ -956,12 +954,13 @@ namespace Alice
             }
 
             // CB 업데이트 (emitterCount, near/far 포함, bias는 emitter별로 사용)
-            UpdateConstantBuffer(emitterCount);
+            UpdateConstantBuffer(emitterCount, particleCountForPreset);
 
             // Update/Draw 실행
             DispatchParticlesUpdate(preset.shaders.updateShader.Get(), 
                                    preset.pool.uav.Get(),
-                                   preset.emitters.srv.Get());
+                                   preset.emitters.srv.Get(),
+                                   particleCountForPreset);
             
             // depth SRV는 항상 진짜 depth SRV를 바인딩 (shader에서 per-particle depthTest로 분기)
             // CPU에서 첫 emitter만 확인해서 dummy로 바꾸면, 다른 emitter의 depthTest가 깨짐
@@ -969,6 +968,7 @@ namespace Alice
             
             DispatchParticlesDraw(preset.shaders.drawShader.Get(),
                                 preset.pool.srv.Get(),
+                                particleCountForPreset,
                                 preset.emitters.srv.Get(),
                                 depthForDraw);
         }
@@ -1265,13 +1265,13 @@ namespace Alice
         return true;
     }
 
-    void ComputeEffectSystem::UpdateConstantBuffer(std::uint32_t emitterCount)
+    void ComputeEffectSystem::UpdateConstantBuffer(std::uint32_t emitterCount, std::uint32_t particleCount)
     {
         float w = (float)std::max<std::uint32_t>(m_width, 1);
         float h = (float)std::max<std::uint32_t>(m_height, 1);
 
         CBParams cb{};
-        cb.time       = XMFLOAT4(m_timeSec, m_dtSec, (float)m_particleCount, 0.25f);  // spawnJitter를 time.w로 이동
+        cb.time       = XMFLOAT4(m_timeSec, m_dtSec, (float)particleCount, 0.25f);  // spawnJitter를 time.w로 이동
         cb.resolution = XMFLOAT4(w, h, 1.0f / w, 1.0f / h);
         // emitterInfo: x=emitterCount, y=nearZ, z=farZ, w=0 (bias는 emitter별로 EmitterGPU.p6.z에 저장됨)
         cb.emitterInfo = XMFLOAT4((float)emitterCount, m_nearPlane, m_farPlane, 0.0f);
@@ -1310,7 +1310,8 @@ namespace Alice
 
     void ComputeEffectSystem::DispatchParticlesUpdate(ID3D11ComputeShader* updateShader,
                                                       ID3D11UnorderedAccessView* particleUAV,
-                                                      ID3D11ShaderResourceView* emitterSRV)
+                                                      ID3D11ShaderResourceView* emitterSRV,
+                                                      std::uint32_t particleCount)
     {
         if (!updateShader || !particleUAV) return;
         
@@ -1327,7 +1328,7 @@ namespace Alice
         ID3D11UnorderedAccessView* uav = particleUAV;
         m_context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
-        UINT tg = (m_particleCount + 255) / 256;
+        UINT tg = (particleCount + 255) / 256;
         m_context->Dispatch(tg, 1, 1);
 
         ID3D11UnorderedAccessView* nullUAV = nullptr;
@@ -1342,6 +1343,7 @@ namespace Alice
 
     void ComputeEffectSystem::DispatchParticlesDraw(ID3D11ComputeShader* drawShader,
                                                     ID3D11ShaderResourceView* particleSRV,
+                                                    std::uint32_t particleCount,
                                                     ID3D11ShaderResourceView* emitterSRV,
                                                     ID3D11ShaderResourceView* sceneDepthSRV)
     {
@@ -1363,7 +1365,7 @@ namespace Alice
         ID3D11UnorderedAccessView* uav = m_outputUAV.Get();
         m_context->CSSetUnorderedAccessViews(0, 1, &uav, nullptr);
 
-        UINT tg = (m_particleCount + 255) / 256;
+        UINT tg = (particleCount + 255) / 256;
         m_context->Dispatch(tg, 1, 1);
 
         ID3D11ShaderResourceView* nullSRVs[3] = { nullptr, nullptr, nullptr };

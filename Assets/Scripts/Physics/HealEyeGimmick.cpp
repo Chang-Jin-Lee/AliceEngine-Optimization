@@ -11,6 +11,7 @@
 #include "Runtime/ECS/GameObject.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
 
 namespace Alice
 {
@@ -53,6 +54,7 @@ namespace Alice
         m_weaponDefaultAlpha = GetMaterialAlpha(m_weaponCombined, 1.0f);
         m_currentWeaponAlpha = m_weaponDefaultAlpha;
         m_currentEyeAlpha = m_eyeIdleAlpha;
+        SetUnityVfxAlpha(m_playerHealEffect, m_currentEyeAlpha);
 
         EnterIdle();
     }
@@ -90,6 +92,7 @@ namespace Alice
         m_currentEyeAlpha = 0.0f;
         SetMaterialAlpha(m_weaponCombined, m_currentWeaponAlpha);
         SetMaterialAlpha(m_eye, m_currentEyeAlpha);
+        SetUnityVfxAlpha(m_playerHealEffect, m_currentEyeAlpha);
 
         const float duration = ResolveFadeDuration(enterDurationSec, m_enterFadeRatio);
         StartTransition(m_currentWeaponAlpha, 0.0f, m_currentEyeAlpha, 1.0f, duration);
@@ -147,6 +150,7 @@ namespace Alice
         m_eye = !m_eyeName.empty() ? findByName(m_eyeName) : GetOwnerId();
         if (m_eye == InvalidEntityId)
             m_eye = GetOwnerId();
+        m_playerHealEffect = findByName(m_playerHealEffectName);
 
         m_shards.clear();
         std::stringstream ss(m_shardNamesCsv);
@@ -198,6 +202,7 @@ namespace Alice
         SetEnabled(m_eye, true);
         m_currentEyeAlpha = m_eyeIdleAlpha;
         SetMaterialAlpha(m_eye, m_currentEyeAlpha);
+        SetUnityVfxAlpha(m_playerHealEffect, m_currentEyeAlpha);
         SetVisible(m_eye, m_currentEyeAlpha > 0.001f);
 
         ShowShards(false);
@@ -227,6 +232,7 @@ namespace Alice
         m_currentEyeAlpha = Lerp(m_eyeAlphaFrom, m_eyeAlphaTo, smoothT);
         SetMaterialAlpha(m_weaponCombined, m_currentWeaponAlpha);
         SetMaterialAlpha(m_eye, m_currentEyeAlpha);
+        SetUnityVfxAlpha(m_playerHealEffect, m_currentEyeAlpha);
 
         if (t >= 1.0f)
         {
@@ -352,6 +358,20 @@ namespace Alice
         const float clamped = Clamp(alpha, 0.0f, 1.0f);
         mat->Set_alpha(clamped);
         mat->Set_transparent(clamped < 0.999f);
+    }
+
+    void HealEyeGimmick::SetUnityVfxAlpha(EntityId id, float alpha)
+    {
+        auto* world = GetWorld();
+        if (!world || id == InvalidEntityId)
+            return;
+
+        auto* vfx = world->GetComponent<UnityVfxComponent>(id);
+        if (!vfx)
+            return;
+
+        const float clamped = Clamp(alpha, 0.0f, 1.0f);
+        vfx->alphaScale = clamped;
     }
 
     float HealEyeGimmick::GetMaterialAlpha(EntityId id, float fallback) const
