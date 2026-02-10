@@ -31,6 +31,7 @@ namespace Alice
         ALICE_PROPERTY(bool, useSlotPeakTiming, false);
         ALICE_PROPERTY(float, soulPeakTimeSec, -1.0f);
         ALICE_PROPERTY(float, soulDurationFallbackSec, 2.4f);
+        ALICE_PROPERTY(bool, treatBoostAsActiveWhenDashClip, true);
         ALICE_PROPERTY(std::string, howlClipName, "Boss|Boss|Phase_Howling");
         ALICE_PROPERTY(std::string, howlDustEntityName, "W_EYE_TrailVfx");
         ALICE_PROPERTY(float, howlDustAlphaPeak, 1.0f);
@@ -46,6 +47,7 @@ namespace Alice
         void UpdateHowlDust(float deltaTime);
         void ResetHowlDust();
         float ResolveCurrentSoulClipDurationSec() const;
+        bool IsBoostPatternActive() const;
         bool TryGetCurrentClipTimeSec(const std::string& clipName, float& outTimeSec) const;
         bool TryGetCurrentSoulTimeSec(float& outTimeSec) const;
         bool IsTelegraphSlotActive() const;

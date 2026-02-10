@@ -88,7 +88,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_lightComboWindowSec, 0.5f);
         ALICE_PROPERTY(float, m_chargeCombo2Speed, 0.7f);
         ALICE_PROPERTY(float, m_playerRageLightAttackSpeedScale, 1.5f);
-        ALICE_PROPERTY(float, m_rageDurationSec, 30.0f);
+        ALICE_PROPERTY(float, m_rageDurationSec, 15.0f);
         // Player rage trail (red) on weapon target.
         ALICE_PROPERTY(bool, m_enablePlayerRageTrailVfx, true);
         ALICE_PROPERTY(std::string, m_playerRageTrailTargetName, "W_Target");
@@ -196,9 +196,15 @@ namespace Alice
         ALICE_PROPERTY(float, m_lightAttackMoveDurationSec, 0.05f);
         ALICE_PROPERTY(float, m_heavyAttackMoveDurationSec, 0.05f);
         ALICE_PROPERTY(float, m_bossChargeFacingTrackSec, 0.6f);
+        ALICE_PROPERTY(float, m_bossSoulFacingTrackSec, 0.5f);
         ALICE_PROPERTY(float, m_bossDashMoveStartSec, -1.0f);
         ALICE_PROPERTY(float, m_bossKickAttackSpeedScale, 1.5f);
+        ALICE_PROPERTY(float, m_bossBoostAttackSpeedScale, 1.5f);
+        ALICE_PROPERTY(std::string, m_bossBoostDashVfxName, "BossDeshEffect");
         ALICE_PROPERTY(float, m_bossGapStepDistance, 0.5f);
+        ALICE_PROPERTY(float, m_bossGapAdvanceADistance, 1.0f);
+        ALICE_PROPERTY(float, m_bossGapAdvanceBDistance, 0.7f);
+        ALICE_PROPERTY(float, m_bossGapAdvanceCDistance, 0.8f);
         ALICE_PROPERTY(float, m_bossGapTurnAStartDeg, 65.0f);
         ALICE_PROPERTY(float, m_bossGapTurnBCStartDeg, 35.0f);
         ALICE_PROPERTY(float, m_bossGapTurnBCFollowDeg, 25.0f);
@@ -238,6 +244,8 @@ namespace Alice
         EntityId m_playerChargeStageVfxId = InvalidEntityId;
         int m_playerChargeStagePrevLevel = 0;
         float m_playerChargeStagePulseRemainSec = 0.0f;
+        EntityId m_bossBoostDashVfxId = InvalidEntityId;
+        bool m_bossBoostDashVfxForced = false;
 
         struct AnimConfig
         {
