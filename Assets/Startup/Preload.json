@@ -15,6 +15,23 @@
         "Assets/Prefabs/(01)White_HIT.prefab",
         "Assets/Prefabs/dust.prefab",
         "Assets/Prefabs/GAS.prefab",
-        "Assets/Prefabs/(03)Guard_RingA.prefab"
+        "Assets/Prefabs/(03)Guard_RingA.prefab",
+        "Assets/Prefabs/(00)ChagingVortex.prefab",
+        "Assets/Prefabs/(00)Charging.prefab",
+        "Assets/Prefabs/(00)Particle.prefab",
+        "Assets/Prefabs/(00)ShockWave.prefab",
+        "Assets/Prefabs/(00)Spark.prefab",
+        "Assets/Prefabs/(00)WhiteShockBlast.prefab",
+        "Assets/Prefabs/(01)White_Attack_SlashA.prefab",
+        "Assets/Prefabs/(01)White_Attack_SlashB.prefab",
+        "Assets/Prefabs/(02)DeepBlue_SlashA.prefab",
+        "Assets/Prefabs/(04)Charging.prefab",
+        "Assets/Prefabs/(04)lightParticle.prefab",
+        "Assets/Prefabs/(05)BossHardAttack.prefab",
+        "Assets/Prefabs/(05)DeshEffect.prefab",
+        "Assets/Prefabs/(05)HealEffect.prefab",
+        "Assets/Prefabs/(05)OrangeDoubleRing.prefab",
+        "Assets/Prefabs/(05)OrangeRing.prefab",
+        "Assets/Prefabs/(05)YellowRing.prefab"
     ]
 }
