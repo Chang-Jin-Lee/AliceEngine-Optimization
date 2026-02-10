@@ -7,8 +7,11 @@
 #include "Runtime/UI/UITextComponent.h"
 #include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/BindWidget.h"
+#include "FadeInOutScript.h"
 #include "../Tempsound/UISoundScript.h"
 #include "Runtime/ECS/GameObject.h"
+
+#include <algorithm>
 
 namespace Alice
 {
@@ -41,6 +44,24 @@ namespace Alice
             {
                 if (sc.scriptName == "UISoundScript" && sc.instance)
                     return static_cast<UISoundScript*>(sc.instance.get());
+            }
+            return nullptr;
+        }
+
+        FadeInOutScript* FindFadeScript(World& world, const std::string& name)
+        {
+            if (name.empty())
+                return nullptr;
+            GameObject go = world.FindGameObject(name);
+            if (!go.IsValid())
+                return nullptr;
+            auto* scripts = world.GetScripts(go.id());
+            if (!scripts)
+                return nullptr;
+            for (auto& sc : *scripts)
+            {
+                if (sc.scriptName == "FadeInOutScript" && sc.instance)
+                    return static_cast<FadeInOutScript*>(sc.instance.get());
             }
             return nullptr;
         }
@@ -82,6 +103,7 @@ namespace Alice
         m_buttonEntityId = buttonEntity;
 
         m_uiSound = FindUISound(*w, Get_uiSoundEntityName());
+        m_fade = FindFadeScript(*w, Get_fadeEntityName());
 
         const std::string textName = Get_TextWidgetName();
         if (!textName.empty())
@@ -165,15 +187,13 @@ namespace Alice
                 m_uiSound->PlayHover();
         }, isValid);
 
-        // 
+        //
         changeSceneButton->AddOnReleasedSafe([this]()
         {
             if (m_uiSound)
                 m_uiSound->PlayClick();
 
-            isChangeSceneRequested = true;
-            m_pendingSceneChange = true;
-            m_sceneChangeTimer = 2.0f;
+            RequestSceneChange();
         }, isValid);
     }
 
@@ -285,8 +305,7 @@ namespace Alice
             if (m_uiSound)
                 m_uiSound->PlayClick();
 
-            m_pendingSceneChange = true;
-            m_sceneChangeTimer = 1.0f;
+            RequestSceneChange();
         }
 
         if (changeSceneButton)
@@ -297,5 +316,41 @@ namespace Alice
     {
         if (changeSceneButton)
             changeSceneButton->ClearDelegates();
+    }
+
+    float SceneChangeButtonScript::ComputeAutoDelaySec() const
+    {
+        if (!m_fade)
+            return 0.0f;
+
+        const float speed = std::max(0.0f, m_fade->Get_fadeSpeed());
+        if (speed <= 0.0f)
+            return 0.0f;
+
+        const float startAlpha = std::clamp(m_fade->Get_startAlpha(), 0.0f, 1.0f);
+        return (1.0f - startAlpha) / speed;
+    }
+
+    void SceneChangeButtonScript::RequestSceneChange()
+    {
+        if (m_pendingSceneChange)
+            return;
+
+        isChangeSceneRequested = true;
+
+        if (Get_useFadeOnClick() && m_fade)
+        {
+            // Reset alpha from configured startAlpha to ensure consistent fade,
+            // then drive direction via boolean-based control.
+            m_fade->OnEnable();
+            m_fade->StartFadeIn(); // fade to black
+        }
+
+        float delay = Get_sceneChangeDelaySec();
+        if (delay < 0.0f)
+            delay = ComputeAutoDelaySec();
+
+        m_pendingSceneChange = true;
+        m_sceneChangeTimer = std::max(0.0f, delay);
     }
 }

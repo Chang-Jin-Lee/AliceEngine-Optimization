@@ -36,7 +36,7 @@
                 "phase1Duration": 1.2000000476837158,
                 "phase2End": 2.0,
                 "phase3Duration": 1.2000000476837158,
-                "startTime": 1.6242026090621948,
+                "startTime": 61.45052719116211,
                 "totalCycle": 3.200000047683716
             },
             "UIImage": {
@@ -335,11 +335,11 @@
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
                         "overrideWidth": 0.0,
-                        "referenceHeight": 900.0,
-                        "referenceWidth": 1600.0,
+                        "referenceHeight": 252.0,
+                        "referenceWidth": 631.0,
                         "roundToInt": true,
                         "scaleMode": 0,
-                        "targetWidgetName": "",
+                        "targetWidgetName": "UI_TitleName",
                         "useCurrentAsReference": true,
                         "useNonUniformScale": false
                     }
@@ -433,13 +433,16 @@
                         "TextWidgetName": "",
                         "UnderLineWidgetName": "UI_NewGameB",
                         "buttonWidgetName": "UI_NewGame",
+                        "fadeEntityName": "UI_Fade",
                         "rootWidgetName": "UI_Title",
+                        "sceneChangeDelaySec": -2.0,
                         "showButtonImageOnHoverOnly": true,
                         "showUnderImageOnHoverOnly": false,
-                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/StartScene.scene",
+                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/Main.scene",
                         "uiSoundEntityName": "SoundObject",
                         "underImageHoverPath": "Resource/Test/4_Resources/UI/TitleResorce/Title_New Game_ON.png",
-                        "underImageNormalPath": "Resource/Test/4_Resources/UI/TitleResorce/Title_New Game_OFF.png"
+                        "underImageNormalPath": "Resource/Test/4_Resources/UI/TitleResorce/Title_New Game_OFF.png",
+                        "useFadeOnClick": true
                     }
                 },
                 {
@@ -506,7 +509,7 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "pressedTexture": "",
+                "pressedTexture": "Resource/Test/4_Resources/UI/TitleResorce/Title_clikbar.png",
                 "pressedTint": {
                     "w": 1.0,
                     "x": 0.8500000238418579,
@@ -665,7 +668,7 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "pressedTexture": "",
+                "pressedTexture": "Resource/Test/4_Resources/UI/TitleResorce/Title_clikbar.png",
                 "pressedTint": {
                     "w": 1.0,
                     "x": 0.8500000238418579,
@@ -824,7 +827,7 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "pressedTexture": "",
+                "pressedTexture": "Resource/Test/4_Resources/UI/TitleResorce/Title_clikbar.png",
                 "pressedTint": {
                     "w": 1.0,
                     "x": 0.8500000238418579,
@@ -1243,7 +1246,7 @@
                     "props": {
                         "TextWidgetName": "",
                         "UnderLineWidgetName": "UI_creditB",
-                        "blockInputRootWidgetName": "",
+                        "blockInputRootWidgetName": "UI_Title",
                         "blockInputWhenTargetVisible": true,
                         "buttonImageNormalPath": "",
                         "buttonRootWidgetName": "UI_Credit",
@@ -1325,7 +1328,7 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "pressedTexture": "",
+                "pressedTexture": "Resource/Test/4_Resources/UI/TitleResorce/Title_clikbar.png",
                 "pressedTint": {
                     "w": 1.0,
                     "x": 0.8500000238418579,
@@ -1637,7 +1640,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1600.0,
+                    "x": 1787.0,
                     "y": 900.0
                 },
                 "sortOrder": 6,
@@ -3890,7 +3893,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1600.0,
+                    "x": 1787.0,
                     "y": 900.0
                 },
                 "sortOrder": 0,
@@ -4045,6 +4048,98 @@
             "_parentGuid": "14590169249018781614",
             "guid": "7185874498009984040",
             "name": "UI_ReturnButton2"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "FadeInOutScript",
+                    "props": {
+                        "fadeSpeed": 0.699999988079071,
+                        "isFadeIn": false,
+                        "rootWidgetName": "UI_Fade",
+                        "startAlpha": 0.0,
+                        "targetWidgetName": "UI_Fade"
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 0.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
+                "sortOrder": 6,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Fade"
+            },
+            "guid": "13289844923809440641",
+            "name": "UI_Fade"
         }
     ],
     "sceneName": "TitleScene",

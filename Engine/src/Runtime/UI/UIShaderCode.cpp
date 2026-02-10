@@ -444,6 +444,134 @@ float4 main(PSInput Input) : SV_Target
     return float4(0, 0, 0, lineIntensity * currentMaxAlpha * gTime.y);
 }
 )";
+
+		const char* UIGaugeCustomClippedPS = R"(
+Texture2D gTexture : register(t0);
+SamplerState gSampler : register(s0);
+
+cbuffer UIPixelConstants : register(b1)
+{
+    float4 gOutlineColor;
+    float4 gGlowColor;
+    float4 gVitalColor;
+    float4 gVitalBgColor;
+    float4 gParams0;
+    float4 gParams1; // xy: minUV, zw: maxUV (UV 클리핑 범위)
+    float4 gParams2;
+    float4 gParams3;
+    float4 gParams4;
+    float4 gParams5;
+    float4 gGaugeParams;
+    float4 gGaugeParams2;
+    float4 gEmptyColor;
+    float4 gEmptyParams;
+    float4 gPencilParams;
+    float4 gTime;
+};
+
+struct PSInput
+{
+    float4 Position : SV_POSITION;
+    float2 TexCoord : TEXCOORD0;
+    float4 Color    : COLOR0;
+};
+
+// --- 랜덤 및 노이즈 함수 추가 ---
+float random(float2 uv) {
+    return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
+}
+
+float noise(float2 uv) {
+    float2 i = floor(uv);
+    float2 f = frac(uv);
+    float a = random(i);
+    float b = random(i + float2(1.0, 0.0));
+    float c = random(i + float2(0.0, 1.0));
+    float d = random(i + float2(1.0, 1.0));
+    float2 u = f * f * (3.0 - 2.0 * f);
+    return lerp(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+}
+
+float fbm(float2 uv) {
+    float v = 0.0;
+    float a = 0.5;
+    for (int i = 0; i < 4; i++) {
+        v += a * noise(uv);
+        uv *= 2.0;
+        a *= 0.5;
+    }
+    return v;
+}
+
+float4 main(PSInput input) : SV_Target
+{
+    float2 uv = input.TexCoord;
+    float4 tex = gTexture.Sample(gSampler, uv);
+    float4 color = tex * input.Color;
+    
+    // 1. 기본 투명도 체크 (완전 투명한 부분은 연산 제외)
+    if (color.a < 0.1) discard;
+
+    // ---------------------------------------------------------
+    // 2. [추가] 꼬투리(틀) 밖 영역 강제 제거
+    // gParams1.xy = 시작 UV (예: 0.05, 0.05) - background bar의 실제 가동 영역 시작
+    // gParams1.zw = 끝 UV (예: 0.95, 0.95) - background bar의 실제 가동 영역 끝
+    // gParams1.x < 0.0이면 UV 클리핑 비활성화 (기본값)
+    float2 minUV = gParams1.xy;
+    float2 maxUV = gParams1.zw;
+    
+    // UV 클리핑이 활성화된 경우에만 체크 (gParams1.x >= 0.0)
+    if (gParams1.x >= 0.0f)
+    {
+        if (uv.x < minUV.x || uv.x > maxUV.x || uv.y < minUV.y || uv.y > maxUV.y)
+            discard;
+    }
+    // ---------------------------------------------------------
+
+    float fillRatio = saturate(gGaugeParams.x);
+    float fillLateRatio = saturate(gGaugeParams.y);
+    float useFillLate = gGaugeParams.z;
+    float direction = gGaugeParams.w;
+
+    float pixelRatio = 0.0f;
+    bool isGauge = (direction >= 0.0f && direction <= 3.0f);
+    
+    if (direction < 0.5f) pixelRatio = uv.x;
+    else if (direction < 1.5f) pixelRatio = 1.0f - uv.x;
+    else if (direction < 2.5f) pixelRatio = 1.0f - uv.y;
+    else pixelRatio = uv.y;
+
+    float filledRatio = (useFillLate > 0.5f) ? max(fillRatio, fillLateRatio) : fillRatio;
+    
+    // 기본 색상을 텍스처 컬러로 설정
+    float4 finalColor = color;
+
+    // 2. 비어 있는 영역(Empty Area) 처리
+    if (isGauge && gEmptyParams.x > 0.5f && pixelRatio <= filledRatio)
+    {
+        float scale = max(gEmptyParams.y, 0.1f);
+        float speed = gTime.x * gEmptyParams.z;
+        float aspect = max(gGaugeParams2.x, 0.0001f);
+        float2 aspectScale = (aspect >= 1.0f)
+            ? float2(aspect, 1.0f)
+            : float2(1.0f, 1.0f / aspect);
+        float2 noiseUV = (uv * aspectScale) * scale + float2(speed, speed * 0.2f);
+        
+        float cloud = fbm(noiseUV);
+        float intensity = gEmptyParams.w;
+        float shade = lerp(1.0f - intensity, 1.0f, cloud);
+        
+        finalColor = gEmptyColor * shade;
+        finalColor.a = color.a; // 원본 알파 유지
+    }
+    
+    float darkenFactor = saturate(gTime.y); // 0이면 검정, 1이면 원래색
+    finalColor.rgb *= darkenFactor; 
+    finalColor.a = color.a; 
+    
+    return finalColor;
+}
+)";
 	}
 }
 

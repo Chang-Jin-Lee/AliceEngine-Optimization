@@ -4,40 +4,13 @@
             "Scripts": [
                 {
                     "enabled": true,
-                    "name": "AudioBGMScript",
+                    "name": "FadeInOutScript",
                     "props": {
-                        "bgmPath": "Resource/Sound/SFX/BGM/BGM_Title.mp3",
-                        "busEntityName": "AudioBus",
-                        "playOnStart": true,
-                        "useBus": true,
-                        "volume": 0.5
-                    }
-                },
-                {
-                    "enabled": true,
-                    "name": "UISoundScript",
-                    "props": {
-                        "clickSoundPath": "Resource/Sound/SFX/그외 SFX/buttonClick.mp3",
-                        "cooldownSec": 0.07999999821186066,
-                        "hoverSoundPath": "Resource/Sound/SFX/그외 SFX/buttonHover.mp3",
-                        "pitchRandomEnabled": true,
-                        "pitchRandomMax": 1.0499999523162842,
-                        "pitchRandomMin": 0.949999988079071,
-                        "volume": 0.9900000095367432
-                    }
-                },
-                {
-                    "enabled": true,
-                    "name": "VisibleMouseScript",
-                    "props": {}
-                },
-                {
-                    "enabled": true,
-                    "name": "TimeStopScript",
-                    "props": {
-                        "pauseAudioOnStop": true,
-                        "timeStopped": false,
-                        "toggleKey": 42
+                        "fadeSpeed": 0.699999988079071,
+                        "isFadeIn": false,
+                        "rootWidgetName": "UI_Fade",
+                        "startAlpha": 1.0,
+                        "targetWidgetName": "UI_Fade"
                     }
                 }
             ],
@@ -45,7 +18,7 @@
                 "enabled": true,
                 "position": {
                     "x": 0.0,
-                    "y": -6.702143669128418,
+                    "y": 0.0,
                     "z": 0.0
                 },
                 "rotation": {
@@ -60,8 +33,64 @@
                 },
                 "visible": true
             },
-            "guid": "11129808002406255221",
-            "name": "SoundObject"
+            "UIImage": {
+                "color": {
+                    "w": 0.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
+                "sortOrder": 6,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Fade"
+            },
+            "guid": "13289844923809440641",
+            "name": "UI_Fade"
         },
         {
             "Transform": {
@@ -86,9 +115,9 @@
             "UIImage": {
                 "color": {
                     "w": 1.0,
-                    "x": 0.050193071365356445,
-                    "y": 0.04573576897382736,
-                    "z": 0.04573576897382736
+                    "x": 0.054901961237192154,
+                    "y": 0.054901961237192154,
+                    "z": 0.054901961237192154
                 },
                 "preserveAspect": false,
                 "texturePath": "",
@@ -111,12 +140,12 @@
                     "y": 0.5
                 },
                 "pivot": {
-                    "x": 0.5,
-                    "y": 0.5
+                    "x": 0.0,
+                    "y": 0.0
                 },
                 "position": {
-                    "x": 1000.0,
-                    "y": 500.0
+                    "x": 0.0,
+                    "y": 0.0
                 },
                 "rotationRad": 0.0,
                 "scale": {
@@ -124,8 +153,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 2000.0,
-                    "y": 1000.0
+                    "x": 1600.0,
+                    "y": 900.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -139,17 +168,22 @@
                 "visibility": "Visible",
                 "widgetName": "UI_Image"
             },
-            "guid": "2205089502356956721",
+            "guid": "16492247475825322154",
             "name": "UI_Image"
         },
         {
             "Scripts": [
                 {
                     "enabled": true,
-                    "name": "SceneChangekPressScript",
+                    "name": "LoadingScript",
                     "props": {
-                        "changeKey": 20,
-                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/Main.scene"
+                        "autoStart": true,
+                        "delaySec": 1.0,
+                        "enableFadeOut": true,
+                        "fadeEntityName": "",
+                        "fadeInOnStart": true,
+                        "fadeOutDelaySec": 2.0,
+                        "targetScenePath": ""
                     }
                 }
             ],
@@ -172,35 +206,35 @@
                 },
                 "visible": true
             },
-            "UIText": {
-                "alignH": "Center",
-                "alignV": "Center",
+            "UIImage": {
                 "color": {
                     "w": 1.0,
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
+                    "x": 0.08235294371843338,
+                    "y": 0.07450980693101883,
+                    "z": 0.0470588244497776
                 },
-                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
-                "fontSize": 100.0,
-                "lineSpacing": 0.0,
-                "maxWidth": 0.0,
-                "text": "StartScene",
-                "wrap": false
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
             },
             "UITransform": {
                 "alignH": "Center",
                 "alignV": "Center",
                 "anchorMax": {
-                    "x": 0.5,
-                    "y": 0.5
+                    "x": 0.125,
+                    "y": 0.125
                 },
                 "anchorMin": {
-                    "x": 0.5,
-                    "y": 0.5
+                    "x": 0.125,
+                    "y": 0.125
                 },
                 "pivot": {
-                    "x": 0.5,
+                    "x": -0.5,
                     "y": 0.5
                 },
                 "position": {
@@ -213,8 +247,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 200.0,
-                    "y": 80.0
+                    "x": 1200.0,
+                    "y": 675.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -226,10 +260,10 @@
                 "shaderName": "Default",
                 "space": "Screen",
                 "visibility": "Visible",
-                "widgetName": "UI_Text"
+                "widgetName": "UI_Image"
             },
-            "guid": "4955623220085680484",
-            "name": "UI_Text"
+            "guid": "14603078868386504603",
+            "name": "UI_Loading_image"
         }
     ],
     "sceneName": "StartScene",

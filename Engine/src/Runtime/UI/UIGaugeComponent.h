@@ -19,8 +19,11 @@ namespace Alice
 		std::string fillLateTexture;
 		std::string fillLateShaderName;
 		std::string backgroundTexture;
-		bool useBackground{ true };
-		bool useCustomShader{ false };
+	bool useBackground{ true };
+	bool useCustomShader{ false };
+	bool useUvClip{ false };
+	DirectX::XMFLOAT2 uvClipMin{ 0.0f, 0.0f };
+	DirectX::XMFLOAT2 uvClipMax{ 1.0f, 1.0f };
 
 		DirectX::XMFLOAT4 fillColor{ 0.2f, 0.9f, 0.2f, 1.0f };
 		DirectX::XMFLOAT4 fillLateColor{ 1.0f, 1.0f, 1.0f, 1.0f };

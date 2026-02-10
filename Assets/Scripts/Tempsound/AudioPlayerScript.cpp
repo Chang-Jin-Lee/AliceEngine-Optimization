@@ -2,6 +2,7 @@
 
 #include "AudioEventBusScript.h"
 #include "TempSoundPath.h"
+#include "../Combat/C_CombatSessionComponent.h"
 #include "Runtime/Audio/SoundManager.h"
 #include "Runtime/ECS/GameObject.h"
 #include "Runtime/ECS/World.h"
@@ -176,12 +177,43 @@ namespace Alice
 
     std::string AudioPlayerScript::GetPathForAttackState(PlayerAttackState state) const
     {
+        // 광폭화 상태 확인
+        bool rageActive = false;
+        World* world = GetWorld();
+        if (world && !Get_sessionEntityName().empty())
+        {
+            GameObject sessionGo = world->FindGameObject(Get_sessionEntityName());
+            if (sessionGo.IsValid())
+            {
+                auto* scripts = world->GetScripts(sessionGo.id());
+                if (scripts)
+                {
+                    for (auto& sc : *scripts)
+                    {
+                        if (sc.scriptName == "C_CombatSessionComponent" && sc.instance)
+                        {
+                            auto* session = static_cast<C_CombatSessionComponent*>(sc.instance.get());
+                            if (session)
+                                rageActive = session->IsPlayerRageActive();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         switch (state)
         {
         case PlayerAttackState::HeavyAttack: return Get_pathHeavyAttack();
-        case PlayerAttackState::Attack1:     return Get_pathAttack1();
-        case PlayerAttackState::Attack2:     return Get_pathAttack2();
-        case PlayerAttackState::Attack3:     return Get_pathAttack3();
+        case PlayerAttackState::Attack1:
+            // 광폭화 상태일 때 광폭화 공격 경로 사용
+            return rageActive ? Get_pathRageAttack1() : Get_pathAttack1();
+        case PlayerAttackState::Attack2:
+            // 광폭화 상태일 때 광폭화 공격 경로 사용
+            return rageActive ? Get_pathRageAttack2() : Get_pathAttack2();
+        case PlayerAttackState::Attack3:
+            // 광폭화 상태일 때 광폭화 공격 경로 사용
+            return rageActive ? Get_pathRageAttack3() : Get_pathAttack3();
         case PlayerAttackState::Guard:
             return Get_pathGuard();
         case PlayerAttackState::Parry:

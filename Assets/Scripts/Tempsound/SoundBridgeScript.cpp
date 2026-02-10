@@ -158,28 +158,19 @@ namespace Alice
             case Combat::ActionState::Attack:
                 {
                     // 보스가 그로기 상태인지 확인
-                    const Combat::ActionState bossState = session->GetBossState();
-                    if (bossState == Combat::ActionState::Groggy)
-                    {
-                        // 그로기어택 사운드 재생
-                        bus->RequestPlayerOtherSfx(PlayerOtherState::GroggyAttack);
-                    }
-                    else
-                    {
-                        // 일반 공격 사운드 재생
-                        if (chargeActive && chargeLevel > 0)
-                            bus->RequestPlayerAttackSfx(PlayerAttackState::HeavyAttack);
-                        else
-                        {
-                            switch (attackComboIndex)
-                            {
-                            case 1: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
-                            case 2: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack2); break;
-                            case 3: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack3); break;
-                            default: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
-                            }
-                        }
-                    }
+					// 일반 공격 사운드 재생
+					if (chargeActive && chargeLevel > 0)
+						bus->RequestPlayerAttackSfx(PlayerAttackState::HeavyAttack);
+					else
+					{
+						switch (attackComboIndex)
+						{
+						case 1: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
+						case 2: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack2); break;
+						case 3: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack3); break;
+						default: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
+						}
+					}
                 }
                 if (Get_combo2ExtraEnabled() && attackComboIndex == 3 && !(chargeActive && chargeLevel > 0))
                 {
