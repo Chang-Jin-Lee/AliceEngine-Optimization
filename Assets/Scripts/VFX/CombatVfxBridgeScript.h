@@ -228,6 +228,7 @@ namespace Alice
         void SetEntityActiveRecursive(World& world, EntityId id, bool active, bool triggerOneShot);
         void SetEntityColorTintRecursive(World& world, EntityId id, const DirectX::XMFLOAT3& tint) const;
         void SetEntityLoopModeRecursive(World& world, EntityId id, bool loopEnabled) const;
+        void ApplyEntityAlphaFadeRecursive(World& world, int slot, EntityId id, float alphaRatio) const;
         void CacheEntityAlphaRecursive(World& world, int slot, EntityId id);
         void RestoreEntityAlphaRecursive(World& world, int slot, EntityId id) const;
         void EraseCachedAlphaRecursive(World& world, int slot, EntityId id);

@@ -4188,7 +4188,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				const float playerGuardExitLightBlendSec = std::min(playerGuardTransitionBlendSec, 0.1f);
 				if (playerGuardEnterToLoopTransition)
 				{
-					blendSec = std::max(blendSec, playerGuardTransitionBlendSec);
+					// Guard enter -> guard loop should be a hard cut.
+					blendSec = 0.0f;
 				}
 				if (playerGuardLoopToExitTransition)
 				{
