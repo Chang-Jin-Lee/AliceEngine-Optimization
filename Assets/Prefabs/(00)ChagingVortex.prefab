@@ -2,42 +2,42 @@
     "ComputeEffect": {
         "color": {
             "x": 1.0,
-            "y": 1.0,
-            "z": 1.0
+            "y": 0.4901960790157318,
+            "z": 0.0
         },
         "depthBiasMeters": 0.05000000074505806,
         "depthTest": true,
-        "drag": 0.9829999804496765,
-        "emissionDurationSec": 0.026000000536441803,
+        "drag": 0.2720000147819519,
+        "emissionDurationSec": 0.25,
         "emitNewParticles": true,
         "enabled": true,
         "gravity": {
             "x": 0.0,
-            "y": -0.6499999761581421,
+            "y": -0.32899999618530273,
             "z": 0.0
         },
-        "intensity": 0.671999990940094,
-        "lifeMax": 0.17900000512599945,
-        "lifeMin": 0.009999999776482582,
+        "intensity": 2.309000015258789,
+        "lifeMax": 1.7289999723434448,
+        "lifeMin": 0.40700000524520874,
         "localOffset": {
             "x": 0.0,
             "y": 0.0,
             "z": 0.0
         },
-        "loop": true,
-        "radius": 0.6010000109672546,
-        "shaderName": "Explosion",
+        "loop": false,
+        "radius": 1.5,
+        "shaderName": "Vortex",
         "simulationSpace": "World",
-        "sizePx": 2.813999891281128,
-        "spawnRate": 9.999999747378752e-05,
-        "startSpeed": 3.759000062942505
+        "sizePx": 6.0,
+        "spawnRate": 0.03500000014901161,
+        "startSpeed": 0.0
     },
     "Transform": {
         "enabled": true,
         "position": {
-            "x": -2.4713778495788574,
-            "y": 2.2377588748931885,
-            "z": -0.4550609588623047
+            "x": 0.0,
+            "y": 0.800000011920929,
+            "z": 0.0
         },
         "rotation": {
             "x": 0.0,
@@ -51,6 +51,6 @@
         },
         "visible": true
     },
-    "name": "GameObject3",
+    "name": "GameObject827",
     "version": 1
 }

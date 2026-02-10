@@ -9,7 +9,7 @@
         "depthTest": true,
         "drag": 0.9829999804496765,
         "emissionDurationSec": 0.026000000536441803,
-        "emitNewParticles": true,
+        "emitNewParticles": false,
         "enabled": true,
         "gravity": {
             "x": 0.0,
@@ -24,20 +24,20 @@
             "y": 0.0,
             "z": 0.0
         },
-        "loop": true,
+        "loop": false,
         "radius": 0.6010000109672546,
         "shaderName": "Explosion",
         "simulationSpace": "World",
         "sizePx": 2.813999891281128,
-        "spawnRate": 9.999999747378752e-05,
+        "spawnRate": 1.0,
         "startSpeed": 3.759000062942505
     },
     "Transform": {
         "enabled": true,
         "position": {
-            "x": -2.4713778495788574,
-            "y": 2.2377588748931885,
-            "z": -0.4550609588623047
+            "x": -10.785880088806152,
+            "y": 0.6330558061599731,
+            "z": -7.819740295410156
         },
         "rotation": {
             "x": 0.0,

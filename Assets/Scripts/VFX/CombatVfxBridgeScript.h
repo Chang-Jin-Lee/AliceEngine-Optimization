@@ -33,6 +33,7 @@ namespace Alice
         ALICE_PROPERTY(std::string, bossEntityName, "Boss");
         ALICE_PROPERTY(std::string, weaponTraceEntityName, "W_Target");
         ALICE_PROPERTY(std::string, shockWaveEntityName, "ShockWave");
+        ALICE_PROPERTY(std::string, shockWavePrefabPath, "Assets/Prefabs/(00)ShockWave.prefab");
         ALICE_PROPERTY(std::string, shockBlastPrefabPath, "Assets/Prefabs/(00)WhiteShockBlast.prefab");
         ALICE_PROPERTY(std::string, guardShockPointEntityName, "PlayerEffectPoint");
         ALICE_PROPERTY(std::string, bossEffectPointEntityName, "BossEffectPoint");
@@ -73,12 +74,14 @@ namespace Alice
         // Pool settings
         ALICE_PROPERTY(int, slashPoolSize, 3);
         ALICE_PROPERTY(int, hitPoolSize, 3);
+        ALICE_PROPERTY(int, shockWavePoolSize, 6);
         ALICE_PROPERTY(int, shockBlastPoolSize, 6);
         ALICE_PROPERTY(bool, prewarm, true);
 
         // Lifetime (sec)
         ALICE_PROPERTY(float, slashLifeTimeSec, 0.8f);
         ALICE_PROPERTY(float, hitLifeTimeSec, 0.6f);
+        ALICE_PROPERTY(float, shockWaveLifeTimeSec, 1.0f);
         ALICE_PROPERTY(float, shockBlastLifeTimeSec, 1.0f);
         ALICE_PROPERTY(float, bossGroggyRingOverlayLifeTimeSec, 6.0f);
         ALICE_PROPERTY(bool, enableHeavyFadeOut, true);
@@ -267,8 +270,9 @@ namespace Alice
             HitOverlayGuardBreakRingSlot = 18,
             HitOverlayParryRingSlot = 19,
             HitOverlayBossGroggyRingSlot = 20,
-            ShockBlastSlot = 21,
-            SlotCount = 22,
+            ShockWaveSlot = 21,
+            ShockBlastSlot = 22,
+            SlotCount = 23,
             SlashStepSlotCount = 6
         };
 

@@ -723,6 +723,9 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		m_state->Init();
 		m_playerRageTrailVfxId = InvalidEntityId;
 		m_playerRageTrailPrevPosValid = false;
+		m_playerChargeStageVfxId = InvalidEntityId;
+		m_playerChargeStagePrevLevel = 0;
+		m_playerChargeStagePulseRemainSec = 0.0f;
 
 		if (auto* world = GetWorld())
 			world->SetScriptCombatEnabled(true);
@@ -734,6 +737,9 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
             m_state.reset(new SessionState());
 		m_playerRageTrailVfxId = InvalidEntityId;
 		m_playerRageTrailPrevPosValid = false;
+		m_playerChargeStageVfxId = InvalidEntityId;
+		m_playerChargeStagePrevLevel = 0;
+		m_playerChargeStagePulseRemainSec = 0.0f;
 
 		if (auto* world = GetWorld())
 			world->SetScriptCombatEnabled(true);
@@ -750,11 +756,19 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		if (auto* world = GetWorld())
 		{
 			SetTrailVfxActive(*world, m_playerRageTrailVfxId, false, false);
+			if (m_playerChargeStageVfxId != InvalidEntityId)
+			{
+				if (auto* compute = world->GetComponent<ComputeEffectComponent>(m_playerChargeStageVfxId))
+					compute->emitNewParticles = false;
+			}
 			world->SetScriptCombatEnabled(false);
 		}
 
 		m_playerRageTrailVfxId = InvalidEntityId;
 		m_playerRageTrailPrevPosValid = false;
+		m_playerChargeStageVfxId = InvalidEntityId;
+		m_playerChargeStagePrevLevel = 0;
+		m_playerChargeStagePulseRemainSec = 0.0f;
 	}
 
     Combat::ActionState C_CombatSessionComponent::GetPlayerState() const
@@ -797,9 +811,19 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		if (m_state)
 			m_state->Init();
 		if (auto* world = GetWorld())
+		{
 			SetTrailVfxActive(*world, m_playerRageTrailVfxId, false, false);
+			if (m_playerChargeStageVfxId != InvalidEntityId)
+			{
+				if (auto* compute = world->GetComponent<ComputeEffectComponent>(m_playerChargeStageVfxId))
+					compute->emitNewParticles = false;
+			}
+		}
 		m_playerRageTrailVfxId = InvalidEntityId;
 		m_playerRageTrailPrevPosValid = false;
+		m_playerChargeStageVfxId = InvalidEntityId;
+		m_playerChargeStagePrevLevel = 0;
+		m_playerChargeStagePulseRemainSec = 0.0f;
 	}
 	void C_CombatSessionComponent::Update(float deltaTime)
 	{
@@ -1266,6 +1290,82 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		{
 			ApplyForcedInputLock(playerIntent, playerId, false, true, 0.0f);
 		}
+
+		{
+			const int currentChargeLevel = std::clamp(playerIntent.chargeLevel, 0, 3);
+			const bool chargeLevelUp = (currentChargeLevel > m_playerChargeStagePrevLevel);
+
+			auto hasChargingCompute = [&](EntityId id) -> bool
+				{
+					return id != InvalidEntityId && world.GetComponent<ComputeEffectComponent>(id);
+				};
+
+			if (!hasChargingCompute(m_playerChargeStageVfxId))
+			{
+				m_playerChargeStageVfxId = InvalidEntityId;
+				const std::string targetName = !m_playerChargeStageVfxName.empty()
+					? m_playerChargeStageVfxName
+					: "Charging";
+				if (!targetName.empty())
+				{
+					m_playerChargeStageVfxId = FindNamedDescendant(world, playerId, targetName);
+					if (m_playerChargeStageVfxId == InvalidEntityId)
+						m_playerChargeStageVfxId = ResolveEntityByName(targetName);
+				}
+			}
+
+			if (m_playerChargeStageVfxId != InvalidEntityId)
+			{
+				auto* compute = world.GetComponent<ComputeEffectComponent>(m_playerChargeStageVfxId);
+				if (!compute)
+				{
+					m_playerChargeStageVfxId = InvalidEntityId;
+					m_playerChargeStagePulseRemainSec = 0.0f;
+				}
+				else
+				{
+					if (chargeLevelUp && currentChargeLevel >= 1)
+					{
+						if (auto* tr = world.GetComponent<TransformComponent>(m_playerChargeStageVfxId))
+						{
+							if (!tr->enabled || !tr->visible)
+							{
+								tr->enabled = true;
+								tr->visible = true;
+								world.MarkTransformDirty(m_playerChargeStageVfxId);
+							}
+						}
+
+						compute->enabled = true;
+						compute->loop = false;
+						compute->emitNewParticles = true;
+
+						const float pulseBase = std::max(0.0f, Get_m_playerChargeStagePulseSec());
+						const float emissionSec = std::max(0.0f, compute->emissionDurationSec);
+						m_playerChargeStagePulseRemainSec = std::max(pulseBase, std::min(0.15f, emissionSec));
+						if (m_playerChargeStagePulseRemainSec <= 0.0f)
+							m_playerChargeStagePulseRemainSec = 0.02f;
+					}
+
+					if (m_playerChargeStagePulseRemainSec > 0.0f)
+					{
+						m_playerChargeStagePulseRemainSec =
+							std::max(0.0f, m_playerChargeStagePulseRemainSec - deltaTime);
+						compute->emitNewParticles = true;
+					}
+					else
+					{
+						compute->emitNewParticles = false;
+					}
+				}
+			}
+
+			if (!playerIntent.chargeActive && currentChargeLevel == 0)
+				m_playerChargeStagePrevLevel = 0;
+			else
+				m_playerChargeStagePrevLevel = currentChargeLevel;
+		}
+
 		const float rageDurationSec = std::max(0.0f, m_rageDurationSec);
 		if (playerIntent.ragePressed && rageDurationSec > 0.0f)
 		{
