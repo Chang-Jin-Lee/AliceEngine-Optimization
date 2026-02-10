@@ -1,0 +1,53 @@
+{
+    "Transform": {
+        "enabled": true,
+        "position": {
+            "x": -2.2302770614624023,
+            "y": 2.064547061920166,
+            "z": -0.5254387855529785
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 0.029999999329447746,
+            "y": 0.029999999329447746,
+            "z": 0.029999999329447746
+        },
+        "visible": true
+    },
+    "UnityVfx": {
+        "alphaScale": 0.20000000298023224,
+        "colorScale": 10.0,
+        "colorTint": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "dissolveOffset": 0.0,
+        "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_47_ParticleBlast/effect.json",
+        "emitNewParticles": true,
+        "enableTrails": true,
+        "enabled": true,
+        "hdrColorClamp": 1.0,
+        "intensityScale": 1.0,
+        "lifetimeScale": 0.5,
+        "loop": true,
+        "noiseScale": 1.0,
+        "overrideLoop": true,
+        "rampScale": 1.0,
+        "sizeScale": 15.0,
+        "spawnRateScale": 1.0,
+        "speedScale": 1.0,
+        "timeScale": 0.30000001192092896,
+        "trailLifeScale": 1.0,
+        "trailWidthScale": 1.0,
+        "useComputeEffect": false,
+        "useMeshRenderer": true,
+        "uvScrollScale": 1.0
+    },
+    "name": "ChargingEffect",
+    "version": 1
+}

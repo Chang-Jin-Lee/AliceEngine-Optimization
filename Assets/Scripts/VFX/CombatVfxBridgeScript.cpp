@@ -743,18 +743,42 @@ namespace Alice
 
         if (spawnShockWave)
         {
-            const EntityId shockWaveId = ResolveShockWaveEntity(true);
-            if (shockWaveId != InvalidEntityId)
+            bool spawnedFromPool = false;
+            const EntityId shockWavePooledId = Acquire(ShockWaveSlot, true);
+            if (shockWavePooledId != InvalidEntityId)
             {
-                if (auto* tr = world->GetComponent<TransformComponent>(shockWaveId))
+                if (auto* tr = world->GetComponent<TransformComponent>(shockWavePooledId))
                 {
                     tr->position = spawnPos;
                     tr->enabled = true;
                     tr->visible = true;
-                    world->MarkTransformDirty(shockWaveId);
+                    world->MarkTransformDirty(shockWavePooledId);
                 }
 
-                SetEntityActiveRecursive(*world, shockWaveId, true, true);
+                float shockWaveLifeSec = ResolveSpawnLifetimeSec(ShockWaveSlot, -1);
+                const float oneShotKeepAliveSec = ComputeOneShotKeepAliveSec(shockWavePooledId);
+                if (oneShotKeepAliveSec > 0.0f)
+                    shockWaveLifeSec = std::max(shockWaveLifeSec, oneShotKeepAliveSec + 0.02f);
+
+                m_active[ShockWaveSlot].push_back({ shockWavePooledId, shockWaveLifeSec, shockWaveLifeSec, false, InvalidEntityId });
+                spawnedFromPool = true;
+            }
+
+            if (!spawnedFromPool)
+            {
+                const EntityId shockWaveId = ResolveShockWaveEntity(true);
+                if (shockWaveId != InvalidEntityId)
+                {
+                    if (auto* tr = world->GetComponent<TransformComponent>(shockWaveId))
+                    {
+                        tr->position = spawnPos;
+                        tr->enabled = true;
+                        tr->visible = true;
+                        world->MarkTransformDirty(shockWaveId);
+                    }
+
+                    SetEntityActiveRecursive(*world, shockWaveId, true, true);
+                }
             }
         }
 
@@ -1888,6 +1912,7 @@ namespace Alice
             m_cachedBaseScales[slot][id] = tr->scale;
             tr->position = XMFLOAT3(0.0f, 0.0f, 0.0f);
             if (slot != HitOverlayBossGroggyRingSlot
+                && slot != ShockWaveSlot
                 && slot != ShockBlastSlot)
                 tr->rotation = XMFLOAT3(0.0f, 0.0f, 0.0f);
             world->MarkTransformDirty(id);
@@ -2394,6 +2419,7 @@ namespace Alice
         case HitOverlayGuardBreakRingSlot: return Get_guardBreakRingOverlayPrefabPath();
         case HitOverlayParryRingSlot: return Get_parryRingOverlayPrefabPath();
         case HitOverlayBossGroggyRingSlot: return Get_bossGroggyRingOverlayPrefabPath();
+        case ShockWaveSlot: return Get_shockWavePrefabPath();
         case ShockBlastSlot: return Get_shockBlastPrefabPath();
         default: return std::string();
         }
@@ -2401,6 +2427,8 @@ namespace Alice
 
     int CombatVfxBridgeScript::GetPoolSizeSafe(int slot) const
     {
+        if (slot == ShockWaveSlot)
+            return (std::max)(0, Get_shockWavePoolSize());
         if (slot == ShockBlastSlot)
             return (std::max)(0, Get_shockBlastPoolSize());
 
@@ -2411,6 +2439,8 @@ namespace Alice
 
     float CombatVfxBridgeScript::GetLifeTimeSafe(int slot) const
     {
+        if (slot == ShockWaveSlot)
+            return (std::max)(0.01f, Get_shockWaveLifeTimeSec());
         if (slot == ShockBlastSlot)
             return (std::max)(0.01f, Get_shockBlastLifeTimeSec());
 

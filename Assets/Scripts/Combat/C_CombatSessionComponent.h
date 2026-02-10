@@ -102,6 +102,9 @@ namespace Alice
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_playerRageTrailLocalScale, DirectX::XMFLOAT3(0.018f, 0.018f, 0.018f));
         ALICE_PROPERTY(float, m_playerRageTrailSizeScale, 0.018f);
         ALICE_PROPERTY(float, m_playerRageTrailEmitMinSpeed, 0.15f);
+        // Charge stage one-shot compute VFX on Player(Tia) child (e.g. "Charging").
+        ALICE_PROPERTY(std::string, m_playerChargeStageVfxName, "Charging");
+        ALICE_PROPERTY(float, m_playerChargeStagePulseSec, 0.05f);
 
         // Animation blending
         ALICE_PROPERTY(float, m_animBlendSec, 0.12f);
@@ -219,6 +222,9 @@ namespace Alice
         EntityId m_playerRageTrailVfxId = InvalidEntityId;
         DirectX::XMFLOAT3 m_playerRageTrailPrevPos{ 0.0f, 0.0f, 0.0f };
         bool m_playerRageTrailPrevPosValid = false;
+        EntityId m_playerChargeStageVfxId = InvalidEntityId;
+        int m_playerChargeStagePrevLevel = 0;
+        float m_playerChargeStagePulseRemainSec = 0.0f;
 
         struct AnimConfig
         {
