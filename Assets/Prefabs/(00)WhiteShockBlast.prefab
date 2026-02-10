@@ -1,0 +1,53 @@
+{
+    "Transform": {
+        "enabled": true,
+        "position": {
+            "x": 10.133991241455078,
+            "y": 1.608078122138977,
+            "z": 9.601719856262207
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 0.029999999329447746,
+            "y": 0.029999999329447746,
+            "z": 0.029999999329447746
+        },
+        "visible": true
+    },
+    "UnityVfx": {
+        "alphaScale": 0.20000000298023224,
+        "colorScale": 10.0,
+        "colorTint": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "dissolveOffset": 0.0,
+        "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_47_ParticleBlast/effect.json",
+        "emitNewParticles": true,
+        "enableTrails": true,
+        "enabled": true,
+        "hdrColorClamp": 1.0,
+        "intensityScale": 1.0,
+        "lifetimeScale": 0.5,
+        "loop": true,
+        "noiseScale": 1.0,
+        "overrideLoop": true,
+        "rampScale": 1.0,
+        "sizeScale": 15.0,
+        "spawnRateScale": 1.0,
+        "speedScale": 1.0,
+        "timeScale": 1.5,
+        "trailLifeScale": 1.0,
+        "trailWidthScale": 1.0,
+        "useComputeEffect": false,
+        "useMeshRenderer": true,
+        "uvScrollScale": 1.0
+    },
+    "name": "White_ParticleBlast",
+    "version": 1
+}

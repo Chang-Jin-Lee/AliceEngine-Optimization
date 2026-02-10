@@ -1,0 +1,53 @@
+{
+    "Transform": {
+        "enabled": true,
+        "position": {
+            "x": 42.91575241088867,
+            "y": 32.287845611572266,
+            "z": 15.202733993530273
+        },
+        "rotation": {
+            "x": 1.5707963705062866,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "visible": true
+    },
+    "UnityVfx": {
+        "alphaScale": 0.699999988079071,
+        "colorScale": 1.0,
+        "colorTint": {
+            "x": 0.0,
+            "y": 1.0,
+            "z": 0.5250964164733887
+        },
+        "dissolveOffset": 0.0,
+        "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_15_LifeWell2/effect.json",
+        "emitNewParticles": true,
+        "enableTrails": true,
+        "enabled": true,
+        "hdrColorClamp": 1.0,
+        "intensityScale": 1.0,
+        "lifetimeScale": 1.0,
+        "loop": true,
+        "noiseScale": 1.0,
+        "overrideLoop": false,
+        "rampScale": 1.0,
+        "sizeScale": 1.4980000257492065,
+        "spawnRateScale": 1.9800000190734863,
+        "speedScale": 1.0,
+        "timeScale": 1.0,
+        "trailLifeScale": 1.0,
+        "trailWidthScale": 1.0,
+        "useComputeEffect": false,
+        "useMeshRenderer": true,
+        "uvScrollScale": 1.0
+    },
+    "name": "(Opt)Effect_15_LifeWell2",
+    "version": 1
+}

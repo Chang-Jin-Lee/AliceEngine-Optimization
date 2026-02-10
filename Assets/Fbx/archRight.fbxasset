@@ -1,0 +1,10 @@
+{
+    "materials": [
+        "Assets/Materials/archRight_0.mat",
+        "Assets/Materials/archRight_1.mat",
+        "Assets/Materials/archRight_2.mat",
+        "Assets/Materials/archRight_3.mat"
+    ],
+    "mesh": "archRight",
+    "source_fbx": "Resource/Test/4_Resources/background/arch/archRight.fbx"
+}

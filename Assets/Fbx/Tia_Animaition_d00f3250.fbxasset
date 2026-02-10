@@ -1,0 +1,8 @@
+{
+    "materials": [
+        "Assets/Materials/Tia_Animaition_d00f3250_0.mat",
+        "Assets/Materials/Tia_Animaition_d00f3250_1.mat"
+    ],
+    "mesh": "Tia_Animaition_d00f3250",
+    "source_fbx": "Resource/Test/4_Resources/charecter/boss/Animaition/02.09/Tia_Animaition.fbx"
+}
