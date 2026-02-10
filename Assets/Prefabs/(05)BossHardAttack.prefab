@@ -1,0 +1,53 @@
+{
+    "Transform": {
+        "enabled": true,
+        "position": {
+            "x": 110.16596984863281,
+            "y": 15.16756534576416,
+            "z": 33.08962631225586
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 0.5,
+            "y": 0.5,
+            "z": 0.5
+        },
+        "visible": true
+    },
+    "UnityVfx": {
+        "alphaScale": 0.75,
+        "colorScale": 0.44999998807907104,
+        "colorTint": {
+            "x": 1.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "dissolveOffset": 0.0,
+        "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_18_SunFall_2/effect.json",
+        "emitNewParticles": true,
+        "enableTrails": true,
+        "enabled": true,
+        "hdrColorClamp": 1.600000023841858,
+        "intensityScale": 18.100000381469727,
+        "lifetimeScale": 1.0,
+        "loop": true,
+        "noiseScale": 1.0,
+        "overrideLoop": false,
+        "rampScale": 1.0,
+        "sizeScale": 0.8489999771118164,
+        "spawnRateScale": 1.0,
+        "speedScale": 1.0,
+        "timeScale": 1.0,
+        "trailLifeScale": 1.0,
+        "trailWidthScale": 1.0,
+        "useComputeEffect": false,
+        "useMeshRenderer": true,
+        "uvScrollScale": 1.0
+    },
+    "name": "(Opt)Effect_18_SunFall_2",
+    "version": 1
+}

@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/candle_0.mat"
+    ],
+    "mesh": "candle",
+    "source_fbx": "Resource/Test/4_Resources/background/candle/candle.fbx"
+}

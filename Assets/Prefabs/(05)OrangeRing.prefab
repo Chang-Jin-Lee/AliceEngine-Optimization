@@ -2,9 +2,9 @@
     "Transform": {
         "enabled": true,
         "position": {
-            "x": -4.103021144866943,
-            "y": 1.286651849746704,
-            "z": -0.7890481948852539
+            "x": 12.262142181396484,
+            "y": 3.6099014282226563,
+            "z": 0.8798117637634277
         },
         "rotation": {
             "x": 0.0,
@@ -22,8 +22,8 @@
         "alphaScale": 1.0,
         "colorScale": 1.0,
         "colorTint": {
-            "x": 0.4478764533996582,
-            "y": 0.22826135158538818,
+            "x": 0.19305020570755005,
+            "y": 0.09838850796222687,
             "z": 0.0
         },
         "dissolveOffset": 0.0,
@@ -41,7 +41,7 @@
         "sizeScale": 1.3480000495910645,
         "spawnRateScale": 1.0,
         "speedScale": 1.0,
-        "timeScale": 1.0,
+        "timeScale": 3.0,
         "trailLifeScale": 1.0,
         "trailWidthScale": 1.0,
         "useComputeEffect": false,

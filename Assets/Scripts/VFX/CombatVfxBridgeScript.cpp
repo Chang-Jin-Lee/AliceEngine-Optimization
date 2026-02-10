@@ -36,7 +36,10 @@ namespace Alice
         const XMFLOAT3 kTintGuardRingOrange(1.0f, 0.45f, 0.0f);
         const XMFLOAT3 kTintParryRingYellow(1.0f, 0.85f, 0.1f);
         const XMFLOAT3 kTintBossGroggyRingRed(1.0f, 0.1f, 0.1f);
+        constexpr float kRingOverlayStartScaleRatio = 1.0f / 6.0f;
         constexpr float kAttack3ExtraSlashLateralOffset = 0.25f;
+        constexpr float kAttack3ExtraSlashRollOffsetDeg = 20.0f;
+        constexpr float kRedHitPivotYOffset = 1.5f;
 
         int ClampInt(int v, int minV, int maxV)
         {
@@ -730,25 +733,76 @@ namespace Alice
         return true;
     }
 
-    void CombatVfxBridgeScript::TriggerShockWaveAtPosition(const DirectX::XMFLOAT3& spawnPos)
+    void CombatVfxBridgeScript::TriggerShockWaveAtPosition(const DirectX::XMFLOAT3& spawnPos,
+                                                           bool spawnShockWave,
+                                                           bool spawnShockBlast)
     {
         World* world = GetWorld();
         if (!world)
             return;
 
-        const EntityId shockWaveId = ResolveShockWaveEntity(true);
-        if (shockWaveId == InvalidEntityId)
+        if (spawnShockWave)
+        {
+            bool spawnedFromPool = false;
+            const EntityId shockWavePooledId = Acquire(ShockWaveSlot, true);
+            if (shockWavePooledId != InvalidEntityId)
+            {
+                if (auto* tr = world->GetComponent<TransformComponent>(shockWavePooledId))
+                {
+                    tr->position = spawnPos;
+                    tr->enabled = true;
+                    tr->visible = true;
+                    world->MarkTransformDirty(shockWavePooledId);
+                }
+
+                float shockWaveLifeSec = ResolveSpawnLifetimeSec(ShockWaveSlot, -1);
+                const float oneShotKeepAliveSec = ComputeOneShotKeepAliveSec(shockWavePooledId);
+                if (oneShotKeepAliveSec > 0.0f)
+                    shockWaveLifeSec = std::max(shockWaveLifeSec, oneShotKeepAliveSec + 0.02f);
+
+                m_active[ShockWaveSlot].push_back({ shockWavePooledId, shockWaveLifeSec, shockWaveLifeSec, false, InvalidEntityId });
+                spawnedFromPool = true;
+            }
+
+            if (!spawnedFromPool)
+            {
+                const EntityId shockWaveId = ResolveShockWaveEntity(true);
+                if (shockWaveId != InvalidEntityId)
+                {
+                    if (auto* tr = world->GetComponent<TransformComponent>(shockWaveId))
+                    {
+                        tr->position = spawnPos;
+                        tr->enabled = true;
+                        tr->visible = true;
+                        world->MarkTransformDirty(shockWaveId);
+                    }
+
+                    SetEntityActiveRecursive(*world, shockWaveId, true, true);
+                }
+            }
+        }
+
+        if (!spawnShockBlast)
             return;
 
-        if (auto* tr = world->GetComponent<TransformComponent>(shockWaveId))
+        const EntityId shockBlastId = Acquire(ShockBlastSlot, true);
+        if (shockBlastId == InvalidEntityId)
+            return;
+
+        if (auto* tr = world->GetComponent<TransformComponent>(shockBlastId))
         {
             tr->position = spawnPos;
             tr->enabled = true;
             tr->visible = true;
-            world->MarkTransformDirty(shockWaveId);
+            world->MarkTransformDirty(shockBlastId);
         }
 
-        SetEntityActiveRecursive(*world, shockWaveId, true, true);
+        float shockBlastLifeSec = ResolveSpawnLifetimeSec(ShockBlastSlot, -1);
+        const float oneShotKeepAliveSec = ComputeOneShotKeepAliveSec(shockBlastId);
+        if (oneShotKeepAliveSec > 0.0f)
+            shockBlastLifeSec = std::max(shockBlastLifeSec, oneShotKeepAliveSec + 0.02f);
+
+        m_active[ShockBlastSlot].push_back({ shockBlastId, shockBlastLifeSec, shockBlastLifeSec, false, InvalidEntityId });
     }
 
     void CombatVfxBridgeScript::TryBindResolveDelegate()
@@ -939,6 +993,10 @@ namespace Alice
         World* world = GetWorld();
         for (int slot = 0; slot < SlotCount; ++slot)
         {
+            const bool isRingOverlaySlot = (slot == HitOverlayGuardRingSlot
+                || slot == HitOverlayGuardBreakRingSlot
+                || slot == HitOverlayParryRingSlot
+                || slot == HitOverlayBossGroggyRingSlot);
             auto& activeList = m_active[slot];
             for (size_t i = 0; i < activeList.size();)
             {
@@ -950,10 +1008,35 @@ namespace Alice
                 }
 
                 inst.remainingSec -= deltaTime;
-                if (inst.fadeOut && inst.totalSec > 0.0f && world)
+                if (isRingOverlaySlot && world && inst.totalSec > 0.0f)
                 {
-                    const float alpha = std::clamp(inst.remainingSec / inst.totalSec, 0.0f, 1.0f);
-                    SetEntityAlphaRecursive(*world, inst.id, alpha);
+                    if (auto* tr = world->GetComponent<TransformComponent>(inst.id))
+                    {
+                        XMFLOAT3 baseScale = tr->scale;
+                        const auto itScale = m_cachedBaseScales[slot].find(inst.id);
+                        if (itScale != m_cachedBaseScales[slot].end())
+                            baseScale = itScale->second;
+
+                        const float clampedRemaining = std::clamp(inst.remainingSec, 0.0f, inst.totalSec);
+                        const float elapsedSec = inst.totalSec - clampedRemaining;
+                        const float growDurationSec = std::max(0.0001f, inst.totalSec * 0.5f);
+                        const float growT = std::clamp(elapsedSec / growDurationSec, 0.0f, 1.0f);
+                        const float scaleRatio = kRingOverlayStartScaleRatio
+                            + (1.0f - kRingOverlayStartScaleRatio) * growT;
+
+                        tr->scale = XMFLOAT3(
+                            baseScale.x * scaleRatio,
+                            baseScale.y * scaleRatio,
+                            baseScale.z * scaleRatio);
+                        world->MarkTransformDirty(inst.id);
+                    }
+                }
+
+                if (inst.fadeOut && world && inst.totalSec > 0.0f)
+                {
+                    const float clampedRemaining = std::clamp(inst.remainingSec, 0.0f, inst.totalSec);
+                    const float alphaRatio = clampedRemaining / inst.totalSec;
+                    ApplyEntityAlphaFadeRecursive(*world, slot, inst.id, alphaRatio);
                 }
 
                 if (inst.remainingSec <= 0.0f)
@@ -1157,7 +1240,13 @@ namespace Alice
             -kAttack3ExtraSlashLateralOffset,
             kAttack3ExtraSlashLateralOffset
         };
-        const int spawnCount = isAttack3 ? 3 : 1;
+        const std::array<float, 3> rollOffsetsDeg{
+            0.0f,
+            -kAttack3ExtraSlashRollOffsetDeg,
+            kAttack3ExtraSlashRollOffsetDeg
+        };
+        const std::array<int, 2> attack3SpawnOffsetIndices{ 0, 2 }; // center + right
+        const int spawnCount = isAttack3 ? static_cast<int>(attack3SpawnOffsetIndices.size()) : 1;
 
         for (int spawnIndex = 0; spawnIndex < spawnCount; ++spawnIndex)
         {
@@ -1171,7 +1260,6 @@ namespace Alice
 
             if (heavyFade)
                 SetEntityLoopModeRecursive(*world, id, true);
-            SetEntityAlphaRecursive(*world, id, 1.0f);
             SetEntityColorTintRecursive(*world, id, applyRageTint ? kTintRage : kTintWhite);
 
             if (m_playerId != InvalidEntityId)
@@ -1187,13 +1275,16 @@ namespace Alice
             }
 
             XMFLOAT3 spawnAnchorLocal = anchorLocal;
-            spawnAnchorLocal.x += lateralOffsets[spawnIndex];
+            const int offsetIndex = isAttack3 ? attack3SpawnOffsetIndices[spawnIndex] : 0;
+            spawnAnchorLocal.x += lateralOffsets[offsetIndex];
             const XMFLOAT3 localPos = Add(spawnAnchorLocal, slashOffsetLocal);
+            XMFLOAT3 spawnRotationOffsetDeg = slashRotationOffsetDeg;
+            spawnRotationOffsetDeg.z += rollOffsetsDeg[offsetIndex];
             tr->position = localPos;
             tr->rotation = XMFLOAT3(
-                XMConvertToRadians(slashRotationOffsetDeg.x),
-                XMConvertToRadians(slashRotationOffsetDeg.y),
-                XMConvertToRadians(slashRotationOffsetDeg.z));
+                XMConvertToRadians(spawnRotationOffsetDeg.x),
+                XMConvertToRadians(spawnRotationOffsetDeg.y),
+                XMConvertToRadians(spawnRotationOffsetDeg.z));
 
             XMFLOAT3 baseScale = tr->scale;
             const auto itScale = m_cachedBaseScales[slashSlot].find(id);
@@ -1215,24 +1306,14 @@ namespace Alice
                                                     EntityId victimId,
                                                     int attackSlotIndex)
     {
-        const int hitSlot = ResolveHitSlotForAttackSlotIndex(attackSlotIndex);
-        const EntityId id = Acquire(hitSlot);
-        if (id == InvalidEntityId)
-            return;
-
         World* world = GetWorld();
+        const int hitSlot = ResolveHitSlotForAttackSlotIndex(attackSlotIndex);
         if (!world)
-        {
-            Release(hitSlot, id);
             return;
-        }
 
         const bool heavyFade = Get_enableHeavyFadeOut() && IsHeavyAttackSlotIndex(attackSlotIndex);
         const bool applyRageTint = ShouldApplyRageTint(attackSlotIndex);
         const float lifeSec = ResolveSpawnLifetimeSec(hitSlot, attackSlotIndex);
-        if (heavyFade)
-            SetEntityLoopModeRecursive(*world, id, true);
-        SetEntityAlphaRecursive(*world, id, 1.0f);
 
         XMFLOAT3 forward = NormalizeOrFallback(GetPlayerForward(), XMFLOAT3(0.0f, 0.0f, 1.0f));
         XMFLOAT3 upHint(0.0f, 1.0f, 0.0f);
@@ -1254,12 +1335,11 @@ namespace Alice
         const XMFLOAT3 hitTint = applyRageTint
             ? kTintRage
             : (isRedHitEffect ? kTintWhite : kTintSparkYellow);
-        SetEntityColorTintRecursive(*world, id, hitTint);
         if (isRedHitEffect && victimId != InvalidEntityId)
         {
             DirectX::XMFLOAT4X4 victimWorld{};
             XMStoreFloat4x4(&victimWorld, world->ComputeWorldMatrix(victimId));
-            spawnPos = XMFLOAT3(victimWorld._41, victimWorld._42 + 1.1f, victimWorld._43);
+            spawnPos = XMFLOAT3(victimWorld._41, victimWorld._42 + kRedHitPivotYOffset, victimWorld._43);
         }
 
         XMFLOAT3 hitRotationOffsetDeg{};
@@ -1273,7 +1353,7 @@ namespace Alice
                 XMStoreFloat4x4(&playerWorld, world->ComputeWorldMatrix(m_playerId));
                 const XMFLOAT3 toPlayer(
                     playerWorld._41 - spawnPos.x,
-                    (playerWorld._42 + 1.1f) - spawnPos.y,
+                    (playerWorld._42 + kRedHitPivotYOffset) - spawnPos.y,
                     playerWorld._43 - spawnPos.z);
                 if (LengthSq(toPlayer) > kVectorEpsilonSq)
                     forward = NormalizeOrFallback(toPlayer, forward);
@@ -1287,15 +1367,41 @@ namespace Alice
                 hitRotationOffsetDeg = Add(hitRotationOffsetDeg, GetSlashSlotRotationOffsetDeg(attackSlotIndex));
         }
 
-        ApplySpawnTransformTuned(hitSlot,
-                                 id,
-                                 spawnPos,
-                                 forward,
-                                 upHint,
-                                 GetOffsetLocal(hitSlot),
-                                 hitRotationOffsetDeg,
-                                 GetScaleMulSafe(hitSlot));
-        m_active[hitSlot].push_back({ id, lifeSec, lifeSec, heavyFade, InvalidEntityId });
+        const bool isAttack3 = (attackSlotIndex == 3);
+        const std::array<float, 2> attack3HitRollOffsetsDeg{
+            0.0f,
+            kAttack3ExtraSlashRollOffsetDeg
+        };
+        const int spawnCount = isAttack3 ? static_cast<int>(attack3HitRollOffsetsDeg.size()) : 1;
+
+        for (int spawnIndex = 0; spawnIndex < spawnCount; ++spawnIndex)
+        {
+            const EntityId id = Acquire(hitSlot);
+            if (id == InvalidEntityId)
+            {
+                if (spawnIndex == 0)
+                    return;
+                continue;
+            }
+
+            if (heavyFade)
+                SetEntityLoopModeRecursive(*world, id, true);
+            SetEntityColorTintRecursive(*world, id, hitTint);
+
+            XMFLOAT3 spawnRotationOffsetDeg = hitRotationOffsetDeg;
+            if (!isRedHitEffect && isAttack3)
+                spawnRotationOffsetDeg.z += attack3HitRollOffsetsDeg[spawnIndex];
+
+            ApplySpawnTransformTuned(hitSlot,
+                                     id,
+                                     spawnPos,
+                                     forward,
+                                     upHint,
+                                     GetOffsetLocal(hitSlot),
+                                     spawnRotationOffsetDeg,
+                                     GetScaleMulSafe(hitSlot));
+            m_active[hitSlot].push_back({ id, lifeSec, lifeSec, heavyFade, InvalidEntityId });
+        }
         // Heavy attack does not spawn spark overlay.
         if (!IsHeavyAttackSlotIndex(attackSlotIndex))
             SpawnHitOverlayAtPosition(hitPos, OverlaySpawnKind::Spark, attackSlotIndex, applyRageTint);
@@ -1352,7 +1458,12 @@ namespace Alice
         if (!world)
             return;
 
-        const EntityId overlayId = Acquire(overlaySlot);
+        const bool isRingOverlayKind = (kind == OverlaySpawnKind::GuardRing
+            || kind == OverlaySpawnKind::GuardBreakRing
+            || kind == OverlaySpawnKind::ParryRing
+            || kind == OverlaySpawnKind::BossGroggyRing);
+        const bool useOneShotActivation = !isRingOverlayKind;
+        const EntityId overlayId = Acquire(overlaySlot, useOneShotActivation);
         if (overlayId == InvalidEntityId)
             return;
 
@@ -1385,18 +1496,63 @@ namespace Alice
             break;
         }
 
-        SetEntityAlphaRecursive(*world, overlayId, 1.0f);
-        SetEntityColorTintRecursive(*world, overlayId, overlayTint);
-        ApplySpawnTransformTuned(overlaySlot,
-                                 overlayId,
-                                 spawnPos,
-                                 forward,
-                                 upHint,
-                                 GetOffsetLocal(overlaySlot),
-                                 GetRotationOffsetDeg(overlaySlot),
-                                 GetScaleMulSafe(overlaySlot));
-
         float overlayLifeSec = ResolveSpawnLifetimeSec(overlaySlot, attackSlotIndex);
+        SetEntityColorTintRecursive(*world, overlayId, overlayTint);
+        EntityId overlayAnchor = InvalidEntityId;
+        if (isRingOverlayKind)
+        {
+            overlayAnchor = world->CreateEmpty();
+            if (overlayAnchor != InvalidEntityId)
+            {
+                world->SetEntityName(
+                    overlayAnchor,
+                    (kind == OverlaySpawnKind::BossGroggyRing) ? "__BossGroggyRingAnchor" : "__HitOverlayRingAnchor");
+                world->SetParent(overlayAnchor, InvalidEntityId, false);
+                if (auto* anchorTr = world->GetComponent<TransformComponent>(overlayAnchor))
+                {
+                    anchorTr->position = spawnPos;
+                    anchorTr->rotation = XMFLOAT3(0.0f, 0.0f, 0.0f);
+                    anchorTr->scale = XMFLOAT3(1.0f, 1.0f, 1.0f);
+                    world->MarkTransformDirty(overlayAnchor);
+                }
+                world->SetParent(overlayId, overlayAnchor, false);
+            }
+
+        }
+
+        if (kind == OverlaySpawnKind::BossGroggyRing)
+        {
+            // Keep prefab-authored rotation for groggy ring.
+            if (auto* tr = world->GetComponent<TransformComponent>(overlayId))
+            {
+                tr->position = (overlayAnchor != InvalidEntityId)
+                    ? XMFLOAT3(0.0f, 0.0f, 0.0f)
+                    : spawnPos;
+
+                XMFLOAT3 baseScale = tr->scale;
+                const auto itScale = m_cachedBaseScales[overlaySlot].find(overlayId);
+                if (itScale != m_cachedBaseScales[overlaySlot].end())
+                    baseScale = itScale->second;
+
+                const float safeScaleMul = (std::max)(0.0f, GetScaleMulSafe(overlaySlot));
+                tr->scale = XMFLOAT3(baseScale.x * safeScaleMul, baseScale.y * safeScaleMul, baseScale.z * safeScaleMul);
+                world->MarkTransformDirty(overlayId);
+            }
+        }
+        else
+        {
+            const XMFLOAT3 applyAnchorPos = (overlayAnchor != InvalidEntityId)
+                ? XMFLOAT3(0.0f, 0.0f, 0.0f)
+                : spawnPos;
+            ApplySpawnTransformTuned(overlaySlot,
+                                     overlayId,
+                                     applyAnchorPos,
+                                     forward,
+                                     upHint,
+                                     GetOffsetLocal(overlaySlot),
+                                     GetRotationOffsetDeg(overlaySlot),
+                                     GetScaleMulSafe(overlaySlot));
+        }
 
         // One-shot compute effects should stay alive for emission window + particle lifetime.
         // This keeps already-emitted particles visible even after emission has stopped.
@@ -1426,7 +1582,24 @@ namespace Alice
         if (requiredComputeLifeSec > 0.0f)
             overlayLifeSec = std::max(overlayLifeSec, requiredComputeLifeSec + 0.02f);
 
-        m_active[overlaySlot].push_back({ overlayId, overlayLifeSec, overlayLifeSec, false, InvalidEntityId });
+        if (isRingOverlayKind)
+        {
+            if (auto* tr = world->GetComponent<TransformComponent>(overlayId))
+            {
+                XMFLOAT3 baseScale = tr->scale;
+                const auto itScale = m_cachedBaseScales[overlaySlot].find(overlayId);
+                if (itScale != m_cachedBaseScales[overlaySlot].end())
+                    baseScale = itScale->second;
+
+                tr->scale = XMFLOAT3(
+                    baseScale.x * kRingOverlayStartScaleRatio,
+                    baseScale.y * kRingOverlayStartScaleRatio,
+                    baseScale.z * kRingOverlayStartScaleRatio);
+                world->MarkTransformDirty(overlayId);
+            }
+        }
+
+        m_active[overlaySlot].push_back({ overlayId, overlayLifeSec, overlayLifeSec, false, overlayAnchor });
     }
 
     void CombatVfxBridgeScript::OnCombatResolve(EntityId victimId,
@@ -1459,7 +1632,7 @@ namespace Alice
 
             if (bossHitPlayer)
             {
-                TriggerShockWaveAtPosition(hitPos);
+                TriggerShockWaveAtPosition(hitPos, true, false);
                 return;
             }
 
@@ -1471,7 +1644,7 @@ namespace Alice
             XMFLOAT3 shockPos = hitPos;
             if (!TryGetGuardShockWavePosition(shockPos))
                 ResolveGuardShockPointEntity(true);
-            TriggerShockWaveAtPosition(shockPos);
+            TriggerShockWaveAtPosition(shockPos, false, true);
             SpawnHitOverlayAtPosition(shockPos, OverlaySpawnKind::GuardRing, -1, false);
             return;
         }
@@ -1481,7 +1654,7 @@ namespace Alice
             XMFLOAT3 shockPos = hitPos;
             if (!TryGetGuardShockWavePosition(shockPos))
                 ResolveGuardShockPointEntity(true);
-            TriggerShockWaveAtPosition(shockPos);
+            TriggerShockWaveAtPosition(shockPos, false, true);
             SpawnHitOverlayAtPosition(shockPos, OverlaySpawnKind::GuardRing, -1, false);
             SpawnHitOverlayAtPosition(shockPos, OverlaySpawnKind::GuardBreakRing, -1, false);
             return;
@@ -1581,13 +1754,17 @@ namespace Alice
             m_pool[slot].clear();
             m_active[slot].clear();
             m_cachedBaseScales[slot].clear();
+            m_cachedBaseAlphas[slot].clear();
             return;
         }
 
         for (const ActiveInstance& inst : m_active[slot])
         {
             if (inst.id != InvalidEntityId)
+            {
+                EraseCachedAlphaRecursive(*world, slot, inst.id);
                 world->DestroyEntity(inst.id);
+            }
             if (inst.freezeAnchor != InvalidEntityId)
                 world->DestroyEntity(inst.freezeAnchor);
         }
@@ -1596,13 +1773,17 @@ namespace Alice
         for (EntityId id : m_pool[slot])
         {
             if (id != InvalidEntityId)
+            {
+                EraseCachedAlphaRecursive(*world, slot, id);
                 world->DestroyEntity(id);
+            }
         }
         m_pool[slot].clear();
         m_cachedBaseScales[slot].clear();
+        m_cachedBaseAlphas[slot].clear();
     }
 
-    EntityId CombatVfxBridgeScript::Acquire(int slot)
+    EntityId CombatVfxBridgeScript::Acquire(int slot, bool triggerOneShot)
     {
         World* world = GetWorld();
         if (!world)
@@ -1610,6 +1791,10 @@ namespace Alice
 
         EntityId id = InvalidEntityId;
         auto& pool = m_pool[slot];
+        const bool isRingOverlaySlot = (slot == HitOverlayGuardRingSlot
+            || slot == HitOverlayGuardBreakRingSlot
+            || slot == HitOverlayParryRingSlot
+            || slot == HitOverlayBossGroggyRingSlot);
         if (!pool.empty())
         {
             id = pool.back();
@@ -1618,7 +1803,7 @@ namespace Alice
         else
         {
             const int cap = GetPoolSizeSafe(slot);
-            if (cap > 0 && static_cast<int>(m_active[slot].size()) >= cap)
+            if (!isRingOverlaySlot && cap > 0 && static_cast<int>(m_active[slot].size()) >= cap)
             {
                 // Reuse oldest active instance in this slot as a ring buffer.
                 // This keeps spawn count bounded while avoiding dropped VFX spawns.
@@ -1649,8 +1834,8 @@ namespace Alice
             return InvalidEntityId;
 
         world->SetParent(id, InvalidEntityId, false);
-        SetEntityActiveRecursive(*world, id, true, true);
-        SetEntityAlphaRecursive(*world, id, 1.0f);
+        SetEntityActiveRecursive(*world, id, true, triggerOneShot);
+        RestoreEntityAlphaRecursive(*world, slot, id);
         return id;
     }
 
@@ -1660,10 +1845,25 @@ namespace Alice
         if (!world || id == InvalidEntityId)
             return;
 
-        SetEntityAlphaRecursive(*world, id, 1.0f);
         SetEntityColorTintRecursive(*world, id, kTintWhite);
-        SetEntityLoopModeRecursive(*world, id, false);
+        RestoreEntityAlphaRecursive(*world, slot, id);
+        const bool isRingOverlaySlot = (slot == HitOverlayGuardRingSlot
+            || slot == HitOverlayGuardBreakRingSlot
+            || slot == HitOverlayParryRingSlot
+            || slot == HitOverlayBossGroggyRingSlot);
+        if (!isRingOverlaySlot)
+            SetEntityLoopModeRecursive(*world, id, false);
         SetEntityActiveRecursive(*world, id, false, false);
+
+        const int cap = GetPoolSizeSafe(slot);
+        if (cap > 0 && static_cast<int>(m_pool[slot].size()) >= cap)
+        {
+            EraseCachedAlphaRecursive(*world, slot, id);
+            world->DestroyEntity(id);
+            m_cachedBaseScales[slot].erase(id);
+            return;
+        }
+
         if (Get_organizePoolUnderRoot())
         {
             const EntityId poolRoot = EnsurePoolRoot();
@@ -1712,11 +1912,17 @@ namespace Alice
         {
             world->SetParent(id, InvalidEntityId, false);
         }
+
+        CacheEntityAlphaRecursive(*world, slot, id);
+
         if (auto* tr = world->GetComponent<TransformComponent>(id))
         {
             m_cachedBaseScales[slot][id] = tr->scale;
             tr->position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-            tr->rotation = XMFLOAT3(0.0f, 0.0f, 0.0f);
+            if (slot != HitOverlayBossGroggyRingSlot
+                && slot != ShockWaveSlot
+                && slot != ShockBlastSlot)
+                tr->rotation = XMFLOAT3(0.0f, 0.0f, 0.0f);
             world->MarkTransformDirty(id);
         }
 
@@ -2025,6 +2231,11 @@ namespace Alice
                 vfx->emitNewParticles = true;
                 vfx->playId += 1;
             }
+            else if (active)
+            {
+                vfx->emitNewParticles = true;
+                vfx->playId += 1;
+            }
             else if (!active)
             {
                 vfx->emitNewParticles = false;
@@ -2053,6 +2264,14 @@ namespace Alice
                 ce->spawnRate = (std::max)(0.0f, state.baseSpawnRate);
                 ce->emitNewParticles = true;
             }
+            else if (active)
+            {
+                ce->emitNewParticles = true;
+                state.armed = false;
+                state.oneFrameConsumed = false;
+                state.elapsedSec = 0.0f;
+                state.emissionDurationSec = 0.0f;
+            }
             else if (!active)
             {
                 if (state.baseCaptured)
@@ -2077,20 +2296,6 @@ namespace Alice
         const auto children = world.GetChildren(id);
         for (EntityId child : children)
             SetEntityActiveRecursive(world, child, active, triggerOneShot);
-    }
-
-    void CombatVfxBridgeScript::SetEntityAlphaRecursive(World& world, EntityId id, float alpha) const
-    {
-        if (id == InvalidEntityId)
-            return;
-
-        const float clampedAlpha = std::clamp(alpha, 0.0f, 1.0f);
-        if (auto* vfx = world.GetComponent<UnityVfxComponent>(id))
-            vfx->alphaScale = clampedAlpha;
-
-        const auto children = world.GetChildren(id);
-        for (EntityId child : children)
-            SetEntityAlphaRecursive(world, child, clampedAlpha);
     }
 
     void CombatVfxBridgeScript::SetEntityColorTintRecursive(World& world, EntityId id, const DirectX::XMFLOAT3& tint) const
@@ -2124,6 +2329,99 @@ namespace Alice
             SetEntityLoopModeRecursive(world, child, loopEnabled);
     }
 
+    void CombatVfxBridgeScript::ApplyEntityAlphaFadeRecursive(World& world, int slot, EntityId id, float alphaRatio) const
+    {
+        if (id == InvalidEntityId || slot < 0 || slot >= SlotCount)
+            return;
+
+        const float clampedRatio = std::clamp(alphaRatio, 0.0f, 1.0f);
+        if (auto* vfx = world.GetComponent<UnityVfxComponent>(id))
+        {
+            float baseAlpha = vfx->alphaScale;
+            const auto it = m_cachedBaseAlphas[slot].find(id);
+            if (it != m_cachedBaseAlphas[slot].end())
+                baseAlpha = it->second;
+            vfx->alphaScale = baseAlpha * clampedRatio;
+        }
+
+        const auto children = world.GetChildren(id);
+        for (EntityId child : children)
+            ApplyEntityAlphaFadeRecursive(world, slot, child, clampedRatio);
+    }
+
+    void CombatVfxBridgeScript::CacheEntityAlphaRecursive(World& world, int slot, EntityId id)
+    {
+        if (id == InvalidEntityId || slot < 0 || slot >= SlotCount)
+            return;
+
+        if (auto* vfx = world.GetComponent<UnityVfxComponent>(id))
+            m_cachedBaseAlphas[slot][id] = vfx->alphaScale;
+
+        const auto children = world.GetChildren(id);
+        for (EntityId child : children)
+            CacheEntityAlphaRecursive(world, slot, child);
+    }
+
+    void CombatVfxBridgeScript::RestoreEntityAlphaRecursive(World& world, int slot, EntityId id) const
+    {
+        if (id == InvalidEntityId || slot < 0 || slot >= SlotCount)
+            return;
+
+        if (auto* vfx = world.GetComponent<UnityVfxComponent>(id))
+        {
+            const auto it = m_cachedBaseAlphas[slot].find(id);
+            if (it != m_cachedBaseAlphas[slot].end())
+                vfx->alphaScale = it->second;
+        }
+
+        const auto children = world.GetChildren(id);
+        for (EntityId child : children)
+            RestoreEntityAlphaRecursive(world, slot, child);
+    }
+
+    void CombatVfxBridgeScript::EraseCachedAlphaRecursive(World& world, int slot, EntityId id)
+    {
+        if (id == InvalidEntityId || slot < 0 || slot >= SlotCount)
+            return;
+
+        m_cachedBaseAlphas[slot].erase(id);
+        const auto children = world.GetChildren(id);
+        for (EntityId child : children)
+            EraseCachedAlphaRecursive(world, slot, child);
+    }
+
+    float CombatVfxBridgeScript::ComputeOneShotKeepAliveSec(EntityId rootId)
+    {
+        World* world = GetWorld();
+        if (!world || rootId == InvalidEntityId)
+            return 0.0f;
+
+        float requiredComputeLifeSec = 0.0f;
+        std::vector<EntityId> stack;
+        stack.push_back(rootId);
+        while (!stack.empty())
+        {
+            const EntityId current = stack.back();
+            stack.pop_back();
+
+            if (const auto* compute = world->GetComponent<ComputeEffectComponent>(current))
+            {
+                if (!compute->loop)
+                {
+                    const float emissionSec = std::max(0.0f, compute->emissionDurationSec);
+                    const float particleLifeSec = std::max(0.0f, std::max(compute->lifeMin, compute->lifeMax));
+                    requiredComputeLifeSec = std::max(requiredComputeLifeSec, emissionSec + particleLifeSec);
+                }
+            }
+
+            const auto children = world->GetChildren(current);
+            for (EntityId child : children)
+                stack.push_back(child);
+        }
+
+        return requiredComputeLifeSec;
+    }
+
     std::string CombatVfxBridgeScript::GetPrefabPath(int slot) const
     {
         switch (slot)
@@ -2149,12 +2447,19 @@ namespace Alice
         case HitOverlayGuardBreakRingSlot: return Get_guardBreakRingOverlayPrefabPath();
         case HitOverlayParryRingSlot: return Get_parryRingOverlayPrefabPath();
         case HitOverlayBossGroggyRingSlot: return Get_bossGroggyRingOverlayPrefabPath();
+        case ShockWaveSlot: return Get_shockWavePrefabPath();
+        case ShockBlastSlot: return Get_shockBlastPrefabPath();
         default: return std::string();
         }
     }
 
     int CombatVfxBridgeScript::GetPoolSizeSafe(int slot) const
     {
+        if (slot == ShockWaveSlot)
+            return (std::max)(0, Get_shockWavePoolSize());
+        if (slot == ShockBlastSlot)
+            return (std::max)(0, Get_shockBlastPoolSize());
+
         const bool isHitSlot = (slot >= HitDefaultSlot);
         const int size = isHitSlot ? Get_hitPoolSize() : Get_slashPoolSize();
         return (std::max)(0, size);
@@ -2162,6 +2467,14 @@ namespace Alice
 
     float CombatVfxBridgeScript::GetLifeTimeSafe(int slot) const
     {
+        if (slot == ShockWaveSlot)
+            return (std::max)(0.01f, Get_shockWaveLifeTimeSec());
+        if (slot == ShockBlastSlot)
+            return (std::max)(0.01f, Get_shockBlastLifeTimeSec());
+
+        if (slot == HitOverlayBossGroggyRingSlot)
+            return (std::max)(0.01f, Get_bossGroggyRingOverlayLifeTimeSec());
+
         const bool isHitSlot = (slot >= HitDefaultSlot);
         float v = isHitSlot ? Get_hitLifeTimeSec() : Get_slashLifeTimeSec();
 
