@@ -5424,7 +5424,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		};
 		auto ResolvePlayerAttackProfile = [&]() -> PlayerAttackProfile
 			{
-				if (m_state->fatal.active || fatalTriggered)
+				if (m_state->fatal.active)
 					return PlayerAttackProfile::Execution;
 				if (m_state->playerLastAttackHeavy)
 				{
