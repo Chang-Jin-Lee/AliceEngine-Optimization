@@ -222,8 +222,8 @@ namespace Alice
 
         /// 백버퍼로 렌더 타겟을 복귀시킵니다 (ImGui 등 후처리를 위해).
         void RestoreBackBuffer();
-        // G-Buffer 개수 (Normal+Roughness, Metalness+ToonCuts, BaseColor, ToonParams, ToonAlphas, OutlineData)
-        static constexpr int GBufferCount = 6;
+        // G-Buffer 개수 (Normal+Roughness, Metalness+ToonCuts, BaseColor, ToonParams, ToonAlphas, OutlineData, Emissive)
+        static constexpr int GBufferCount = 7;
         // D-Buffer 개수 (Decal Albedo)
         static constexpr int DBufferCount = 1;
 
@@ -307,7 +307,11 @@ namespace Alice
                                float envDiffuseStrength = 1.0f,
                                float envSpecularStrength = 1.0f,
                                const DirectX::XMFLOAT3& outlineColor = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),
-                               float outlineWidth = 0.00f);
+                               float outlineWidth = 0.00f,
+                               const DirectX::XMFLOAT3& emissiveColor = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f),
+                               float emissiveIntensity = 0.0f,
+                               float emissiveBloom = 1.0f,
+                               bool useEmissiveTexture = false);
         void UpdateLightingCB(const Camera& camera,
                               int shadingMode,
                               bool enableFillLight,
@@ -430,6 +434,7 @@ namespace Alice
 
         // ==== 상수 버퍼 ====
         Microsoft::WRL::ComPtr<ID3D11Buffer>           m_cbPerObject;
+        Microsoft::WRL::ComPtr<ID3D11Buffer>           m_cbPerObjectEmissive;
         Microsoft::WRL::ComPtr<ID3D11Buffer>           m_cbLighting;
         Microsoft::WRL::ComPtr<ID3D11Buffer>           m_cbDirectionalLight;
         Microsoft::WRL::ComPtr<ID3D11Buffer>           m_cbExtraLights;

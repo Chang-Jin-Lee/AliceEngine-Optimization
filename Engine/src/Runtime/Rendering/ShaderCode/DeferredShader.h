@@ -424,11 +424,21 @@ struct GBufferOut
     float4 ToonParams      : SV_Target3;
     float4 ToonAlphas      : SV_Target4;
     float4 OutlineData     : SV_Target5;
+    float4 Emissive        : SV_Target6;
 };
 
 Texture2D  g_DiffuseMap : register(t0);
 Texture2D  g_NormalMap  : register(t1);
+Texture2D  g_EmissiveMap : register(t2);
 SamplerState g_Sam : register(s0);
+
+cbuffer CBPerObjectEmissive : register(b7)
+{
+    float4 gEmissiveColorIntensity; // rgb: color, a: intensity
+    int    gUseEmissiveTexture;
+    float  gEmissiveBloom;
+    float2 gPadEmissive;
+};
 
 float DitherThreshold(float2 pos)
 {
@@ -522,6 +532,17 @@ GBufferOut main(VertexOut pIn)
     // shadingMode + AO를 [0,1] 범위로 인코딩하여 저장
     gOut.BaseColor  = float4(baseColor, saturate(shadingEncoded));
     gOut.OutlineData = float4(saturate(gOutlineColor), max(gOutlineWidth, 0.0f));
+    // Emissive는 텍스처(마스크)가 있을 때만 유효하게 만들어
+    // emissiveColor/emissiveIntensity는 "색/강도 조절" 역할로 사용합니다.
+    float3 emissive = float3(0.0f, 0.0f, 0.0f);
+    if (gUseEmissiveTexture != 0)
+    {
+        float3 emissiveMask = max(g_EmissiveMap.Sample(g_Sam, pIn.TexCoord).rgb, 0.0f);
+        float emissiveIntensity = max(gEmissiveColorIntensity.a, 0.0f);
+        emissive = emissiveMask * gEmissiveColorIntensity.rgb * emissiveIntensity;
+    }
+    float emissiveBloom = (gUseEmissiveTexture != 0) ? max(gEmissiveBloom, 0.0f) : 0.0f;
+    gOut.Emissive = float4(emissive, emissiveBloom);
     
     return gOut;
 }
@@ -843,6 +864,7 @@ Texture2D<float> g_ShadowMap : register(t10);
 Texture2D g_DecalAlbedo : register(t11);
 Texture2DArray g_LocalShadow2DArray : register(t12);
 TextureCubeArray g_LocalShadowCubeArray : register(t13);
+Texture2D g_Emissive : register(t14);
 
 SamplerState g_Sam : register(s0);
 SamplerComparisonState g_ShadowSampler : register(s1);
@@ -1323,6 +1345,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     float4 baseColor = g_BaseColor.Sample(g_Sam, pIn.uv);
     float4 toonParams = g_ToonParams.Sample(g_Sam, pIn.uv);
     float4 toonAlphasSample = g_ToonAlphas.Sample(g_Sam, pIn.uv);
+    float3 emissive = max(g_Emissive.Sample(g_Sam, pIn.uv).rgb, 0.0f);
     
     float depth = g_SceneDepth.Sample(g_Sam, pIn.uv);
 
@@ -1381,7 +1404,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     // TextureOnly 모드
     if (shadingMode == 6)
     {
-        float3 colorTexOnly = lerp(albedoLinear, outlineEdgeColor, outlineEdge);
+        float3 colorTexOnly = lerp(albedoLinear + emissive, outlineEdgeColor, outlineEdge);
         return float4(colorTexOnly, 1.0f);
     }
 
@@ -1476,7 +1499,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         }
 
         float3 ambient = g_DirLight_ambient.rgb * albedoLinear;
-        float3 color = ambient + totalDiffuse * albedoLinear + totalSpecular * g_Material_specular.rgb;
+        float3 color = ambient + totalDiffuse * albedoLinear + totalSpecular * g_Material_specular.rgb + emissive;
         
         // [아웃라인 합성]
         color = lerp(color, outlineEdgeColor, outlineEdge);
@@ -1627,7 +1650,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     // -----------------------------------------------------------------------
 
     // 최종 색상 계산
-    float3 color = directLighting + extraLighting + iblColor;
+    float3 color = directLighting + extraLighting + iblColor + emissive;
 
     // [아웃라인 합성]
     color = lerp(color, outlineEdgeColor, outlineEdge);

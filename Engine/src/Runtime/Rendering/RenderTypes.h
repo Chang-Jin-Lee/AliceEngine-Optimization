@@ -112,6 +112,7 @@ namespace Alice
     {
         bool enabled = true;          // Bloom 활성화
         float intensity = 0.0f;      // Bloom 합성 강도 (최종 합성 시 적용)
+        float emissiveBloomIntensity = 1.0f; // Emissive 전용 Bloom 강도
         float gaussianIntensity = 1.0f; // Gaussian 블러 강도 (블러 단계에서 적용)
         float threshold = 1.0f;      // 밝기 추출 기준
         float knee = 0.5f;            // Soft threshold (0~1)
@@ -234,6 +235,9 @@ namespace Alice
         float             ambientOcclusion { 1.0f };
         float             envDiffuseStrength { 1.0f };
         float             envSpecularStrength { 1.0f };
+        DirectX::XMFLOAT3 emissiveColor { 1.0f, 1.0f, 1.0f };
+        float             emissiveIntensity { 0.0f };
+        float             emissiveBloom { 1.0f };
         float             normalStrength { 1.0f }; // 노말맵 강도 조절
         int               shadingMode { -1 }; // -1: 전역, 0~7: 개별 셰이딩 모드, 6: OnlyTextureWithOutline, 7: ToonPBREditable
         bool              transparent { false };
@@ -251,6 +255,8 @@ namespace Alice
 
         // 선택적인 알베도 텍스처 경로 (.alice 단일 포맷 또는 원본 이미지 경로)
         std::string       albedoTexturePath;
+        // 선택적인 에미시브 텍스처 경로 (.alice 단일 포맷 또는 원본 이미지 경로)
+        std::string       emissiveTexturePath;
         // 어떤 스키닝 메시(레지스트리 키)를 사용할지 나타내는 논리 키
         std::string       meshKey;
     };
@@ -287,12 +293,13 @@ namespace Alice
 	{
 		float threshold;
 		float knee;
-		float bloomIntensity;      // Bloom 합성 강도 (Composite 패스에서 사용)
+		float bloomIntensity;      // 장면 밝기 Bloom 강도
+		float emissiveBloomIntensity; // Emissive 전용 Bloom 강도
 		float gaussianIntensity;   // Gaussian 블러 강도 (Blur 패스에서 사용)
 		float radius;
 		DirectX::XMFLOAT2 texelSize;
 		int downsample;
-		float padding;
+		float padding[3];
 	};
 
 	// 디퍼드에서 쓰이는 중
