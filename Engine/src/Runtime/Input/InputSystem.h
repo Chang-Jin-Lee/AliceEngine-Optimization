@@ -2,12 +2,17 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <Xinput.h>
 
+#include <array>
 #include <cstdint>
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include <directXTK/Keyboard.h>
 #include <directXTK/Mouse.h>
+#include "Runtime/Input/InputTypes.h"
 
 namespace Alice
 {
@@ -18,7 +23,7 @@ namespace Alice
     {
     public:
         InputSystem();
-        ~InputSystem() = default;
+        ~InputSystem();
 
         /// HWND 를 설정하고 Keyboard/Mouse 객체를 초기화합니다.
         bool Initialize(HWND hWnd);
@@ -63,6 +68,31 @@ namespace Alice
         /// - 양수: 위로 스크롤, 음수: 아래로 스크롤
         float GetMouseScrollDelta() const { return m_mouseScrollDelta; }
 
+        // ---- 게임패드 상태 질의 ----
+        static constexpr int MaxGamepadCount = XUSER_MAX_COUNT;
+
+        bool IsGamepadConnected(int playerIndex = 0) const;
+        bool IsGamepadButtonDown(int playerIndex, GamepadButton button) const;
+        bool IsGamepadButtonPressed(int playerIndex, GamepadButton button) const;
+        bool IsGamepadButtonReleased(int playerIndex, GamepadButton button) const;
+
+        float GetGamepadLeftTrigger(int playerIndex = 0) const;
+        float GetGamepadRightTrigger(int playerIndex = 0) const;
+        float GetGamepadLeftStickX(int playerIndex = 0) const;
+        float GetGamepadLeftStickY(int playerIndex = 0) const;
+        float GetGamepadRightStickX(int playerIndex = 0) const;
+        float GetGamepadRightStickY(int playerIndex = 0) const;
+
+        // ---- 게임패드 진동 ----
+        // durationSec <= 0 이면 요청은 무시됩니다.
+        void PlayGamepadVibration(int playerIndex,
+                                  float leftMotor,
+                                  float rightMotor,
+                                  float durationSec,
+                                  GamepadVibrationBlend blend = GamepadVibrationBlend::Max);
+        void StopGamepadVibration(int playerIndex);
+        void StopAllGamepadVibrations();
+
         // ---- 커서 제어 ----
 
         /// 마우스 커서를 표시하거나 숨깁니다.
@@ -90,6 +120,33 @@ namespace Alice
         void ProcessRawInput(HRAWINPUT hRawInput);
 
     private:
+        struct GamepadSnapshot
+        {
+            bool connected = false;
+            XINPUT_STATE state{};
+        };
+
+        struct TimedVibration
+        {
+            int playerIndex = 0;
+            float leftMotor = 0.0f;
+            float rightMotor = 0.0f;
+            float durationSec = 0.0f;
+            float elapsedSec = 0.0f;
+            GamepadVibrationBlend blend = GamepadVibrationBlend::Max;
+        };
+
+        static bool IsValidGamepadIndex(int playerIndex);
+        static WORD ToXInputButtonMask(GamepadButton button);
+        static float Clamp01(float value);
+        static float NormalizeTrigger(BYTE raw);
+        static float NormalizeThumb(short raw, short deadZone);
+
+        bool IsButtonDown(const GamepadSnapshot& snapshot, GamepadButton button) const;
+        void PollGamepads();
+        void UpdateGamepadVibrations(float deltaTime);
+        void ApplyGamepadVibrationNow(int playerIndex, float leftMotor, float rightMotor);
+
         std::unique_ptr<DirectX::Keyboard> m_keyboard;
         std::unique_ptr<DirectX::Mouse>    m_mouse;
 
@@ -119,6 +176,11 @@ namespace Alice
         bool  m_appActive{ true };
         bool  m_appDeactivated{ false };
         bool  m_appActivated{ false };
+
+        std::array<GamepadSnapshot, MaxGamepadCount> m_prevGamepads{};
+        std::array<GamepadSnapshot, MaxGamepadCount> m_currGamepads{};
+        std::vector<TimedVibration> m_vibrationRequests;
+        std::array<std::pair<float, float>, MaxGamepadCount> m_appliedVibration{};
     };
 }
 
