@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
 
+#include "Runtime/ECS/Entity.h"
+
 namespace Alice
 {
     /// 스프링 암 (카메라-타깃 거리/충돌/줌)
@@ -9,6 +11,7 @@ namespace Alice
         bool enabled{ true };
         bool enableCollision{ true };
         bool enableZoom{ true };
+        bool hideFollowTargetAtCollisionMin{ false };
         uint32_t collisionLayerMask{ 0xFFFFFFFFu };
         uint32_t collisionQueryMask{ 0xFFFFFFFFu };
         float collisionMinDistance{ -1.0f };
@@ -26,5 +29,7 @@ namespace Alice
         // 런타임
         float desiredDistance{ 35.0f };
         bool initialized{ false };
+        EntityId hiddenFollowTargetId{ InvalidEntityId };
+        bool hiddenFollowTargetPrevVisible{ true };
     };
 }
