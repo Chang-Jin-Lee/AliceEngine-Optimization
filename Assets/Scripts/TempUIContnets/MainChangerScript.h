@@ -8,6 +8,8 @@
 
 namespace Alice
 {
+    class FadeInOutScript;
+
     class MainChangerScript : public IScript
     {
         ALICE_BODY(MainChangerScript);
@@ -27,15 +29,39 @@ namespace Alice
         ALICE_PROPERTY(std::string, playerScenePath, "");
         ALICE_PROPERTY(std::string, bossScenePath, "");
 
+        // Optional fade-out before scene change.
+        ALICE_PROPERTY(std::string, fadeEntityName, "");
+        ALICE_PROPERTY(bool, useFadeOnDeath, true);
+
+        // Optional death UI (shown when player dies).
+        ALICE_PROPERTY(std::string, deathWidgetName, "UI_Death");
+        ALICE_PROPERTY(bool, showDeathOnPlayerDeath, true);
+        ALICE_PROPERTY(bool, showDeathOnBossDeath, false);
+        // Delay before fade starts (death effect lead time).
+        ALICE_PROPERTY(float, deathEffectDelaySec, 0.0f);
+
         ALICE_PROPERTY(float, delaySec, 0.0f);
 
     private:
+        float ComputeAutoDelaySec() const;
+
+        enum class PendingStage
+        {
+            None,
+            WaitForFade,
+            WaitForScene
+        };
+
         bool m_prevPlayerDead{ false };
         bool m_prevBossDead{ false };
         bool m_pending{ false };
         float m_pendingTimer{ 0.0f };
+        float m_pendingDelay{ 0.0f };
         std::string m_pendingPath;
+        PendingStage m_pendingStage{ PendingStage::None };
         EntityId m_playerId{ InvalidEntityId };
         EntityId m_bossId{ InvalidEntityId };
+        EntityId m_deathWidgetId{ InvalidEntityId };
+        FadeInOutScript* m_fade{ nullptr };
     };
 }

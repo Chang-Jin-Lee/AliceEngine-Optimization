@@ -115,7 +115,8 @@ namespace Alice
     void OnResizeScript::Update(float deltaTime)
     {
         (void)deltaTime;
-        ApplyLayout(false);
+        // 항상 기준 화면 크기(1600x900)로 resize하도록 강제 적용
+        ApplyLayout(true);
     }
 
     EntityId OnResizeScript::ResolveTarget(World& world) const
@@ -166,14 +167,8 @@ namespace Alice
             return;
         }
 
-        if (!force)
-        {
-            const bool unchanged =
-                std::fabs(screenW - m_lastScreenW) < 0.5f &&
-                std::fabs(screenH - m_lastScreenH) < 0.5f;
-            if (unchanged)
-                return;
-        }
+        // 기준 화면 크기를 항상 사용하므로 매 프레임 resize
+        // (force가 false여도 항상 처리)
 
         if (Get_applyInitialSize() && !m_initialApplied)
         {
@@ -193,18 +188,11 @@ namespace Alice
             m_baseScreenW = screenW;
             m_baseScreenH = screenH;
             m_baseScreenCached = true;
-
-            // Use the current screen size as baseline so we don't change on start.
-            if (Get_useCurrentAsReference())
-            {
-                m_lastScreenW = screenW;
-                m_lastScreenH = screenH;
-                return;
-            }
         }
 
-        const float refW = std::max(1.0f, Get_useCurrentAsReference() ? m_baseScreenW : Get_referenceWidth());
-        const float refH = std::max(1.0f, Get_useCurrentAsReference() ? m_baseScreenH : Get_referenceHeight());
+        // 항상 기준 화면 크기(1600x900)를 사용하여 resize
+        const float refW = std::max(1.0f, Get_referenceWidth());
+        const float refH = std::max(1.0f, Get_referenceHeight());
 
         const float sx = screenW / refW;
         const float sy = screenH / refH;
