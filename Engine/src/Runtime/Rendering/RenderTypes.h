@@ -259,9 +259,9 @@ namespace Alice
 	struct ShadowSettings
 	{
 		// 튜토리얼(34_ToneMapping)과 동일한 기본값 스케일
-		std::uint32_t mapSizePx = 4096;   // 섀도우맵 해상도(한 변)
-		float         bias = 0.0015f;
-		float         pcfRadius = 0.5f;   // texel 단위(0~3 권장)
+		std::uint32_t mapSizePx = 5120;   // 섀도우맵 해상도(한 변)
+		float         bias = 0.00002f;
+		float         pcfRadius = 0.8f;   // texel 단위(0~3 권장)
 		float         orthoRadius = 20.0f; // 월드 단위(씬 크기에 맞게 조절)
 		bool          enabled = true;
 	};
