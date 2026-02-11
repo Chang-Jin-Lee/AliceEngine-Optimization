@@ -6061,6 +6061,47 @@ namespace Alice
 		bool bossHitstopTriggeredThisFrame = false;
 		const float playerLogicDt = playerHitstopActive ? 0.0f : deltaTime;
 		const float bossLogicDt = bossHitstopActive ? 0.0f : deltaTime;
+		const bool combatHapticsEnabled = Get_m_enableCombatHaptics();
+		const int hapticsPlayerIndex = std::clamp(Get_m_hapticsPlayerIndex(), 0, 3);
+		const float hapticsMasterScale = std::max(0.0f, Get_m_hapticsMasterScale());
+
+		auto EmitHapticPulse = [&](float leftMotor,
+			float rightMotor,
+			float durationSec,
+			GamepadVibrationBlend blend,
+			HapticCooldownKey cooldownKey,
+			float cooldownSec) -> bool
+			{
+				if (!combatHapticsEnabled)
+					return false;
+
+				const std::size_t keyIndex = ToIndex(cooldownKey);
+				if (keyIndex >= m_state->hapticCooldownRemainSec.size())
+					return false;
+				if (m_state->hapticCooldownRemainSec[keyIndex] > 0.0f)
+					return false;
+
+				auto* input = Input();
+				if (!input || !input->GetGamepadConnected(hapticsPlayerIndex))
+					return false;
+
+				const float duration = std::max(0.0f, durationSec);
+				if (duration <= 0.0f)
+					return false;
+
+				const float left = std::clamp(leftMotor * hapticsMasterScale, 0.0f, 1.0f);
+				const float right = std::clamp(rightMotor * hapticsMasterScale, 0.0f, 1.0f);
+				if (left <= 0.0f && right <= 0.0f)
+					return false;
+
+				input->PlayGamepadVibration(hapticsPlayerIndex, left, right, duration, blend);
+				if (cooldownSec > 0.0f)
+				{
+					m_state->hapticCooldownRemainSec[keyIndex] =
+						std::max(m_state->hapticCooldownRemainSec[keyIndex], cooldownSec);
+				}
+				return true;
+			};
 
 		m_state->playerParryNoDurabilitySec = std::max(0.0f, m_state->playerParryNoDurabilitySec - playerLogicDt);
 		m_state->bossParryNoDurabilitySec = std::max(0.0f, m_state->bossParryNoDurabilitySec - bossLogicDt);
