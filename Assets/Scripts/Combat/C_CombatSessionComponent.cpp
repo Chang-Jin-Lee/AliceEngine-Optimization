@@ -70,6 +70,8 @@ namespace Alice
 			}
 			return nullptr;
 		}
+
+		std::uint64_t g_bossRetryCount = 0;
 	}
 	struct C_CombatSessionComponent::SessionState
 	{
@@ -201,6 +203,7 @@ namespace Alice
 		float playerGuardExitLockSec = 0.0f;
 		float bossGuardExitLockSec = 0.0f;
 		float playerHowlingGuardLockSec = 0.0f;
+		float playerGuardBreakLockOnSec = 0.0f;
 		bool playerHowlingGuardActivePrev = false;
 		float playerHitstunDurationSec = 0.0f;
 		float bossHitstunDurationSec = 0.0f;
@@ -215,6 +218,18 @@ namespace Alice
 		float playerHealLoopSec = 0.0f;
 		float playerHealNextTickSec = 0.0f;
 		std::uint64_t playerParrySuccessCount = 0;
+		std::uint64_t attackSuccessCount = 0;
+		std::uint64_t guardSuccessCount = 0;
+		std::uint64_t parrySuccessCount = 0;
+		std::uint64_t playerHitCount = 0;
+		std::uint64_t playerGuardBreakCount = 0;
+		float playTimeSec = 0.0f;
+		bool encounterRecordingActive = false;
+		bool encounterRecordingFinished = false;
+		bool prevBossBrainActivated = false;
+		bool prevPlayerDead = false;
+		bool prevBossDead = false;
+		bool summaryLogged = false;
 		bool playerParryClipFallbackWarned = false;
 		std::vector<PendingDeferredEvent> pendingDeferred;
 		std::vector<PendingImmediateCommand> pendingImmediate;
@@ -289,6 +304,7 @@ namespace Alice
 			playerGuardExitLockSec = 0.0f;
 			bossGuardExitLockSec = 0.0f;
 			playerHowlingGuardLockSec = 0.0f;
+			playerGuardBreakLockOnSec = 0.0f;
 			playerHowlingGuardActivePrev = false;
 			playerHitstunDurationSec = 0.0f;
 			bossHitstunDurationSec = 0.0f;
@@ -301,6 +317,18 @@ namespace Alice
 			playerHealLoopSec = 0.0f;
 			playerHealNextTickSec = 0.0f;
 			playerParrySuccessCount = 0;
+			attackSuccessCount = 0;
+			guardSuccessCount = 0;
+			parrySuccessCount = 0;
+			playerHitCount = 0;
+			playerGuardBreakCount = 0;
+			playTimeSec = 0.0f;
+			encounterRecordingActive = false;
+			encounterRecordingFinished = false;
+			prevBossBrainActivated = false;
+			prevPlayerDead = false;
+			prevBossDead = false;
+			summaryLogged = false;
 			playerParryClipFallbackWarned = false;
 			pendingDeferred.clear();
 			pendingImmediate.clear();
@@ -907,6 +935,41 @@ namespace Alice
 		return m_state ? m_state->playerParrySuccessCount : 0;
 	}
 
+	std::uint64_t C_CombatSessionComponent::GetBossAttemptAttackSuccessCount() const
+	{
+		return m_state ? m_state->attackSuccessCount : 0;
+	}
+
+	std::uint64_t C_CombatSessionComponent::GetBossAttemptGuardSuccessCount() const
+	{
+		return m_state ? m_state->guardSuccessCount : 0;
+	}
+
+	std::uint64_t C_CombatSessionComponent::GetBossAttemptParrySuccessCount() const
+	{
+		return m_state ? m_state->parrySuccessCount : 0;
+	}
+
+	std::uint64_t C_CombatSessionComponent::GetBossAttemptPlayerHitCount() const
+	{
+		return m_state ? m_state->playerHitCount : 0;
+	}
+
+	std::uint64_t C_CombatSessionComponent::GetBossAttemptPlayerGuardBreakCount() const
+	{
+		return m_state ? m_state->playerGuardBreakCount : 0;
+	}
+
+	float C_CombatSessionComponent::GetBossAttemptPlayTimeSec() const
+	{
+		return m_state ? std::max(0.0f, m_state->playTimeSec) : 0.0f;
+	}
+
+	std::uint64_t C_CombatSessionComponent::GetBossRetryCount() const
+	{
+		return g_bossRetryCount;
+	}
+
 	bool C_CombatSessionComponent::IsPlayerRageActive() const
 	{
 		return m_state ? m_state->playerRageActive : false;
@@ -1145,6 +1208,65 @@ namespace Alice
 			if (auto* brain = dynamic_cast<C_BossBrainComponent*>(script))
 				bossBrain = brain;
 		}
+
+		const bool bossBrainActive = bossBrain ? bossBrain->Get_m_brainActivated() : false;
+		auto IsDeadNow = [](const HealthComponent* health, Combat::ActionState state) -> bool
+			{
+				if (health && (!health->alive || health->currentHealth <= 0.0f))
+					return true;
+				return state == Combat::ActionState::Dead;
+			};
+
+		const bool playerDeadNow = IsDeadNow(playerHealth, m_state->player.state);
+		const bool bossDeadNow = IsDeadNow(bossHealth, m_state->boss.state);
+
+		auto ResetBossAttemptStats = [&]()
+			{
+				m_state->attackSuccessCount = 0;
+				m_state->guardSuccessCount = 0;
+				m_state->parrySuccessCount = 0;
+				m_state->playerHitCount = 0;
+				m_state->playerGuardBreakCount = 0;
+				m_state->playTimeSec = 0.0f;
+			};
+
+		if (!m_state->prevBossBrainActivated && bossBrainActive)
+		{
+			ResetBossAttemptStats();
+			m_state->encounterRecordingActive = true;
+			m_state->encounterRecordingFinished = false;
+			m_state->summaryLogged = false;
+		}
+
+		if (m_state->encounterRecordingActive)
+		{
+			m_state->playTimeSec += std::max(0.0f, deltaTime);
+
+			if (playerDeadNow && !m_state->prevPlayerDead)
+				++g_bossRetryCount;
+
+			const bool bossDeathEdge = bossDeadNow && !m_state->prevBossDead;
+			if (bossDeathEdge && !m_state->summaryLogged)
+			{
+				m_state->encounterRecordingActive = false;
+				m_state->encounterRecordingFinished = true;
+				m_state->summaryLogged = true;
+				ALICE_LOG_INFO(
+					"[BossAttemptStats] atkSuccess=%llu guardSuccess=%llu parrySuccess=%llu playerHit=%llu playerGuardBreak=%llu playTimeSec=%.2f retryCount=%llu",
+					static_cast<unsigned long long>(m_state->attackSuccessCount),
+					static_cast<unsigned long long>(m_state->guardSuccessCount),
+					static_cast<unsigned long long>(m_state->parrySuccessCount),
+					static_cast<unsigned long long>(m_state->playerHitCount),
+					static_cast<unsigned long long>(m_state->playerGuardBreakCount),
+					m_state->playTimeSec,
+					static_cast<unsigned long long>(g_bossRetryCount));
+			}
+		}
+
+		m_state->prevBossBrainActivated = bossBrainActive;
+		m_state->prevPlayerDead = playerDeadNow;
+		m_state->prevBossDead = bossDeadNow;
+
 		auto IsBossBoostPattern = [&](C_BossBrainComponent::PatternType pattern) -> bool
 			{
 				switch (pattern)
@@ -2007,9 +2129,16 @@ namespace Alice
 
 		const bool bossPhaseHowlingActive = bossBrain
 			&& (bossBrain->GetActivePattern() == C_BossBrainComponent::PatternType::Special);
+		const bool playerGuardBreakCameraActive = (m_state->playerGuardBreakLockOnSec > 0.0f);
+		const bool forceLockOnZoomActive = bossPhaseHowlingActive || playerGuardBreakCameraActive;
+		float forcedZoomInRatio = 0.0f;
+		if (bossPhaseHowlingActive)
+			forcedZoomInRatio = std::max(forcedZoomInRatio, std::clamp(m_phaseHowlingZoomInRatio, 0.0f, 1.0f));
+		if (playerGuardBreakCameraActive)
+			forcedZoomInRatio = std::max(forcedZoomInRatio, std::clamp(m_guardBreakZoomInRatio, 0.0f, 1.0f));
 
 		const bool canLockOn = (camFollow && camFollow->enableLockOn);
-		if (bossPhaseHowlingActive)
+		if (forceLockOnZoomActive)
 		{
 			m_state->playerHowlingForcedLockOn = true;
 			m_state->playerLockOnActive = true;
@@ -2047,10 +2176,29 @@ namespace Alice
 		{
 			const float zoomMinDistance = std::min(camSpring->minDistance, camSpring->maxDistance);
 			const float zoomMaxDistance = std::max(camSpring->minDistance, camSpring->maxDistance);
+			const float zoomMidDistance = 0.5f * (zoomMinDistance + zoomMaxDistance);
 			const float currentDistance = std::clamp(camSpring->desiredDistance, zoomMinDistance, zoomMaxDistance);
 			const float distToMin = std::abs(currentDistance - zoomMinDistance);
+			const float distToMid = std::abs(currentDistance - zoomMidDistance);
 			const float distToMax = std::abs(currentDistance - zoomMaxDistance);
-			const float targetDistance = (distToMin <= distToMax) ? zoomMaxDistance : zoomMinDistance;
+
+			// 3-step cycle: max zoom-in(min distance) -> mid -> min zoom-in(max distance) -> repeat.
+			int currentStep = 0;
+			if (distToMid <= distToMin && distToMid <= distToMax)
+			{
+				currentStep = 1;
+			}
+			else if (distToMax < distToMin && distToMax <= distToMid)
+			{
+				currentStep = 2;
+			}
+			const int nextStep = (currentStep + 1) % 3;
+			float targetDistance = zoomMinDistance;
+			if (nextStep == 1)
+				targetDistance = zoomMidDistance;
+			else if (nextStep == 2)
+				targetDistance = zoomMaxDistance;
+
 			camSpring->desiredDistance = targetDistance;
 			camSpring->distance = targetDistance;
 		}
@@ -2083,12 +2231,14 @@ namespace Alice
 			}
 		}
 
-		if (bossPhaseHowlingActive && camSpring && camSpring->enabled)
+		if (forceLockOnZoomActive && camSpring && camSpring->enabled)
 		{
+			const float zoomMinDistance = std::min(camSpring->minDistance, camSpring->maxDistance);
+			const float zoomMaxDistance = std::max(camSpring->minDistance, camSpring->maxDistance);
 			const float zoomInDistance = std::clamp(
-				camSpring->minDistance,
-				camSpring->minDistance,
-				camSpring->maxDistance);
+				zoomMaxDistance + (zoomMinDistance - zoomMaxDistance) * forcedZoomInRatio,
+				zoomMinDistance,
+				zoomMaxDistance);
 			camSpring->desiredDistance = zoomInDistance;
 			camSpring->distance = zoomInDistance;
 		}
@@ -5701,6 +5851,7 @@ namespace Alice
 		m_state->playerGuardExitLockSec = std::max(0.0f, m_state->playerGuardExitLockSec - playerLogicDt);
 		m_state->bossGuardExitLockSec = std::max(0.0f, m_state->bossGuardExitLockSec - bossLogicDt);
 		m_state->playerHowlingGuardLockSec = std::max(0.0f, m_state->playerHowlingGuardLockSec - playerLogicDt);
+		m_state->playerGuardBreakLockOnSec = std::max(0.0f, m_state->playerGuardBreakLockOnSec - playerLogicDt);
 
 		auto BuildResolveSnapshot = [&](Combat::Fighter& fighter,
 			Combat::ActionState state,
@@ -6177,6 +6328,22 @@ namespace Alice
 			const bool wasGuarded = (resolveResult == Combat::ResolveResult::Guard);
 			const bool wasGuardBreak = (resolveResult == Combat::ResolveResult::GuardBreak);
 			const bool wasHit = (resolveResult == Combat::ResolveResult::Hit);
+			const bool recordAttempt = m_state->encounterRecordingActive;
+
+			if (recordAttempt)
+			{
+				if (wasHit && hit.attackerOwner == playerId && hit.victimOwner == bossId)
+					++m_state->attackSuccessCount;
+				if (wasGuarded && hit.attackerOwner == bossId && hit.victimOwner == playerId)
+					++m_state->guardSuccessCount;
+				if (parrySuccess && hit.attackerOwner == bossId && hit.victimOwner == playerId)
+					++m_state->parrySuccessCount;
+				if (wasHit && hit.attackerOwner == bossId && hit.victimOwner == playerId)
+					++m_state->playerHitCount;
+				if (wasGuardBreak && hit.attackerOwner == bossId && hit.victimOwner == playerId)
+					++m_state->playerGuardBreakCount;
+			}
+
 			if (parrySuccess && hit.victimOwner == playerId)
 			{
 				++m_state->playerParrySuccessCount;
@@ -6262,6 +6429,20 @@ namespace Alice
 				if (!hitCfg.hitClip.empty())
 					hitAnimDuration = GetClipDurationSecByName(registry, world, hit.victimOwner, hitCfg.hitClip);
 			}
+			float guardBreakAnimDuration = 0.0f;
+			if (wasGuardBreak)
+			{
+				const AnimConfig guardBreakCfg = BuildAnimConfig(hit.victimOwner, playerId, bossId);
+				if (!guardBreakCfg.guardBreakClip.empty())
+					guardBreakAnimDuration = GetClipDurationSecByName(registry, world, hit.victimOwner, guardBreakCfg.guardBreakClip);
+			}
+			const float guardBreakPushDuration = wasGuardBreak
+				? std::max(
+					std::max(0.0f, hit.guardBreakPushbackDuration),
+					std::max(
+						std::max(0.0f, m_guardBreakPushbackDurationSec),
+						std::max(std::max(0.0f, hit.guardBreakWeakSec), std::max(0.0f, guardBreakAnimDuration))))
+				: 0.0f;
 			if (wasHit)
 			{
 				const float hitDuration = (hitAnimDuration > 0.0f) ? hitAnimDuration : 0.4f;
@@ -6335,7 +6516,7 @@ namespace Alice
 				auto& payload = std::get<Combat::CmdApplyPushbackToBoth>(cmd.payload);
 				const float scale = std::max(0.0f, m_guardBreakPushbackScale);
 				payload.speed *= scale;
-				payload.durationSec = std::max(0.0f, m_guardBreakPushbackDurationSec);
+				payload.durationSec = std::max(payload.durationSec, guardBreakPushDuration);
 				if (bossId != InvalidEntityId
 					&& (payload.attacker == bossId || payload.victim == bossId))
 				{
@@ -6346,7 +6527,9 @@ namespace Alice
 			}
 			if (wasGuardBreak)
 			{
-				const float invulnSec = std::max(0.0f, m_guardBreakPushbackDurationSec);
+				if (hit.attackerOwner == bossId && hit.victimOwner == playerId && guardBreakPushDuration > 0.0f)
+					m_state->playerGuardBreakLockOnSec = std::max(m_state->playerGuardBreakLockOnSec, guardBreakPushDuration);
+				const float invulnSec = std::max(0.0f, guardBreakPushDuration);
 				if (invulnSec > 0.0f)
 				{
 					if (auto* hc = world.GetComponent<HealthComponent>(hit.victimOwner))

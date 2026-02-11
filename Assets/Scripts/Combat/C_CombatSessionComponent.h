@@ -33,6 +33,13 @@ namespace Alice
         Combat::ActionFlags GetPlayerFlags() const;
         Combat::ActionFlags GetBossFlags() const;
         std::uint64_t GetPlayerParrySuccessCount() const;
+        std::uint64_t GetBossAttemptAttackSuccessCount() const;
+        std::uint64_t GetBossAttemptGuardSuccessCount() const;
+        std::uint64_t GetBossAttemptParrySuccessCount() const;
+        std::uint64_t GetBossAttemptPlayerHitCount() const;
+        std::uint64_t GetBossAttemptPlayerGuardBreakCount() const;
+        float GetBossAttemptPlayTimeSec() const;
+        std::uint64_t GetBossRetryCount() const;
         bool IsPlayerRageActive() const;
         float GetPlayerRageRemainingSec() const;
         float GetPlayerRageCooldownRemainingSec() const;
@@ -80,6 +87,8 @@ namespace Alice
         ALICE_PROPERTY(float, m_phaseHowlingPushbackDurationSec, 1.0f);
         ALICE_PROPERTY(bool, m_phaseHowlingForceGuard, true);
         ALICE_PROPERTY(bool, m_phaseHowlingLockInput, true);
+        ALICE_PROPERTY(float, m_phaseHowlingZoomInRatio, 1.0f);
+        ALICE_PROPERTY(float, m_guardBreakZoomInRatio, 0.5f);
         ALICE_PROPERTY(bool, m_playerInteractionEnabled, false);
         ALICE_PROPERTY(float, m_healStartDelaySec, 1.0f);
         ALICE_PROPERTY(float, m_healTickIntervalSec, 1.0f);
