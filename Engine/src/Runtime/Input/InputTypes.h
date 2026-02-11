@@ -36,4 +36,32 @@ namespace Alice
 
         Count
     };
+
+    enum class GamepadButton
+    {
+        DPadUp = 0,
+        DPadDown,
+        DPadLeft,
+        DPadRight,
+        Start,
+        Back,
+        LeftThumb,
+        RightThumb,
+        LeftShoulder,
+        RightShoulder,
+        A,
+        B,
+        X,
+        Y,
+        LeftTrigger,
+        RightTrigger,
+        Count
+    };
+
+    enum class GamepadVibrationBlend
+    {
+        Override = 0,
+        Add,
+        Max
+    };
 }

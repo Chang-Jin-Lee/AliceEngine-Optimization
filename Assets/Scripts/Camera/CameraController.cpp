@@ -261,14 +261,17 @@ namespace Alice
         if (!go.IsValid() || !input) return;
 
         auto* cfg = go.GetComponent<CameraInputComponent>();
-        const std::string csv = cfg ? cfg->cameraListCsv : "Camera1,Camera2,Camera3,Camera4,Camera5";
+        [[maybe_unused]] const std::string csv = cfg ? cfg->cameraListCsv : "Camera1,Camera2,Camera3,Camera4,Camera5";
 
+        // Final game lock: runtime camera switching keys 1~6 are intentionally disabled.
+        /*
         // ---- 프리뷰 종료(=메인 Follow 복귀) ----
         if (input->GetKeyDown(KeyCode::Alpha6))
         {
             SetPreview(false);
             return;
         }
+        */
 
         // ---- LookAt 토글(프리뷰 중에는 꺼둠) ----
         if (!m_preview && input->GetKeyDown(KeyCode::L))
@@ -276,6 +279,7 @@ namespace Alice
             ToggleLookAt();
         }
 
+        /*
         // ---- 1~5: 해당 카메라로 전환 후 프리뷰 고정 ----
         if (input->GetKeyDown(KeyCode::Alpha1))
         {
@@ -321,6 +325,7 @@ namespace Alice
             }
             return;
         }
+        */
         if (input->GetKeyDown(KeyCode::B))
         {
             SetPreview(true);
