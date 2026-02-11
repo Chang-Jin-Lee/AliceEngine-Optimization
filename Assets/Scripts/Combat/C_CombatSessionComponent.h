@@ -89,6 +89,11 @@ namespace Alice
         ALICE_PROPERTY(bool, m_phaseHowlingLockInput, true);
         ALICE_PROPERTY(float, m_phaseHowlingZoomInRatio, 1.0f);
         ALICE_PROPERTY(float, m_guardBreakZoomInRatio, 0.5f);
+        ALICE_PROPERTY(bool, m_enableCombatHaptics, true);
+        ALICE_PROPERTY(bool, m_disableLegacyCameraRumble, true);
+        ALICE_PROPERTY(bool, m_enableExtraCombatHaptics, true);
+        ALICE_PROPERTY(int, m_hapticsPlayerIndex, 0);
+        ALICE_PROPERTY(float, m_hapticsMasterScale, 1.15f);
         ALICE_PROPERTY(bool, m_playerInteractionEnabled, false);
         ALICE_PROPERTY(float, m_healStartDelaySec, 1.0f);
         ALICE_PROPERTY(float, m_healTickIntervalSec, 1.0f);

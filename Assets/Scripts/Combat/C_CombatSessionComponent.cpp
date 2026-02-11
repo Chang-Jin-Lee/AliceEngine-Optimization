@@ -1,5 +1,6 @@
 #include "C_CombatSessionComponent.h"
 
+#include <array>
 #include <unordered_map>
 #include <algorithm>
 #include <cmath>
@@ -72,6 +73,40 @@ namespace Alice
 		}
 
 		std::uint64_t g_bossRetryCount = 0;
+
+		enum class HapticCooldownKey
+		{
+			ChargeLevel1 = 0,
+			ChargeLevel2,
+			ChargeLevel3,
+			ParrySuccess,
+			GuardSuccess,
+			PlayerHit,
+			PlayerAttackHit,
+			FatalDamage,
+			HowlingStart,
+			GuardBreakVictim,
+			GuardBreakAttacker,
+			LockOnOn,
+			HealLoopTick,
+			BossGroggyEnter,
+			RageOn,
+			RageOff,
+			BossDeath,
+			DodgeSequence,
+			DodgeSequencePulseA,
+			DodgeSequencePulseB,
+			DodgeSequencePulseC,
+			Count
+		};
+
+		constexpr std::size_t ToIndex(HapticCooldownKey key)
+		{
+			return static_cast<std::size_t>(key);
+		}
+
+		constexpr float kHealLoopHapticIntervalSec = 0.12f;
+		constexpr float kDodgeHapticStepIntervalSec = 0.06f;
 	}
 	struct C_CombatSessionComponent::SessionState
 	{
@@ -217,6 +252,12 @@ namespace Alice
 		bool bossGuardHeldAtHitstop = false;
 		float playerHealLoopSec = 0.0f;
 		float playerHealNextTickSec = 0.0f;
+		std::array<float, ToIndex(HapticCooldownKey::Count)> hapticCooldownRemainSec{};
+		float hapticHealPulseTimerSec = 0.0f;
+		bool hapticDodgeSequenceActive = false;
+		int hapticDodgeSequenceStep = 0;
+		float hapticDodgeSequenceTimerSec = 0.0f;
+		bool hapticRageActivePrev = false;
 		std::uint64_t playerParrySuccessCount = 0;
 		std::uint64_t attackSuccessCount = 0;
 		std::uint64_t guardSuccessCount = 0;
@@ -316,6 +357,12 @@ namespace Alice
 			bossAttackSpeedScale = 1.0f;
 			playerHealLoopSec = 0.0f;
 			playerHealNextTickSec = 0.0f;
+			hapticCooldownRemainSec.fill(0.0f);
+			hapticHealPulseTimerSec = 0.0f;
+			hapticDodgeSequenceActive = false;
+			hapticDodgeSequenceStep = 0;
+			hapticDodgeSequenceTimerSec = 0.0f;
+			hapticRageActivePrev = false;
 			playerParrySuccessCount = 0;
 			attackSuccessCount = 0;
 			guardSuccessCount = 0;
@@ -1123,6 +1170,108 @@ namespace Alice
 			m_state->bossGuardHeldAtHitstop = false;
 		const float playerLogicDt = playerHitstopActive ? 0.0f : deltaTime;
 		const float bossLogicDt = bossHitstopActive ? 0.0f : deltaTime;
+		const bool combatHapticsEnabled = Get_m_enableCombatHaptics();
+		const bool extraCombatHapticsEnabled = combatHapticsEnabled && Get_m_enableExtraCombatHaptics();
+		const int hapticsPlayerIndex = std::clamp(Get_m_hapticsPlayerIndex(), 0, 3);
+		const float hapticsMasterScale = std::max(0.0f, Get_m_hapticsMasterScale());
+
+		for (float& cooldownRemainSec : m_state->hapticCooldownRemainSec)
+		{
+			cooldownRemainSec = std::max(0.0f, cooldownRemainSec - deltaTime);
+		}
+
+		auto EmitHapticPulse = [&](float leftMotor,
+			float rightMotor,
+			float durationSec,
+			GamepadVibrationBlend blend,
+			HapticCooldownKey cooldownKey,
+			float cooldownSec) -> bool
+			{
+				if (!combatHapticsEnabled)
+					return false;
+
+				const std::size_t keyIndex = ToIndex(cooldownKey);
+				if (keyIndex >= m_state->hapticCooldownRemainSec.size())
+					return false;
+				if (m_state->hapticCooldownRemainSec[keyIndex] > 0.0f)
+					return false;
+
+				auto* input = Input();
+				if (!input || !input->GetGamepadConnected(hapticsPlayerIndex))
+					return false;
+
+				const float duration = std::max(0.0f, durationSec);
+				if (duration <= 0.0f)
+					return false;
+
+				const float left = std::clamp(leftMotor * hapticsMasterScale, 0.0f, 1.0f);
+				const float right = std::clamp(rightMotor * hapticsMasterScale, 0.0f, 1.0f);
+				if (left <= 0.0f && right <= 0.0f)
+					return false;
+
+				input->PlayGamepadVibration(hapticsPlayerIndex, left, right, duration, blend);
+				if (cooldownSec > 0.0f)
+				{
+					m_state->hapticCooldownRemainSec[keyIndex] = std::max(m_state->hapticCooldownRemainSec[keyIndex], cooldownSec);
+				}
+				return true;
+			};
+
+		auto BeginDodgeHapticSequence = [&]()
+			{
+				if (!combatHapticsEnabled)
+					return;
+				const std::size_t keyIndex = ToIndex(HapticCooldownKey::DodgeSequence);
+				if (keyIndex >= m_state->hapticCooldownRemainSec.size())
+					return;
+				if (m_state->hapticCooldownRemainSec[keyIndex] > 0.0f)
+					return;
+
+				m_state->hapticDodgeSequenceActive = true;
+				m_state->hapticDodgeSequenceStep = 0;
+				m_state->hapticDodgeSequenceTimerSec = 0.0f;
+				m_state->hapticCooldownRemainSec[keyIndex] =
+					std::max(m_state->hapticCooldownRemainSec[keyIndex], 0.20f);
+			};
+
+		auto UpdateDodgeHapticSequence = [&](float dt)
+			{
+				if (!m_state->hapticDodgeSequenceActive)
+					return;
+
+				m_state->hapticDodgeSequenceTimerSec -= std::max(0.0f, dt);
+				while (m_state->hapticDodgeSequenceActive && m_state->hapticDodgeSequenceTimerSec <= 0.0f)
+				{
+					switch (m_state->hapticDodgeSequenceStep)
+					{
+					case 0:
+						EmitHapticPulse(0.25f, 0.30f, 0.04f, GamepadVibrationBlend::Max, HapticCooldownKey::DodgeSequencePulseA, 0.0f);
+						break;
+					case 1:
+						EmitHapticPulse(0.20f, 0.25f, 0.04f, GamepadVibrationBlend::Max, HapticCooldownKey::DodgeSequencePulseB, 0.0f);
+						break;
+					case 2:
+						EmitHapticPulse(0.15f, 0.22f, 0.04f, GamepadVibrationBlend::Max, HapticCooldownKey::DodgeSequencePulseC, 0.0f);
+						break;
+					default:
+						m_state->hapticDodgeSequenceActive = false;
+						break;
+					}
+
+					++m_state->hapticDodgeSequenceStep;
+					if (m_state->hapticDodgeSequenceStep >= 3)
+					{
+						m_state->hapticDodgeSequenceActive = false;
+						m_state->hapticDodgeSequenceStep = 0;
+						m_state->hapticDodgeSequenceTimerSec = 0.0f;
+					}
+					else
+					{
+						m_state->hapticDodgeSequenceTimerSec += kDodgeHapticStepIntervalSec;
+					}
+				}
+			};
+
 		m_state->bossGroggyEnterBlendBlockSec =
 			std::max(0.0f, m_state->bossGroggyEnterBlendBlockSec - bossLogicDt);
 		m_state->boss.moveSpeed = std::max(0.0f, m_state->player.moveSpeed * 0.5f);
@@ -1246,6 +1395,10 @@ namespace Alice
 				++g_bossRetryCount;
 
 			const bool bossDeathEdge = bossDeadNow && !m_state->prevBossDead;
+			if (bossDeathEdge && extraCombatHapticsEnabled)
+			{
+				EmitHapticPulse(0.62f, 0.88f, 0.18f, GamepadVibrationBlend::Max, HapticCooldownKey::BossDeath, 0.30f);
+			}
 			if (bossDeathEdge && !m_state->summaryLogged)
 			{
 				m_state->encounterRecordingActive = false;
@@ -1745,6 +1898,24 @@ namespace Alice
 				}
 			}
 
+			if (chargeLevelUp && currentChargeLevel >= 1)
+			{
+				switch (currentChargeLevel)
+				{
+				case 1:
+					EmitHapticPulse(0.20f, 0.32f, 0.06f, GamepadVibrationBlend::Max, HapticCooldownKey::ChargeLevel1, 0.0f);
+					break;
+				case 2:
+					EmitHapticPulse(0.35f, 0.55f, 0.08f, GamepadVibrationBlend::Max, HapticCooldownKey::ChargeLevel2, 0.0f);
+					break;
+				case 3:
+					EmitHapticPulse(0.50f, 0.75f, 0.10f, GamepadVibrationBlend::Max, HapticCooldownKey::ChargeLevel3, 0.0f);
+					break;
+				default:
+					break;
+				}
+			}
+
 			if (!playerIntent.chargeActive && currentChargeLevel == 0)
 				m_playerChargeStagePrevLevel = 0;
 			else
@@ -1781,6 +1952,26 @@ namespace Alice
 		else
 		{
 			m_state->playerRageRemainingSec = 0.0f;
+		}
+		if (extraCombatHapticsEnabled)
+		{
+			const bool rageNow = m_state->playerRageActive;
+			if (rageNow != m_state->hapticRageActivePrev)
+			{
+				if (rageNow)
+				{
+					EmitHapticPulse(0.32f, 0.52f, 0.08f, GamepadVibrationBlend::Max, HapticCooldownKey::RageOn, 0.12f);
+				}
+				else
+				{
+					EmitHapticPulse(0.16f, 0.26f, 0.07f, GamepadVibrationBlend::Max, HapticCooldownKey::RageOff, 0.12f);
+				}
+				m_state->hapticRageActivePrev = rageNow;
+			}
+		}
+		else
+		{
+			m_state->hapticRageActivePrev = m_state->playerRageActive;
 		}
 
 		// Combo input is handled after sensors are available.
@@ -2169,6 +2360,7 @@ namespace Alice
 			{
 				m_state->playerLockOnActive = true;
 				m_state->playerLockOnTarget = bossId;
+				EmitHapticPulse(0.08f, 0.30f, 0.04f, GamepadVibrationBlend::Max, HapticCooldownKey::LockOnOn, 0.12f);
 			}
 		}
 
@@ -2641,6 +2833,8 @@ namespace Alice
 			bossOut.flags.hitActive = false;
 		if (bossBrain && bossBrain->ConsumePhase2HowlingStarted())
 		{
+			EmitHapticPulse(0.88f, 1.00f, 0.24f, GamepadVibrationBlend::Max, HapticCooldownKey::HowlingStart, 0.50f);
+
 			float basePushSpeed = 3.0f;
 			if (auto* trace = world.GetComponent<WeaponTraceComponent>(bossId))
 				basePushSpeed = std::max(0.0f, trace->guardBreakPushbackSpeed);
@@ -2768,6 +2962,11 @@ namespace Alice
 			&& (m_state->prevPlayerState != Combat::ActionState::Attack || outPlayer.attackRestarted));
 		const bool playerAttackEnded = (m_state->prevPlayerState == Combat::ActionState::Attack
 			&& outPlayer.state != Combat::ActionState::Attack);
+		const bool playerDodgeEntered = (outPlayer.state == Combat::ActionState::Dodge
+			&& m_state->prevPlayerState != Combat::ActionState::Dodge);
+		if (playerDodgeEntered)
+			BeginDodgeHapticSequence();
+		UpdateDodgeHapticSequence(deltaTime);
 		const bool playerAttackEndedOnFinal = playerAttackEnded
 			&& !m_state->playerLastAttackHeavy
 			&& (m_state->playerLightComboIndex >= kMaxLightCombo);
@@ -3750,11 +3949,13 @@ namespace Alice
 			m_state->playerHealLoopSec = 0.0f;
 			m_state->playerHealNextTickSec = std::max(0.01f, m_healHoldTickIntervalSec);
 			ApplyFixedHealTick(m_healInitialAmount);
+			m_state->hapticHealPulseTimerSec = 0.0f;
 		}
 		if (!playerHealLoop)
 		{
 			m_state->playerHealLoopSec = 0.0f;
 			m_state->playerHealNextTickSec = 0.0f;
+			m_state->hapticHealPulseTimerSec = 0.0f;
 		}
 		else if (playerLogicDt > 0.0f && playerHealth)
 		{
@@ -3764,6 +3965,15 @@ namespace Alice
 			{
 				ApplyFixedHealTick(m_healHoldTickAmount);
 				m_state->playerHealNextTickSec += interval;
+			}
+		}
+		if (playerHealLoop && playerLogicDt > 0.0f)
+		{
+			m_state->hapticHealPulseTimerSec -= playerLogicDt;
+			while (m_state->hapticHealPulseTimerSec <= 0.0f)
+			{
+				EmitHapticPulse(0.04f, 0.09f, 0.11f, GamepadVibrationBlend::Add, HapticCooldownKey::HealLoopTick, 0.0f);
+				m_state->hapticHealPulseTimerSec += kHealLoopHapticIntervalSec;
 			}
 		}
 		if (playerHealth)
@@ -3799,6 +4009,10 @@ namespace Alice
 			&& outBoss.state == Combat::ActionState::Groggy);
 		if (bossEnteredGroggy)
 		{
+			if (extraCombatHapticsEnabled)
+			{
+				EmitHapticPulse(0.50f, 0.70f, 0.14f, GamepadVibrationBlend::Max, HapticCooldownKey::BossGroggyEnter, 0.20f);
+			}
 			if (bossBrain)
 				bossBrain->ForceCompleteIntent();
 			m_state->bossGroggyFatalConsumed = false;
@@ -4274,6 +4488,8 @@ namespace Alice
 					&& m_state->fatal.damageAmount > 0.0f
 					&& m_state->fatal.timerSec >= damageApplySec)
 				{
+					EmitHapticPulse(1.00f, 1.00f, 0.22f, GamepadVibrationBlend::Max, HapticCooldownKey::FatalDamage, 0.35f);
+
 					std::vector<Combat::Command> fatalCmds;
 					fatalCmds.push_back({ Combat::CommandType::ApplyDamage,
 						Combat::CmdApplyDamage{ bossId, m_state->fatal.damageAmount } });
@@ -6328,6 +6544,30 @@ namespace Alice
 			const bool wasGuarded = (resolveResult == Combat::ResolveResult::Guard);
 			const bool wasGuardBreak = (resolveResult == Combat::ResolveResult::GuardBreak);
 			const bool wasHit = (resolveResult == Combat::ResolveResult::Hit);
+			if (parrySuccess && hit.victimOwner == playerId)
+			{
+				EmitHapticPulse(0.40f, 0.75f, 0.10f, GamepadVibrationBlend::Max, HapticCooldownKey::ParrySuccess, 0.08f);
+			}
+			if (wasGuarded && hit.victimOwner == playerId)
+			{
+				EmitHapticPulse(0.25f, 0.42f, 0.08f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardSuccess, 0.06f);
+			}
+			if (wasHit && hit.victimOwner == playerId)
+			{
+				EmitHapticPulse(0.72f, 0.95f, 0.18f, GamepadVibrationBlend::Max, HapticCooldownKey::PlayerHit, 0.12f);
+			}
+			if (wasHit && hit.attackerOwner == playerId && hit.victimOwner == bossId)
+			{
+				EmitHapticPulse(0.12f, 0.22f, 0.045f, GamepadVibrationBlend::Max, HapticCooldownKey::PlayerAttackHit, 0.04f);
+			}
+			if (wasGuardBreak && hit.victimOwner == playerId)
+			{
+				EmitHapticPulse(0.85f, 1.00f, 0.24f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardBreakVictim, 0.30f);
+			}
+			if (wasGuardBreak && hit.attackerOwner == playerId && hit.victimOwner == bossId)
+			{
+				EmitHapticPulse(0.55f, 0.72f, 0.13f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardBreakAttacker, 0.10f);
+			}
 			const bool recordAttempt = m_state->encounterRecordingActive;
 
 			if (recordAttempt)
