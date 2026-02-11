@@ -2,10 +2,32 @@
 #include "Runtime/ECS/World.h"
 #include "Runtime/ECS/GameObject.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Resources/Prefab.h"
+#include "Runtime/Resources/ResourceManager.h"
 
 namespace Alice
 {
     // === IScript 기본 헬퍼 구현 ===
+
+    void IScript::SetContext(World* world, EntityId entity)
+    {
+        m_world = world;
+        m_entity = entity;
+        Prefab::SetDefaultWorld(world);
+    }
+
+    void IScript::SetServices(ScriptServices* services)
+    {
+        m_services = services;
+        ResourceManager* resources = (m_services ? m_services->resources : nullptr);
+        Prefab::SetDefaultResources(resources);
+    }
+
+    bool IScript::IsGameMode() const
+    {
+        const ResourceManager* resources = Resources();
+        return resources ? resources->IsGameMode() : false;
+    }
 
     TransformComponent* IScript::GetTransform()
     {

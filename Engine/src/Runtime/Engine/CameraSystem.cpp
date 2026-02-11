@@ -393,6 +393,17 @@ namespace Alice
         // 변수 재정의 제거 (위에서 선언한 blending 변수 갱신)
         blending = (blendComp && blendComp->active);
         const bool externalLook = (!blending && lookAtComp && lookAtComp->enabled);
+        auto RestoreCollisionHiddenTarget = [&world](CameraSpringArmComponent* spring)
+            {
+                if (!spring || spring->hiddenFollowTargetId == InvalidEntityId)
+                    return;
+
+                if (auto* hiddenTargetTr = world.GetComponent<TransformComponent>(spring->hiddenFollowTargetId))
+                    hiddenTargetTr->visible = spring->hiddenFollowTargetPrevVisible;
+
+                spring->hiddenFollowTargetId = InvalidEntityId;
+                spring->hiddenFollowTargetPrevVisible = true;
+            };
 
         // === 팔로우 처리 (블렌드 중이 아닐 때) ===
         if (!blending && followComp && followComp->enabled)
@@ -420,11 +431,17 @@ namespace Alice
                 }
             }
             if (targetId == InvalidEntityId)
+            {
+                RestoreCollisionHiddenTarget(springComp);
                 goto FollowDone;
+            }
 
-            const auto* targetTr = world.GetComponent<TransformComponent>(targetId);
+            auto* targetTr = world.GetComponent<TransformComponent>(targetId);
             if (!targetTr || !targetTr->enabled)
+            {
+                RestoreCollisionHiddenTarget(springComp);
                 goto FollowDone;
+            }
 
             // 모드 거리/시야각
             float modeDistance = followComp->baseDistance;
@@ -505,6 +522,7 @@ namespace Alice
                 pivot.y - desiredForward.y * dist,
                 pivot.z - desiredForward.z * dist
             };
+            bool hideFollowTarget = false;
 
             // 스프링 암 충돌
             if (springComp && springComp->enabled && springComp->enableCollision)
@@ -518,9 +536,8 @@ namespace Alice
                     {
                         const Vec3 dirN = dir / maxDist;
 
-                        // TODO(PhysX): 카메라 전용 queryMask/layerMask를 추가해 사용하세요.
-                        const uint32_t layerMask = 0xFFFFFFFFu;
-                        const uint32_t queryMask = 0xFFFFFFFFu;
+                        const uint32_t layerMask = springComp->collisionLayerMask;
+                        const uint32_t queryMask = springComp->collisionQueryMask;
 
                         bool hitFound = false;
                         float hitDistance = maxDist;
@@ -540,14 +557,39 @@ namespace Alice
 
                         if (hitFound)
                         {
-                            const float minDist = springComp ? springComp->minDistance : followComp->minDistance;
-                            const float adjusted = std::max(minDist, hitDistance - springComp->probePadding);
+                            const float collisionMinDist = (springComp->collisionMinDistance >= 0.0f)
+                                ? springComp->collisionMinDistance
+                                : springComp->minDistance;
+                            const float adjusted = std::max(collisionMinDist, hitDistance - springComp->probePadding);
+                            hideFollowTarget = (adjusted <= (collisionMinDist + 0.001f));
                             desiredPos.x = pivot.x + dirN.x * adjusted;
                             desiredPos.y = pivot.y + dirN.y * adjusted;
                             desiredPos.z = pivot.z + dirN.z * adjusted;
                         }
                     }
                 }
+            }
+
+            if (springComp && springComp->hideFollowTargetAtCollisionMin)
+            {
+                if (hideFollowTarget)
+                {
+                    if (springComp->hiddenFollowTargetId != targetId)
+                    {
+                        RestoreCollisionHiddenTarget(springComp);
+                        springComp->hiddenFollowTargetId = targetId;
+                        springComp->hiddenFollowTargetPrevVisible = targetTr->visible;
+                    }
+                    targetTr->visible = false;
+                }
+                else
+                {
+                    RestoreCollisionHiddenTarget(springComp);
+                }
+            }
+            else
+            {
+                RestoreCollisionHiddenTarget(springComp);
             }
 
             if (springComp && desiredPos.y < springComp->minHeight)
@@ -593,6 +635,10 @@ namespace Alice
             float currentFov = camera.GetFovYRadians();
             float newFov = currentFov + (targetFovRad - currentFov) * fovAlpha;
             camera.SetPerspective(newFov, camera.GetAspectRatio(), camera.GetNearPlane(), camera.GetFarPlane());
+        }
+        else
+        {
+            RestoreCollisionHiddenTarget(springComp);
         }
     FollowDone:
 
