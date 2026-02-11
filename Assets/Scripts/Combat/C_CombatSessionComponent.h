@@ -10,6 +10,8 @@
 #include "Runtime/Foundation/Delegate.h"
 #include <memory>
 #include <string>
+#include <functional>
+#include <unordered_map>
 #include "C_CombatContracts.h"
 
 namespace Alice
@@ -36,6 +38,9 @@ namespace Alice
         float GetPlayerRageCooldownRemainingSec() const;
         // TODO: HUD/UI gauge binding should use this normalized cooldown value (0..1).
         float GetPlayerRageCooldownNormalized() const;
+        bool IsFatalActive() const;
+        float GetFatalProgress01() const;
+        float GetFatalRemainSec() const;
 
         // Combat resolve delegate: called when a hit is resolved
         // Parameters: victimId, attackerId, resolveResult, damage, hitPosWS
@@ -43,6 +48,9 @@ namespace Alice
         FOnCombatResolved OnCombatResolved;
         // Single-cast Delegate safety: dedicated channel for VFX bridge subscribers.
         FOnCombatResolved OnCombatResolvedVfx;
+        using FOnCombatResolvedCameraListener = std::function<void(EntityId, EntityId, std::uint8_t, float, const DirectX::XMFLOAT3&)>;
+        std::uint64_t AddOnCombatResolvedCameraListener(FOnCombatResolvedCameraListener listener);
+        void RemoveOnCombatResolvedCameraListener(std::uint64_t listenerId);
 
         // Entity resolution (GUID preferred, name fallback when enabled)
         ALICE_PROPERTY(uint64_t, m_playerGuid, 0);
@@ -328,5 +336,7 @@ namespace Alice
             void operator()(SessionState* ptr) const;
         };
         std::unique_ptr<SessionState, SessionStateDeleter> m_state;
+        std::uint64_t m_nextOnCombatResolvedCameraListenerId = 1;
+        std::unordered_map<std::uint64_t, FOnCombatResolvedCameraListener> m_onCombatResolvedCameraListeners;
     };
 }

@@ -7,6 +7,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <vector>
+#include <utility>
 
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/Foundation/Logger.h"
@@ -820,6 +821,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 	{
 		OnCombatResolved.Unbind();
 		OnCombatResolvedVfx.Unbind();
+		m_onCombatResolvedCameraListeners.clear();
+		m_nextOnCombatResolvedCameraListenerId = 1;
 
 		if (m_state)
 			m_state->Init();
@@ -900,6 +903,53 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
         if (!m_state || cooldownSec <= 0.0f)
             return 0.0f;
         return std::clamp(m_state->playerRageCooldownRemainingSec / cooldownSec, 0.0f, 1.0f);
+    }
+
+    bool C_CombatSessionComponent::IsFatalActive() const
+    {
+        return m_state ? m_state->fatal.active : false;
+    }
+
+    float C_CombatSessionComponent::GetFatalProgress01() const
+    {
+        if (!m_state || !m_state->fatal.active)
+            return 0.0f;
+
+        const float totalSec = (m_state->fatal.totalSec > 0.0f)
+            ? m_state->fatal.totalSec
+            : std::max(0.0f, m_state->fatal.approachSec + m_state->fatal.holdSec);
+        if (totalSec <= 1e-6f)
+            return 0.0f;
+
+        return std::clamp(m_state->fatal.timerSec / totalSec, 0.0f, 1.0f);
+    }
+
+    float C_CombatSessionComponent::GetFatalRemainSec() const
+    {
+        if (!m_state || !m_state->fatal.active)
+            return 0.0f;
+
+        const float totalSec = (m_state->fatal.totalSec > 0.0f)
+            ? m_state->fatal.totalSec
+            : std::max(0.0f, m_state->fatal.approachSec + m_state->fatal.holdSec);
+        return std::max(0.0f, totalSec - m_state->fatal.timerSec);
+    }
+
+    std::uint64_t C_CombatSessionComponent::AddOnCombatResolvedCameraListener(FOnCombatResolvedCameraListener listener)
+    {
+        if (!listener)
+            return 0;
+
+        const std::uint64_t id = m_nextOnCombatResolvedCameraListenerId++;
+        m_onCombatResolvedCameraListeners[id] = std::move(listener);
+        return id;
+    }
+
+    void C_CombatSessionComponent::RemoveOnCombatResolvedCameraListener(std::uint64_t listenerId)
+    {
+        if (listenerId == 0)
+            return;
+        m_onCombatResolvedCameraListeners.erase(listenerId);
     }
 
 	void C_CombatSessionComponent::ForceReset()
@@ -3019,6 +3069,169 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			bossAttackClipForMove,
 			bossCommands,
 			bossLogicDt);
+
+		auto ResolveBossTraceSlotEntity = [&](AttackDriverComponent& driver, std::uint32_t slotIndex) -> EntityId
+			{
+				if (slotIndex == 0u)
+				{
+					if (driver.traceGuid == 0u)
+						return bossId;
+					const EntityId resolved = world.FindEntityByGuid(driver.traceGuid);
+					return (resolved != InvalidEntityId) ? resolved : bossId;
+				}
+
+				const std::uint32_t extraIndex = slotIndex - 1u;
+				if (extraIndex >= driver.traceGuids.size())
+					return InvalidEntityId;
+
+				const std::uint64_t guid = driver.traceGuids[extraIndex];
+				if (guid == 0u)
+					return InvalidEntityId;
+				return world.FindEntityByGuid(guid);
+			};
+		auto SyncBossPrimaryTraceDamage = [&]()
+			{
+				if (outBoss.state != Combat::ActionState::Attack)
+					return;
+				if (bossAttackClipForMove.empty())
+					return;
+
+				auto* driver = world.GetComponent<AttackDriverComponent>(bossId);
+				if (!driver)
+					return;
+
+				const EntityId slot0Entity = ResolveBossTraceSlotEntity(*driver, 0u);
+				auto* slot0Trace = (slot0Entity != InvalidEntityId)
+					? world.GetComponent<WeaponTraceComponent>(slot0Entity)
+					: nullptr;
+				if (!slot0Trace)
+					return;
+
+				const bool isChargeClip = (bossAttackClipForMove.find("Charge_Attack") != std::string::npos)
+					|| (bossAttackClipForMove.find("Charge") != std::string::npos)
+					|| (bossAttackClipForMove.find("charge") != std::string::npos);
+
+				auto GetPreferredSlotsForClip = [&](const std::string& clipName) -> std::vector<std::uint32_t>
+					{
+						if (clipName.find("Attack_ABC") != std::string::npos)
+							return { 1u, 2u, 3u };
+						if (clipName.find("Attack_BC") != std::string::npos)
+							return { 2u, 3u };
+						if (clipName.find("Attack_A") != std::string::npos)
+							return { 1u };
+						if (clipName.find("Kick_Attack") != std::string::npos)
+							return { 4u };
+						if (clipName.find("Dash_Attack") != std::string::npos)
+							return { 5u };
+						if (clipName.find("Charge_Attack") != std::string::npos)
+							return { 6u };
+						if (clipName.find("Soul_Attack") != std::string::npos)
+							return { 7u };
+						if (clipName.find("Side_Attack") != std::string::npos)
+							return { 9u };
+						return {};
+					};
+
+				auto IsBodyTraceSlot = [&](std::uint32_t slotIndex) -> bool
+					{
+						const EntityId entityId = ResolveBossTraceSlotEntity(*driver, slotIndex);
+						if (entityId == InvalidEntityId)
+							return false;
+						const std::string traceName = world.GetEntityName(entityId);
+						return traceName == "Attack_Body";
+					};
+
+				std::uint32_t activeMask = driver->attackTraceMaskActive;
+				if (activeMask == 0u)
+				{
+					float clipTimeSec = 0.0f;
+					if (TryGetClipTime(bossId, bossAttackClipForMove, clipTimeSec))
+					{
+						const auto* anim = world.GetComponent<AdvancedAnimationComponent>(bossId);
+						for (const auto& clip : driver->clips)
+						{
+							if (!clip.enabled || clip.type != AttackDriverNotifyType::Attack)
+								continue;
+							const std::string resolvedName = ResolveDriverClipName(clip, anim);
+							if (resolvedName.empty() || resolvedName != bossAttackClipForMove)
+								continue;
+							float startSec = std::max(0.0f, clip.startTimeSec);
+							float endSec = std::max(0.0f, clip.endTimeSec);
+							if (endSec < startSec)
+								std::swap(startSec, endSec);
+							if (clipTimeSec >= startSec && clipTimeSec <= endSec)
+								activeMask |= clip.traceSlotMask;
+						}
+					}
+				}
+
+				auto TryPickSlot = [&](const std::vector<std::uint32_t>& candidates,
+					bool requireActive,
+					std::uint32_t& outSlot) -> bool
+					{
+						for (std::uint32_t slotIndex : candidates)
+						{
+							if (slotIndex == 0u || slotIndex >= 32u)
+								continue;
+							if (requireActive && ((activeMask & (1u << slotIndex)) == 0u))
+								continue;
+							if (IsBodyTraceSlot(slotIndex))
+								continue;
+
+							const EntityId sourceEntity = ResolveBossTraceSlotEntity(*driver, slotIndex);
+							if (sourceEntity == InvalidEntityId || sourceEntity == slot0Entity)
+								continue;
+							if (!world.GetComponent<WeaponTraceComponent>(sourceEntity))
+								continue;
+							outSlot = slotIndex;
+							return true;
+						}
+						return false;
+					};
+
+				std::uint32_t sourceSlot = 0u;
+				const std::vector<std::uint32_t> preferredSlots = GetPreferredSlotsForClip(bossAttackClipForMove);
+				if (!TryPickSlot(preferredSlots, true, sourceSlot))
+				{
+					std::vector<std::uint32_t> activeSlots;
+					activeSlots.reserve(8);
+					for (std::uint32_t slotIndex = 1u; slotIndex < 32u; ++slotIndex)
+					{
+						if ((activeMask & (1u << slotIndex)) != 0u)
+							activeSlots.push_back(slotIndex);
+					}
+					if (!TryPickSlot(activeSlots, true, sourceSlot))
+						TryPickSlot(preferredSlots, false, sourceSlot);
+				}
+				if (sourceSlot == 0u)
+				{
+					if (isChargeClip)
+					{
+						// Charge attack is slot0-only in this scene; force intended boss heavy values when no source slot exists.
+						slot0Trace->baseDamage = 599.0f;
+						slot0Trace->guardDurabilityCost = 1000.0f;
+					}
+					return;
+				}
+
+				const EntityId sourceEntity = ResolveBossTraceSlotEntity(*driver, sourceSlot);
+				auto* sourceTrace = (sourceEntity != InvalidEntityId)
+					? world.GetComponent<WeaponTraceComponent>(sourceEntity)
+					: nullptr;
+				if (!sourceTrace)
+				{
+					if (isChargeClip)
+					{
+						slot0Trace->baseDamage = 599.0f;
+						slot0Trace->guardDurabilityCost = 1000.0f;
+					}
+					return;
+				}
+
+				slot0Trace->baseDamage = sourceTrace->baseDamage;
+				slot0Trace->guardDurabilityCost = sourceTrace->guardDurabilityCost;
+			};
+		SyncBossPrimaryTraceDamage();
 		if (outBoss.state != Combat::ActionState::Attack
 			|| bossHitstopActive
 			|| bossAttackClipForMove.empty())
@@ -5628,6 +5841,20 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				{
 					OnCombatResolvedVfx.Execute(hit.victimOwner, hit.attackerOwner,
 						static_cast<std::uint8_t>(resolveResult), hit.damage, hit.hitPosWS);
+				}
+
+				if (!m_onCombatResolvedCameraListeners.empty())
+				{
+					auto listenersCopy = m_onCombatResolvedCameraListeners;
+					for (const auto& [listenerId, listener] : listenersCopy)
+					{
+						(void)listenerId;
+						if (listener)
+						{
+							listener(hit.victimOwner, hit.attackerOwner,
+								static_cast<std::uint8_t>(resolveResult), hit.damage, hit.hitPosWS);
+						}
+					}
 				}
 			}
 

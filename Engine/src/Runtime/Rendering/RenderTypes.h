@@ -93,6 +93,18 @@ namespace Alice
         float splitFxWidth = 0.01f;
         float splitFxSpeed = 30.0f;
         float splitFxTimeSec = 0.0f;
+        // splitFxColorA/B: 절단선 핵심/보조 색상 (linear)
+        DirectX::XMFLOAT4 splitFxColorA = { 2.8f, 1.2f, 0.45f, 1.0f };
+        DirectX::XMFLOAT4 splitFxColorB = { 0.10f, 1.05f, 0.95f, 1.0f };
+
+        // Impact blur 파라미터
+        // impactBlurIntensity: 0이면 비활성
+        // impactBlurRadius: 화면 정규화 반경(0~1 권장)
+        // impactBlurCenterX/Y: 화면 중심점 UV
+        float impactBlurIntensity = 0.0f;
+        float impactBlurRadius = 0.25f;
+        float impactBlurCenterX = 0.5f;
+        float impactBlurCenterY = 0.5f;
     };
 
     /// Bloom 파라미터 구조체
@@ -260,10 +272,13 @@ namespace Alice
 
 		DirectX::XMFLOAT4 colorGradingSaturation;  // Color Grading: 채도 (R,G,B 채널별, W=1.0)
 		DirectX::XMFLOAT4 colorGradingContrast;    // Color Grading Contrast: 룩 조절 (R,G,B 채널별, Pivot=0.5 기반, W=1.0)
-		DirectX::XMFLOAT4 colorGradingGamma;       // Color Grading Gamma: 룩/중간톤 조절 (R,G,B 채널별, W=1.0)
-		DirectX::XMFLOAT4 colorGradingGain;       // Color Grading Gain: Multiply 스케일 (R,G,B 채널별, W=1.0)
+        DirectX::XMFLOAT4 colorGradingGamma;       // Color Grading Gamma: 룩/중간톤 조절 (R,G,B 채널별, W=1.0)
+        DirectX::XMFLOAT4 colorGradingGain;       // Color Grading Gain: Multiply 스케일 (R,G,B 채널별, W=1.0)
         DirectX::XMFLOAT4 splitParams;            // x: splitAmount, y: splitAngleDeg, z: splitLineOffset, w: splitFeather
         DirectX::XMFLOAT4 splitFxParams;          // x: splitFxIntensity, y: splitFxWidth, z: splitFxSpeed, w: splitFxTimeSec
+        DirectX::XMFLOAT4 splitFxColorA;          // rgb: splitFxColorA, w: reserved
+        DirectX::XMFLOAT4 splitFxColorB;          // rgb: splitFxColorB, w: reserved
+        DirectX::XMFLOAT4 impactBlurParams;       // x: intensity, y: radius, z: centerX, w: centerY
 	};
 
 	struct BloomCB
