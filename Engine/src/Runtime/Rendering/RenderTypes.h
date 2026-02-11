@@ -138,6 +138,8 @@ namespace Alice
         float             globalIBLIntensity { 1.0f };          // 전역 IBL 강도 (0.0 ~ 1.0)
         float             shadowStrength { 1.0f };              // 전역 그림자 강도 (0~1)
         float             toonShadowStrength { 1.0f };          // ToonPBREditable 전용 그림자 강도 (0~1)
+        float             skyboxRotation{ 0.0f };               // 스카이박스 Yaw 회전
+        float             skyboxRotationPitch{ 0.0f };          // 스카이박스 Pitch 회전
 
         // 광원 세기
         float             keyIntensity  { 1.0f };
@@ -404,7 +406,9 @@ namespace Alice
 		DirectX::XMFLOAT4 direction;
 		DirectX::XMFLOAT4 color;
 		float intensity;
-		float pad[3];
+		float skyboxRotationRad;
+		float skyboxRotationPitchRad;
+		float pad;
 	};
 
 

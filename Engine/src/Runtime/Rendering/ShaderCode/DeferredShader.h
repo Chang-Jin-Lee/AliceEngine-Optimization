@@ -754,6 +754,20 @@ float ApplyLocalToonSelfShadow(float ndotl, float shadedNdotL, bool toonEditable
     return saturate(selfShadowNdotL);
 }
 
+float3 RotateYByAngle(float3 v, float angleRad)
+{
+    float s, c;
+    sincos(angleRad, s, c);
+    return float3(v.x * c - v.z * s, v.y, v.x * s + v.z * c);
+}
+
+float3 RotateXByAngle(float3 v, float angleRad)
+{
+    float s, c;
+    sincos(angleRad, s, c);
+    return float3(v.x, v.y * c - v.z * s, v.y * s + v.z * c);
+}
+
 float2 Unpack2x8(float v)
 {
     float raw = saturate(v) * 65535.0f;
@@ -883,7 +897,9 @@ cbuffer DirectionalLightBuffer : register(b3)
     float4 g_LightDirection;
     float4 g_LightColor;
     float g_intensity;
-    float g_pad[3];
+    float g_SkyboxRotationRad;
+    float g_SkyboxRotationPitchRad;
+    float g_pad;
 };
 
 #define MAX_POINT_LIGHTS 16
@@ -1560,14 +1576,21 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     float3 kS_IBL_ = fresnelSchlickRoughness(F0, NdotV, roughness);
     float3 kD_IBL_ = (1.0f - kS_IBL_) * (1.0f - metalness);
     
+    // Skybox가 +회전하면 IBL 샘플은 -회전하여 시각/조명 방향을 맞춘다.
+    const float iblYawRad = -g_SkyboxRotationRad;
+    const float iblPitchRad = -g_SkyboxRotationPitchRad;
+    float3 iblNormal = RotateXByAngle(N, iblPitchRad);
+    iblNormal = RotateYByAngle(iblNormal, iblYawRad);
     // Diffuse 샘플링
-    float3 diffuseIBL = kD_IBL_ * g_IBL_Diffuse.Sample(g_Sam, N).rgb * albedoPBR;
+    float3 diffuseIBL = kD_IBL_ * g_IBL_Diffuse.Sample(g_Sam, iblNormal).rgb * albedoPBR;
 
 
     //float3 diffuseIBL = kD * g_IBL_Diffuse.Sample(g_Sam, N).rgb * albedoPBR;
     
     // Specular 계산 및 호라이즌 오클루전 적용
     float3 Renv = reflect(-V, N);
+    Renv = RotateXByAngle(Renv, iblPitchRad);
+    Renv = RotateYByAngle(Renv, iblYawRad);
     
     // 텍스처 밉맵 레벨 (가지고 계신 텍스처가 256x256이면 보통 8, 128x128이면 7 정도입니다)
     const float kMaxSpecularMip = 8.0f; 
@@ -1973,9 +1996,9 @@ cbuffer CBTransparentLight : register(b1)
     float3 g_LightDir;
     float  g_LightIntensity;
     float3 g_LightColor;
-    float  _pad0;
+    float  g_SkyboxRotationRad;
     float3 g_CameraPosW;
-    float  _pad1;
+    float  g_SkyboxRotationPitchRad;
 };
 
 struct PSIn
@@ -1998,6 +2021,20 @@ float DitherThreshold(float2 pos)
 float3 LinearToSRGB(float3 linearColor)
 {
     return pow(max(linearColor, 0.0f), 1.0f / 2.2f);
+}
+
+float3 RotateYByAngle(float3 v, float angleRad)
+{
+    float s, c;
+    sincos(angleRad, s, c);
+    return float3(v.x * c - v.z * s, v.y, v.x * s + v.z * c);
+}
+
+float3 RotateXByAngle(float3 v, float angleRad)
+{
+    float s, c;
+    sincos(angleRad, s, c);
+    return float3(v.x, v.y * c - v.z * s, v.y * s + v.z * c);
 }
 
 float4 main(PSIn pIn) : SV_Target
@@ -2094,8 +2131,14 @@ float4 main(PSIn pIn) : SV_Target
     float3 direct = (diffuse + specular) * radiance * selfShadowNdotL * ao;
 
     // IBL
-    float3 diffuseIBL = kD * g_IBL_Diffuse.Sample(g_Sam, N).rgb * albedoLinear;
+    const float iblYawRad = -g_SkyboxRotationRad;
+    const float iblPitchRad = -g_SkyboxRotationPitchRad;
+    float3 iblNormal = RotateXByAngle(N, iblPitchRad);
+    iblNormal = RotateYByAngle(iblNormal, iblYawRad);
+    float3 diffuseIBL = kD * g_IBL_Diffuse.Sample(g_Sam, iblNormal).rgb * albedoLinear;
     float3 Renv = reflect(-V, N);
+    Renv = RotateXByAngle(Renv, iblPitchRad);
+    Renv = RotateYByAngle(Renv, iblYawRad);
     const float kMaxSpecularMip = 8.0f;
     float3 prefilteredColor = g_IBL_Specular.SampleLevel(g_Sam, Renv, roughness * kMaxSpecularMip).rgb;
     float2 specBRDF = g_IBL_BRDF_LUT.Sample(g_Sam, float2(NdotV, roughness)).rg;

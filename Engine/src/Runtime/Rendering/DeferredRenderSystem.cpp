@@ -1487,7 +1487,7 @@ namespace Alice
             return false;
 
         // Directional Light CB
-        cbDesc.ByteWidth = sizeof(DirectX::XMFLOAT4) * 2 + sizeof(float) * 4; // dir, color, intensity, pad
+        cbDesc.ByteWidth = sizeof(DirectX::XMFLOAT4) * 2 + sizeof(float) * 4; // dir, color, intensity + yaw/pitch + pad
         if (FAILED(m_device->CreateBuffer(&cbDesc, nullptr, m_cbDirectionalLight.ReleaseAndGetAddressOf())))
             return false;
 
@@ -1521,7 +1521,7 @@ namespace Alice
         }
 
         // Transparent Forward-Style Light CB (register(b1))
-        // float3 dir + float intensity + float3 color + pad + float3 camPos + pad = 48 bytes (16B 정렬)
+        // float3 dir + intensity + float3 color + yaw + float3 camPos + pitch = 48 bytes (16B 정렬)
         cbDesc.ByteWidth = sizeof(float) * 12;
         if (FAILED(m_device->CreateBuffer(&cbDesc, nullptr, m_cbTransparentLight.ReleaseAndGetAddressOf())))
             return false;
@@ -4581,15 +4581,17 @@ namespace Alice
             DirectX::XMFLOAT3 lightDir;
             float             intensity;
             DirectX::XMFLOAT3 lightColor;
-            float             pad0;
+            float             skyboxRotationRad;
             DirectX::XMFLOAT3 cameraPos;
-            float             pad1;
+            float             skyboxRotationPitchRad;
         };
 
         TransparentLightCB tl{};
         tl.lightDir = m_lightingParameters.keyDirection;
         tl.intensity = m_lightingParameters.keyIntensity;
         tl.lightColor = m_lightingParameters.diffuseColor;
+        tl.skyboxRotationRad = XMConvertToRadians(m_lightingParameters.skyboxRotation);
+        tl.skyboxRotationPitchRad = XMConvertToRadians(m_lightingParameters.skyboxRotationPitch);
         tl.cameraPos = camera.GetPosition();
 
         D3D11_MAPPED_SUBRESOURCE mapped{};
@@ -4964,15 +4966,22 @@ namespace Alice
         m_context->VSSetShader(m_skyboxVS.Get(), nullptr, 0);
         m_context->PSSetShader(m_skyboxPS.Get(), nullptr, 0);
 
-        // 행렬 계산 (Translation 제거)
-        XMMATRIX view = camera.GetViewMatrix();
-        view.r[3] = XMVectorSet(0.f, 0.f, 0.f, 1.f);
-        XMMATRIX wvpT = XMMatrixTranspose(view * camera.GetProjectionMatrix());
+		// 회전 행렬 생성 및 적용
+		XMMATRIX view = camera.GetViewMatrix();
+		view.r[3] = XMVectorSet(0.f, 0.f, 0.f, 1.f); // 카메라 이동 무시
+
+		// 회전값 라디안 변환 및 행렬 생성 (Yaw + Pitch)
+		float yawRad = XMConvertToRadians(m_lightingParameters.skyboxRotation);
+		float pitchRad = XMConvertToRadians(m_lightingParameters.skyboxRotationPitch);
+		XMMATRIX skyRotation = XMMatrixRotationRollPitchYaw(pitchRad, yawRad, 0.0f);
+
+		// WVP = SkyRotation * View * Proj (스카이박스 지오메트리를 회전시킴)
+		XMMATRIX wvpT = XMMatrixTranspose(skyRotation * view * camera.GetProjectionMatrix());
 
         D3D11_MAPPED_SUBRESOURCE map;
         if (SUCCEEDED(m_context->Map(m_cbSkybox.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &map)))
         {
-            memcpy(map.pData, &wvpT, sizeof(XMMATRIX));
+            memcpy(map.pData, &wvpT, sizeof(XMMATRIX)); 
             m_context->Unmap(m_cbSkybox.Get(), 0);
         }
 
@@ -5170,6 +5179,8 @@ namespace Alice
                                    m_lightingParameters.diffuseColor.z,
                                    0.0f);
         lightData.intensity = m_lightingParameters.keyIntensity;
+        lightData.skyboxRotationRad = XMConvertToRadians(m_lightingParameters.skyboxRotation);
+        lightData.skyboxRotationPitchRad = XMConvertToRadians(m_lightingParameters.skyboxRotationPitch);
 
         if (SUCCEEDED(m_context->Map(m_cbDirectionalLight.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
         {
