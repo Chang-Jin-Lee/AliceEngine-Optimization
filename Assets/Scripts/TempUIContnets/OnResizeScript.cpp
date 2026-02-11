@@ -101,7 +101,7 @@ namespace Alice
                 return sx;
             case 3: // MatchHeight
                 return sy;
-            default: // Fit
+            default: // Fit (min - 가장 무난)
                 return std::min(sx, sy);
             }
         }
@@ -109,13 +109,43 @@ namespace Alice
 
     void OnResizeScript::Start()
     {
+        World* world = GetWorld();
+        if (!world)
+            return;
+
+        const EntityId resolved = ResolveTarget(*world);
+        if (resolved == InvalidEntityId)
+            return;
+
+        auto* uiTransform = world->GetComponent<UITransformComponent>(resolved);
+        if (!uiTransform)
+            return;
+
+        // baseSize 초기화: baseSizeX/Y가 0이면 현재 size로 설정 (처음 한 번만)
+        const float eps = 0.001f;
+        if (!m_baseSizeInitialized && 
+            (std::fabs(Get_baseSizeX()) < eps && std::fabs(Get_baseSizeY()) < eps))
+        {
+            Set_baseSizeX(uiTransform->size.x);
+            Set_baseSizeY(uiTransform->size.y);
+            m_baseSizeInitialized = true;
+            ALICE_LOG_INFO("[OnResizeScript] Initialized baseSize: %.2f x %.2f", 
+                Get_baseSizeX(), Get_baseSizeY());
+        }
+        else if (!m_baseSizeInitialized)
+        {
+            // 인스펙터에서 이미 설정된 경우
+            m_baseSizeInitialized = true;
+        }
+
+        // 첫 적용
         ApplyLayout(true);
     }
 
     void OnResizeScript::Update(float deltaTime)
     {
         (void)deltaTime;
-        // 항상 기준 화면 크기(1600x900)로 resize하도록 강제 적용
+        // 매 프레임 기준 해상도에 맞게 resize
         ApplyLayout(true);
     }
 
@@ -145,15 +175,26 @@ namespace Alice
         if (resolved != m_targetId)
         {
             m_targetId = resolved;
-            m_baseSizeCached = false;
-            m_initialApplied = false;
-            m_baseScreenCached = false;
+            m_baseSizeInitialized = false; // 타겟이 바뀌면 재초기화
         }
 
         auto* uiTransform = world->GetComponent<UITransformComponent>(m_targetId);
         if (!uiTransform)
             return;
 
+        // baseSize 초기화 (타겟이 바뀌었거나 아직 초기화되지 않은 경우)
+        if (!m_baseSizeInitialized)
+        {
+            const float eps = 0.001f;
+            if (std::fabs(Get_baseSizeX()) < eps && std::fabs(Get_baseSizeY()) < eps)
+            {
+                Set_baseSizeX(uiTransform->size.x);
+                Set_baseSizeY(uiTransform->size.y);
+            }
+            m_baseSizeInitialized = true;
+        }
+
+        // 현재 화면 크기 읽기
         float screenW = 0.0f;
         float screenH = 0.0f;
 
@@ -167,50 +208,31 @@ namespace Alice
             return;
         }
 
-        // 기준 화면 크기를 항상 사용하므로 매 프레임 resize
-        // (force가 false여도 항상 처리)
+        // baseResolution (기준 해상도)
+        const float baseW = std::max(1.0f, Get_referenceWidth());
+        const float baseH = std::max(1.0f, Get_referenceHeight());
 
-        if (Get_applyInitialSize() && !m_initialApplied)
-        {
-            uiTransform->size.x = Get_initialSizeX();
-            uiTransform->size.y = Get_initialSizeY();
-            m_initialApplied = true;
-        }
+        // ratio 계산
+        const float ratioX = screenW / baseW;
+        const float ratioY = screenH / baseH;
 
-        if (!m_baseSizeCached)
-        {
-            m_baseSizeX = uiTransform->size.x;
-            m_baseSizeY = uiTransform->size.y;
-            m_baseSizeCached = true;
-        }
-        if (!m_baseScreenCached)
-        {
-            m_baseScreenW = screenW;
-            m_baseScreenH = screenH;
-            m_baseScreenCached = true;
-        }
-
-        // 항상 기준 화면 크기(1600x900)를 사용하여 resize
-        const float refW = std::max(1.0f, Get_referenceWidth());
-        const float refH = std::max(1.0f, Get_referenceHeight());
-
-        const float sx = screenW / refW;
-        const float sy = screenH / refH;
-
+        // currentScale: 실제 적용 스케일 (런타임 계산)
         float scaleX = 1.0f;
         float scaleY = 1.0f;
         if (Get_useNonUniformScale())
         {
-            scaleX = std::clamp(sx, Get_minScale(), Get_maxScale());
-            scaleY = std::clamp(sy, Get_minScale(), Get_maxScale());
+            scaleX = std::clamp(ratioX, Get_minScale(), Get_maxScale());
+            scaleY = std::clamp(ratioY, Get_minScale(), Get_maxScale());
         }
         else
         {
-            const float scale = std::clamp(ComputeScale(sx, sy, Get_scaleMode()), Get_minScale(), Get_maxScale());
+            // scaleMode에 따라 ratio 계산 (기본값 0 = Fit = min)
+            const float scale = std::clamp(ComputeScale(ratioX, ratioY, Get_scaleMode()), Get_minScale(), Get_maxScale());
             scaleX = scale;
             scaleY = scale;
         }
 
+        // Anchor 스트레치 체크
         const float anchorEps = 1e-4f;
         const bool stretchX = std::fabs(uiTransform->anchorMax.x - uiTransform->anchorMin.x) > anchorEps;
         const bool stretchY = std::fabs(uiTransform->anchorMax.y - uiTransform->anchorMin.y) > anchorEps;
@@ -223,11 +245,10 @@ namespace Alice
             std::fabs(uiTransform->anchorMin.y) <= anchorEps &&
             std::fabs(uiTransform->anchorMax.y - 1.0f) <= anchorEps;
 
-        DirectX::XMFLOAT2 newSize = uiTransform->size;
-
-        // Only zero size for full-stretch anchors. For partial stretch, keep size as padding.
-        newSize.x = fullStretchX ? 0.0f : (m_baseSizeX * scaleX);
-        newSize.y = fullStretchY ? 0.0f : (m_baseSizeY * scaleY);
+        // currentSize = baseSize * currentScale (스크립트의 baseSizeX/Y 사용)
+        DirectX::XMFLOAT2 newSize;
+        newSize.x = fullStretchX ? 0.0f : (Get_baseSizeX() * scaleX);
+        newSize.y = fullStretchY ? 0.0f : (Get_baseSizeY() * scaleY);
 
         if (Get_roundToInt())
         {
@@ -235,6 +256,7 @@ namespace Alice
             newSize.y = std::round(newSize.y);
         }
 
+        // 런타임에만 적용 (저장되지 않음)
         uiTransform->size = newSize;
 
         if (Get_forceScaleOne())

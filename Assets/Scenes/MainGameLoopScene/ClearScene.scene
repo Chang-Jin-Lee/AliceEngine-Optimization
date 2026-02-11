@@ -81,6 +81,25 @@
                         "changeKey": 20,
                         "targetScenePath": "Assets/Scenes/MainGameLoopScene/TitleScene.scene"
                     }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 2000.0,
+                        "baseSizeY": 1000.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_Image",
+                        "useNonUniformScale": true
+                    }
                 }
             ],
             "Transform": {
@@ -122,20 +141,24 @@
                 "alignH": "Center",
                 "alignV": "Center",
                 "anchorMax": {
-                    "x": 0.5,
-                    "y": 0.5
+                    "x": 0.0,
+                    "y": 0.0
                 },
                 "anchorMin": {
-                    "x": 0.5,
-                    "y": 0.5
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "baseSize": {
+                    "x": 2000.0,
+                    "y": 1000.0
                 },
                 "pivot": {
                     "x": 0.5,
                     "y": 0.5
                 },
                 "position": {
-                    "x": 1000.0,
-                    "y": 500.0
+                    "x": 0.0,
+                    "y": 0.0
                 },
                 "rotationRad": 0.0,
                 "scale": {
@@ -212,10 +235,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -225,8 +247,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Center",
-                        "useCurrentAsReference": false,
-                        "useNonUniformScale": false
+                        "useNonUniformScale": true
                     }
                 }
             ],
@@ -276,6 +297,10 @@
                     "x": 0.0,
                     "y": 0.0
                 },
+                "baseSize": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -314,10 +339,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -327,7 +351,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Background",
-                        "useCurrentAsReference": false,
                         "useNonUniformScale": true
                     }
                 }
@@ -378,6 +401,10 @@
                     "x": 0.5,
                     "y": 0.5
                 },
+                "baseSize": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
                 "pivot": {
                     "x": 0.0,
                     "y": 0.0
@@ -417,10 +444,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -430,8 +456,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_1",
-                        "useCurrentAsReference": true,
-                        "useNonUniformScale": true
+                        "useNonUniformScale": false
                     }
                 }
             ],
@@ -481,6 +506,10 @@
                     "x": 0.0,
                     "y": 0.0
                 },
+                "baseSize": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -520,10 +549,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -533,8 +561,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_2",
-                        "useCurrentAsReference": true,
-                        "useNonUniformScale": true
+                        "useNonUniformScale": false
                     }
                 }
             ],
@@ -584,6 +611,10 @@
                     "x": 0.0,
                     "y": 0.0
                 },
+                "baseSize": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -623,10 +654,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -636,8 +666,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_3",
-                        "useCurrentAsReference": true,
-                        "useNonUniformScale": true
+                        "useNonUniformScale": false
                     }
                 }
             ],
@@ -687,6 +716,10 @@
                     "x": 0.0,
                     "y": 0.0
                 },
+                "baseSize": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -726,10 +759,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -739,8 +771,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_4",
-                        "useCurrentAsReference": true,
-                        "useNonUniformScale": true
+                        "useNonUniformScale": false
                     }
                 }
             ],
@@ -790,6 +821,10 @@
                     "x": 0.0,
                     "y": 0.0
                 },
+                "baseSize": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -829,10 +864,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -842,8 +876,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_5",
-                        "useCurrentAsReference": true,
-                        "useNonUniformScale": true
+                        "useNonUniformScale": false
                     }
                 }
             ],
@@ -893,6 +926,10 @@
                     "x": 0.0,
                     "y": 0.0
                 },
+                "baseSize": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -932,10 +969,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -945,8 +981,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_6",
-                        "useCurrentAsReference": true,
-                        "useNonUniformScale": true
+                        "useNonUniformScale": false
                     }
                 }
             ],
@@ -996,6 +1031,10 @@
                     "x": 0.0,
                     "y": 0.0
                 },
+                "baseSize": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -1035,10 +1074,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -1048,8 +1086,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_7",
-                        "useCurrentAsReference": true,
-                        "useNonUniformScale": true
+                        "useNonUniformScale": false
                     }
                 }
             ],
@@ -1099,6 +1136,10 @@
                     "x": 0.0,
                     "y": 0.0
                 },
+                "baseSize": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -1138,10 +1179,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -1151,8 +1191,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_8",
-                        "useCurrentAsReference": true,
-                        "useNonUniformScale": true
+                        "useNonUniformScale": false
                     }
                 }
             ],
@@ -1202,6 +1241,10 @@
                     "x": 0.0,
                     "y": 0.0
                 },
+                "baseSize": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -1241,10 +1284,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -1254,8 +1296,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_9",
-                        "useCurrentAsReference": true,
-                        "useNonUniformScale": true
+                        "useNonUniformScale": false
                     }
                 }
             ],
@@ -1305,6 +1346,10 @@
                     "x": 0.0,
                     "y": 0.0
                 },
+                "baseSize": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -1344,10 +1389,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -1357,8 +1401,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_10",
-                        "useCurrentAsReference": true,
-                        "useNonUniformScale": true
+                        "useNonUniformScale": false
                     }
                 }
             ],
@@ -1407,6 +1450,10 @@
                 "anchorMin": {
                     "x": 0.0,
                     "y": 0.0
+                },
+                "baseSize": {
+                    "x": 1600.0,
+                    "y": 900.0
                 },
                 "pivot": {
                     "x": -0.5,

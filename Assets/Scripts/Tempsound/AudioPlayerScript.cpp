@@ -47,7 +47,7 @@ namespace Alice
         m_currentOther = PlayerOtherState::None;
         m_footstepIndex = 0;
 
-        // 媛???⑤쭅 ?ъ슫???꾨━濡쒕뱶 (吏??諛⑹?)
+        //
         PreloadSound(Get_pathGuard());
         PreloadSound(Get_pathParry());
 
