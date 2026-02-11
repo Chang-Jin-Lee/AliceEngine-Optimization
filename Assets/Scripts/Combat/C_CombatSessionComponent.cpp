@@ -1311,6 +1311,15 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				m_state->playerAnim.guardExitActive = false;
 				m_state->playerAnim.guardExitTimer = 0.0f;
 				m_state->playerAnim.guardExitAnimDurationSec = 0.0f;
+				m_state->playerAnim.overrideActive = false;
+				m_state->playerAnim.overrideClip.clear();
+				m_state->playerAnim.overrideLoop = false;
+				m_state->playerAnim.saved = false;
+				m_state->playerAnim.blending = false;
+				m_state->playerAnim.blendingToOverride = false;
+				m_state->playerAnim.blendTimer = 0.0f;
+				m_state->playerAnim.blendDurationSec = 0.0f;
+				m_state->playerAnim.parryRecoverBlendPending = false;
 				m_state->playerAnim.parryExitParryWindowActive = false;
 				if (auto* driver = world.GetComponent<AttackDriverComponent>(playerId))
 				{
@@ -1325,6 +1334,12 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		const bool playerGuardExitRecovering =
 			(m_state->playerGuardExitLockSec > 0.0f || m_state->playerAnim.guardExitActive);
+		const float playerGuardReentryDelaySec = std::max(0.0f, m_playerGuardReentryDelaySec);
+		const float playerGuardExitElapsedSec = m_state->playerAnim.guardExitActive
+			? (m_state->playerAnim.guardExitTimer / std::max(0.0001f, kPlayerGuardExitReverseSpeedScale))
+			: playerGuardReentryDelaySec;
+		const bool playerGuardReentryUnlocked = !m_state->playerAnim.guardExitActive
+			|| (playerGuardExitElapsedSec >= playerGuardReentryDelaySec);
 
 		// Guard exit recovery can be canceled by dodge or by re-guard.
 		if (playerIntent.dodgePressed && playerGuardExitRecovering)
@@ -1333,7 +1348,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		}
 
 		if ((playerIntent.guardPressed || playerIntent.guardHeld)
-			&& (m_state->playerGuardExitLockSec > 0.0f || m_state->playerAnim.guardExitActive))
+			&& (m_state->playerGuardExitLockSec > 0.0f || m_state->playerAnim.guardExitActive)
+			&& playerGuardReentryUnlocked)
 		{
 			CancelPlayerGuardExitRecovery();
 			if (!playerIntent.guardPressed && playerIntent.guardHeld)
@@ -4455,7 +4471,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 				if (!forceGuardLoopOnly
 					&& !playerParryAnimActive
-					&& (enteringGuard || guardEnterPulse)
+					&& enteringGuard
 					&& !cfg.guardEnterClip.empty()
 					&& guardEnterAnimDurationSec > 0.0f)
 				{
@@ -5019,11 +5035,29 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					blendSec = std::max(blendSec, std::max(0.0f, m_bossGroggyRecoverBlendSec));
 				}
 
-				auto BeginBlendToOverride = [&](const std::string& nextClip, bool nextLoop, float startTime) {
-					if (!animState.overrideActive)
+				auto BeginBlendToOverride = [&](const std::string& nextClip,
+					bool nextLoop,
+					float startTime,
+					bool forceRefreshSavedBase) {
+					const bool restartingWhileReturningToSaved =
+						animState.overrideActive && animState.blending && !animState.blendingToOverride;
+					const bool canUseLocomotionBaseAsSaved =
+						!locomotionBase.clipA.empty()
+						&& (forceRefreshSavedBase || restartingWhileReturningToSaved);
+					if (!animState.overrideActive || forceRefreshSavedBase || restartingWhileReturningToSaved)
 					{
-						animState.savedBase = anim->base;
+						if (canUseLocomotionBaseAsSaved)
+							animState.savedBase = locomotionBase;
+						else
+							animState.savedBase = anim->base;
 						animState.saved = true;
+						if (forceRefreshSavedBase || restartingWhileReturningToSaved)
+						{
+							animState.blending = false;
+							animState.blendingToOverride = false;
+							animState.blendTimer = 0.0f;
+							animState.blendDurationSec = 0.0f;
+						}
 					}
 
 					animState.overrideActive = true;
@@ -5168,7 +5202,11 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					if (clipChanged)
 					{
 						const float startTime = wantsReverse ? reverseStartTime : 0.0f;
-						BeginBlendToOverride(clipName, loop, startTime);
+						const bool forceRefreshSavedBase = isPlayerEntity
+							&& (playerGuardLoopToExitTransition
+								|| playerGuardExitTailBlendToBase
+								|| forceParryHardCut);
+						BeginBlendToOverride(clipName, loop, startTime, forceRefreshSavedBase);
 						if (forceParryHardCut)
 							animState.parryHardCutPending = false;
 					}
@@ -5652,7 +5690,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				}
 				if (fighter.id == playerId
 					&& m_state->playerAnim.guardExitActive
-					&& m_state->playerAnim.parryExitParryWindowActive)
+					&& m_state->playerAnim.parryExitParryWindowActive
+					&& inGuard)
 				{
 					flags.guardActive = false;
 					flags.parryWindowActive = true;
@@ -5701,14 +5740,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			m_state->player.state,
 			resolvePlayerSensors,
 			playerHitstopActive,
-			m_state->playerAnim.guardEnterActive,
+			m_state->player.flags.parryWindowActive,
 			false);
 		m_state->bossSnapshot = BuildResolveSnapshot(
 			m_state->boss,
 			m_state->boss.state,
 			resolveBossSensors,
 			bossHitstopActive,
-			m_state->bossAnim.guardEnterActive,
+			m_state->boss.flags.parryWindowActive,
 			true);
 
 		m_state->bus.ClearFrame();
