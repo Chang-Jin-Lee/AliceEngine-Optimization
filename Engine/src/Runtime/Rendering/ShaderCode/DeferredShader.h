@@ -623,6 +623,26 @@ DBufferOut main(PSInput input)
 static const float PI = 3.14159265f;
 static const float INV_PI = 0.31830988618f;
 
+// 임시 느낌
+// 거칠기에 따른 프레넬 보정 (화이트아웃/과한 반사 방지)
+float3 fresnelSchlickRoughness(float3 F0, float cosTheta, float roughness)
+{
+    cosTheta = saturate(cosTheta);
+    float3 F90 = float3(1.0f, 1.0f, 1.0f);
+    float3 fresnel = F0 + (F90 - F0) * pow(1.0f - cosTheta, 5.0f);
+    // Roughness가 높을수록 F0(기본 반사율)로 수렴하게 하여 엣지 발광 억제
+    float roughSq = roughness * roughness;
+    return lerp(fresnel, F0, roughSq);
+}
+
+// 호라이즌 스페큘러 오클루전 (비스듬한 각도의 빛샘 방지)
+float horizonSpecularOcclusion(float NoV, float roughness)
+{
+    float NoV_sat = saturate(NoV);
+    float t = roughness * roughness;
+    return pow(NoV_sat, 1.0f + 3.0f * t);
+}
+
 float DistributionGGX(float NdotH, float roughness)
 {
     float a = roughness * roughness;
@@ -1503,17 +1523,41 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         extraLighting += lit * ao * localShadow;
     }
 
+    //// 임시 느낌
     // Indirect Light (IBL)
-    float3 diffuseIBL = kD * g_IBL_Diffuse.Sample(g_Sam, N).rgb * albedoPBR;
+    //  Diffuse 계산 시 거칠기(Roughness)를 고려한 Fresnel 사용
+    // 기존에는 그냥 kD를 구했지만, 이제는 거친 표면에서 에너지가 보존되도록 kS를 먼저 구합니다.
+    float3 kS_IBL_ = fresnelSchlickRoughness(F0, NdotV, roughness);
+    float3 kD_IBL_ = (1.0f - kS_IBL_) * (1.0f - metalness);
+    
+    // Diffuse 샘플링
+    float3 diffuseIBL = kD_IBL_ * g_IBL_Diffuse.Sample(g_Sam, N).rgb * albedoPBR;
+    
+    // Specular 계산 및 호라이즌 오클루전 적용
     float3 Renv = reflect(-V, N);
-    const float kMaxSpecularMip = 8.0f;
+    
+    // 텍스처 밉맵 레벨 (가지고 계신 텍스처가 256x256이면 보통 8, 128x128이면 7 정도입니다)
+    const float kMaxSpecularMip = 8.0f; 
+    
+    // Prefiltered Color 샘플링 (Roughness에 따라 흐릿한 MipMap 가져오기)
     float3 prefilteredColor = g_IBL_Specular.SampleLevel(g_Sam, Renv, roughness * kMaxSpecularMip).rgb;
+    
+    // BRDF LUT 샘플링
     float2 specBRDF = g_IBL_BRDF_LUT.Sample(g_SamplerLinear, float2(NdotV, roughness)).rg;
+    
+    // Specular 합산
     float3 specularIBL = prefilteredColor * (F0 * specBRDF.x + specBRDF.y);
+    
+    // Horizon Specular Occlusion 적용 
+    // (시야각이 표면과 수평에 가까울 때 생기는 과한 반사를 억제)
+    float horizon = horizonSpecularOcclusion(NdotV, roughness);
+    specularIBL *= horizon;
 
+    // 강도 조절 (기존 파라미터 유지)
     diffuseIBL *= envDiffuseStrength;
     specularIBL *= envSpecularStrength;
 
+    // 그림자/AO 적용 (기존 로직 유지)
     float shadowIBLDiffuse = lerp(0.35f, 1.0f, shadowVis);
     float shadowIBLSpecular = 1.0f;
     if (toonEditable) {
@@ -1521,14 +1565,17 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         shadowIBLSpecular = lerp(0.25f, 1.0f, shadowVis);
     }
 
+    // 최종 IBL 합산 (Diffuse + Specular) * Ambient Occlusion
     float3 iblColor = (diffuseIBL * shadowIBLDiffuse + specularIBL * shadowIBLSpecular) * ao;
+    
+    // -----------------------------------------------------------------------
 
     // 최종 색상 계산
     float3 color = directLighting + extraLighting + iblColor;
-    
+
     // [아웃라인 합성]
     color = lerp(color, outlineEdgeColor, outlineEdge);
-    
+
     return float4(color, 1.0f);
 }
 )";
