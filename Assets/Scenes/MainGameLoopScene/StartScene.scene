@@ -93,6 +93,27 @@
             "name": "UI_Fade"
         },
         {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_Image",
+                        "useNonUniformScale": false
+                    }
+                }
+            ],
             "Transform": {
                 "enabled": true,
                 "position": {
@@ -185,6 +206,25 @@
                         "fadeOutDelaySec": 2.0,
                         "targetScenePath": "Assets/Scenes/MainGameLoopScene/Main.scene"
                     }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 1200.0,
+                        "baseSizeY": 675.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_Loading_image",
+                        "useNonUniformScale": false
+                    }
                 }
             ],
             "Transform": {
@@ -209,9 +249,9 @@
             "UIImage": {
                 "color": {
                     "w": 1.0,
-                    "x": 0.08235294371843338,
-                    "y": 0.07450980693101883,
-                    "z": 0.0470588244497776
+                    "x": 0.6447876691818237,
+                    "y": 0.6447876691818237,
+                    "z": 0.6447876691818237
                 },
                 "preserveAspect": false,
                 "texturePath": "",
