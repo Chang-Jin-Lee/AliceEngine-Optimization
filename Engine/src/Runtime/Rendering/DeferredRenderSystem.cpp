@@ -894,12 +894,26 @@ namespace Alice
             return false;
 
         D3D11_INPUT_ELEMENT_DESC gbufferInstancedLayout[] = {
-            {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0},
-            {"NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-            {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0},
-            {"INSTANCE_WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0,  D3D11_INPUT_PER_INSTANCE_DATA, 1},
-            {"INSTANCE_WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-            {"INSTANCE_WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+            // 1. 버텍스 데이터 (Slot 0)
+            // VertexTBN 구조체: Pos(0) -> N(12) -> T(24) -> B(36) -> Color(48) -> UV(64) -> SmoothN(72)
+
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
+            // [중요] Tangent와 Binormal을 추가 (오프셋 24, 36)
+            { "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 36, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
+            // Color (오프셋 48) - 셰이더에서 안 쓰더라도 포맷은 맞춰두는 게 좋습니다. (필요 없으면 생략 가능하지만 Offset 계산 주의)
+            { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 48, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
+            // [중요] TEXCOORD의 위치는 24가 아니라 64입니다.
+            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 64, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
+            // 2. 인스턴스 데이터 (Slot 1) - 기존 코드 유지
+            { "INSTANCE_WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0,  D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+            { "INSTANCE_WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+            { "INSTANCE_WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
         };
         if (FAILED(m_device->CreateInputLayout(gbufferInstancedLayout, ARRAYSIZE(gbufferInstancedLayout), vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), m_gBufferInstancedInputLayout.ReleaseAndGetAddressOf())))
             return false;
