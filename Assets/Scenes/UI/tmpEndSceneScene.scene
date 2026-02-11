@@ -4,18 +4,13 @@
             "Scripts": [
                 {
                     "enabled": true,
-                    "name": "TmpTextScript",
+                    "name": "FadeInOutScript",
                     "props": {
-                        "decimalPlaces": 0,
-                        "defaultText": "Text",
-                        "matchEpsilon": 0.009999999776482582,
-                        "rootWidgetName": "UI_Text",
-                        "targetEntityName": "Cube_PoiseTest",
-                        "targetScriptName": "PoiseGauge",
-                        "textWidgetName": "UI_Text",
-                        "value1Text": "1",
-                        "value2Text": "2",
-                        "value3Text": "3"
+                        "fadeSpeed": 1.5,
+                        "isFadeIn": true,
+                        "rootWidgetName": "UI_Fade",
+                        "startAlpha": 0.0,
+                        "targetWidgetName": "UI_Fade"
                     }
                 }
             ],
@@ -23,7 +18,7 @@
                 "enabled": true,
                 "position": {
                     "x": 0.0,
-                    "y": 0.30000001192092896,
+                    "y": 0.0,
                     "z": 0.0
                 },
                 "rotation": {
@@ -38,21 +33,21 @@
                 },
                 "visible": true
             },
-            "UIText": {
-                "alignH": "Left",
-                "alignV": "Top",
+            "UIImage": {
                 "color": {
                     "w": 1.0,
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
                 },
-                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
-                "fontSize": 100.0,
-                "lineSpacing": 0.0,
-                "maxWidth": 0.0,
-                "text": "3",
-                "wrap": false
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
             },
             "UITransform": {
                 "alignH": "Center",
@@ -66,12 +61,12 @@
                     "y": 0.5
                 },
                 "pivot": {
-                    "x": 0.5,
-                    "y": 0.5
+                    "x": 0.0,
+                    "y": 0.0
                 },
                 "position": {
-                    "x": -450.0,
-                    "y": -200.0
+                    "x": 0.0,
+                    "y": 0.0
                 },
                 "rotationRad": 0.0,
                 "scale": {
@@ -79,8 +74,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 250.0,
-                    "y": 80.0
+                    "x": 1600.0,
+                    "y": 900.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -92,260 +87,10 @@
                 "shaderName": "Default",
                 "space": "Screen",
                 "visibility": "Visible",
-                "widgetName": "UI_Text"
+                "widgetName": "UI_Fade"
             },
-            "guid": "11059725195055669925",
-            "name": "UI_Text"
-        },
-        {
-            "Scripts": [
-                {
-                    "enabled": true,
-                    "name": "GaugeScript",
-                    "props": {
-                        "gaugeWidgetName": "UI_Gauge",
-                        "maxValue": 100.0,
-                        "nowValue": 0.6000000238418579,
-                        "rootWidgetName": "UI_Gauge",
-                        "targetEntityName": "Cube_HPTest1",
-                        "targetScriptName": "BoxDeligateScript"
-                    }
-                }
-            ],
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "UIGauge": {
-                "backgroundColor": {
-                    "w": 0.8999999761581421,
-                    "x": 0.10000000149011612,
-                    "y": 0.10000000149011612,
-                    "z": 0.10000000149011612
-                },
-                "backgroundTexture": "",
-                "direction": "LeftToRight",
-                "fillColor": {
-                    "w": 1.0,
-                    "x": 0.20000000298023224,
-                    "y": 0.8999999761581421,
-                    "z": 0.20000000298023224
-                },
-                "fillTexture": "",
-                "maxValue": 1.0,
-                "minValue": 0.0,
-                "normalized": false,
-                "smoothing": 0.0,
-                "useBackground": true,
-                "useFillLate": false,
-                "value": 0.6000000238418579
-            },
-            "UITransform": {
-                "alignH": "Center",
-                "alignV": "Center",
-                "anchorMax": {
-                    "x": 0.5,
-                    "y": 0.5
-                },
-                "anchorMin": {
-                    "x": 0.5,
-                    "y": 0.5
-                },
-                "pivot": {
-                    "x": 0.5,
-                    "y": 0.5
-                },
-                "position": {
-                    "x": -500.0,
-                    "y": -300.0
-                },
-                "rotationRad": 0.0,
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0
-                },
-                "size": {
-                    "x": 264.5,
-                    "y": 24.0
-                },
-                "sortOrder": 0,
-                "useAlignment": false
-            },
-            "UIWidget": {
-                "billboard": false,
-                "interactable": true,
-                "raycastTarget": true,
-                "shaderName": "Default",
-                "space": "Screen",
-                "visibility": "Visible",
-                "widgetName": "UI_Gauge"
-            },
-            "guid": "7886627452013534951",
-            "name": "UI_Gauge"
-        },
-        {
-            "Material": {
-                "albedoTexturePath": "",
-                "alpha": 1.0,
-                "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Cube_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.5,
-                "shadingMode": -1,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrStrength": 1.0,
-                "transparent": false
-            },
-            "Scripts": [
-                {
-                    "enabled": true,
-                    "name": "BoxDeligateScript",
-                    "props": {
-                        "HP_Value": 60.0,
-                        "SubHP": 10.0,
-                        "TotalTime": 226.9176483154297
-                    }
-                }
-            ],
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
-                "meshAssetPath": "Cube"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 4.418856620788574,
-                    "y": 1.100000023841858,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "guid": "3245796428142974071",
-            "name": "Cube_HPTest1"
-        },
-        {
-            "Material": {
-                "albedoTexturePath": "",
-                "alpha": 1.0,
-                "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Cube_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.5,
-                "shadingMode": -1,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrStrength": 1.0,
-                "transparent": false
-            },
-            "Scripts": [
-                {
-                    "enabled": true,
-                    "name": "PoiseGauge",
-                    "props": {
-                        "HP_Value": 94.0,
-                        "TotalTime": 517.1669921875
-                    }
-                }
-            ],
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
-                "meshAssetPath": "Cube"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 9.773262977600098,
-                    "y": -0.30000001192092896,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "guid": "3883236962683396629",
-            "name": "Cube_PoiseTest"
+            "guid": "16648096990907870790",
+            "name": "UI_Fade"
         }
     ],
     "sceneName": "tmpEndSceneScene",

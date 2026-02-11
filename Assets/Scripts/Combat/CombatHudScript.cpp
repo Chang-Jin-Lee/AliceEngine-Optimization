@@ -285,6 +285,8 @@ namespace Alice
         Combat::ActionFlags bossFlags{};
         bool playerRageActive = false;
         float playerRageRemainingSec = 0.0f;
+        float playerRageCooldownRemainingSec = 0.0f;
+        float playerRageCooldownNormalized = 0.0f;
 
         GameObject sessionGo = world->FindGameObject(Get_sessionEntityName());
         if (sessionGo.IsValid())
@@ -302,6 +304,8 @@ namespace Alice
                         bossFlags = session->GetBossFlags();
                         playerRageActive = session->IsPlayerRageActive();
                         playerRageRemainingSec = session->GetPlayerRageRemainingSec();
+                        playerRageCooldownRemainingSec = session->GetPlayerRageCooldownRemainingSec();
+                        playerRageCooldownNormalized = session->GetPlayerRageCooldownNormalized();
                         break;
                     }
                 }
@@ -340,14 +344,23 @@ namespace Alice
         UpdateStateTexts(m_bossStateTexts.data(), bossStates, bossStateCount, bossState, bossStateInactive, bossStateActive);
         UpdateWindowText(m_playerWindowText, playerFlags, playerWindowInactive, playerWindowActive);
         UpdateWindowText(m_bossWindowText, bossFlags, bossWindowInactive, bossWindowActive);
-        if (m_playerWindowText && playerRageActive)
+        const bool showRageInfo = playerRageActive || playerRageCooldownRemainingSec > 0.0f;
+        if (m_playerWindowText && showRageInfo)
         {
             std::ostringstream oss;
             oss.setf(std::ios::fixed);
             oss << std::setprecision(1);
             if (m_playerWindowText->text != "None" && !m_playerWindowText->text.empty())
                 oss << m_playerWindowText->text << " | ";
-            oss << "Rage " << std::max(0.0f, playerRageRemainingSec) << "s";
+            if (playerRageActive)
+            {
+                oss << "Rage " << std::max(0.0f, playerRageRemainingSec) << "s";
+            }
+            else
+            {
+                const float cooldownPercent = std::clamp(playerRageCooldownNormalized * 100.0f, 0.0f, 100.0f);
+                oss << "Rage CD " << std::max(0.0f, playerRageCooldownRemainingSec) << "s (" << cooldownPercent << "%)";
+            }
             m_playerWindowText->text = oss.str();
 
             const bool baseWindowActive = playerFlags.hitActive || playerFlags.guardActive

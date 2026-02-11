@@ -1,0 +1,9 @@
+{
+    "materials": [
+        "Assets/Materials/pillargidong_0.mat",
+        "Assets/Materials/pillargidong_1.mat",
+        "Assets/Materials/pillargidong_2.mat"
+    ],
+    "mesh": "pillargidong",
+    "source_fbx": "Resource/Test/4_Resources/background/0209scene/pillargidong.fbx"
+}

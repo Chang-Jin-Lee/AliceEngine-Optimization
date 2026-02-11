@@ -57,6 +57,8 @@
 #include <Windows.h>
 #include <DirectXMath.h>
 #include <algorithm>
+#include <cctype>
+#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -79,7 +81,37 @@ namespace Alice
 
             static World* g_DefaultWorld = nullptr;
             static ResourceManager* g_DefaultResources = nullptr;
+            static std::mutex g_PrefabJsonCacheMutex;
+            static std::unordered_map<std::string, std::shared_ptr<const JsonRttr::json>> g_PrefabJsonCache;
             static ResourceManager* ResolvePrefabResourceManager();
+
+            static std::string MakePrefabCacheKey(const std::filesystem::path& logicalPath)
+            {
+                std::string key = logicalPath.generic_string();
+                std::replace(key.begin(), key.end(), '\\', '/');
+                std::transform(key.begin(), key.end(), key.begin(),
+                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                return key;
+            }
+
+            static std::string ToLowerCopy(std::string value)
+            {
+                std::transform(value.begin(), value.end(), value.begin(),
+                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                return value;
+            }
+
+            static void AppendUniqueCaseInsensitive(const std::string& value,
+                std::vector<std::string>& outList,
+                std::unordered_set<std::string>& seenLower)
+            {
+                if (value.empty())
+                    return;
+
+                const std::string key = ToLowerCopy(value);
+                if (seenLower.insert(key).second)
+                    outList.push_back(value);
+            }
 
             // 프로젝트 루트 경로를 구하는 헬퍼 함수
             static std::filesystem::path GetProjectRoot()
@@ -394,6 +426,7 @@ namespace Alice
                     MaterialComponent matCopy = *mat;
                     matCopy.assetPath = NormalizePathToRelative(matCopy.assetPath);
                     matCopy.albedoTexturePath = NormalizePathToRelative(matCopy.albedoTexturePath);
+                    matCopy.emissiveTexturePath = NormalizePathToRelative(matCopy.emissiveTexturePath);
 
                     rttr::instance inst = matCopy;
                     outEntity["Material"] = JsonRttr::ToJsonObject(inst);
@@ -1087,35 +1120,61 @@ namespace Alice
                 return ResourceManager::GetPtr();
             }
 
-            static bool LoadPrefabJsonAuto(const std::filesystem::path& logicalPath, JsonRttr::json& out)
+            static std::shared_ptr<const JsonRttr::json> LoadPrefabJsonSharedAuto(const std::filesystem::path& logicalPath)
             {
-                out = JsonRttr::json{};
-
                 ResourceManager* resources = ResolvePrefabResourceManager();
                 if (!resources)
                 {
                     ALICE_LOG_ERRORF("[Prefab] LoadText failed: ResourceManager is null. logical=\"%s\"",
                                      logicalPath.generic_string().c_str());
-                    return false;
+                    return nullptr;
+                }
+
+                const bool useCache = resources->IsGameMode();
+                const std::string cacheKey = MakePrefabCacheKey(logicalPath);
+                if (useCache && !cacheKey.empty())
+                {
+                    std::lock_guard<std::mutex> lock(g_PrefabJsonCacheMutex);
+                    auto it = g_PrefabJsonCache.find(cacheKey);
+                    if (it != g_PrefabJsonCache.end() && it->second)
+                        return it->second;
                 }
 
                 std::string text;
                 if (!resources->LoadText(logicalPath, text) || text.empty())
                 {
                     ALICE_LOG_ERRORF("[Prefab] LoadText failed: \"%s\"", logicalPath.generic_string().c_str());
-                    return false;
+                    return nullptr;
                 }
 
+                JsonRttr::json root;
                 try
                 {
-                    out = JsonRttr::json::parse(text);
+                    root = JsonRttr::json::parse(text);
                 }
                 catch (...)
                 {
                     ALICE_LOG_ERRORF("[Prefab] JSON parse failed: \"%s\"", logicalPath.generic_string().c_str());
-                    return false;
+                    return nullptr;
                 }
 
+                auto sharedRoot = std::make_shared<JsonRttr::json>(std::move(root));
+                if (useCache && !cacheKey.empty())
+                {
+                    std::lock_guard<std::mutex> lock(g_PrefabJsonCacheMutex);
+                    g_PrefabJsonCache[cacheKey] = sharedRoot;
+                }
+                return sharedRoot;
+            }
+
+            static bool LoadPrefabJsonAuto(const std::filesystem::path& logicalPath, JsonRttr::json& out)
+            {
+                out = JsonRttr::json{};
+                auto sharedRoot = LoadPrefabJsonSharedAuto(logicalPath);
+                if (!sharedRoot)
+                    return false;
+
+                out = *sharedRoot;
                 return true;
             }
 
@@ -1227,12 +1286,19 @@ namespace Alice
 
         void SetDefaultWorld(World* world)
         {
+            if (g_DefaultWorld == world)
+                return;
             g_DefaultWorld = world;
         }
 
         void SetDefaultResources(ResourceManager* resources)
         {
+            if (g_DefaultResources == resources)
+                return;
+
             g_DefaultResources = resources;
+            std::lock_guard<std::mutex> lock(g_PrefabJsonCacheMutex);
+            g_PrefabJsonCache.clear();
         }
 
         EntityId InstantiateFromFileAuto(const std::filesystem::path& logicalPath)
@@ -1243,11 +1309,77 @@ namespace Alice
                 return InvalidEntityId;
             }
 
-            JsonRttr::json root;
-            if (!LoadPrefabJsonAuto(logicalPath, root))
+            auto root = LoadPrefabJsonSharedAuto(logicalPath);
+            if (!root)
                 return InvalidEntityId;
 
-            return InstantiateFromJsonInternal(*g_DefaultWorld, root);
+            return InstantiateFromJsonInternal(*g_DefaultWorld, *root);
+        }
+
+        bool PreloadJsonAuto(const std::filesystem::path& logicalPath)
+        {
+            return static_cast<bool>(LoadPrefabJsonSharedAuto(logicalPath));
+        }
+
+        bool CollectDependenciesAuto(const std::filesystem::path& logicalPath, DependencyInfo& outInfo)
+        {
+            outInfo.unityEffectPaths.clear();
+            outInfo.computeShaderNames.clear();
+
+            auto root = LoadPrefabJsonSharedAuto(logicalPath);
+            if (!root || !root->is_object())
+                return false;
+
+            std::unordered_set<std::string> seenEffects;
+
+            auto ScanEntity = [&](const JsonRttr::json& entity)
+            {
+                if (!entity.is_object())
+                    return;
+
+                auto ScanCompute = [&](const char* key)
+                {
+                    auto itCompute = entity.find(key);
+                    if (itCompute == entity.end() || !itCompute->is_object())
+                        return;
+
+                    auto itShader = itCompute->find("shaderName");
+                    if (itShader != itCompute->end() && itShader->is_string())
+                    {
+                        outInfo.computeShaderNames.push_back(itShader->get<std::string>());
+                    }
+                    else
+                    {
+                        outInfo.computeShaderNames.push_back("Particle");
+                    }
+                };
+
+                auto itUnityVfx = entity.find("UnityVfx");
+                if (itUnityVfx != entity.end() && itUnityVfx->is_object())
+                {
+                    auto itEffectPath = itUnityVfx->find("effectPath");
+                    if (itEffectPath != itUnityVfx->end() && itEffectPath->is_string())
+                    {
+                        AppendUniqueCaseInsensitive(
+                            itEffectPath->get<std::string>(),
+                            outInfo.unityEffectPaths,
+                            seenEffects);
+                    }
+                }
+
+                ScanCompute("ComputeEffect");
+                ScanCompute("ComputeEffectComponent");
+            };
+
+            ScanEntity(*root);
+            auto itEntities = root->find("entities");
+            if (itEntities != root->end() && itEntities->is_array())
+            {
+                for (const auto& entity : *itEntities)
+                    ScanEntity(entity);
+            }
+
+            return true;
         }
 
         bool SaveToFile(const World& world,

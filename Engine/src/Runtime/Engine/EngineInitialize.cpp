@@ -7,6 +7,8 @@
 #include "Runtime/UI/UITextComponent.h"
 #include "Runtime/UI/UIGaugeComponent.h"
 #include "Runtime/UI/UIEffectComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
+#include "Runtime/Rendering/Components/ComputeEffectComponent.h"
 #include "Runtime/Importing/FbxAnimation.h"
 #include <Windows.h>
 #include <d3d11.h>
@@ -16,6 +18,8 @@
 #include <thread>
 #include <cctype>
 #include <cstdio>
+#include <limits>
+#include <unordered_map>
 #include <unordered_set>
 #include <cmath>
 
@@ -314,8 +318,10 @@ namespace Alice
 		ForwardRenderSystem* forward = nullptr;
 		DeferredRenderSystem* deferred = nullptr;
 		UnityVfxMeshRenderSystem* vfx = nullptr;
+		ComputeEffectSystem* compute = nullptr;
 		ID3D11RenderDevice* renderDevice = nullptr;
 		bool useForward = false;
+		std::unordered_map<std::string, std::uint32_t> warmedComputePresetCounts;
 
 		enum class KeyMatch
 		{
@@ -368,43 +374,33 @@ namespace Alice
 			return ok;
 		}
 
-		bool TryCollectPrefabEffectPaths(const std::string& prefabPath, std::vector<std::string>& outPaths) const
+		struct PrefabDependencies
 		{
-			outPaths.clear();
+			std::vector<std::string> effectPaths;
+			std::vector<std::string> computePresets;
+		};
 
-			std::string text;
-			if (!resources.LoadText(prefabPath, text) || text.empty())
+		bool TryCollectPrefabDependencies(const std::string& prefabPath, PrefabDependencies& outDeps) const
+		{
+			outDeps.effectPaths.clear();
+			outDeps.computePresets.clear();
+
+			Prefab::DependencyInfo rawDeps;
+			if (!Prefab::CollectDependenciesAuto(prefabPath, rawDeps))
 			{
-				ALICE_LOG_WARN("Preload: prefab load failed: %s", prefabPath.c_str());
+				ALICE_LOG_WARN("Preload: prefab dependency scan failed: %s", prefabPath.c_str());
 				return false;
 			}
 
-			nlohmann::json root;
-			try
-			{
-				root = nlohmann::json::parse(text);
-			}
-			catch (...)
-			{
-				ALICE_LOG_WARN("Preload: prefab parse failed: %s", prefabPath.c_str());
-				return false;
-			}
-
-			if (!root.is_object())
-			{
-				ALICE_LOG_WARN("Preload: prefab root is not object: %s", prefabPath.c_str());
-				return false;
-			}
-
-			std::unordered_set<std::string> seen;
-			auto AppendEffectPath = [&](const std::string& rawPath)
+			std::unordered_set<std::string> seenEffects;
+			for (const std::string& rawPath : rawDeps.unityEffectPaths)
 			{
 				const std::string logical = NormalizeDerivedLogicalPathRuntime(rawPath);
 				if (logical.empty())
 				{
 					ALICE_LOG_WARN("Preload: invalid UnityVfx.effectPath in prefab \"%s\": %s",
 						prefabPath.c_str(), rawPath.c_str());
-					return;
+					continue;
 				}
 
 				const std::string lower = ToLowerAsciiRuntime(logical);
@@ -412,37 +408,49 @@ namespace Alice
 				{
 					ALICE_LOG_WARN("Preload: UnityVfx.effectPath is not effect.json in prefab \"%s\": %s",
 						prefabPath.c_str(), logical.c_str());
-					return;
+					continue;
 				}
 
-				if (seen.insert(lower).second)
-					outPaths.push_back(logical);
-			};
-
-			auto ScanEntity = [&](const nlohmann::json& entity)
-			{
-				auto itUnityVfx = entity.find("UnityVfx");
-				if (itUnityVfx == entity.end() || !itUnityVfx->is_object())
-					return;
-
-				auto itEffectPath = itUnityVfx->find("effectPath");
-				if (itEffectPath == itUnityVfx->end() || !itEffectPath->is_string())
-					return;
-
-				AppendEffectPath(itEffectPath->get<std::string>());
-			};
-
-			ScanEntity(root);
-			auto itEntities = root.find("entities");
-			if (itEntities != root.end() && itEntities->is_array())
-			{
-				for (const auto& entity : *itEntities)
-				{
-					if (entity.is_object())
-						ScanEntity(entity);
-				}
+				if (seenEffects.insert(lower).second)
+					outDeps.effectPaths.push_back(logical);
 			}
 
+			for (const std::string& rawPreset : rawDeps.computeShaderNames)
+			{
+				std::string preset = TrimAsciiRuntime(rawPreset);
+				if (preset.empty())
+					preset = "Particle";
+				outDeps.computePresets.push_back(preset);
+			}
+
+			return true;
+		}
+
+		bool WarmComputePreset(const std::string& presetName)
+		{
+			if (!compute || presetName.empty())
+				return false;
+
+			std::string preset = TrimAsciiRuntime(presetName);
+			if (preset.empty())
+				preset = "Particle";
+
+			const std::string key = ToLowerAsciiRuntime(preset);
+			if (key.empty())
+				return false;
+
+			auto emplaceResult = warmedComputePresetCounts.emplace(key, 0u);
+			auto it = emplaceResult.first;
+			if (it->second < (std::numeric_limits<std::uint32_t>::max)())
+				++it->second;
+			const std::uint32_t expectedEmitterCount = (std::max)(1u, it->second);
+
+			if (!compute->PrewarmPreset(preset, expectedEmitterCount))
+			{
+				ALICE_LOG_WARN("Preload: compute preset warmup failed: %s (expectedEmitters=%u)",
+					preset.c_str(), expectedEmitterCount);
+				return false;
+			}
 			return true;
 		}
 
@@ -491,6 +499,10 @@ namespace Alice
 				{
 					ok = vfx->PreloadEffect(path) || ok;
 				}
+				if (allowGpu && compute)
+				{
+					ok = compute->PrewarmUnityEffect(path, 1) || ok;
+				}
 				ok = PreloadBlob(path) || ok;
 				return ok;
 			}
@@ -498,12 +510,17 @@ namespace Alice
 			if (ext == ".prefab")
 			{
 				bool ok = PreloadBlob(path);
-				std::vector<std::string> effectPaths;
-				if (!TryCollectPrefabEffectPaths(path, effectPaths))
+				PrefabDependencies deps;
+				if (!TryCollectPrefabDependencies(path, deps))
 					return ok;
 
-				for (const auto& effectPath : effectPaths)
+				for (const auto& effectPath : deps.effectPaths)
 					ok = PreloadByType(effectPath, allowGpu) || ok;
+				if (allowGpu && compute)
+				{
+					for (const auto& presetName : deps.computePresets)
+						ok = WarmComputePreset(presetName) || ok;
+				}
 				return ok;
 			}
 
@@ -679,11 +696,19 @@ namespace Alice
 						lighting.ambientOcclusion = p["ambientOcclusion"].get<float>();
 					if (p.contains("globalIBLIntensity") && p["globalIBLIntensity"].is_number())
 						lighting.globalIBLIntensity = p["globalIBLIntensity"].get<float>();
+					if (p.contains("skyboxRotation") && p["skyboxRotation"].is_number())
+						lighting.skyboxRotation = p["skyboxRotation"].get<float>();
+					if (p.contains("skyboxRotationPitch") && p["skyboxRotationPitch"].is_number())
+						lighting.skyboxRotationPitch = p["skyboxRotationPitch"].get<float>();
 					if (p.contains("shadowStrength") && p["shadowStrength"].is_number())
 						lighting.shadowStrength = p["shadowStrength"].get<float>();
 					if (p.contains("toonShadowStrength") && p["toonShadowStrength"].is_number())
 						lighting.toonShadowStrength = p["toonShadowStrength"].get<float>();
 					lighting.globalIBLIntensity = std::clamp(lighting.globalIBLIntensity, 0.0f, 1.0f);
+					lighting.skyboxRotation = std::fmod(lighting.skyboxRotation, 360.0f);
+					if (lighting.skyboxRotation < 0.0f)
+						lighting.skyboxRotation += 360.0f;
+					lighting.skyboxRotationPitch = std::clamp(lighting.skyboxRotationPitch, -89.9f, 89.9f);
 					lighting.shadowStrength = std::clamp(lighting.shadowStrength, 0.0f, 1.0f);
 					lighting.toonShadowStrength = std::clamp(lighting.toonShadowStrength, 0.0f, 1.0f);
 
@@ -752,6 +777,8 @@ namespace Alice
 			p["roughness"] = lighting.roughness;
 			p["ambientOcclusion"] = lighting.ambientOcclusion;
 			p["globalIBLIntensity"] = lighting.globalIBLIntensity;
+			p["skyboxRotation"] = lighting.skyboxRotation;
+			p["skyboxRotationPitch"] = lighting.skyboxRotationPitch;
 			p["shadowStrength"] = lighting.shadowStrength;
 			p["toonShadowStrength"] = lighting.toonShadowStrength;
 			p["keyIntensity"] = lighting.keyIntensity;
@@ -1340,6 +1367,7 @@ namespace Alice
 			m_forwardRenderSystem.get(),
 			m_deferredRenderSystem.get(),
 			m_unityVfxMeshRenderSystem.get(),
+			m_computeEffectSystem.get(),
 			m_renderDevice.get(),
 			m_useForwardRendering
 		};
@@ -1351,6 +1379,17 @@ namespace Alice
 			InitializeAudio();
 			if (!InitializeRenderSystems()) return false;
 			if (!InitializeComputeEffectSystem()) return false;
+			preloadCtx.forward = m_forwardRenderSystem.get();
+			preloadCtx.deferred = m_deferredRenderSystem.get();
+			preloadCtx.vfx = m_unityVfxMeshRenderSystem.get();
+			preloadCtx.compute = m_computeEffectSystem.get();
+			preloadCtx.renderDevice = m_renderDevice.get();
+			preloadCtx.useForward = m_useForwardRendering;
+			if (!m_editorMode && m_computeEffectSystem)
+			{
+				const std::size_t warmed = m_computeEffectSystem->PrewarmAllRegisteredPresets(1);
+				ALICE_LOG_INFO("[Loading] Build-mode compute preset warmup finished (count=%zu).", warmed);
+			}
 
 			for (const auto& path : preloadList)
 				preloadCtx.PreloadByType(path, false);
@@ -1637,6 +1676,12 @@ namespace Alice
 			ALICE_LOG_ERRORF("[Loading] Compute effect system initialization failed.");
 			return false;
 		}
+		preloadCtx.forward = m_forwardRenderSystem.get();
+		preloadCtx.deferred = m_deferredRenderSystem.get();
+		preloadCtx.vfx = m_unityVfxMeshRenderSystem.get();
+		preloadCtx.compute = m_computeEffectSystem.get();
+		preloadCtx.renderDevice = m_renderDevice.get();
+		preloadCtx.useForward = m_useForwardRendering;
 		ALICE_LOG_INFO("[Loading] Compute effect system initialized.");
 		progressBase += kComputeWeight;
 		if (!AdvanceTo(progressBase, 0.15f))
@@ -1676,6 +1721,24 @@ namespace Alice
 					return false;
 			}
 			ALICE_LOG_INFO("[Loading] Preload finished.");
+		}
+
+		if (!m_editorMode && m_computeEffectSystem)
+		{
+			if (auto* statusText = loadingWorld.GetComponent<UITextComponent>(statusId))
+				statusText->text = "컴퓨트 이펙트 워밍업.";
+			if (!RenderFrame(CalcDelta(), true))
+				return false;
+
+			const auto warmBegin = clock::now();
+			const std::size_t warmedTotal = m_computeEffectSystem->PrewarmAllRegisteredPresets(1);
+			const double warmMs = std::chrono::duration<double, std::milli>(clock::now() - warmBegin).count();
+			ALICE_LOG_INFO("[Loading] Build-mode compute preset warmup finished (from preload=%zu, total=%zu, %.2fms).",
+				preloadCtx.warmedComputePresetCounts.size(), warmedTotal, warmMs);
+
+			progressBase = (std::min)(1.0f, progressBase + 0.04f);
+			if (!AdvanceTo(progressBase, 0.06f))
+				return false;
 		}
 
 		if (!AdvanceTo(1.0f, 0.10f))
@@ -1743,6 +1806,74 @@ namespace Alice
 		{
 			m_sceneManager->SwitchToImmediate("SampleScene");
 			ALICE_LOG_INFO("Engine::Initialize: Loaded SampleScene (Fallback or Editor).");
+		}
+
+		if (!m_editorMode)
+		{
+			using clock = std::chrono::steady_clock;
+			const auto warmBegin = clock::now();
+
+			std::size_t warmedUnityEffects = 0;
+			std::size_t warmedComputePresets = 0;
+			std::unordered_set<std::string> seenEffectKeys;
+			std::unordered_map<std::string, std::pair<std::string, std::uint32_t>> presetEmitterCounts;
+
+			for (auto&& [entityId, unityVfx] : m_world.GetComponents<UnityVfxComponent>())
+			{
+				(void)entityId;
+				if (unityVfx.effectPath.empty())
+					continue;
+
+				const std::string effectPath = NormalizeDerivedLogicalPathRuntime(unityVfx.effectPath);
+				if (effectPath.empty())
+					continue;
+
+				const std::string effectKey = ToLowerAsciiRuntime(effectPath);
+				if (!seenEffectKeys.insert(effectKey).second)
+					continue;
+
+				bool warmedThisPath = false;
+				if (m_unityVfxMeshRenderSystem && m_unityVfxMeshRenderSystem->PreloadEffect(effectPath))
+					warmedThisPath = true;
+				if (m_computeEffectSystem && m_computeEffectSystem->PrewarmUnityEffect(effectPath, 1))
+					warmedThisPath = true;
+
+				if (warmedThisPath)
+					++warmedUnityEffects;
+			}
+
+			for (auto&& [entityId, effect] : m_world.GetComponents<ComputeEffectComponent>())
+			{
+				(void)entityId;
+				std::string presetName = TrimAsciiRuntime(effect.shaderName);
+				if (presetName.empty())
+					presetName = "Particle";
+
+				const std::string presetKey = ToLowerAsciiRuntime(presetName);
+				auto [it, inserted] = presetEmitterCounts.emplace(
+					presetKey,
+					std::make_pair(presetName, 0u));
+				if (inserted)
+					it->second.first = presetName;
+				if (it->second.second < (std::numeric_limits<std::uint32_t>::max)())
+					++it->second.second;
+			}
+
+			if (m_computeEffectSystem)
+			{
+				for (const auto& [presetKey, entry] : presetEmitterCounts)
+				{
+					(void)presetKey;
+					const std::string& presetName = entry.first;
+					const std::uint32_t emitterCount = (std::max)(1u, entry.second);
+					if (m_computeEffectSystem->PrewarmPreset(presetName, emitterCount))
+						++warmedComputePresets;
+				}
+			}
+
+			const double warmMs = std::chrono::duration<double, std::milli>(clock::now() - warmBegin).count();
+			ALICE_LOG_INFO("[Loading] Scene VFX warmup finished (unityEffects=%zu, computePresets=%zu, %.2fms).",
+				warmedUnityEffects, warmedComputePresets, warmMs);
 		}
 
 		return true;

@@ -2,9 +2,9 @@
     "Transform": {
         "enabled": true,
         "position": {
-            "x": -0.020640641450881958,
-            "y": 0.8769081234931946,
-            "z": -1.4857286214828491
+            "x": 3.8788256645202637,
+            "y": 2.90120530128479,
+            "z": 1.5698745250701904
         },
         "rotation": {
             "x": 0.0,
@@ -33,7 +33,7 @@
         "enabled": true,
         "hdrColorClamp": 1.0,
         "intensityScale": 1.0,
-        "lifetimeScale": 1.0,
+        "lifetimeScale": 2.0,
         "loop": true,
         "noiseScale": 1.0,
         "overrideLoop": true,
@@ -41,7 +41,7 @@
         "sizeScale": 1.3480000495910645,
         "spawnRateScale": 1.0,
         "speedScale": 1.0,
-        "timeScale": 1.0,
+        "timeScale": 3.0,
         "trailLifeScale": 1.0,
         "trailWidthScale": 1.0,
         "useComputeEffect": false,

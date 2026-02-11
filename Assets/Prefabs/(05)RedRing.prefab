@@ -2,19 +2,19 @@
     "Transform": {
         "enabled": true,
         "position": {
-            "x": -0.020640641450881958,
-            "y": 0.8769081234931946,
-            "z": -1.4857286214828491
+            "x": 8.390564918518066,
+            "y": 1.467850685119629,
+            "z": -0.965904712677002
         },
         "rotation": {
-            "x": 0.0,
+            "x": 1.5707963705062866,
             "y": 0.0,
             "z": 0.0
         },
         "scale": {
-            "x": 0.10000000149011612,
-            "y": 0.10000000149011612,
-            "z": 0.10000000149011612
+            "x": 0.20000000298023224,
+            "y": 0.20000000298023224,
+            "z": 0.20000000298023224
         },
         "visible": true
     },
@@ -33,12 +33,12 @@
         "enabled": true,
         "hdrColorClamp": 1.0,
         "intensityScale": 1.0,
-        "lifetimeScale": 1.0,
-        "loop": true,
+        "lifetimeScale": 5.0,
+        "loop": false,
         "noiseScale": 1.0,
         "overrideLoop": true,
         "rampScale": 1.0,
-        "sizeScale": 1.3480000495910645,
+        "sizeScale": 1.0,
         "spawnRateScale": 1.0,
         "speedScale": 1.0,
         "timeScale": 1.0,

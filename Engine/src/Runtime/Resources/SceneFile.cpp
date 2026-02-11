@@ -25,6 +25,7 @@
 #include "Runtime/ECS/World.h"
 #include "Runtime/Scripting/Components/ScriptComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
+#include "Runtime/Rendering/Data/Material.h"
 #include "Runtime/Rendering/Components/DecalComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
 #include "Runtime/Rendering/Components/UnityVfxComponent.h"
@@ -636,6 +637,7 @@ namespace Alice
                 MaterialComponent matCopy = *mat;
                 matCopy.assetPath = NormalizePathToRelative(matCopy.assetPath);
                 matCopy.albedoTexturePath = NormalizePathToRelative(matCopy.albedoTexturePath);
+                matCopy.emissiveTexturePath = NormalizePathToRelative(matCopy.emissiveTexturePath);
                 
                 rttr::instance inst = matCopy;
                 outEntity["Material"] = JsonRttr::ToJsonObject(inst);
@@ -1107,6 +1109,38 @@ namespace Alice
                 MaterialComponent& mc = world.AddComponent<MaterialComponent>(id, DirectX::XMFLOAT3(0.7f, 0.7f, 0.7f));
                 rttr::instance inst = mc;
                 if (!JsonRttr::FromJsonObject(inst, *itM)) return false;
+
+                // 구(旧) 씬 데이터는 assetPath만 있고 emissive/albedo 텍스처 필드가 비어 있을 수 있습니다.
+                // assetPath(.mat)에서 누락 필드만 보강해 디퍼드 경로의 텍스처 바인딩 실패를 방지합니다.
+                if (!mc.assetPath.empty())
+                {
+                    MaterialComponent loadedMat{};
+                    auto materialPath = std::filesystem::path(mc.assetPath);
+                    const std::filesystem::path resolvedMaterialPath = ResourceManager::Get().Resolve(materialPath);
+                    if (!resolvedMaterialPath.empty())
+                    {
+                        materialPath = resolvedMaterialPath;
+                    }
+
+                    if (MaterialFile::Load(materialPath, loadedMat, &ResourceManager::Get()))
+                    {
+                        if (mc.albedoTexturePath.empty())
+                            mc.albedoTexturePath = loadedMat.albedoTexturePath;
+                        if (mc.emissiveTexturePath.empty())
+                            mc.emissiveTexturePath = loadedMat.emissiveTexturePath;
+
+                        if (itM->find("emissiveColor") == itM->end())
+                            mc.emissiveColor = loadedMat.emissiveColor;
+                        if (itM->find("emissiveIntensity") == itM->end())
+                            mc.emissiveIntensity = loadedMat.emissiveIntensity;
+                    }
+                    else
+                    {
+                        ALICE_LOG_WARN("[SceneFile] Material fallback load failed. asset=\"%s\" resolved=\"%s\"",
+                                       mc.assetPath.c_str(),
+                                       materialPath.string().c_str());
+                    }
+                }
             }
 
             auto itD = e.find("Decal");

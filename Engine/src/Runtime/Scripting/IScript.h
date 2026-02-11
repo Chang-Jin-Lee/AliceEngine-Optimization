@@ -55,23 +55,20 @@ namespace Alice
 
         /// World / Entity 컨텍스트를 내부에 저장합니다.
         /// - World::AddScript 에서 자동으로 호출됩니다.
-        void SetContext(World* world, EntityId entity) { m_world = world; m_entity = entity; }
+        void SetContext(World* world, EntityId entity);
 
         /// ScriptSystem 이 제공하는 서비스(입력/씬/레지스트리 등)
-        void SetServices(ScriptServices* services) { m_services = services; }
+        void SetServices(ScriptServices* services);
 
     protected:
         /// 이 스크립트를 소유한 월드에 접근합니다.
         World* GetWorld() const
         {
-            if (m_world)
-            {
-                Prefab::SetDefaultWorld(m_world);
-                if (m_services && m_services->resources)
-                    Prefab::SetDefaultResources(m_services->resources);
-            }
             return m_world;
         }
+
+        /// 현재 런타임이 게임 모드(빌드 실행)인지 반환합니다.
+        bool IsGameMode() const;
 
         /// 소유 엔티티 ID (Unity 의 gameObject / this.Entity 느낌)
         EntityId GetOwnerId() const { return m_entity; }

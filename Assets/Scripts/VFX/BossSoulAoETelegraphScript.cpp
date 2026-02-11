@@ -19,6 +19,7 @@
 #include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/Importing/FbxModel.h"
 #include "Runtime/Scripting/ScriptFactory.h"
+#include "../Combat/C_BossBrainComponent.h"
 #include <assimp/scene.h>
 
 namespace Alice
@@ -120,7 +121,9 @@ namespace Alice
         ResolveHowlDust(true);
         ResolveSoulTiming(true);
         ResetHowlDust();
-        ApplyAlpha(Get_alphaIdle());
+        m_appliedAlpha = std::clamp(Get_alphaIdle(), 0.0f, 1.0f);
+        m_alphaInitialized = true;
+        ApplyAlpha(m_appliedAlpha);
     }
 
     void BossSoulAoETelegraphScript::Update(float deltaTime)
@@ -135,47 +138,125 @@ namespace Alice
         float targetAlpha = idleAlpha;
         float soulTimeSec = 0.0f;
         const bool inSoul = TryGetCurrentSoulTimeSec(soulTimeSec);
+        const bool treatBoostAsActive = Get_treatBoostAsActiveWhenDashClip()
+            && (Get_soulClipName().find("Dash_Attack") != std::string::npos)
+            && IsBoostPatternActive();
 
         if (inSoul)
         {
-            float durationSec = ResolveCurrentSoulClipDurationSec();
-            if (durationSec <= kTimingEpsilon)
+            if (Get_useAttackWindowPlateau() && m_hasTiming)
             {
-                durationSec = (std::max)(kTimingEpsilon, Get_soulDurationFallbackSec());
-                if (m_hasTiming)
-                    durationSec = (std::max)(durationSec, m_slotStartSec + 0.1f);
+                float durationSec = ResolveCurrentSoulClipDurationSec();
+                if (durationSec <= kTimingEpsilon)
+                {
+                    durationSec = (std::max)(kTimingEpsilon, Get_soulDurationFallbackSec());
+                    durationSec = (std::max)(durationSec, m_slotEndSec + 0.1f);
+                }
+
+                const float clampedTime = std::clamp(soulTimeSec, 0.0f, durationSec);
+                const float riseEndSec = std::clamp(m_slotStartSec, 0.0f, durationSec);
+                const float holdEndSec = std::clamp((std::max)(m_slotEndSec, riseEndSec), 0.0f, durationSec);
+
+                if (clampedTime <= riseEndSec)
+                {
+                    const float riseDen = (std::max)(kTimingEpsilon, riseEndSec);
+                    const float t = std::clamp(clampedTime / riseDen, 0.0f, 1.0f);
+                    targetAlpha = idleAlpha + (peakAlpha - idleAlpha) * t;
+                }
+                else if (clampedTime <= holdEndSec)
+                {
+                    targetAlpha = peakAlpha;
+                }
+                else
+                {
+                    const float fallDen = (std::max)(kTimingEpsilon, durationSec - holdEndSec);
+                    const float t = std::clamp((clampedTime - holdEndSec) / fallDen, 0.0f, 1.0f);
+                    targetAlpha = peakAlpha + (idleAlpha - peakAlpha) * t;
+                }
             }
-
-            float peakSec = Get_soulPeakTimeSec();
-            if (Get_useSlotPeakTiming() && m_hasTiming && m_slotStartSec > 0.0f)
-                peakSec = m_slotStartSec;
-            if (peakSec < 0.0f)
-                peakSec = durationSec * 0.5f;
-
-            peakSec = std::clamp(peakSec, 0.0f, durationSec);
-            const float clampedTime = std::clamp(soulTimeSec, 0.0f, durationSec);
-
-            if (clampedTime <= peakSec)
+            else if (Get_holdPeakWhileActive())
             {
-                const float upDen = (std::max)(kTimingEpsilon, peakSec);
-                const float t = std::clamp(clampedTime / upDen, 0.0f, 1.0f);
-                targetAlpha = idleAlpha + (peakAlpha - idleAlpha) * t;
+                targetAlpha = peakAlpha;
             }
             else
             {
-                const float downDen = (std::max)(kTimingEpsilon, durationSec - peakSec);
-                const float t = std::clamp((clampedTime - peakSec) / downDen, 0.0f, 1.0f);
-                targetAlpha = peakAlpha + (idleAlpha - peakAlpha) * t;
+                float durationSec = ResolveCurrentSoulClipDurationSec();
+                if (durationSec <= kTimingEpsilon)
+                {
+                    durationSec = (std::max)(kTimingEpsilon, Get_soulDurationFallbackSec());
+                    if (m_hasTiming)
+                        durationSec = (std::max)(durationSec, m_slotStartSec + 0.1f);
+                }
+
+                float peakSec = Get_soulPeakTimeSec();
+                if (Get_useSlotPeakTiming() && m_hasTiming && m_slotStartSec > 0.0f)
+                    peakSec = m_slotStartSec;
+                if (peakSec < 0.0f)
+                    peakSec = durationSec * 0.5f;
+
+                peakSec = std::clamp(peakSec, 0.0f, durationSec);
+                const float clampedTime = std::clamp(soulTimeSec, 0.0f, durationSec);
+
+                if (clampedTime <= peakSec)
+                {
+                    const float upDen = (std::max)(kTimingEpsilon, peakSec);
+                    const float t = std::clamp(clampedTime / upDen, 0.0f, 1.0f);
+                    targetAlpha = idleAlpha + (peakAlpha - idleAlpha) * t;
+                }
+                else
+                {
+                    const float downDen = (std::max)(kTimingEpsilon, durationSec - peakSec);
+                    const float t = std::clamp((clampedTime - peakSec) / downDen, 0.0f, 1.0f);
+                    targetAlpha = peakAlpha + (idleAlpha - peakAlpha) * t;
+                }
+            }
+        }
+        else if (treatBoostAsActive)
+        {
+            targetAlpha = peakAlpha;
+        }
+
+        const float targetClamped = std::clamp(targetAlpha, 0.0f, 1.0f);
+        if (!m_alphaInitialized)
+        {
+            m_appliedAlpha = targetClamped;
+            m_alphaInitialized = true;
+        }
+        else
+        {
+            const bool rising = (targetClamped > m_appliedAlpha + kTimingEpsilon);
+            const bool falling = (targetClamped < m_appliedAlpha - kTimingEpsilon);
+            float speed = 0.0f;
+            if (rising)
+                speed = (std::max)(0.0f, Get_alphaFadeInSpeed());
+            else if (falling)
+                speed = (std::max)(0.0f, Get_alphaFadeOutSpeed());
+
+            if (speed > kTimingEpsilon)
+            {
+                const float maxStep = speed * (std::max)(0.0f, deltaTime);
+                if (rising)
+                    m_appliedAlpha = (std::min)(targetClamped, m_appliedAlpha + maxStep);
+                else if (falling)
+                    m_appliedAlpha = (std::max)(targetClamped, m_appliedAlpha - maxStep);
+                else
+                    m_appliedAlpha = targetClamped;
+            }
+            else
+            {
+                m_appliedAlpha = targetClamped;
             }
         }
 
-        ApplyAlpha(targetAlpha);
+        ApplyAlpha(m_appliedAlpha);
         UpdateHowlDust(deltaTime);
     }
 
     void BossSoulAoETelegraphScript::OnDisable()
     {
-        ApplyAlpha(Get_alphaIdle());
+        m_appliedAlpha = std::clamp(Get_alphaIdle(), 0.0f, 1.0f);
+        m_alphaInitialized = false;
+        ApplyAlpha(m_appliedAlpha);
         ResetHowlDust();
     }
 
@@ -340,6 +421,7 @@ namespace Alice
         if (!world || m_bossId == InvalidEntityId)
         {
             m_hasTiming = false;
+            m_slotEndSec = 0.0f;
             return;
         }
 
@@ -347,6 +429,7 @@ namespace Alice
         if (!driver)
         {
             m_hasTiming = false;
+            m_slotEndSec = 0.0f;
             if (logWarnings && !m_warnedMissingDriver)
             {
                 ALICE_LOG_WARN("[BossSoulAoE] Boss has no AttackDriverComponent.");
@@ -359,6 +442,7 @@ namespace Alice
         if (slotIndex < 1 || slotIndex > 32)
         {
             m_hasTiming = false;
+            m_slotEndSec = 0.0f;
             if (logWarnings && !m_warnedBadSlotIndex)
             {
                 ALICE_LOG_WARN("[BossSoulAoE] telegraphSlotIndex out of range: %d (valid 1~32)", slotIndex);
@@ -371,6 +455,7 @@ namespace Alice
         const std::string soulClip = Get_soulClipName();
         float soulStart = (std::numeric_limits<float>::max)();
         float slotStart = (std::numeric_limits<float>::max)();
+        float slotEnd = -1.0f;
         bool foundSoul = false;
         bool foundSlotStart = false;
 
@@ -398,12 +483,14 @@ namespace Alice
 
                 foundSlotStart = true;
                 slotStart = (std::min)(slotStart, clip.startTimeSec);
+                slotEnd = (std::max)(slotEnd, (std::max)(clip.endTimeSec, clip.startTimeSec));
             }
         }
 
         if (!foundSoul || !foundSlotStart)
         {
             m_hasTiming = false;
+            m_slotEndSec = 0.0f;
             if (logWarnings && !m_warnedMissingTiming)
             {
                 ALICE_LOG_WARN("[BossSoulAoE] Missing Soul_Attack timing in AttackDriver. clip='%s', slot=%d",
@@ -416,13 +503,15 @@ namespace Alice
 
         m_soulStartSec = soulStart;
         m_slotStartSec = slotStart;
+        m_slotEndSec = (slotEnd >= slotStart) ? slotEnd : slotStart;
         m_hasTiming = true;
 
         if (Get_debugLogs())
         {
-            ALICE_LOG_INFO("[BossSoulAoE] Timing resolved. soulStart=%.3f slotStart=%.3f slot=%d",
+            ALICE_LOG_INFO("[BossSoulAoE] Timing resolved. soulStart=%.3f slotStart=%.3f slotEnd=%.3f slot=%d",
                            m_soulStartSec,
                            m_slotStartSec,
+                           m_slotEndSec,
                            slotIndex);
         }
     }
@@ -555,6 +644,34 @@ namespace Alice
             durationSec /= speedAbs;
 
         return (durationSec > 0.0f) ? durationSec : 0.0f;
+    }
+
+    bool BossSoulAoETelegraphScript::IsBoostPatternActive() const
+    {
+        World* world = GetWorld();
+        if (!world || m_bossId == InvalidEntityId)
+            return false;
+
+        auto* scripts = world->GetScripts(m_bossId);
+        if (!scripts)
+            return false;
+
+        for (const auto& sc : *scripts)
+        {
+            if (sc.scriptName != "C_BossBrainComponent" || !sc.instance)
+                continue;
+
+            const auto* brain = static_cast<const C_BossBrainComponent*>(sc.instance.get());
+            if (!brain)
+                continue;
+
+            const C_BossBrainComponent::PatternType pattern = brain->GetActivePattern();
+            return pattern == C_BossBrainComponent::PatternType::BoostAttackA
+                || pattern == C_BossBrainComponent::PatternType::BoostAttackB
+                || pattern == C_BossBrainComponent::PatternType::BoostAttackC;
+        }
+
+        return false;
     }
 
     bool BossSoulAoETelegraphScript::TryGetCurrentClipTimeSec(const std::string& clipName, float& outTimeSec) const

@@ -65,6 +65,8 @@ namespace Alice
         outMaterial.shadowStrength = std::clamp(outMaterial.shadowStrength, 0.0f, 1.0f);
         outMaterial.envDiffuseStrength = std::max(outMaterial.envDiffuseStrength, 0.0f);
         outMaterial.envSpecularStrength = std::max(outMaterial.envSpecularStrength, 0.0f);
+        outMaterial.emissiveIntensity = std::max(outMaterial.emissiveIntensity, 0.0f);
+        outMaterial.emissiveBloom = std::max(outMaterial.emissiveBloom, 0.0f);
         outMaterial.toonPbrLevel1Alpha = std::clamp(outMaterial.toonPbrLevel1Alpha, 0.0f, 1.0f);
         outMaterial.toonPbrLevel2Alpha = std::clamp(outMaterial.toonPbrLevel2Alpha, 0.0f, 1.0f);
         outMaterial.toonPbrLevel3Alpha = std::clamp(outMaterial.toonPbrLevel3Alpha, 0.0f, 1.0f);
@@ -92,10 +94,11 @@ namespace Alice
 
     bool MaterialFile::Save(const std::filesystem::path& path, const MaterialComponent& material)
     {
-        // assetPath/albedoTexturePath는 논리 경로만 저장 (절대경로 커밋 시 팀킬 방지)
+        // assetPath/*TexturePath는 논리 경로만 저장 (절대경로 커밋 시 팀킬 방지)
         MaterialComponent copy = material;
         copy.assetPath = NormalizePathToLogical(copy.assetPath);
         copy.albedoTexturePath = NormalizePathToLogical(copy.albedoTexturePath);
+        copy.emissiveTexturePath = NormalizePathToLogical(copy.emissiveTexturePath);
         copy.alpha = std::clamp(copy.alpha, 0.0f, 1.0f);
         copy.roughness = std::clamp(copy.roughness, 0.0f, 1.0f);
         copy.metalness = std::clamp(copy.metalness, 0.0f, 1.0f);
@@ -103,6 +106,8 @@ namespace Alice
         copy.shadowStrength = std::clamp(copy.shadowStrength, 0.0f, 1.0f);
         copy.envDiffuseStrength = std::max(copy.envDiffuseStrength, 0.0f);
         copy.envSpecularStrength = std::max(copy.envSpecularStrength, 0.0f);
+        copy.emissiveIntensity = std::max(copy.emissiveIntensity, 0.0f);
+        copy.emissiveBloom = std::max(copy.emissiveBloom, 0.0f);
         copy.toonPbrLevel1Alpha = std::clamp(copy.toonPbrLevel1Alpha, 0.0f, 1.0f);
         copy.toonPbrLevel2Alpha = std::clamp(copy.toonPbrLevel2Alpha, 0.0f, 1.0f);
         copy.toonPbrLevel3Alpha = std::clamp(copy.toonPbrLevel3Alpha, 0.0f, 1.0f);

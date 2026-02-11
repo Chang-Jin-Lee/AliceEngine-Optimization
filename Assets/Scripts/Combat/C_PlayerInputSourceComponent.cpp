@@ -10,6 +10,7 @@
 #include "Runtime/ECS/Components/IDComponent.h"
 #include "Runtime/Physics/Components/Phy_CCTComponent.h"
 #include "Runtime/Foundation/Logger.h"
+#include "C_CombatSessionComponent.h"
 //TODO : Include Ȯ�� �ؾ���
 
 namespace Alice
@@ -122,6 +123,7 @@ namespace Alice
         m_chargeActive = false;
         m_chargeHeldSec = 0.0f;
         m_chargeLevel = 0;
+        m_combatSessionId = InvalidEntityId;
     }
 
     void C_PlayerInputSourceComponent::CancelCharge()
@@ -140,6 +142,49 @@ namespace Alice
 
         auto toKey = [](int v) { return static_cast<KeyCode>(v); };
         auto toMouse = [](int v) { return static_cast<MouseCode>(v); };
+        const bool ragePressedNow = input->GetKeyDown(toKey(m_keyRage));
+        auto IsRageActive = [&]() -> bool
+            {
+                auto* world = GetWorld();
+                if (!world)
+                    return false;
+
+                auto ResolveSessionFromEntity = [&](EntityId id) -> const C_CombatSessionComponent*
+                    {
+                        if (id == InvalidEntityId)
+                            return nullptr;
+                        const auto* scripts = world->GetScripts(id);
+                        if (!scripts)
+                            return nullptr;
+                        for (const auto& sc : *scripts)
+                        {
+                            if (!sc.instance || sc.scriptName != "C_CombatSessionComponent")
+                                continue;
+                            return dynamic_cast<const C_CombatSessionComponent*>(sc.instance.get());
+                        }
+                        return nullptr;
+                    };
+
+                if (const auto* cached = ResolveSessionFromEntity(m_combatSessionId))
+                    return cached->IsPlayerRageActive();
+                m_combatSessionId = InvalidEntityId;
+
+                for (const auto& [entityId, scripts] : world->GetAllScriptsInWorld())
+                {
+                    for (const auto& sc : scripts)
+                    {
+                        if (!sc.instance || sc.scriptName != "C_CombatSessionComponent")
+                            continue;
+                        if (const auto* session = dynamic_cast<const C_CombatSessionComponent*>(sc.instance.get()))
+                        {
+                            m_combatSessionId = entityId;
+                            return session->IsPlayerRageActive();
+                        }
+                    }
+                }
+                return false;
+            };
+        const bool rageChargeActive = IsRageActive() || ragePressedNow;
 
         float x = 0.0f;
         float y = 0.0f;
@@ -174,12 +219,26 @@ namespace Alice
             if (attackHeld)
                 m_chargeHeldSec += deltaTime;
 
+            float chargeStage1Sec = std::max(0.0f, m_chargeStage1Sec);
+            float chargeStage2Sec = std::max(0.0f, m_chargeStage2Sec);
+            float chargeStage3Sec = std::max(0.0f, m_chargeStage3Sec);
+            if (rageChargeActive)
+            {
+                const float rageStepSec = std::max(0.0f, m_rageChargeStageStepSec);
+                if (rageStepSec > 0.0f)
+                {
+                    chargeStage1Sec = rageStepSec;
+                    chargeStage2Sec = rageStepSec * 2.0f;
+                    chargeStage3Sec = rageStepSec * 3.0f;
+                }
+            }
+
             int level = 0;
-            if (m_chargeStage1Sec > 0.0f && m_chargeHeldSec >= m_chargeStage1Sec)
+            if (chargeStage1Sec > 0.0f && m_chargeHeldSec >= chargeStage1Sec)
                 level = 1;
-            if (m_chargeStage2Sec > 0.0f && m_chargeHeldSec >= m_chargeStage2Sec)
+            if (chargeStage2Sec > 0.0f && m_chargeHeldSec >= chargeStage2Sec)
                 level = 2;
-            if (m_chargeStage3Sec > 0.0f && m_chargeHeldSec >= m_chargeStage3Sec)
+            if (chargeStage3Sec > 0.0f && m_chargeHeldSec >= chargeStage3Sec)
                 level = 3;
             m_chargeLevel = level;
 
@@ -264,7 +323,7 @@ namespace Alice
         intent.itemReleased = itemReleased;
         intent.itemHeldSec = itemHeld ? m_itemHeldSec : 0.0f;
         intent.interactPressed = input->GetKeyDown(toKey(m_keyInteract));
-        intent.ragePressed = input->GetKeyDown(toKey(m_keyRage));
+        intent.ragePressed = ragePressedNow;
 
         if (m_useMouseLockOn)
             intent.lockOnToggle = input->GetMouseButtonDown(toMouse(m_mouseLockOnButton));
