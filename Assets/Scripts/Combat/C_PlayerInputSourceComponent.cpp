@@ -146,7 +146,8 @@ namespace Alice
         auto toKey = [](int v) { return static_cast<KeyCode>(v); };
         auto toMouse = [](int v) { return static_cast<MouseCode>(v); };
         // Xbox-style default mapping:
-        // Move=LStick, Attack=RB, ChargeHeavy=RT(=Shift+Attack), Guard=LB, Heal=LT, Dodge=A, Interact=X, Rage=Y, LockOn=RStickClick.
+        // Move=LStick, Attack=RB, ChargeHeavy=RT(=Shift+Attack), Guard=LB, Heal=LT,
+        // Dodge=B, Interact=A, ZoomToggle=X, Rage=Y, LockOn=RStickClick.
         const int gamepadPlayerIndex = std::clamp(Get_m_gamepadPlayerIndex(), 0, 3);
         const bool gamepadConnected = Get_m_useGamepadInput() && input->GetGamepadConnected(gamepadPlayerIndex);
         const float gamepadMoveDeadzone = std::clamp(Get_m_gamepadMoveDeadzone(), 0.0f, 0.99f);
@@ -343,7 +344,7 @@ namespace Alice
         intent.parryTapWindowSec = m_parryWindowSec;
 
         intent.dodgePressed = input->GetKeyDown(toKey(m_keyDodge))
-            || GetPadButtonDown(GamepadButton::A);
+            || GetPadButtonDown(GamepadButton::B);
         const bool itemPressed = input->GetKeyDown(toKey(m_keyItem))
             || GetPadButtonDown(GamepadButton::LeftTrigger);
         const bool itemHeld = input->GetKey(toKey(m_keyItem))
@@ -360,7 +361,8 @@ namespace Alice
         intent.itemReleased = itemReleased;
         intent.itemHeldSec = itemHeld ? m_itemHeldSec : 0.0f;
         intent.interactPressed = input->GetKeyDown(toKey(m_keyInteract))
-            || GetPadButtonDown(GamepadButton::X);
+            || GetPadButtonDown(GamepadButton::A);
+        intent.zoomToggle = GetPadButtonDown(GamepadButton::X);
         intent.ragePressed = ragePressedNow || GetPadButtonDown(GamepadButton::Y);
 
         if (m_useMouseLockOn)
@@ -376,10 +378,10 @@ namespace Alice
             const bool hasMove = (intent.move.x != 0.0f || intent.move.y != 0.0f);
             const bool anyAction = intent.attackPressed || intent.guardHeld || intent.dodgePressed
                 || intent.itemPressed || intent.interactPressed || intent.ragePressed
-                || intent.lockOnToggle;
+                || intent.lockOnToggle || intent.zoomToggle;
             if (hasMove || anyAction)
             {
-                ALICE_LOG_INFO("[Input] move(%.1f,%.1f) attack=%d guard=%d dodge=%d item=%d interact=%d rage=%d lockOn=%d",
+                ALICE_LOG_INFO("[Input] move(%.1f,%.1f) attack=%d guard=%d dodge=%d item=%d interact=%d rage=%d lockOn=%d zoom=%d",
                     intent.move.x, intent.move.y,
                     intent.attackPressed ? 1 : 0,
                     intent.guardHeld ? 1 : 0,
@@ -387,7 +389,8 @@ namespace Alice
                     intent.itemPressed ? 1 : 0,
                     intent.interactPressed ? 1 : 0,
                     intent.ragePressed ? 1 : 0,
-                    intent.lockOnToggle ? 1 : 0);
+                    intent.lockOnToggle ? 1 : 0,
+                    intent.zoomToggle ? 1 : 0);
             }
         }
 

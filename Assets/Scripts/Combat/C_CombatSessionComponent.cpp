@@ -1113,6 +1113,10 @@ namespace Alice
 			if (auto* input = dynamic_cast<C_PlayerInputSourceComponent*>(script))
 				playerIntent = input->GetIntent(playerHitstopActive ? 0.0f : deltaTime);
 		}
+		// Lock-on toggle should stay available regardless of later intent filtering
+		// (heal/interaction/forced input lock/hitstop).
+		const bool playerLockOnToggleRequested = playerIntent.lockOnToggle;
+		const bool playerZoomToggleRequested = playerIntent.zoomToggle;
 		if (playerHitstopActive)
 		{
 			Combat::Intent filtered{};
@@ -2014,8 +2018,6 @@ namespace Alice
 		else if (m_state->playerHowlingForcedLockOn)
 		{
 			m_state->playerHowlingForcedLockOn = false;
-			m_state->playerLockOnActive = false;
-			m_state->playerLockOnTarget = InvalidEntityId;
 
 			if (camSpring && camSpring->enabled && camFollow)
 			{
@@ -2027,7 +2029,7 @@ namespace Alice
 				camSpring->distance = defaultDistance;
 			}
 		}
-		else if (playerIntent.lockOnToggle && canLockOn)
+		else if (playerLockOnToggleRequested && canLockOn)
 		{
 			if (m_state->playerLockOnActive)
 			{
@@ -2039,6 +2041,18 @@ namespace Alice
 				m_state->playerLockOnActive = true;
 				m_state->playerLockOnTarget = bossId;
 			}
+		}
+
+		if (playerZoomToggleRequested && camSpring && camSpring->enabled && camSpring->enableZoom)
+		{
+			const float zoomMinDistance = std::min(camSpring->minDistance, camSpring->maxDistance);
+			const float zoomMaxDistance = std::max(camSpring->minDistance, camSpring->maxDistance);
+			const float currentDistance = std::clamp(camSpring->desiredDistance, zoomMinDistance, zoomMaxDistance);
+			const float distToMin = std::abs(currentDistance - zoomMinDistance);
+			const float distToMax = std::abs(currentDistance - zoomMaxDistance);
+			const float targetDistance = (distToMin <= distToMax) ? zoomMaxDistance : zoomMinDistance;
+			camSpring->desiredDistance = targetDistance;
+			camSpring->distance = targetDistance;
 		}
 
 		if (m_state->playerLockOnActive)
@@ -6036,6 +6050,13 @@ namespace Alice
 				? playerHitstopActive
 				: (hit.attackerOwner == bossId) ? bossHitstopActive : false;
 			if (attackerHitstop)
+				continue;
+
+			// Once boss groggy is active (or triggered this frame), suppress any remaining
+			// boss-originated hit events that were already queued this frame.
+			const bool suppressBossHitAfterGroggy = (hit.attackerOwner == bossId)
+				&& (m_state->boss.state == Combat::ActionState::Groggy || bossGroggyTriggered);
+			if (suppressBossHitAfterGroggy)
 				continue;
 
 			auto itParry = m_state->parryResolvedByVictim.find(hit.victimOwner);
