@@ -49,6 +49,27 @@ namespace Alice
         // - 양수: 위로 스크롤, 음수: 아래로 스크롤
         virtual float GetMouseScrollDelta() const = 0;
 
+        // --- 게임패드 ---
+        virtual bool GetGamepadConnected(int playerIndex) const = 0;
+        virtual bool GetGamepadButton(GamepadButton button, int playerIndex) const = 0;
+        virtual bool GetGamepadButtonDown(GamepadButton button, int playerIndex) const = 0;
+        virtual bool GetGamepadButtonUp(GamepadButton button, int playerIndex) const = 0;
+        virtual float GetGamepadLeftTrigger(int playerIndex) const = 0;
+        virtual float GetGamepadRightTrigger(int playerIndex) const = 0;
+        virtual float GetGamepadLeftStickX(int playerIndex) const = 0;
+        virtual float GetGamepadLeftStickY(int playerIndex) const = 0;
+        virtual float GetGamepadRightStickX(int playerIndex) const = 0;
+        virtual float GetGamepadRightStickY(int playerIndex) const = 0;
+
+        // --- 게임패드 진동 ---
+        virtual void PlayGamepadVibration(int playerIndex,
+                                          float leftMotor,
+                                          float rightMotor,
+                                          float durationSec,
+                                          GamepadVibrationBlend blend) = 0;
+        virtual void StopGamepadVibration(int playerIndex) = 0;
+        virtual void StopAllGamepadVibrations() = 0;
+
 
         // 커서 표시/잠금 (UI 씬 등에서 복원용)
         virtual void SetCursorVisible(bool visible) = 0;

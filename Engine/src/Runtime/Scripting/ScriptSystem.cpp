@@ -45,6 +45,11 @@ namespace Alice
         m_prevMouseButtons = m_currMouseButtons;
         m_currMouseButtons.fill(false);
 
+        // 게임패드 버튼 상태 갱신
+        m_prevGamepadButtons = m_currGamepadButtons;
+        for (auto& perPad : m_currGamepadButtons)
+            perPad.fill(false);
+
         if (!m_input)
             return;
 
@@ -62,6 +67,17 @@ namespace Alice
         for (std::size_t i = 0; i < m_currMouseButtons.size(); ++i)
         {
             m_currMouseButtons[i] = m_input->IsMouseButtonDown(static_cast<int>(i));
+        }
+
+        // 게임패드 버튼 상태 읽기 (0~3)
+        for (int player = 0; player < kMaxGamepads; ++player)
+        {
+            for (std::size_t i = 0; i < static_cast<std::size_t>(GamepadButton::Count); ++i)
+            {
+                const auto button = static_cast<GamepadButton>(i);
+                m_currGamepadButtons[static_cast<std::size_t>(player)][i] =
+                    m_input->IsGamepadButtonDown(player, button);
+            }
         }
     }
 
@@ -213,6 +229,108 @@ namespace Alice
             return 0.0f;
 
         return m_input->GetMouseScrollDelta();
+    }
+
+    bool ScriptSystem::GetGamepadButtonInternal(GamepadButton button, int playerIndex) const
+    {
+        if (playerIndex < 0 || playerIndex >= kMaxGamepads)
+            return false;
+
+        const std::size_t buttonIndex = static_cast<std::size_t>(button);
+        if (buttonIndex >= static_cast<std::size_t>(GamepadButton::Count))
+            return false;
+
+        return m_currGamepadButtons[static_cast<std::size_t>(playerIndex)][buttonIndex];
+    }
+
+    bool ScriptSystem::GetGamepadConnected(int playerIndex) const
+    {
+        return m_input ? m_input->IsGamepadConnected(playerIndex) : false;
+    }
+
+    bool ScriptSystem::GetGamepadButton(GamepadButton button, int playerIndex) const
+    {
+        return GetGamepadButtonInternal(button, playerIndex);
+    }
+
+    bool ScriptSystem::GetGamepadButtonDown(GamepadButton button, int playerIndex) const
+    {
+        if (playerIndex < 0 || playerIndex >= kMaxGamepads)
+            return false;
+
+        const std::size_t buttonIndex = static_cast<std::size_t>(button);
+        if (buttonIndex >= static_cast<std::size_t>(GamepadButton::Count))
+            return false;
+
+        const bool now = m_currGamepadButtons[static_cast<std::size_t>(playerIndex)][buttonIndex];
+        const bool prev = m_prevGamepadButtons[static_cast<std::size_t>(playerIndex)][buttonIndex];
+        return now && !prev;
+    }
+
+    bool ScriptSystem::GetGamepadButtonUp(GamepadButton button, int playerIndex) const
+    {
+        if (playerIndex < 0 || playerIndex >= kMaxGamepads)
+            return false;
+
+        const std::size_t buttonIndex = static_cast<std::size_t>(button);
+        if (buttonIndex >= static_cast<std::size_t>(GamepadButton::Count))
+            return false;
+
+        const bool now = m_currGamepadButtons[static_cast<std::size_t>(playerIndex)][buttonIndex];
+        const bool prev = m_prevGamepadButtons[static_cast<std::size_t>(playerIndex)][buttonIndex];
+        return !now && prev;
+    }
+
+    float ScriptSystem::GetGamepadLeftTrigger(int playerIndex) const
+    {
+        return m_input ? m_input->GetGamepadLeftTrigger(playerIndex) : 0.0f;
+    }
+
+    float ScriptSystem::GetGamepadRightTrigger(int playerIndex) const
+    {
+        return m_input ? m_input->GetGamepadRightTrigger(playerIndex) : 0.0f;
+    }
+
+    float ScriptSystem::GetGamepadLeftStickX(int playerIndex) const
+    {
+        return m_input ? m_input->GetGamepadLeftStickX(playerIndex) : 0.0f;
+    }
+
+    float ScriptSystem::GetGamepadLeftStickY(int playerIndex) const
+    {
+        return m_input ? m_input->GetGamepadLeftStickY(playerIndex) : 0.0f;
+    }
+
+    float ScriptSystem::GetGamepadRightStickX(int playerIndex) const
+    {
+        return m_input ? m_input->GetGamepadRightStickX(playerIndex) : 0.0f;
+    }
+
+    float ScriptSystem::GetGamepadRightStickY(int playerIndex) const
+    {
+        return m_input ? m_input->GetGamepadRightStickY(playerIndex) : 0.0f;
+    }
+
+    void ScriptSystem::PlayGamepadVibration(int playerIndex,
+                                            float leftMotor,
+                                            float rightMotor,
+                                            float durationSec,
+                                            GamepadVibrationBlend blend)
+    {
+        if (m_input)
+            m_input->PlayGamepadVibration(playerIndex, leftMotor, rightMotor, durationSec, blend);
+    }
+
+    void ScriptSystem::StopGamepadVibration(int playerIndex)
+    {
+        if (m_input)
+            m_input->StopGamepadVibration(playerIndex);
+    }
+
+    void ScriptSystem::StopAllGamepadVibrations()
+    {
+        if (m_input)
+            m_input->StopAllGamepadVibrations();
     }
 
     void ScriptSystem::SetCursorVisible(bool visible)
@@ -588,6 +706,8 @@ namespace Alice
                 // Stop any playing audio before loading a new scene file.
                 Sound::StopBGM();
                 Sound::StopAllSFX();
+                if (m_input)
+                    m_input->StopAllGamepadVibrations();
                 const bool ok = (m_resources)
                     ? SceneFile::LoadAuto(world, *m_resources, std::filesystem::path(path))
                     : SceneFile::Load(world, std::filesystem::path(path));
@@ -636,6 +756,8 @@ namespace Alice
     void ScriptSystem::OnApplicationQuit(World& world)
     {
         EnsureServicesBound(world);
+        if (m_input)
+            m_input->StopAllGamepadVibrations();
         for (auto& [entityId, list] : world.GetAllScriptsInWorld())
         {
             (void)entityId;
