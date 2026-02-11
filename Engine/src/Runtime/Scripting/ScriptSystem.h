@@ -52,6 +52,23 @@ namespace Alice
         float GetMouseDeltaX() const override;
         float GetMouseDeltaY() const override;
         float GetMouseScrollDelta() const override;
+        bool GetGamepadConnected(int playerIndex) const override;
+        bool GetGamepadButton(GamepadButton button, int playerIndex) const override;
+        bool GetGamepadButtonDown(GamepadButton button, int playerIndex) const override;
+        bool GetGamepadButtonUp(GamepadButton button, int playerIndex) const override;
+        float GetGamepadLeftTrigger(int playerIndex) const override;
+        float GetGamepadRightTrigger(int playerIndex) const override;
+        float GetGamepadLeftStickX(int playerIndex) const override;
+        float GetGamepadLeftStickY(int playerIndex) const override;
+        float GetGamepadRightStickX(int playerIndex) const override;
+        float GetGamepadRightStickY(int playerIndex) const override;
+        void PlayGamepadVibration(int playerIndex,
+                                  float leftMotor,
+                                  float rightMotor,
+                                  float durationSec,
+                                  GamepadVibrationBlend blend) override;
+        void StopGamepadVibration(int playerIndex) override;
+        void StopAllGamepadVibrations() override;
         void SetCursorVisible(bool visible) override;
         void SetCursorLocked(bool locked) override;
         bool IsAppActive() const override;
@@ -116,6 +133,7 @@ namespace Alice
         void ProcessSceneRequests(World& world);
         bool GetKeyInternal(KeyCode key) const;
         bool GetMouseButtonInternal(MouseCode button) const;
+        bool GetGamepadButtonInternal(GamepadButton button, int playerIndex) const;
 
         float m_fixedDt = 0.02f;
         float m_fixedAcc = 0.0f;
@@ -136,6 +154,10 @@ namespace Alice
         // input snapshot (MouseCode 전체)
         std::array<bool, static_cast<std::size_t>(MouseCode::Count)> m_prevMouseButtons{};
         std::array<bool, static_cast<std::size_t>(MouseCode::Count)> m_currMouseButtons{};
+
+        static constexpr int kMaxGamepads = 4;
+        std::array<std::array<bool, static_cast<std::size_t>(GamepadButton::Count)>, kMaxGamepads> m_prevGamepadButtons{};
+        std::array<std::array<bool, static_cast<std::size_t>(GamepadButton::Count)>, kMaxGamepads> m_currGamepadButtons{};
 
         // scene requests
         std::string m_pendingSwitch;
