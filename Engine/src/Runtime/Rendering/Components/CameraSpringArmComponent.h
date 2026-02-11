@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 namespace Alice
 {
@@ -8,6 +9,9 @@ namespace Alice
         bool enabled{ true };
         bool enableCollision{ true };
         bool enableZoom{ true };
+        uint32_t collisionLayerMask{ 0xFFFFFFFFu };
+        uint32_t collisionQueryMask{ 0xFFFFFFFFu };
+        float collisionMinDistance{ -1.0f };
 
         float distance{ 35.0f };
         float minDistance{ 8.0f };

@@ -7485,7 +7485,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "13576622615802014507",
                 "ownerNameDebug": "Player(Tia)",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -8408,7 +8408,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -9843,7 +9843,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -9931,7 +9931,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -10019,7 +10019,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -10107,7 +10107,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -10195,7 +10195,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -10517,7 +10517,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -10605,7 +10605,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -47652,7 +47652,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -48124,7 +48124,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [

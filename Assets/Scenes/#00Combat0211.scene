@@ -456,19 +456,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.06630605459213257,
-                    "y": 2.3333282470703125,
-                    "z": -0.05234937369823456
+                    "x": -0.057911694049835205,
+                    "y": 2.3370494842529297,
+                    "z": -0.05048421025276184
                 },
                 "rotation": {
-                    "x": -0.13883072137832642,
-                    "y": 0.913611650466919,
-                    "z": 0.01591474376618862
+                    "x": -0.1400313526391983,
+                    "y": 0.9189625382423401,
+                    "z": 0.011498290114104748
                 },
                 "scale": {
-                    "x": 0.009999999776482582,
-                    "y": 0.009999996051192284,
-                    "z": 0.009999998845160007
+                    "x": 0.009999996982514858,
+                    "y": 0.009999995119869709,
+                    "z": 0.00999999325722456
                 },
                 "visible": false
             },
@@ -551,19 +551,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.29688456654548645,
-                    "y": 1.5005537271499634,
-                    "z": 0.12634949386119843
+                    "x": 0.2981065809726715,
+                    "y": 1.5005759000778198,
+                    "z": 0.12628118693828583
                 },
                 "rotation": {
-                    "x": -0.4394412636756897,
-                    "y": 1.1085937023162842,
-                    "z": 0.010704845190048218
+                    "x": -0.4306250512599945,
+                    "y": 1.113105058670044,
+                    "z": 0.006600469816476107
                 },
                 "scale": {
-                    "x": 0.010000000707805157,
-                    "y": 0.009999999776482582,
-                    "z": 0.010000000707805157
+                    "x": 0.009999999776482582,
+                    "y": 0.009999997913837433,
+                    "z": 0.009999998845160007
                 },
                 "visible": false
             },
@@ -646,19 +646,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.3019561171531677,
-                    "y": 1.7246403694152832,
-                    "z": 0.22434823215007782
+                    "x": -0.29769670963287354,
+                    "y": 1.7308584451675415,
+                    "z": 0.22796623408794403
                 },
                 "rotation": {
-                    "x": 0.24705928564071655,
-                    "y": -0.9840643405914307,
-                    "z": 2.1233713626861572
+                    "x": 0.2371627241373062,
+                    "y": -0.9767051935195923,
+                    "z": 2.1184451580047607
                 },
                 "scale": {
-                    "x": 0.009999996051192284,
-                    "y": 0.009999996982514858,
-                    "z": 0.009999996051192284
+                    "x": 0.009999994188547134,
+                    "y": 0.009999995119869709,
+                    "z": 0.009999994188547134
                 },
                 "visible": false
             },
@@ -741,19 +741,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.14999882876873016,
-                    "y": 1.7186793088912964,
-                    "z": -0.36360788345336914
+                    "x": 0.1495303213596344,
+                    "y": 1.7204535007476807,
+                    "z": -0.3634300231933594
                 },
                 "rotation": {
-                    "x": 0.054631806910037994,
-                    "y": -3.0835440158843994,
-                    "z": -2.488447666168213
+                    "x": 0.056900765746831894,
+                    "y": -3.070094585418701,
+                    "z": -2.491274833679199
                 },
                 "scale": {
-                    "x": 0.009999997913837433,
+                    "x": 0.009999994188547134,
                     "y": 0.009999996982514858,
-                    "z": 0.010000001639127731
+                    "z": 0.009999999776482582
                 },
                 "visible": false
             },
@@ -836,19 +836,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.14993730187416077,
-                    "y": 0.6101142764091492,
-                    "z": 0.4475412368774414
+                    "x": 0.14429722726345062,
+                    "y": 0.61004239320755,
+                    "z": 0.44128507375717163
                 },
                 "rotation": {
-                    "x": -0.43999210000038147,
-                    "y": 1.5974996089935303,
-                    "z": 2.896388292312622
+                    "x": -0.44951969385147095,
+                    "y": 1.5943986177444458,
+                    "z": 2.9145443439483643
                 },
                 "scale": {
                     "x": 0.010000022128224373,
-                    "y": 0.01000002957880497,
-                    "z": 0.010000057518482208
+                    "y": 0.010000031441450119,
+                    "z": 0.010000055655837059
                 },
                 "visible": false
             },
@@ -931,19 +931,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.19841217994689941,
-                    "y": 0.656499981880188,
-                    "z": -0.24091081321239471
+                    "x": 0.20225253701210022,
+                    "y": 0.6557801365852356,
+                    "z": -0.24424926936626434
                 },
                 "rotation": {
-                    "x": -0.08393741399049759,
-                    "y": 0.9732922911643982,
-                    "z": -2.9901773929595947
+                    "x": -0.0611598826944828,
+                    "y": 0.9748337864875793,
+                    "z": -2.983103036880493
                 },
                 "scale": {
-                    "x": 0.010000035166740417,
-                    "y": 0.010000026784837246,
-                    "z": 0.010000030510127544
+                    "x": 0.010000030510127544,
+                    "y": 0.010000024922192097,
+                    "z": 0.010000025853514671
                 },
                 "visible": false
             },
@@ -3632,7 +3632,10 @@
             "CameraSpringArm": {
                 "distance": 2.0,
                 "distanceDamping": 6.0,
-                "enableCollision": false,
+                "collisionLayerMask": 1,
+                "collisionMinDistance": 0.20000000298023224,
+                "collisionQueryMask": 4294967295,
+                "enableCollision": true,
                 "enableZoom": true,
                 "enabled": true,
                 "maxDistance": 4.0,
@@ -5282,7 +5285,7 @@
                         "m_eyeMoveSpeed": 16.0,
                         "m_eyeName": "W_EYE",
                         "m_guardBreakOwnerName": "Player(Tia)",
-                        "m_ignoreLayersMask": 0,
+                        "m_ignoreLayersMask": 62,
                         "m_orbitAngularBlendDuration": 0.3499999940395355,
                         "m_orbitAngularSpeed": 2.0,
                         "m_orbitMinRadius": 0.10000000149011612,
@@ -7934,7 +7937,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "13576622615802014507",
                 "ownerNameDebug": "Player(Tia)",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -8171,8 +8174,8 @@
                     "loopB": true,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 1.7495801448822021,
-                    "timeB": 0.41625624895095825
+                    "timeA": 0.6241788268089294,
+                    "timeB": 1.2908598184585571
                 },
                 "enabled": true,
                 "ik": {
@@ -8299,7 +8302,7 @@
                         "canBeInterrupted": true,
                         "clipName": "Boss|Boss|Charge_Attack",
                         "enabled": true,
-                        "endTimeSec": 3.5999999046325684,
+                        "endTimeSec": 2.8499999046325684,
                         "source": "Explicit",
                         "startTimeSec": 2.0,
                         "traceSlotMask": 1,
@@ -8816,19 +8819,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.10636916756629944,
-                    "y": 1.0819908380508423,
-                    "z": 0.25778281688690186
+                    "x": -0.10863937437534332,
+                    "y": 1.085355281829834,
+                    "z": 0.25908440351486206
                 },
                 "rotation": {
-                    "x": -0.005995518062263727,
-                    "y": 2.2325992584228516,
-                    "z": -0.8638359308242798
+                    "x": 0.0027938224375247955,
+                    "y": 2.2432072162628174,
+                    "z": -0.8561884164810181
                 },
                 "scale": {
-                    "x": 1.4999994039535522,
-                    "y": 1.4999996423721313,
-                    "z": 1.499998927116394
+                    "x": 1.4999990463256836,
+                    "y": 1.4999990463256836,
+                    "z": 1.499998688697815
                 },
                 "visible": true
             },
@@ -8847,7 +8850,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -10282,7 +10285,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -10370,7 +10373,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -10458,7 +10461,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -10546,7 +10549,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -10634,7 +10637,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -10722,7 +10725,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -47769,7 +47772,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -48241,7 +48244,7 @@
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
-                "parryGroggyGain": 10.0,
+                "parryGroggyGain": 100.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
                 "shapes": [
@@ -48682,7 +48685,7 @@
             "Transform": {
                 "enabled": false,
                 "position": {
-                    "x": -0.10000000149011612,
+                    "x": -0.20000000298023224,
                     "y": 2.299999952316284,
                     "z": 0.0
                 },
@@ -48713,7 +48716,7 @@
                 "enabled": false,
                 "hdrColorClamp": 1.0,
                 "intensityScale": 1.0,
-                "lifetimeScale": 1.5,
+                "lifetimeScale": 0.10000000149011612,
                 "loop": true,
                 "noiseScale": 1.0,
                 "overrideLoop": false,
@@ -48760,8 +48763,8 @@
             "Transform": {
                 "enabled": false,
                 "position": {
-                    "x": -0.5,
-                    "y": 2.0,
+                    "x": -0.4000000059604645,
+                    "y": 2.0999999046325684,
                     "z": 0.0
                 },
                 "rotation": {
@@ -48791,7 +48794,7 @@
                 "enabled": false,
                 "hdrColorClamp": 1.0,
                 "intensityScale": 1.0,
-                "lifetimeScale": 1.5,
+                "lifetimeScale": 0.10000000149011612,
                 "loop": true,
                 "noiseScale": 1.0,
                 "overrideLoop": false,
