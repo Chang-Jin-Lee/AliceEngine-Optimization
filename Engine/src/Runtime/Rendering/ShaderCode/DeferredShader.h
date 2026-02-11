@@ -46,6 +46,8 @@ struct VSInput
 {
     float3 Position : POSITION;
     float3 Normal   : NORMAL;
+    float3 Tangent  : TANGENT;
+    float3 Binormal : BINORMAL;
     float2 TexCoord : TEXCOORD0;
 };
 
@@ -73,9 +75,8 @@ VSOutput main(VSInput input)
     
     output.Normal = N;
     
-    float3 up = (abs(N.y) > 0.999f) ? float3(1,0,0) : float3(0,1,0);
-    float3 T = normalize(cross(up, N));
-    float3 B = normalize(cross(N, T));
+    float3 T = normalize(mul(float4(input.Tangent, 0.0f), gWorld).xyz);
+    float3 B = normalize(mul(float4(input.Binormal, 0.0f), gWorld).xyz);
     
     output.TangentW = T;
     output.BitanW = B;
@@ -125,6 +126,8 @@ struct VSInput
 {
     float3 Position   : POSITION;
     float3 Normal     : NORMAL;
+    float3 Tangent    : TANGENT;
+    float3 Binormal   : BINORMAL;
     float2 TexCoord   : TEXCOORD0;
     float4 iWorld0    : INSTANCE_WORLD0;
     float4 iWorld1    : INSTANCE_WORLD1;
@@ -161,9 +164,8 @@ VSOutput main(VSInput input)
     
     output.Normal = N;
     
-    float3 up = (abs(N.y) > 0.999f) ? float3(1,0,0) : float3(0,1,0);
-    float3 T = normalize(cross(up, N));
-    float3 B = normalize(cross(N, T));
+    float3 T = normalize(mul(world, float4(input.Tangent, 0.0f)).xyz);
+    float3 B = normalize(mul(world, float4(input.Binormal, 0.0f)).xyz);
     
     output.TangentW = T;
     output.BitanW = B;
@@ -259,7 +261,10 @@ VSOutput main(VSInput input)
     
     float3 N = normalize(mul(float4(skinnedN, 0.0f), gWorld).xyz);
     
-    float3 posOffset = float3(0.0f, 0.0f, 0.0f);
+    // Toon 아웃라인 패스에서만 사용 (기본 패스는 width=0으로 들어옴)
+    float3 skinnedSmoothN = normalize(mul(input.SmoothNormal, M3));
+    float3 smoothN = normalize(mul(float4(skinnedSmoothN, 0.0f), gWorld).xyz);
+    float3 posOffset = (gOutlineWidth > 0.0f) ? (smoothN * gOutlineWidth) : float3(0.0f, 0.0f, 0.0f);
     
     float4 posW = mul(float4(skinnedPos.xyz + posOffset, 1.0f), gWorld);
     output.Position = mul(mul(posW, gView), gProj);
@@ -352,7 +357,8 @@ VSOutput main(VSInput input)
     //float3 N = normalize(mul(float4(input.Normal, 0.0f), world).xyz);
 
     float3 N = normalize(mul(world, float4(input.Normal, 0.0f)).xyz);
-    float3 posOffset = float3(0.0f, 0.0f, 0.0f);
+    float3 smoothN = normalize(mul(world, float4(input.SmoothNormal, 0.0f)).xyz);
+    float3 posOffset = (gOutlineWidth > 0.0f) ? (smoothN * gOutlineWidth) : float3(0.0f, 0.0f, 0.0f);
 
     //float4 posW = mul(float4(input.Position + posOffset, 1.0f), world);
     float4 posW = mul(world, float4(input.Position + posOffset, 1.0f));
@@ -491,17 +497,43 @@ GBufferOut main(VertexOut pIn)
     float3 N = normalize(pIn.Normal);
     if (gEnableNormalMap != 0)
     {
-        float3 T = normalize(pIn.TangentW);
-        float3 B = normalize(pIn.BitanW);
-        float handed = dot(cross(T, B), N);
-        if (handed < 0.0f) B = -B;
-        float3x3 TBN = float3x3(T, B, N);
-        float3 N_ts = g_NormalMap.Sample(g_Sam, pIn.TexCoord).xyz * 2.0f - 1.0f;
-        N_ts.y = -N_ts.y;
-        // 노말맵 강도 조절: X, Y 성분에만 Strength를 곱하고 정규화
-        N_ts.xy *= gNormalStrength;
-        N_ts = normalize(N_ts);
-        N = normalize(mul(N_ts, TBN));
+        float3 T_raw = pIn.TangentW;
+        float3 B_raw = pIn.BitanW; // C++에서 넘겨준 올바른 Binormal
+
+        // 입력 T/B가 비정상일 때는 노말맵 적용을 건너뜁니다.
+        if (dot(T_raw, T_raw) > 1e-8f && dot(B_raw, B_raw) > 1e-8f)
+        {
+            T_raw = normalize(T_raw);
+            B_raw = normalize(B_raw);
+
+            // 1. 그람-슈미트 직교화 (Gram-Schmidt)
+            // Tangent를 Normal에 완전히 수직이 되도록 보정합니다. (찌그러짐 방지)
+            float3 T = normalize(T_raw - dot(T_raw, N) * N);
+
+            // 2. 미러링(Handedness) 체크 및 Binormal 재구성
+            // 기하학적 B_raw와 수학적 cross(N, T)의 방향이 같은지 다른지 확인합니다.
+            // 미러링된 모델은 방향이 반대가 되므로 sign이 -1이 됩니다.
+            float3 B_math = cross(N, T);
+            float sign = (dot(B_math, B_raw) < 0.0f) ? -1.0f : 1.0f;
+            
+            // 최종적으로 직교성이 보장된 B를 생성
+            float3 B = B_math * sign;
+
+            float3x3 TBN = float3x3(T, B, N);
+
+            // 3. 노말맵 샘플링
+            float3 N_ts = g_NormalMap.Sample(g_Sam, pIn.TexCoord).xyz * 2.0f - 1.0f;
+
+            // [중요 체크포인트]
+            // 만약 이 코드를 적용했는데도 문짝의 튀어나온 부분이 '오목하게' 보인다면 
+            // 아래 줄의 주석을 해제하거나 반대로 주석 처리해보세요. (텍스처 포맷에 따라 다름)
+            N_ts.y = -N_ts.y; 
+
+            N_ts.xy *= gNormalStrength;
+            N_ts = normalize(N_ts);
+
+            N = normalize(mul(N_ts, TBN));
+        }
     }
     
     float metalness = saturate(gMetalness);
@@ -531,7 +563,8 @@ GBufferOut main(VertexOut pIn)
     gOut.ToonAlphas = float4(saturate(gToonPbrAlphas.xyz), packedShadowSelf);
     // shadingMode + AO를 [0,1] 범위로 인코딩하여 저장
     gOut.BaseColor  = float4(baseColor, saturate(shadingEncoded));
-    gOut.OutlineData = float4(saturate(gOutlineColor), max(gOutlineWidth, 0.0f));
+    // Toon 아웃라인은 스크린 엣지 디텍팅을 사용하지 않고 별도 Geometry Pass로 처리
+    gOut.OutlineData = float4(0.0f, 0.0f, 0.0f, 0.0f);
     // Emissive는 텍스처(마스크)가 있을 때만 유효하게 만들어
     // emissiveColor/emissiveIntensity는 "색/강도 조절" 역할로 사용합니다.
     float3 emissive = float3(0.0f, 0.0f, 0.0f);
@@ -1349,15 +1382,14 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     
     float depth = g_SceneDepth.Sample(g_Sam, pIn.uv);
 
-    // [수정] 아웃라인 계산 (pIn.Position -> pIn.position 소문자로 수정)
+    // 스크린 엣지 디텍팅 아웃라인 비활성화 (Toon은 Geometry Outline 사용)
     float3 outlineEdgeColor = float3(0.0f, 0.0f, 0.0f);
-    float outlineMaxWidth = 0.0f;
-    float outlineEdge = ComputeOutlineEdge(pIn.position.xy, outlineEdgeColor, outlineMaxWidth);
+    float outlineEdge = 0.0f;
 
     // [배경 처리] Depth가 1.0(배경)이라도 아웃라인이 있으면 그려야 함
     if (depth >= 0.9999f) 
     {
-        if (outlineEdge > 1e-4f) 
+        if (outlineEdge > 1e-4f)
         {
             return float4(outlineEdgeColor, 1.0f);
         }
@@ -2100,17 +2132,43 @@ float4 main(PSIn pIn) : SV_Target
     float3 N = normalize(pIn.Normal);
     if (gEnableNormalMap != 0)
     {
-        float3 T = normalize(pIn.TangentW);
-        float3 B = normalize(pIn.BitanW);
-        float handed = dot(cross(T, B), N);
-        if (handed < 0.0f) B = -B;
-        float3x3 TBN = float3x3(T, B, N);
-        float3 N_ts = g_NormalMap.Sample(g_Sam, pIn.TexCoord).xyz * 2.0f - 1.0f;
-        N_ts.y = -N_ts.y;
-        // 노말맵 강도 조절: X, Y 성분에만 Strength를 곱하고 정규화
-        N_ts.xy *= gNormalStrength;
-        N_ts = normalize(N_ts);
-        N = normalize(mul(N_ts, TBN));
+        float3 T_raw = pIn.TangentW;
+        float3 B_raw = pIn.BitanW; // C++에서 넘겨준 올바른 Binormal
+
+        // 입력 T/B가 비정상일 때는 노말맵 적용을 건너뜁니다.
+        if (dot(T_raw, T_raw) > 1e-8f && dot(B_raw, B_raw) > 1e-8f)
+        {
+            T_raw = normalize(T_raw);
+            B_raw = normalize(B_raw);
+
+            // 1. 그람-슈미트 직교화 (Gram-Schmidt)
+            // Tangent를 Normal에 완전히 수직이 되도록 보정합니다. (찌그러짐 방지)
+            float3 T = normalize(T_raw - dot(T_raw, N) * N);
+
+            // 2. 미러링(Handedness) 체크 및 Binormal 재구성
+            // 기하학적 B_raw와 수학적 cross(N, T)의 방향이 같은지 다른지 확인합니다.
+            // 미러링된 모델은 방향이 반대가 되므로 sign이 -1이 됩니다.
+            float3 B_math = cross(N, T);
+            float sign = (dot(B_math, B_raw) < 0.0f) ? -1.0f : 1.0f;
+            
+            // 최종적으로 직교성이 보장된 B를 생성
+            float3 B = B_math * sign;
+
+            float3x3 TBN = float3x3(T, B, N);
+
+            // 3. 노말맵 샘플링
+            float3 N_ts = g_NormalMap.Sample(g_Sam, pIn.TexCoord).xyz * 2.0f - 1.0f;
+
+            // [중요 체크포인트]
+            // 만약 이 코드를 적용했는데도 문짝의 튀어나온 부분이 '오목하게' 보인다면 
+            // 아래 줄의 주석을 해제하거나 반대로 주석 처리해보세요. (텍스처 포맷에 따라 다름)
+            N_ts.y = -N_ts.y; 
+
+            N_ts.xy *= gNormalStrength;
+            N_ts = normalize(N_ts);
+
+            N = normalize(mul(N_ts, TBN));
+        }
     }
 
     float metalness = saturate(gMetalness);
