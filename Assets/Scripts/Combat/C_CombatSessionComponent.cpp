@@ -19,6 +19,7 @@
 #include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
 #include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
 #include "Runtime/Physics/Components/Phy_CCTComponent.h"
+#include "Runtime/Physics/IPhysicsWorld.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Rendering/Components/CameraComponent.h"
 #include "Runtime/Rendering/Components/CameraFollowComponent.h"
@@ -28,6 +29,7 @@
 #include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
 #include "Runtime/Rendering/SkinnedMeshRegistry.h"
+#include "Runtime/Gameplay/Combat/CombatPhysicsLayers.h"
 #include "Runtime/Importing/FbxModel.h"
 #include <assimp/scene.h>
 //TODO : Include Ȯ���ؾ���
@@ -1610,6 +1612,110 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 
 		constexpr float kDegToRad = 0.01745329252f;
 		constexpr float kRadToDeg = 57.2957795f;
+		auto ResolvePlayerForwardDir = [&](const TransformComponent& tr) -> DirectX::XMFLOAT3
+			{
+				const float offsetRad = m_rotationOffsetDeg * kDegToRad;
+				const float yawRad = tr.rotation.y - offsetRad;
+				return { std::sin(yawRad), 0.0f, std::cos(yawRad) };
+			};
+		auto ResolveSafeBossSnapPosition = [&](const TransformComponent& playerTr,
+			const TransformComponent& bossTr,
+			float desiredDistance) -> DirectX::XMFLOAT3
+			{
+				DirectX::XMFLOAT3 dir = ResolvePlayerForwardDir(playerTr);
+				const float dirLen = std::sqrt(dir.x * dir.x + dir.z * dir.z);
+				if (dirLen <= 0.0001f)
+					dir = { 0.0f, 0.0f, 1.0f };
+				else
+				{
+					dir.x /= dirLen;
+					dir.z /= dirLen;
+				}
+
+				const float bossY = bossTr.position.y;
+				const float minDistance = 0.35f;
+				const float directionSign = (desiredDistance < 0.0f) ? -1.0f : 1.0f;
+				const float targetDistance = std::max(minDistance, std::abs(desiredDistance));
+				float safeDistance = targetDistance;
+
+				auto* bossCct = world.GetComponent<Phy_CCTComponent>(bossId);
+				const float cctRadius = (bossCct && bossCct->radius > 0.0f) ? bossCct->radius : 0.6f;
+				const float cctHalfHeight = (bossCct && bossCct->halfHeight > 0.0f) ? bossCct->halfHeight : 0.9f;
+				const float probeRadius = std::max(0.15f, cctRadius * 0.75f);
+				// Transform Y for CCT is foot position. Query at capsule-center height to avoid floor false hits.
+				const float queryY = bossY + cctHalfHeight + cctRadius;
+
+				auto BuildPos = [&](float dist) -> DirectX::XMFLOAT3
+					{
+						return {
+							playerTr.position.x + (dir.x * directionSign) * dist,
+							bossY,
+							playerTr.position.z + (dir.z * directionSign) * dist
+						};
+					};
+				auto BuildQueryCenter = [&](float dist) -> Vec3
+					{
+						return {
+							playerTr.position.x + (dir.x * directionSign) * dist,
+							queryY,
+							playerTr.position.z + (dir.z * directionSign) * dist
+						};
+					};
+
+				if (auto* physics = world.GetPhysicsWorld())
+				{
+					constexpr uint32_t layerMask = CombatPhysicsLayers::WorldBit;
+					constexpr uint32_t queryMask = 0xFFFFFFFFu;
+					const float probePadding = std::max(0.05f, probeRadius * 0.35f);
+
+					const Vec3 origin = BuildQueryCenter(0.0f);
+					const Vec3 dirN(dir.x * directionSign, 0.0f, dir.z * directionSign);
+					SweepHit sweepHit{};
+					if (physics->SweepSphere(origin, probeRadius, dirN, targetDistance, sweepHit, layerMask, queryMask, false))
+						safeDistance = std::max(minDistance, sweepHit.distance - probePadding);
+
+					auto IsBlockedAtDistance = [&](float dist) -> bool
+						{
+							std::vector<OverlapHit> overlaps;
+							overlaps.reserve(8);
+							const Vec3 center = BuildQueryCenter(dist);
+							const uint32_t hitCount = physics->OverlapSphere(center, probeRadius, overlaps, layerMask, queryMask, false, 8);
+							return hitCount > 0;
+						};
+
+					if (IsBlockedAtDistance(safeDistance))
+					{
+						bool resolved = false;
+						const float backStep = std::max(0.15f, probeRadius * 0.4f);
+						for (float dist = safeDistance; dist >= minDistance; dist -= backStep)
+						{
+							if (!IsBlockedAtDistance(dist))
+							{
+								safeDistance = dist;
+								resolved = true;
+								break;
+							}
+						}
+						if (!resolved)
+							safeDistance = minDistance;
+					}
+				}
+
+				return BuildPos(safeDistance);
+			};
+		auto TeleportBossTo = [&](const DirectX::XMFLOAT3& targetPos)
+			{
+				if (auto* bossTr = world.GetComponent<TransformComponent>(bossId))
+				{
+					bossTr->position = targetPos;
+					if (auto* bossCct = world.GetComponent<Phy_CCTComponent>(bossId))
+					{
+						bossCct->desiredVelocity = { 0.0f, 0.0f, 0.0f };
+						bossCct->verticalVelocity = 0.0f;
+						bossCct->teleport = true;
+					}
+				}
+			};
 
 		bool fatalTriggered = false;
 		auto* registry = SkinnedRegistry();
@@ -1666,7 +1772,13 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						return dot >= threshold;
 					};
 
-				if (InFrontCone(*bossTr, playerTr->position) && InFrontCone(*playerTr, bossTr->position))
+				const float pbDx = bossTr->position.x - playerTr->position.x;
+				const float pbDz = bossTr->position.z - playerTr->position.z;
+				const float pbDist = std::sqrt(pbDx * pbDx + pbDz * pbDz);
+				constexpr float kFatalTriggerMaxDistance = 4.0f;
+				if (pbDist <= kFatalTriggerMaxDistance
+					&& InFrontCone(*bossTr, playerTr->position)
+					&& InFrontCone(*playerTr, bossTr->position))
 				{
 					fatalTriggered = true;
 					forceFatalAttack = true;
@@ -1678,32 +1790,34 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					m_state->fatal.damageAmount = 0.0f;
 					m_state->fatal.bossStartPos = bossTr->position;
 
-					DirectX::XMFLOAT3 dir{ bossTr->position.x - playerTr->position.x, 0.0f, bossTr->position.z - playerTr->position.z };
-					float len = std::sqrt(dir.x * dir.x + dir.z * dir.z);
-					if (len <= 0.0001f)
-					{
-						const float offsetRad = m_rotationOffsetDeg * kDegToRad;
-						const float yawRad = playerTr->rotation.y - offsetRad;
-						dir.x = std::sin(yawRad);
-						dir.z = std::cos(yawRad);
-						len = std::sqrt(dir.x * dir.x + dir.z * dir.z);
-					}
-					if (len > 0.0001f)
-					{
-						dir.x /= len;
-						dir.z /= len;
-					}
-					else
-					{
-						dir = { 0.0f, 0.0f, 1.0f };
-					}
+					const float dist = m_fatalDistance;
+					m_state->fatal.bossTargetPos = ResolveSafeBossSnapPosition(*playerTr, *bossTr, dist);
 
-					const float dist = std::max(0.0f, m_fatalDistance);
-					m_state->fatal.bossTargetPos = {
-						playerTr->position.x + dir.x * dist,
-						m_state->fatal.bossStartPos.y,
-						playerTr->position.z + dir.z * dist
-					};
+					// Fatal start: snap boss immediately to player's front distance.
+					TeleportBossTo(m_state->fatal.bossTargetPos);
+					if (auto* snappedBossTr = world.GetComponent<TransformComponent>(bossId))
+						m_state->fatal.bossStartPos = snappedBossTr->position;
+					else
+						m_state->fatal.bossStartPos = m_state->fatal.bossTargetPos;
+
+					const float offsetRad = m_rotationOffsetDeg * kDegToRad;
+					auto FaceTargetImmediate = [&](TransformComponent& self, const DirectX::XMFLOAT3& target)
+						{
+							const float dx = target.x - self.position.x;
+							const float dz = target.z - self.position.z;
+							const float len = std::sqrt(dx * dx + dz * dz);
+							if (len <= 0.0001f)
+								return;
+							const float fx = dx / len;
+							const float fz = dz / len;
+							const float yawRad = std::atan2(fx, fz) + offsetRad;
+							self.SetRotation(0.0f, yawRad * kRadToDeg, 0.0f);
+						};
+					if (auto* snappedBossTr = world.GetComponent<TransformComponent>(bossId))
+					{
+						FaceTargetImmediate(*snappedBossTr, playerTr->position);
+						FaceTargetImmediate(*playerTr, snappedBossTr->position);
+					}
 
 					m_state->fatal.damageAmount = std::max(0.0f, m_playerDamageExecution);
 
