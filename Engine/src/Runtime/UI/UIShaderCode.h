@@ -8,6 +8,7 @@ namespace Alice
 		extern const char* UIPixelPS;
 		extern const char* UIGrayPS;
 		extern const char* UIGaugeCustomPS;
+		extern const char* UIGaugeCustomClippedPS;
 		extern const char* UIPencilPS;
 		extern const char* UIDieLinePS;
 	}

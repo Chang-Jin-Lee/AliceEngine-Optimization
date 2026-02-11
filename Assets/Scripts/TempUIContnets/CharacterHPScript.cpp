@@ -5,8 +5,10 @@
 #include "Runtime/ECS/World.h"
 #include "Runtime/UI/UIWidgetComponent.h"
 #include "Runtime/UI/BindWidget.h"
+#include "Runtime/UI/UICommon.h"
 #include "BoxDeligateScript.h"
 #include "Runtime/ECS/GameObject.h"
+#include "Runtime/Gameplay/Combat/HealthComponent.h"
 
 namespace Alice
 {
@@ -60,17 +62,59 @@ namespace Alice
 
         // 
         // Character HP gauge appearance
-        TargetGauge->backgroundTexture = "Resource/Image/GrayHuman.png";
-        TargetGauge->fillLateTexture = "Resource/Image/YellowHuman.png";
-        TargetGauge->fillTexture = "Resource/Image/RedHuman.png";
+        TargetGauge->backgroundTexture = "";
+        TargetGauge->fillLateTexture = "";
+        TargetGauge->fillTexture = "Resource/Test/4_Resources/UI/StateBar/Tia_Gauge_IN.png";
         TargetGauge->useFillLate = true;
         TargetGauge->useBackground = true;
-        TargetGauge->direction = AliceUI::UIGaugeDirection::BottomToTop;
+        TargetGauge->direction = AliceUI::UIGaugeDirection::LeftToRight;
         TargetGauge->fillLateSmoothing = 0.0f;
         TargetGauge->fillLateValue = TargetGauge->value;
         TargetGauge->fillLateDisplayedValue = TargetGauge->value;
-		TargetGauge->fillLateShaderName = "shaderName";
+		TargetGauge->fillLateShaderName = "Default";
         fillLateVelocity = 0.0f;
+
+        // UI_Hit_VignetEffect 위젯 찾기
+        if (!Get_vignetEffectWidgetName().empty())
+        {
+            EntityId vignetEntity = InvalidEntityId;
+            for (auto [id, widget] : w->GetComponents<UIWidgetComponent>())
+            {
+                const std::string widgetName = widget.widgetName.empty() ? w->GetEntityName(id) : widget.widgetName;
+                if (widgetName == Get_vignetEffectWidgetName())
+                {
+                    vignetEntity = id;
+                    break;
+                }
+            }
+
+            if (vignetEntity != InvalidEntityId)
+            {
+                VignetEffectWidget = w->GetComponent<UIWidgetComponent>(vignetEntity);
+                if (VignetEffectWidget)
+                {
+                    // 초기 상태: Collapsed로 설정
+                    VignetEffectWidget->visibility = AliceUI::UIVisibility::Collapsed;
+                    ALICE_LOG_INFO("[CharacterHPScript] VignetEffect widget found: %s", Get_vignetEffectWidgetName().c_str());
+                }
+                else
+                {
+                    ALICE_LOG_WARN("[CharacterHPScript] VignetEffect widget found but UIWidgetComponent not found: %s", Get_vignetEffectWidgetName().c_str());
+                }
+            }
+            else
+            {
+                ALICE_LOG_WARN("[CharacterHPScript] VignetEffect widget not found: %s", Get_vignetEffectWidgetName().c_str());
+            }
+        }
+
+        wasLowValue = false;
+
+        // healthEntityName이 설정되어 있으면 BoxDeligateScript 바인딩은 건너뛰기
+        if (!Get_healthEntityName().empty())
+        {
+            return;
+        }
 
         GameObject go = w->FindGameObject(Get_targetEntityName());
         if (!go.IsValid())
@@ -112,11 +156,68 @@ namespace Alice
 
     void CharacterHPScript::Update(float deltaTime)
     {
-
-        // changeValue
-       
-        if (!TargetGauge)
+        World* w = GetWorld();
+        if (!w || !TargetGauge)
             return;
+
+        // HealthComponent를 직접 읽기 (healthEntityName이 설정된 경우)
+        if (!Get_healthEntityName().empty())
+        {
+            GameObject healthGo = w->FindGameObject(Get_healthEntityName());
+            if (healthGo.IsValid())
+            {
+                if (auto* health = w->GetComponent<HealthComponent>(healthGo.id()))
+                {
+                    const float max = std::max(1e-6f, health->maxHealth);
+                    TargetGauge->value = std::clamp(health->currentHealth / max, 0.0f, 1.0f);
+                    nowValue = TargetGauge->value;
+                }
+            }
+        }
+
+        // UI_Hit_VignetEffect visibility 제어
+        if (TargetGauge && VignetEffectWidget)
+        {
+            // 정규화된 게이지 값 계산
+            float normalizedValue = 1.0f;
+            if (TargetGauge->normalized)
+            {
+                normalizedValue = std::clamp(TargetGauge->value, 0.0f, 1.0f);
+            }
+            else
+            {
+                const float range = TargetGauge->maxValue - TargetGauge->minValue;
+                if (range > 0.0001f)
+                {
+                    normalizedValue = std::clamp((TargetGauge->value - TargetGauge->minValue) / range, 0.0f, 1.0f);
+                }
+            }
+
+            const float threshold = Get_visibilityThreshold();
+            const bool isLowValue = normalizedValue <= threshold;
+
+            // 상태가 변경되었을 때만 visibility 업데이트
+            // 또는 VignetEffectWidget이 현재 Visible인데 게이지가 threshold보다 높으면 강제로 Collapsed
+            if (isLowValue != wasLowValue || 
+                (VignetEffectWidget->visibility == AliceUI::UIVisibility::Visible && !isLowValue))
+            {
+                if (isLowValue)
+                {
+                    // 30% 이하일 때 Visible
+                    VignetEffectWidget->visibility = AliceUI::UIVisibility::Visible;
+                    ALICE_LOG_INFO("[CharacterHPScript] Gauge value (%.2f) <= threshold (%.2f), setting VignetEffect to Visible",
+                        normalizedValue, threshold);
+                }
+                else
+                {
+                    // 30% 초과일 때 Collapsed
+                    VignetEffectWidget->visibility = AliceUI::UIVisibility::Collapsed;
+                    ALICE_LOG_INFO("[CharacterHPScript] Gauge value (%.2f) > threshold (%.2f), setting VignetEffect to Collapsed",
+                        normalizedValue, threshold);
+                }
+                wasLowValue = isLowValue;
+            }
+        }
 
         if (deltaTime <= 0.0f)
             return;

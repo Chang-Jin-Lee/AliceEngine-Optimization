@@ -43,9 +43,31 @@
 #include "C_BossCombatSessionComponent.h"
 #include "../Physics/Gimmick.h"
 #include "../Physics/HealEyeGimmick.h"
+#include "../Tempsound/AudioEventBusScript.h"
+#include "../Tempsound/AudioSoundState.h"
 
 namespace Alice
 {
+	namespace
+	{
+		AudioEventBusScript* FindBus(World& world, const std::string& name)
+		{
+			if (name.empty())
+				return nullptr;
+			GameObject go = world.FindGameObject(name);
+			if (!go.IsValid())
+				return nullptr;
+			auto* scripts = world.GetScripts(go.id());
+			if (!scripts)
+				return nullptr;
+			for (auto& sc : *scripts)
+			{
+				if (sc.scriptName == "AudioEventBusScript" && sc.instance)
+					return static_cast<AudioEventBusScript*>(sc.instance.get());
+			}
+			return nullptr;
+		}
+	}
 	struct C_CombatSessionComponent::SessionState
 	{
 		struct AnimOverrideState
@@ -200,6 +222,7 @@ namespace Alice
 			bool hasTarget = false;
 			bool damageApplied = false;
 			float damageAmount = 0.0f;
+			bool groggySfxPlayed = false;
 		};
 		FatalState fatal{};
 
@@ -1535,6 +1558,9 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					m_state->fatal.damageApplied = false;
 					m_state->fatal.damageAmount = 0.0f;
 					m_state->fatal.bossStartPos = bossTr->position;
+
+					// 그로기 어택 사운드 재생
+					m_state->fatal.groggySfxPlayed = false;
 
 					DirectX::XMFLOAT3 dir{ bossTr->position.x - playerTr->position.x, 0.0f, bossTr->position.z - playerTr->position.z };
 					float len = std::sqrt(dir.x * dir.x + dir.z * dir.z);
@@ -3297,6 +3323,16 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					? m_state->fatal.totalSec
 					: (approachSec + holdSec);
 				m_state->fatal.timerSec += dt;
+				if (!m_state->fatal.groggySfxPlayed)
+				{
+					const float sfxDelay = std::max(0.0f, m_groggyAttackSfxDelaySec);
+					if (m_state->fatal.timerSec >= sfxDelay)
+					{
+						if (auto* bus = FindBus(world, "AudioBus"))
+							bus->RequestPlayerOtherSfx(PlayerOtherState::GroggyAttack);
+						m_state->fatal.groggySfxPlayed = true;
+					}
+				}
 
 				if (m_state->fatal.hasTarget)
 				{
