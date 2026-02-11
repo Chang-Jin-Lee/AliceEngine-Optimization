@@ -734,6 +734,26 @@ float ApplySelfShadowNdotL(float shadedNdotL, float selfShadowStrength)
     return lerp(1.0f, shadedNdotL, saturate(selfShadowStrength));
 }
 
+float ApplyLocalToonSelfShadow(float ndotl, float shadedNdotL, bool toonEditable, float toonSelfShadowStrength)
+{
+    if (ndotl <= 0.0f)
+    {
+        return 0.0f;
+    }
+
+    float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength);
+    if (toonEditable)
+    {
+        // 로컬 라이트(Point/Spot/Rect)는 Toon SelfShadow를 약하게만 적용한다.
+        // 강한 밴딩으로 생기는 지저분한 검은 조각을 막기 위해 원본 ndotl 하한을 보장한다.
+        const float kLocalSelfShadowWeight = 0.40f;   // 0.3~0.6 권장 범위
+        const float kLocalSelfShadowMinRatio = 0.50f; // 최소 조도 보장 비율
+        selfShadowNdotL = lerp(ndotl, selfShadowNdotL, kLocalSelfShadowWeight);
+        selfShadowNdotL = max(selfShadowNdotL, ndotl * kLocalSelfShadowMinRatio);
+    }
+    return saturate(selfShadowNdotL);
+}
+
 float2 Unpack2x8(float v)
 {
     float raw = saturate(v) * 65535.0f;
@@ -1042,25 +1062,33 @@ float CalcLocalPointShadowFactor(float3 posW, float3 lightPos, float lightRange,
 float3 EvaluatePBRLight(float3 N, float3 V, float3 L, float3 albedoPBR, float metalness, float roughness, float3 lightColor, float ndotlOverride)
 {
     float3 H = normalize(L + V);
-    float NdotL = saturate(ndotlOverride);
+    float NdotLSpec = saturate(dot(N, L));
+    float NdotLDiff = saturate(ndotlOverride);
     float NdotV = saturate(dot(N, V));
     float NdotH = saturate(dot(N, H));
     float VdotH = saturate(dot(V, H));
 
+    if (NdotLSpec <= 1e-5f && NdotLDiff <= 1e-5f)
+    {
+        return 0.0f;
+    }
+
     float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), albedoPBR, metalness);
     float D = DistributionGGX(NdotH, roughness);
-    float G = GeometrySmith(NdotV, NdotL, roughness);
+    float G = GeometrySmith(NdotV, NdotLSpec, roughness);
     float3 F = FresnelSchlick(F0, VdotH);
 
     float3 numerator = D * G * F;
-    float denomSpec = max(4.0f * NdotV * NdotL, 1e-4f);
+    float denomSpec = max(4.0f * NdotV * NdotLSpec, 1e-4f);
     float3 specular = numerator / denomSpec;
 
     float3 kS = F;
     float3 kD = (1.0f - kS) * (1.0f - metalness);
     float3 diffuse = kD * albedoPBR * INV_PI;
 
-    return (diffuse + specular) * lightColor * NdotL;
+    float3 diffuseLit = diffuse * lightColor * NdotLDiff;
+    float3 specularLit = specular * lightColor * NdotLSpec;
+    return diffuseLit + specularLit;
 }
 
 void AccumulateLegacy(float3 N, float3 V, float3 L, float3 lightColor, float atten, int mode, float shininess,
@@ -1371,8 +1399,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     }
 
     float shadowVis = CalcShadowFactorDeferred(posW, g_ShadowMap, g_ShadowSampler);
-    const float kShadowStrengthMax = 12.0f;
-    float shadowStrength = saturate(g_ShadowStrength2) * kShadowStrengthMax;
+    float shadowStrength = saturate(g_ShadowStrength2);
     shadowStrength *= saturate(materialShadowStrength);
     if (toonEditable)
     {
@@ -1380,6 +1407,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         const float kToonPbrShadowAtten = 0.35f;
         shadowStrength *= kToonPbrShadowAtten;
     }
+    shadowStrength = saturate(shadowStrength);
     shadowVis = saturate(lerp(1.0f, shadowVis, shadowStrength));
 
     // [Legacy Lighting]
@@ -1477,7 +1505,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         if (toonPbr && ndotl > 0.0f) {
             shadedNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
         }
-        float selfShadowNdotL = (ndotl > 0.0f) ? ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength) : 0.0f;
+        float selfShadowNdotL = ApplyLocalToonSelfShadow(ndotl, shadedNdotL, toonEditable, toonSelfShadowStrength);
         float3 lit = EvaluatePBRLight(N, V, Lp, albedoPBR, metalness, roughness, lc, selfShadowNdotL);
         extraLighting += lit * ao * localShadow;
     }
@@ -1497,7 +1525,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         if (toonPbr && ndotl > 0.0f) {
             shadedNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
         }
-        float selfShadowNdotL = (ndotl > 0.0f) ? ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength) : 0.0f;
+        float selfShadowNdotL = ApplyLocalToonSelfShadow(ndotl, shadedNdotL, toonEditable, toonSelfShadowStrength);
         float3 lit = EvaluatePBRLight(N, V, Ls, albedoPBR, metalness, roughness, lc, selfShadowNdotL);
         extraLighting += lit * ao * localShadow;
     }
@@ -1518,7 +1546,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         if (toonPbr && ndotl > 0.0f) {
             shadedNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
         }
-        float selfShadowNdotL = (ndotl > 0.0f) ? ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength) : 0.0f;
+        float selfShadowNdotL = ApplyLocalToonSelfShadow(ndotl, shadedNdotL, toonEditable, toonSelfShadowStrength);
         float3 lit = EvaluatePBRLight(N, V, Lr, albedoPBR, metalness, roughness, lc, selfShadowNdotL);
         extraLighting += lit * ao * localShadow;
     }
