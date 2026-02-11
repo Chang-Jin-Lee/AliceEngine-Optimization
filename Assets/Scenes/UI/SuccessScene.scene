@@ -275,6 +275,143 @@
             },
             "guid": "13020149771740126068",
             "name": "SoundObject"
+        },
+{
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "OptionScript",
+                    "props": {
+                        "TextWidgetName": "",
+                        "UnderLineWidgetName": "",
+                        "blockInputRootWidgetName": "UI_Title",
+                        "blockInputWhenTargetVisible": true,
+                        "buttonImageNormalPath": "",
+                        "buttonRootWidgetName": "UI_ReturnButton2",
+                        "buttonWidgetName": "UI_ReturnButton2",
+                        "clickSetVisible": false,
+                        "clickTargetWidgetName": "UI_creditScreen",
+                        "clickToggleTarget": false,
+                        "enableClick": true,
+                        "enableToggleChildrenOnEsc": false,
+                        "rootWidgetName": "",
+                        "showButtonImageOnHoverOnly": false,
+                        "showUnderImageOnHoverOnly": false,
+                        "uiSoundEntityName": "SoundObject",
+                        "underImageHoverPath": "",
+                        "underImageNormalPath": ""
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIButton": {
+                "disabledTexture": "",
+                "disabledTint": {
+                    "w": 1.0,
+                    "x": 0.4000000059604645,
+                    "y": 0.4000000059604645,
+                    "z": 0.4000000059604645
+                },
+                "enabled": true,
+                "hoveredTexture": "Resource/Test/4_Resources/UI/creditScreen/Credit_Back_ON.png",
+                "hoveredTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "normalTexture": "Resource/Test/4_Resources/UI/creditScreen/Credit_Back_OFF.png",
+                "normalTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "pressedTexture": "",
+                "pressedTint": {
+                    "w": 1.0,
+                    "x": 0.8500000238418579,
+                    "y": 0.8500000238418579,
+                    "z": 0.8500000238418579
+                },
+                "state": "Normal"
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "Resource/Test/4_Resources/UI/creditScreen/Credit_Back_OFF.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.8500000238418579,
+                    "y": 0.9200000166893005
+                },
+                "anchorMin": {
+                    "x": 0.8500000238418579,
+                    "y": 0.9200000166893005
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 105.9000015258789,
+                    "y": 39.900001525878906
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_ReturnButton2"
+            },
+            "guid": "2753284901147053922",
+            "name": "UI_ReturnButton2"
         }
     ],
     "sceneName": "SuccessScene",

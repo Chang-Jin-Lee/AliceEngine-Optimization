@@ -91,7 +91,7 @@ namespace Alice
         }
 
         ALICE_LOG_INFO("[LoadingScript] Auto changing scene to: %s", scenePath.c_str());
-        scenes->LoadSceneFileRequest(scenePath.c_str());
+        const bool success = scenes->LoadSceneFileRequest(scenePath.c_str());
         m_pending = false;
     }
 

@@ -178,12 +178,12 @@
                     "name": "LoadingScript",
                     "props": {
                         "autoStart": true,
-                        "delaySec": 1.0,
+                        "delaySec": 5.0,
                         "enableFadeOut": true,
-                        "fadeEntityName": "",
+                        "fadeEntityName": "UI_Fade",
                         "fadeInOnStart": true,
                         "fadeOutDelaySec": 2.0,
-                        "targetScenePath": ""
+                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/Main.scene"
                     }
                 }
             ],
