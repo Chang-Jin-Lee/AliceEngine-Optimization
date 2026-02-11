@@ -1139,6 +1139,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				case C_BossBrainComponent::PatternType::BoostAttackB:
 				case C_BossBrainComponent::PatternType::BoostAttackC:
 				case C_BossBrainComponent::PatternType::Side:
+				case C_BossBrainComponent::PatternType::Charge:
 					return true;
 				default:
 					return false;
@@ -5370,7 +5371,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				bossTrailPatternActive = (attackClip.find("Attack_A") != std::string::npos)
 					|| (attackClip.find("Attack_BC") != std::string::npos)
 					|| (attackClip.find("Attack_ABC") != std::string::npos)
-					|| (attackClip.find("Side_Attack") != std::string::npos);
+					|| (attackClip.find("Side_Attack") != std::string::npos)
+					|| (attackClip.find("Charge_Attack") != std::string::npos);
 			}
 		}
 
@@ -5797,14 +5799,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			const bool bossChargeAttackHit = IsBossChargeAttackHit(hit);
 
 			// Boss charge attack is an exception attack:
-			// - Unblockable (guard ignored)
-			// - Undodgeable (invuln/dodge ignored)
+			// - Guardable, but always consumes fixed 1000 weapon durability.
+			// - Undodgeable (invuln/dodge ignored).
 			// - Parry remains available through parryWindowActive.
 			if (bossChargeAttackHit
 				&& hit.victimOwner == playerId)
 			{
-				victim.flags.guardActive = false;
 				victim.flags.invulnActive = false;
+				hit.guardDurabilityCost = 1000.0f;
 			}
 
 			PlayerAttackProfile playerAttackProfile = PlayerAttackProfile::None;

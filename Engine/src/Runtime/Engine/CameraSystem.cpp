@@ -518,9 +518,8 @@ namespace Alice
                     {
                         const Vec3 dirN = dir / maxDist;
 
-                        // TODO(PhysX): 카메라 전용 queryMask/layerMask를 추가해 사용하세요.
-                        const uint32_t layerMask = 0xFFFFFFFFu;
-                        const uint32_t queryMask = 0xFFFFFFFFu;
+                        const uint32_t layerMask = springComp->collisionLayerMask;
+                        const uint32_t queryMask = springComp->collisionQueryMask;
 
                         bool hitFound = false;
                         float hitDistance = maxDist;
@@ -540,8 +539,10 @@ namespace Alice
 
                         if (hitFound)
                         {
-                            const float minDist = springComp ? springComp->minDistance : followComp->minDistance;
-                            const float adjusted = std::max(minDist, hitDistance - springComp->probePadding);
+                            const float collisionMinDist = (springComp->collisionMinDistance >= 0.0f)
+                                ? springComp->collisionMinDistance
+                                : springComp->minDistance;
+                            const float adjusted = std::max(collisionMinDist, hitDistance - springComp->probePadding);
                             desiredPos.x = pivot.x + dirN.x * adjusted;
                             desiredPos.y = pivot.y + dirN.y * adjusted;
                             desiredPos.z = pivot.z + dirN.z * adjusted;
