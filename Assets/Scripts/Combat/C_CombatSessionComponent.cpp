@@ -6527,6 +6527,25 @@ namespace Alice
 			}
 			if (wasGuardBreak)
 			{
+				bool weakStateExtended = false;
+				if (guardBreakPushDuration > 0.0f)
+				{
+					for (auto& cmd : immediate)
+					{
+						if (cmd.type != Combat::CommandType::EnterWeakState)
+							continue;
+						auto& payload = std::get<Combat::CmdEnterWeakState>(cmd.payload);
+						if (payload.target != hit.victimOwner)
+							continue;
+						payload.durationSec = std::max(payload.durationSec, guardBreakPushDuration);
+						weakStateExtended = true;
+					}
+					if (!weakStateExtended)
+					{
+						immediate.push_back({ Combat::CommandType::EnterWeakState,
+							Combat::CmdEnterWeakState{ hit.victimOwner, guardBreakPushDuration } });
+					}
+				}
 				if (hit.attackerOwner == bossId && hit.victimOwner == playerId && guardBreakPushDuration > 0.0f)
 					m_state->playerGuardBreakLockOnSec = std::max(m_state->playerGuardBreakLockOnSec, guardBreakPushDuration);
 				const float invulnSec = std::max(0.0f, guardBreakPushDuration);
