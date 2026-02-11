@@ -4046,6 +4046,10 @@ namespace Alice
 				const float totalSec = (m_state->fatal.totalSec > 0.0f)
 					? m_state->fatal.totalSec
 					: (approachSec + holdSec);
+				const float groggyDamageDelaySec = std::max(0.0f, m_groggyAttackStartDelaySec);
+				const float damageApplySec = (totalSec > 0.0f)
+					? std::min(groggyDamageDelaySec, totalSec)
+					: groggyDamageDelaySec;
 				m_state->fatal.timerSec += dt;
 				if (!m_state->fatal.groggySfxPlayed)
 				{
@@ -4089,7 +4093,7 @@ namespace Alice
 
 				if (!m_state->fatal.damageApplied
 					&& m_state->fatal.damageAmount > 0.0f
-					&& m_state->fatal.timerSec >= approachSec)
+					&& m_state->fatal.timerSec >= damageApplySec)
 				{
 					std::vector<Combat::Command> fatalCmds;
 					fatalCmds.push_back({ Combat::CommandType::ApplyDamage,

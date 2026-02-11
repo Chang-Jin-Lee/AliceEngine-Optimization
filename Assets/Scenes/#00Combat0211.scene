@@ -4391,6 +4391,43 @@
             "m_useSmoothStep78": true,
             "m_useSmoothStep910": true
           }
+        },
+        {
+          "enabled": true,
+          "name": "CameraBossIntroProduction",
+          "props": {
+            "m_bossName": "Boss",
+            "m_disableFollowDuringProduction": true,
+            "m_disableLookAtDuringProduction": true,
+            "m_disableSpringArmDuringProduction": false,
+            "m_enableHotkey": true,
+            "m_outputCameraName": "MainCamera",
+            "m_phase1Duration": 3.2699999809265137,
+            "m_phase1FovEndDeg": 39.88999938964844,
+            "m_phase1FovStartDeg": 65.29000091552734,
+            "m_phase1LookHeight": -0.07000000029802322,
+            "m_phase1MoveTowardBoss": 1.2000000476837158,
+            "m_phase1Speed": 0.8199999928474426,
+            "m_phase1UseSmoothStep": true,
+            "m_phase2CameraLift": 0.3199999928474426,
+            "m_phase2DistanceEnd": 4.619999885559082,
+            "m_phase2DistanceStart": 1.8200000524520874,
+            "m_phase2Duration": 2.930000066757202,
+            "m_phase2FovEndDeg": 42.7400016784668,
+            "m_phase2LookHeight": 1.6200000047683716,
+            "m_phase2SideOffsetEnd": 0.30000001192092896,
+            "m_phase2SideOffsetStart": 1.0499999523162842,
+            "m_phase2Speed": 1.0399999618530273,
+            "m_phase2TowardBossEnd": 0.3400000035762787,
+            "m_phase2TowardBossStart": 0.10000000149011612,
+            "m_phase2UseSmoothStep": true,
+            "m_playerName": "Player(Tia)",
+            "m_restartOnKey": true,
+            "m_restoreGameplayCameraOnFinish": true,
+            "m_shoulderBackDistance": 1.350000023841858,
+            "m_shoulderHeight": 1.5800000429153442,
+            "m_shoulderLeftOffset": 0.18000000715255737
+          }
         }
       ],
       "Transform": {
