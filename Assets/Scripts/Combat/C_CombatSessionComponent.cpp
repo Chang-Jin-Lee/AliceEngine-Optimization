@@ -1204,18 +1204,28 @@ namespace Alice
 			}
 		}
 
-		// Legacy ratio-based heal tuning is preserved on the component, but runtime healing now uses fixed ticks.
 		float playerHpMissing = 0.0f;
 		float playerWeaponCurrent = 0.0f;
+		float playerHpRoomByRatio = 0.0f;
+		float playerWeaponSpendableByRatio = 0.0f;
 		if (playerHealth)
 		{
 			const float hpMax = std::max(0.0f, playerHealth->maxHealth);
+			const float weaponMax = std::max(0.0f, playerHealth->weaponDurabilityMax);
+			const float healHpCapRatio = std::clamp(m_healPlayerMaxRatio, 0.0f, 1.0f);
+			const float healWeaponMinRatio = std::clamp(m_healWeaponMinRatio, 0.0f, 1.0f);
+			const float healHpCap = hpMax * healHpCapRatio;
+			const float healWeaponFloor = weaponMax * healWeaponMinRatio;
 			playerHpMissing = std::max(0.0f, hpMax - playerHealth->currentHealth);
 			playerWeaponCurrent = std::max(0.0f, playerHealth->weaponDurability);
+			playerHpRoomByRatio = std::max(0.0f, healHpCap - playerHealth->currentHealth);
+			playerWeaponSpendableByRatio = std::max(0.0f, playerWeaponCurrent - healWeaponFloor);
 		}
 		const bool playerCanHeal = playerHealth
 			&& (playerWeaponCurrent > 0.0f)
 			&& (playerHpMissing > 0.0f)
+			&& (playerHpRoomByRatio > 0.0f)
+			&& (playerWeaponSpendableByRatio > 0.0f)
 			&& !blockPlayerActions;
 		const bool playerCanInteract = m_playerInteractionEnabled && !blockPlayerActions;
 		const auto* skinnedRegistry = SkinnedRegistry();
@@ -3556,15 +3566,20 @@ namespace Alice
 					return;
 				const float amount = std::max(0.0f, requestedAmount);
 				const float healthMax = std::max(0.0f, playerHealth->maxHealth);
-				if (amount <= 0.0f || healthMax <= 0.0f)
+				const float weaponMax = std::max(0.0f, playerHealth->weaponDurabilityMax);
+				if (amount <= 0.0f || healthMax <= 0.0f || weaponMax <= 0.0f)
 					return;
-				const float hpMissing = std::max(0.0f, healthMax - playerHealth->currentHealth);
-				const float weaponAvailable = std::max(0.0f, playerHealth->weaponDurability);
-				const float exchange = std::min(amount, std::min(hpMissing, weaponAvailable));
+				const float healHpCapRatio = std::clamp(m_healPlayerMaxRatio, 0.0f, 1.0f);
+				const float healWeaponMinRatio = std::clamp(m_healWeaponMinRatio, 0.0f, 1.0f);
+				const float healHpCap = healthMax * healHpCapRatio;
+				const float healWeaponFloor = weaponMax * healWeaponMinRatio;
+				const float hpRoom = std::max(0.0f, healHpCap - playerHealth->currentHealth);
+				const float weaponSpendable = std::max(0.0f, playerHealth->weaponDurability - healWeaponFloor);
+				const float exchange = std::min(amount, std::min(hpRoom, weaponSpendable));
 				if (exchange <= 0.0f)
 					return;
-				playerHealth->weaponDurability = std::max(0.0f, playerHealth->weaponDurability - exchange);
-				playerHealth->currentHealth = std::min(healthMax, playerHealth->currentHealth + exchange);
+				playerHealth->weaponDurability = std::max(healWeaponFloor, playerHealth->weaponDurability - exchange);
+				playerHealth->currentHealth = std::min(healHpCap, playerHealth->currentHealth + exchange);
 			};
 		if (enteredHealLoop)
 		{
@@ -4937,6 +4952,17 @@ namespace Alice
 				{
 					attackSpeedScale = std::max(0.0f, m_playerRageLightAttackSpeedScale);
 				}
+				else if (entityId == playerId
+					&& curr == Combat::ActionState::Attack
+					&& m_state->playerRageActive
+					&& m_state->playerLastAttackHeavy)
+				{
+					const bool heavyClipMatch =
+						(!cfg.heavyAttackClipA.empty() && clipName == cfg.heavyAttackClipA)
+						|| (!cfg.heavyAttackClipB.empty() && clipName == cfg.heavyAttackClipB);
+					if (heavyClipMatch)
+						attackSpeedScale = std::max(0.0f, m_playerRageHeavyAttackSpeedScale);
+				}
 				else if (entityId == playerId && curr == Combat::ActionState::Attack
 					&& m_state->playerLastAttackHeavy && m_state->playerLastAttackChargeLevel > 0)
 				{
@@ -5869,46 +5895,66 @@ namespace Alice
 				default: return PlayerAttackProfile::Light1;
 				}
 			};
+		auto IsRageHeavyProfile = [&](PlayerAttackProfile profile) -> bool
+			{
+				if (!m_state->playerRageActive)
+					return false;
+				return profile == PlayerAttackProfile::Heavy1
+					|| profile == PlayerAttackProfile::Heavy2
+					|| profile == PlayerAttackProfile::Heavy3;
+			};
+		auto ApplyRageHeavyJudgementScale = [&](float value, PlayerAttackProfile profile) -> float
+			{
+				if (!IsRageHeavyProfile(profile))
+					return value;
+				return value * std::max(0.0f, m_playerRageHeavyJudgementScale);
+			};
 		auto PlayerDamageFromProfile = [&](PlayerAttackProfile profile) -> float
 			{
+				float damage = 0.0f;
 				switch (profile)
 				{
-				case PlayerAttackProfile::Light1: return std::max(0.0f, m_playerDamageLight1);
-				case PlayerAttackProfile::Light2: return std::max(0.0f, m_playerDamageLight2);
-				case PlayerAttackProfile::Light3: return std::max(0.0f, m_playerDamageLight3);
-				case PlayerAttackProfile::Heavy1: return std::max(0.0f, m_playerDamageHeavy1);
-				case PlayerAttackProfile::Heavy2: return std::max(0.0f, m_playerDamageHeavy2);
-				case PlayerAttackProfile::Heavy3: return std::max(0.0f, m_playerDamageHeavy3);
-				case PlayerAttackProfile::Execution: return std::max(0.0f, m_playerDamageExecution);
-				default: return 0.0f;
+				case PlayerAttackProfile::Light1: damage = std::max(0.0f, m_playerDamageLight1); break;
+				case PlayerAttackProfile::Light2: damage = std::max(0.0f, m_playerDamageLight2); break;
+				case PlayerAttackProfile::Light3: damage = std::max(0.0f, m_playerDamageLight3); break;
+				case PlayerAttackProfile::Heavy1: damage = std::max(0.0f, m_playerDamageHeavy1); break;
+				case PlayerAttackProfile::Heavy2: damage = std::max(0.0f, m_playerDamageHeavy2); break;
+				case PlayerAttackProfile::Heavy3: damage = std::max(0.0f, m_playerDamageHeavy3); break;
+				case PlayerAttackProfile::Execution: damage = std::max(0.0f, m_playerDamageExecution); break;
+				default: damage = 0.0f; break;
 				}
+				return ApplyRageHeavyJudgementScale(damage, profile);
 			};
 		auto BossGroggyGainFromProfile = [&](PlayerAttackProfile profile) -> float
 			{
+				float gain = 0.0f;
 				switch (profile)
 				{
-				case PlayerAttackProfile::Light1: return std::max(0.0f, m_bossGroggyGainLight1);
-				case PlayerAttackProfile::Light2: return std::max(0.0f, m_bossGroggyGainLight2);
-				case PlayerAttackProfile::Light3: return std::max(0.0f, m_bossGroggyGainLight3);
-				case PlayerAttackProfile::Heavy1: return std::max(0.0f, m_bossGroggyGainHeavy1);
-				case PlayerAttackProfile::Heavy2: return std::max(0.0f, m_bossGroggyGainHeavy2);
-				case PlayerAttackProfile::Heavy3: return std::max(0.0f, m_bossGroggyGainHeavy3);
-				default: return 0.0f;
+				case PlayerAttackProfile::Light1: gain = std::max(0.0f, m_bossGroggyGainLight1); break;
+				case PlayerAttackProfile::Light2: gain = std::max(0.0f, m_bossGroggyGainLight2); break;
+				case PlayerAttackProfile::Light3: gain = std::max(0.0f, m_bossGroggyGainLight3); break;
+				case PlayerAttackProfile::Heavy1: gain = std::max(0.0f, m_bossGroggyGainHeavy1); break;
+				case PlayerAttackProfile::Heavy2: gain = std::max(0.0f, m_bossGroggyGainHeavy2); break;
+				case PlayerAttackProfile::Heavy3: gain = std::max(0.0f, m_bossGroggyGainHeavy3); break;
+				default: gain = 0.0f; break;
 				}
+				return ApplyRageHeavyJudgementScale(gain, profile);
 			};
 		auto WeaponHealFromProfile = [&](PlayerAttackProfile profile) -> float
 			{
+				float heal = 0.0f;
 				switch (profile)
 				{
-				case PlayerAttackProfile::Light1: return std::max(0.0f, m_weaponHealOnHitLight1);
-				case PlayerAttackProfile::Light2: return std::max(0.0f, m_weaponHealOnHitLight2);
-				case PlayerAttackProfile::Light3: return std::max(0.0f, m_weaponHealOnHitLight3);
-				case PlayerAttackProfile::Heavy1: return std::max(0.0f, m_weaponHealOnHitHeavy1);
-				case PlayerAttackProfile::Heavy2: return std::max(0.0f, m_weaponHealOnHitHeavy2);
-				case PlayerAttackProfile::Heavy3: return std::max(0.0f, m_weaponHealOnHitHeavy3);
-				case PlayerAttackProfile::Execution: return std::max(0.0f, m_weaponHealOnHitExecution);
-				default: return 0.0f;
+				case PlayerAttackProfile::Light1: heal = std::max(0.0f, m_weaponHealOnHitLight1); break;
+				case PlayerAttackProfile::Light2: heal = std::max(0.0f, m_weaponHealOnHitLight2); break;
+				case PlayerAttackProfile::Light3: heal = std::max(0.0f, m_weaponHealOnHitLight3); break;
+				case PlayerAttackProfile::Heavy1: heal = std::max(0.0f, m_weaponHealOnHitHeavy1); break;
+				case PlayerAttackProfile::Heavy2: heal = std::max(0.0f, m_weaponHealOnHitHeavy2); break;
+				case PlayerAttackProfile::Heavy3: heal = std::max(0.0f, m_weaponHealOnHitHeavy3); break;
+				case PlayerAttackProfile::Execution: heal = std::max(0.0f, m_weaponHealOnHitExecution); break;
+				default: heal = 0.0f; break;
 				}
+				return ApplyRageHeavyJudgementScale(heal, profile);
 			};
 		auto RageCooldownReduceFromProfile = [&](PlayerAttackProfile profile) -> float
 			{

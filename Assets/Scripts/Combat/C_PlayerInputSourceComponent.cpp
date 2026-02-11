@@ -11,6 +11,9 @@
 #include "Runtime/Physics/Components/Phy_CCTComponent.h"
 #include "Runtime/Foundation/Logger.h"
 #include "C_CombatSessionComponent.h"
+
+#include <algorithm>
+#include <cmath>
 //TODO : Include Ȯ�� �ؾ���
 
 namespace Alice
@@ -142,6 +145,19 @@ namespace Alice
 
         auto toKey = [](int v) { return static_cast<KeyCode>(v); };
         auto toMouse = [](int v) { return static_cast<MouseCode>(v); };
+        // Xbox-style default mapping:
+        // Move=LStick, Attack=RB, Heavy=RT, Guard=LB, Heal=LT, Dodge=A, Interact=X, Rage=Y, LockOn=RStickClick.
+        const int gamepadPlayerIndex = std::clamp(Get_m_gamepadPlayerIndex(), 0, 3);
+        const bool gamepadConnected = Get_m_useGamepadInput() && input->GetGamepadConnected(gamepadPlayerIndex);
+        const float gamepadMoveDeadzone = std::clamp(Get_m_gamepadMoveDeadzone(), 0.0f, 0.99f);
+        auto GetPadButton = [&](GamepadButton button) -> bool
+            {
+                return gamepadConnected && input->GetGamepadButton(button, gamepadPlayerIndex);
+            };
+        auto GetPadButtonDown = [&](GamepadButton button) -> bool
+            {
+                return gamepadConnected && input->GetGamepadButtonDown(button, gamepadPlayerIndex);
+            };
         const bool ragePressedNow = input->GetKeyDown(toKey(m_keyRage));
         auto IsRageActive = [&]() -> bool
             {
@@ -192,16 +208,29 @@ namespace Alice
         if (input->GetKey(toKey(m_keyRight))) x += 1.0f;
         if (input->GetKey(toKey(m_keyForward))) y += 1.0f;
         if (input->GetKey(toKey(m_keyBackward))) y -= 1.0f;
+        if (gamepadConnected)
+        {
+            float padX = input->GetGamepadLeftStickX(gamepadPlayerIndex);
+            float padY = input->GetGamepadLeftStickY(gamepadPlayerIndex);
+            if (std::abs(padX) < gamepadMoveDeadzone) padX = 0.0f;
+            if (std::abs(padY) < gamepadMoveDeadzone) padY = 0.0f;
+            x += padX;
+            y += padY;
+        }
+        x = std::clamp(x, -1.0f, 1.0f);
+        y = std::clamp(y, -1.0f, 1.0f);
 
         intent.move = { x, y };
         intent.runHeld = (x != 0.0f || y != 0.0f);
 
         const bool attackKeyDown = input->GetKeyDown(toKey(m_keyAttack));
         const bool attackMouseDown = m_useMouseAttack && input->GetMouseButtonDown(toMouse(m_mouseAttackButton));
+        const bool attackPadDown = GetPadButtonDown(GamepadButton::RightShoulder);
         const bool attackKeyHeld = input->GetKey(toKey(m_keyAttack));
         const bool attackMouseHeld = m_useMouseAttack && input->GetMouseButton(toMouse(m_mouseAttackButton));
-        const bool attackPressed = attackKeyDown || attackMouseDown;
-        const bool attackHeld = attackKeyHeld || attackMouseHeld;
+        const bool attackPadHeld = GetPadButton(GamepadButton::RightShoulder);
+        const bool attackPressed = attackKeyDown || attackMouseDown || attackPadDown;
+        const bool attackHeld = attackKeyHeld || attackMouseHeld || attackPadHeld;
         const bool attackReleased = (!attackHeld && m_attackHeldPrev);
 
         const bool chargeModifierHeld =
@@ -279,6 +308,19 @@ namespace Alice
                 intent.lightAttackPressed = true;
         }
 
+        const bool heavyPadDown = GetPadButtonDown(GamepadButton::RightTrigger);
+        if (heavyPadDown)
+        {
+            intent.heavyAttackPressed = true;
+            intent.lightAttackPressed = false;
+            intent.chargeActive = false;
+            intent.chargeHeldSec = 0.0f;
+            intent.chargeLevel = std::max(intent.chargeLevel, 1);
+            m_chargeActive = false;
+            m_chargeHeldSec = 0.0f;
+            m_chargeLevel = 0;
+        }
+
         intent.attackPressed = intent.lightAttackPressed || intent.heavyAttackPressed;
         intent.attackHeld = (!m_chargeActive && attackHeld && !chargeModifierHeld);
         if (attackHeld)
@@ -289,10 +331,12 @@ namespace Alice
 
         const bool guardKeyDown = input->GetKeyDown(toKey(m_keyGuard));
         const bool guardMouseDown = m_useMouseAttack && input->GetMouseButtonDown(toMouse(m_mouseGuardButton));
+        const bool guardPadDown = GetPadButtonDown(GamepadButton::LeftShoulder);
         const bool guardKeyHeld = input->GetKey(toKey(m_keyGuard));
         const bool guardMouseHeld = m_useMouseAttack && input->GetMouseButton(toMouse(m_mouseGuardButton));
-        const bool guardHeld = guardKeyHeld || guardMouseHeld;
-        const bool guardPressed = guardKeyDown || guardMouseDown;
+        const bool guardPadHeld = GetPadButton(GamepadButton::LeftShoulder);
+        const bool guardHeld = guardKeyHeld || guardMouseHeld || guardPadHeld;
+        const bool guardPressed = guardKeyDown || guardMouseDown || guardPadDown;
         const bool guardReleased = (!guardHeld && m_guardHeldPrev);
 
         if (guardPressed)
@@ -308,9 +352,12 @@ namespace Alice
         intent.guardHeldSec = guardHeld ? m_guardHeldSec : 0.0f;
         intent.parryTapWindowSec = m_parryWindowSec;
 
-        intent.dodgePressed = input->GetKeyDown(toKey(m_keyDodge));
-        const bool itemPressed = input->GetKeyDown(toKey(m_keyItem));
-        const bool itemHeld = input->GetKey(toKey(m_keyItem));
+        intent.dodgePressed = input->GetKeyDown(toKey(m_keyDodge))
+            || GetPadButtonDown(GamepadButton::A);
+        const bool itemPressed = input->GetKeyDown(toKey(m_keyItem))
+            || GetPadButtonDown(GamepadButton::LeftTrigger);
+        const bool itemHeld = input->GetKey(toKey(m_keyItem))
+            || GetPadButton(GamepadButton::LeftTrigger);
         const bool itemReleased = (!itemHeld && m_itemHeldPrev);
         if (itemPressed)
             m_itemHeldSec = 0.0f;
@@ -322,11 +369,13 @@ namespace Alice
         intent.itemHeld = itemHeld;
         intent.itemReleased = itemReleased;
         intent.itemHeldSec = itemHeld ? m_itemHeldSec : 0.0f;
-        intent.interactPressed = input->GetKeyDown(toKey(m_keyInteract));
-        intent.ragePressed = ragePressedNow;
+        intent.interactPressed = input->GetKeyDown(toKey(m_keyInteract))
+            || GetPadButtonDown(GamepadButton::X);
+        intent.ragePressed = ragePressedNow || GetPadButtonDown(GamepadButton::Y);
 
         if (m_useMouseLockOn)
             intent.lockOnToggle = input->GetMouseButtonDown(toMouse(m_mouseLockOnButton));
+        intent.lockOnToggle = intent.lockOnToggle || GetPadButtonDown(GamepadButton::RightThumb);
 
         m_attackHeldPrev = attackHeld;
         m_guardHeldPrev = guardHeld;
