@@ -99,6 +99,9 @@ namespace Alice
         m_rollOverrideActive = false;
         m_groggyModeOverrideActive = false;
         m_groggyModeRemainingSec = 0.0f;
+        m_parryPauseActive = false;
+        m_savedParryCameraTimeScale = 1.0f;
+        m_parryPauseRemainingSec = 0.0f;
         m_activePulses.clear();
         std::fill(m_lastPulseTriggerSec.begin(), m_lastPulseTriggerSec.end(), -1000.0f);
         m_lastGlobalPulseTriggerSec = -1000.0f;
@@ -137,6 +140,11 @@ namespace Alice
                     {
                         follow->mode = m_savedFollowMode;
                     }
+
+                    if (m_parryPauseActive)
+                    {
+                        follow->cameraTimeScale = m_savedParryCameraTimeScale;
+                    }
                 }
             }
         }
@@ -144,6 +152,8 @@ namespace Alice
         m_rollOverrideActive = false;
         m_groggyModeOverrideActive = false;
         m_groggyModeRemainingSec = 0.0f;
+        m_parryPauseActive = false;
+        m_parryPauseRemainingSec = 0.0f;
 
         RestorePostProcessBaseline();
 
@@ -561,6 +571,7 @@ namespace Alice
             m_chargeZoomDeg += (0.0f - m_chargeZoomDeg) * alpha;
             UpdateRollAssist(false);
             UpdateGroggyFollowMode(deltaTime);
+            UpdateParryPause(deltaTime);
             m_prevStateValid = false;
             m_prevChargeActive = false;
             return;
@@ -615,10 +626,44 @@ namespace Alice
 
         UpdateRollAssist(playerState == Combat::ActionState::Dodge);
         UpdateGroggyFollowMode(deltaTime);
+        UpdateParryPause(deltaTime);
 
         m_prevPlayerState = playerState;
         m_prevBossState = bossState;
         m_prevStateValid = true;
+    }
+
+    void CombatCameraEffectsController::UpdateParryPause(float deltaTime)
+    {
+        if (!m_parryPauseActive)
+            return;
+
+        World* world = GetWorld();
+        if (!world || m_cameraEntity == InvalidEntityId)
+        {
+            m_parryPauseActive = false;
+            m_parryPauseRemainingSec = 0.0f;
+            return;
+        }
+
+        auto* follow = world->GetComponent<CameraFollowComponent>(m_cameraEntity);
+        if (!follow)
+        {
+            m_parryPauseActive = false;
+            m_parryPauseRemainingSec = 0.0f;
+            return;
+        }
+
+        m_parryPauseRemainingSec -= std::max(0.0f, deltaTime);
+        if (m_parryPauseRemainingSec <= 0.0f)
+        {
+            follow->cameraTimeScale = m_savedParryCameraTimeScale;
+            m_parryPauseActive = false;
+            m_parryPauseRemainingSec = 0.0f;
+            return;
+        }
+
+        follow->cameraTimeScale = std::clamp(Get_m_parryPauseCameraTimeScale(), 0.0f, 1.0f);
     }
 
     float CombatCameraEffectsController::EvaluatePulseFovOffsetDeg(const ActivePulse& pulse) const
@@ -876,10 +921,18 @@ namespace Alice
 
         ActivePulse pulse{};
         pulse.elapsedSec = 0.0f;
-        pulse.blurDurationSec = std::max(0.001f, Get_m_baseBlurDurationSec());
-        pulse.fovInSec = std::max(0.0f, Get_m_baseFovInSec());
-        pulse.fovHoldSec = std::max(0.0f, Get_m_baseFovHoldSec());
-        pulse.fovOutSec = std::max(0.0f, Get_m_baseFovOutSec());
+        pulse.blurDurationSec = config.overrideTiming
+            ? std::max(0.001f, config.blurDurationSec)
+            : std::max(0.001f, Get_m_baseBlurDurationSec());
+        pulse.fovInSec = config.overrideTiming
+            ? std::max(0.0f, config.fovInSec)
+            : std::max(0.0f, Get_m_baseFovInSec());
+        pulse.fovHoldSec = config.overrideTiming
+            ? std::max(0.0f, config.fovHoldSec)
+            : std::max(0.0f, Get_m_baseFovHoldSec());
+        pulse.fovOutSec = config.overrideTiming
+            ? std::max(0.0f, config.fovOutSec)
+            : std::max(0.0f, Get_m_baseFovOutSec());
         pulse.totalSec = std::max(
             pulse.blurDurationSec,
             pulse.fovInSec + pulse.fovHoldSec + pulse.fovOutSec);
@@ -985,12 +1038,18 @@ namespace Alice
         config.enabled = Get_m_parryEnabled();
         config.blurIntensity = Get_m_parryBlurIntensity();
         config.blurRadius = Get_m_defaultBlurRadius();
-        config.fovZoomInDeg = Get_m_parryFovZoomInDeg();
-        config.fovOvershootDeg = Get_m_parryFovOvershootDeg();
+        config.fovZoomInDeg = Get_m_parryFovZoomInDeg() * std::max(0.0f, Get_m_parryFovZoomScale());
+        config.fovOvershootDeg = Get_m_parryFovOvershootDeg() * std::max(0.0f, Get_m_parryFovOvershootScale());
         config.shakeAmplitude = Get_m_parryShakeAmplitude();
         config.shakeDurationSec = Get_m_parryShakeDurationSec();
         config.cooldownSec = Get_m_parryCooldownSec();
+        config.overrideTiming = Get_m_parryOverrideTiming();
+        config.blurDurationSec = Get_m_parryBlurDurationSec();
+        config.fovInSec = Get_m_parryFovInSec();
+        config.fovHoldSec = Get_m_parryFovHoldSec();
+        config.fovOutSec = Get_m_parryFovOutSec();
         TriggerPulse(PulseKind::Parry, config, &hitPosWS);
+        ActivateParryPause();
     }
 
     void CombatCameraEffectsController::TriggerGuardEnterPulse()
@@ -1040,6 +1099,31 @@ namespace Alice
         const int forcedMode = std::clamp(Get_m_groggyFollowMode(), 0, 5);
         follow->mode = forcedMode;
         m_groggyModeRemainingSec = std::max(m_groggyModeRemainingSec, std::max(0.0f, Get_m_groggyFollowModeDurationSec()));
+    }
+
+    void CombatCameraEffectsController::ActivateParryPause()
+    {
+        if (!Get_m_parryPauseEnabled())
+            return;
+
+        World* world = GetWorld();
+        if (!world)
+            return;
+
+        ResolveCameraEntity();
+        if (m_cameraEntity == InvalidEntityId)
+            return;
+
+        auto* follow = world->GetComponent<CameraFollowComponent>(m_cameraEntity);
+        if (!follow)
+            return;
+
+        if (!m_parryPauseActive)
+            m_savedParryCameraTimeScale = follow->cameraTimeScale;
+
+        m_parryPauseActive = true;
+        m_parryPauseRemainingSec = std::max(m_parryPauseRemainingSec, std::max(0.0f, Get_m_parryPauseSec()));
+        follow->cameraTimeScale = std::clamp(Get_m_parryPauseCameraTimeScale(), 0.0f, 1.0f);
     }
 
     void CombatCameraEffectsController::OnCombatResolve(EntityId victimId,

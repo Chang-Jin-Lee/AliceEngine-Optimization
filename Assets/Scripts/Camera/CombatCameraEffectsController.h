@@ -50,6 +50,12 @@ namespace Alice
             float shakeAmplitude = 0.0f;
             float shakeDurationSec = 0.0f;
             float cooldownSec = 0.0f;
+
+            bool overrideTiming = false;
+            float blurDurationSec = 0.0f;
+            float fovInSec = 0.0f;
+            float fovHoldSec = 0.0f;
+            float fovOutSec = 0.0f;
         };
 
         struct ActivePulse
@@ -109,6 +115,7 @@ namespace Alice
         void UpdateStateDrivenEffects(float deltaTime);
         void UpdateRollAssist(bool dodgeActive);
         void UpdateGroggyFollowMode(float deltaTime);
+        void UpdateParryPause(float deltaTime);
 
         PulseAccumulation UpdateActivePulses(float deltaTime);
         float EvaluatePulseFovOffsetDeg(const ActivePulse& pulse) const;
@@ -127,6 +134,7 @@ namespace Alice
         void TriggerParryPulse(const DirectX::XMFLOAT3& hitPosWS);
         void TriggerGuardEnterPulse();
         void TriggerGroggyPulse(const DirectX::XMFLOAT3* hitPosWS);
+        void ActivateParryPause();
 
         void OnCombatResolve(EntityId victimId,
                              EntityId attackerId,
@@ -219,9 +227,19 @@ namespace Alice
         ALICE_PROPERTY(float, m_parryBlurIntensity, 1.35f);
         ALICE_PROPERTY(float, m_parryFovZoomInDeg, 3.4f);
         ALICE_PROPERTY(float, m_parryFovOvershootDeg, 0.8f);
+        ALICE_PROPERTY(float, m_parryFovZoomScale, 1.35f);
+        ALICE_PROPERTY(float, m_parryFovOvershootScale, 1.1f);
         ALICE_PROPERTY(float, m_parryShakeAmplitude, 0.09f);
         ALICE_PROPERTY(float, m_parryShakeDurationSec, 0.16f);
         ALICE_PROPERTY(float, m_parryCooldownSec, 0.08f);
+        ALICE_PROPERTY(bool, m_parryOverrideTiming, true);
+        ALICE_PROPERTY(float, m_parryBlurDurationSec, 0.05f);
+        ALICE_PROPERTY(float, m_parryFovInSec, 0.015f);
+        ALICE_PROPERTY(float, m_parryFovHoldSec, 0.08f);
+        ALICE_PROPERTY(float, m_parryFovOutSec, 0.13f);
+        ALICE_PROPERTY(bool, m_parryPauseEnabled, true);
+        ALICE_PROPERTY(float, m_parryPauseSec, 0.055f);
+        ALICE_PROPERTY(float, m_parryPauseCameraTimeScale, 0.04f);
 
         ALICE_PROPERTY(bool, m_guardEnterEnabled, true);
         ALICE_PROPERTY(float, m_guardEnterBlurIntensity, 0.35f);
@@ -289,6 +307,10 @@ namespace Alice
         bool m_groggyModeOverrideActive = false;
         int m_savedFollowMode = 0;
         float m_groggyModeRemainingSec = 0.0f;
+
+        bool m_parryPauseActive = false;
+        float m_savedParryCameraTimeScale = 1.0f;
+        float m_parryPauseRemainingSec = 0.0f;
 
         UICurveAsset m_pulseCurveAsset{};
         bool m_pulseCurveLoaded = false;
