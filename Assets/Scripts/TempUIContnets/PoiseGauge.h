@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Runtime/Scripting/IScript.h"
 #include "Runtime/Scripting/ScriptReflection.h"
 #include "Runtime/UI/UIGaugeComponent.h"
@@ -35,6 +35,9 @@ namespace Alice
         ALICE_PROPERTY(std::string, targetEntityName, "Cube_HPTest1");       //델리게이트가 있는 entity 이름
 
         ALICE_PROPERTY(std::string, targetScriptName, "BoxDeligateScript");  // 그 엔티티에 붙어 있는 스크립트 이름
+
+        // HealthComponent를 직접 읽을 엔티티 이름 (설정되면 BoxDeligateScript 대신 사용)
+        ALICE_PROPERTY(std::string, healthEntityName, "Boss");
 
         // 표시 값 (0~maxValue 정규화, changeValue 콜백으로 갱신됨)
         ALICE_PROPERTY(float, maxValue, 100.0f);

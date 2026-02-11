@@ -41,7 +41,7 @@ namespace Alice
 	}
 
 	// =========================
-	// 즉시 ?�환 (?�진 ?�전 지??
+	// 利됱떆 ?꾪솚 (?붿쭊 ?덉쟾 吏??
 	// =========================
 	bool SceneManager::SwitchToImmediate(const char* sceneName)
 	{
@@ -53,13 +53,13 @@ namespace Alice
 
 		m_currentScene = std::move(newScene);
 		m_currentScene->OnEnter(m_world, m_resources);
-		// 코드 ?�으�??�환 ???�일 경로 초기??
+		// 肄붾뱶 ?ъ쑝濡??꾪솚 ???뚯씪 寃쎈줈 珥덇린??
 		m_currentSceneFilePath.clear();
 		return true;
 	}
 
 	// =========================
-	// 지???�환 ?�청 (?�크립트?�서 ?�출 ?�전)
+	// 吏???꾪솚 ?붿껌 (?ㅽ겕由쏀듃?먯꽌 ?몄텧 ?덉쟾)
 	// =========================
 	bool SceneManager::SwitchTo(const char* sceneName)
 	{
@@ -67,7 +67,7 @@ namespace Alice
 		if (!newScene) return false;
 
 		m_pendingScene = std::move(newScene);
-		m_pendingSceneFile.reset(); // ?�일 로드 ?�청???�던 �???��?�
+		m_pendingSceneFile.reset(); // ?뚯씪 濡쒕뱶 ?붿껌???덈뜕 嫄???뼱?
 		return true;
 	}
 
@@ -75,12 +75,12 @@ namespace Alice
 	{
 		if (logicalScenePath.empty()) return false;
 
-		// ".scene" 같�? ?�파???�터 문자??방�?
+		// ".scene" 媛숈? ?룻뙆???꾪꽣 臾몄옄??諛⑹?
 		if (!logicalScenePath.has_extension()) return false;
 		if (logicalScenePath.extension() != ".scene") return false;
 
 		m_pendingSceneFile = logicalScenePath;
-		m_pendingScene.reset(); // 코드 ???�환 ?�청???�던 �???��?�
+		m_pendingScene.reset(); // 肄붾뱶 ???꾪솚 ?붿껌???덈뜕 嫄???뼱?
 		return true;
 	}
 
@@ -106,12 +106,12 @@ namespace Alice
 		// Stop any playing audio before tearing down/loading scenes.
 		Sound::StopBGM();
 
-		// pending ?�이??추출
+		// pending ?곗씠??異붿텧
 		std::unique_ptr<IScene> pendingScene = std::move(m_pendingScene);
 		std::optional<std::filesystem::path> pendingFile = std::move(m_pendingSceneFile);
 		m_pendingSceneFile.reset();
 
-		// (A) 코드 기반 ???�환 커밋
+		// (A) 肄붾뱶 湲곕컲 ???꾪솚 而ㅻ컠
 		if (pendingScene)
 		{
 			if (m_currentScene)
@@ -120,17 +120,17 @@ namespace Alice
 			m_currentScene = std::move(pendingScene);
 			m_currentScene->OnEnter(m_world, m_resources);
 			
-			// 코드 ???�름 ?�??
+			// 肄붾뱶 ???대쫫 ???
 			if (m_currentScene)
 			{
 				m_currentSceneName = m_currentScene->GetName() ? m_currentScene->GetName() : "";
 			}
-			// 코드 기반 ???�환 ???�일 경로 초기??
+			// 肄붾뱶 湲곕컲 ???꾪솚 ???뚯씪 寃쎈줈 珥덇린??
 			m_currentSceneFilePath.clear();
 			return true;
 		}
 
-		// (B) .scene ?�일 로드 커밋
+		// (B) .scene ?뚯씪 濡쒕뱶 而ㅻ컠
 		if (pendingFile.has_value())
 		{
 			const auto path = *pendingFile;
@@ -138,20 +138,20 @@ namespace Alice
 			if (m_currentScene)
 				m_currentScene->OnExit(m_world, m_resources);
 
-			// ?�일 기반 로드�?"?�재 코드 ?? 개념???�어�????�으??비워??
+			// ?뚯씪 湲곕컲 濡쒕뱶硫?"?꾩옱 肄붾뱶 ?? 媛쒕뀗???놁뼱吏????덉쑝??鍮꾩썙??
 			m_currentScene.reset();
 
 			const bool ok = SceneFile::LoadAuto(world, m_resources, path);
 
 			if (ok)
 			{
-				// 로드 ?�공 ???�재 ???�일 경로 ?�??
+				// 濡쒕뱶 ?깃났 ???꾩옱 ???뚯씪 寃쎈줈 ???
 				m_currentSceneFilePath = path;
 			}
 			else
 			{
 				ALICE_LOG_ERRORF("[SceneManager] SceneFile::LoadAuto failed: %s", path.generic_string().c_str());
-				// 로드 ?�패 ??경로???��??��? ?�음
+				// 濡쒕뱶 ?ㅽ뙣 ??寃쎈줈???좎??섏? ?딆쓬
 			}
 			return ok;
 		}

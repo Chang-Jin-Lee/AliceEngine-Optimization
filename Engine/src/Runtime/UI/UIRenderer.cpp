@@ -262,6 +262,12 @@ namespace Alice
 			return false;
 		}
 		
+		if (!RegisterShader("GaugeCustomClipped", AliceUIShader::UIGaugeCustomClippedPS))
+		{
+			ALICE_LOG_ERRORF("[AliceUI] Failed to register GaugeCustomClipped shader.");
+			return false;
+		}
+		
 		if (!RegisterShader("Pencil", AliceUIShader::UIPencilPS))
 		{
 			ALICE_LOG_ERRORF("[AliceUI] Failed to register Pencil shader.");
@@ -2119,6 +2125,8 @@ namespace Alice
 	std::string shaderName = widget->shaderName;
 	if (shaderName == "GaugeCustom")
 		shaderName = "Default";
+	if (shaderName == "GaugeCustomClipped")
+		shaderName = "Default";
 
 	ID3D11ShaderResourceView* handleTex = texture.empty() ? nullptr : GetTexture(texture);
 	DrawQuad(verts, handleTex, GetPixelShader(shaderName), pixel);
@@ -2139,13 +2147,17 @@ void UIRenderer::RenderGauge(const World& world, EntityId id, const ScreenLayout
 		//     baseShaderName = "Default";
 		// }
 		std::string baseShaderName = widget->shaderName;
+		const bool useUvClip = gauge->useUvClip;
+		if (baseShaderName == "GaugeCustom" && useUvClip)
+			baseShaderName = "GaugeCustomClipped";
+
 		std::string fillShaderName = baseShaderName;
 		std::string nonFillShaderName = baseShaderName;
-		if (baseShaderName == "GaugeCustom")
+		if (baseShaderName == "GaugeCustom" || baseShaderName == "GaugeCustomClipped")
 		{
 			if (gauge->useCustomShader)
 			{
-				fillShaderName = "GaugeCustom";
+				fillShaderName = baseShaderName;
 				nonFillShaderName = "Default";
 			}
 			else
@@ -2162,6 +2174,14 @@ void UIRenderer::RenderGauge(const World& world, EntityId id, const ScreenLayout
 		const float originY = layout.pivotBaked ? 0.0f : -layout.pivot.y * layout.size.y;
 		const float aspect = (layout.size.y > 0.0001f) ? (layout.size.x / layout.size.y) : 1.0f;
 		pixel.gaugeParams2 = DirectX::XMFLOAT4(aspect, 0.0f, 0.0f, 0.0f);
+		if (baseShaderName == "GaugeCustomClipped")
+		{
+			if (useUvClip)
+				pixel.params1 = DirectX::XMFLOAT4(gauge->uvClipMin.x, gauge->uvClipMin.y,
+					gauge->uvClipMax.x, gauge->uvClipMax.y);
+			else
+				pixel.params1 = DirectX::XMFLOAT4(-1.0f, 0.0f, 0.0f, 0.0f);
+		}
 
 		// Background
 		if (gauge->useBackground)
@@ -2248,16 +2268,18 @@ void UIRenderer::RenderGauge(const World& world, EntityId id, const ScreenLayout
 				// {
 				//     fillLateShaderName = "Default";
 				// }
-				std::string fillLateShaderName = gauge->fillLateShaderName.empty()
-				    ? nonFillShaderName
-				    : gauge->fillLateShaderName;
-
-				if (fillLateShaderName == "GaugeCustom")
-				{
-
-				    fillLateShaderName = "Default";
-
-				}
+			std::string fillLateShaderName = gauge->fillLateShaderName.empty()
+			    ? nonFillShaderName
+			    : gauge->fillLateShaderName;
+  
+			if (fillLateShaderName == "GaugeCustom")
+			{
+			    fillLateShaderName = useUvClip ? "GaugeCustomClipped" : "Default";
+			}
+			else if (fillLateShaderName == "GaugeCustomClipped" && !useUvClip)
+			{
+				fillLateShaderName = "Default";
+			}
 			
 				ID3D11ShaderResourceView* fillLateTex = gauge->fillLateTexture.empty() 
 					? nullptr 
