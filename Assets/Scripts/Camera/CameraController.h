@@ -41,5 +41,9 @@ namespace Alice
         ALICE_PROPERTY(float, m_shakeDuration, 2.2f)        // 흔들림 지속 시간
         ALICE_PROPERTY(float, m_shakeDecay, 2.0f)           // 흔들림 감쇠 계수
         ALICE_PROPERTY(float, m_sholderOffset, 4.0f)        // 흔들림 감쇠 계수
+        ALICE_PROPERTY(bool, m_enableGamepadLook, true)
+        ALICE_PROPERTY(int, m_gamepadPlayerIndex, 0)
+        ALICE_PROPERTY(float, m_gamepadLookDeadzone, 0.15f)
+        ALICE_PROPERTY(float, m_gamepadLookSpeedDegPerSec, 180.0f)
     };
 }

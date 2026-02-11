@@ -86,7 +86,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_healTransferRatio, 0.1f);
         ALICE_PROPERTY(float, m_healWeaponMinRatio, 0.1f);
         ALICE_PROPERTY(float, m_healPlayerMaxRatio, 0.9f);
-        // Legacy ratio heal tuning kept for backward compatibility; fixed-tick heal logic ignores these.
+        // Ratio constraints are still honored (HP cap / weapon floor) by fixed-tick heal.
 
         // Boss groggy tuning
         ALICE_PROPERTY(float, m_bossGroggyGainLight, 8.0f);
@@ -100,6 +100,8 @@ namespace Alice
         ALICE_PROPERTY(float, m_lightComboWindowSec, 0.5f);
         ALICE_PROPERTY(float, m_chargeCombo2Speed, 0.7f);
         ALICE_PROPERTY(float, m_playerRageLightAttackSpeedScale, 1.5f);
+        ALICE_PROPERTY(float, m_playerRageHeavyAttackSpeedScale, 1.2f);
+        ALICE_PROPERTY(float, m_playerRageHeavyJudgementScale, 1.2f);
         ALICE_PROPERTY(float, m_rageDurationSec, 15.0f);
         ALICE_PROPERTY(float, m_rageCooldownSec, 30.0f);
         ALICE_PROPERTY(float, m_rageCooldownReduceLight1Sec, 1.0f);
