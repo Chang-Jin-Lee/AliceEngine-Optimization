@@ -6,6 +6,7 @@
 #include <string>
 #include <cctype>
 #include <cstdlib>
+#include <utility>
 
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/Foundation/Logger.h"
@@ -774,6 +775,8 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 	{
 		OnCombatResolved.Unbind();
 		OnCombatResolvedVfx.Unbind();
+		m_onCombatResolvedCameraListeners.clear();
+		m_nextOnCombatResolvedCameraListenerId = 1;
 
 		if (m_state)
 			m_state->Init();
@@ -829,6 +832,53 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
     float C_CombatSessionComponent::GetPlayerRageRemainingSec() const
     {
         return m_state ? std::max(0.0f, m_state->playerRageRemainingSec) : 0.0f;
+    }
+
+    bool C_CombatSessionComponent::IsFatalActive() const
+    {
+        return m_state ? m_state->fatal.active : false;
+    }
+
+    float C_CombatSessionComponent::GetFatalProgress01() const
+    {
+        if (!m_state || !m_state->fatal.active)
+            return 0.0f;
+
+        const float totalSec = (m_state->fatal.totalSec > 0.0f)
+            ? m_state->fatal.totalSec
+            : std::max(0.0f, m_state->fatal.approachSec + m_state->fatal.holdSec);
+        if (totalSec <= 1e-6f)
+            return 0.0f;
+
+        return std::clamp(m_state->fatal.timerSec / totalSec, 0.0f, 1.0f);
+    }
+
+    float C_CombatSessionComponent::GetFatalRemainSec() const
+    {
+        if (!m_state || !m_state->fatal.active)
+            return 0.0f;
+
+        const float totalSec = (m_state->fatal.totalSec > 0.0f)
+            ? m_state->fatal.totalSec
+            : std::max(0.0f, m_state->fatal.approachSec + m_state->fatal.holdSec);
+        return std::max(0.0f, totalSec - m_state->fatal.timerSec);
+    }
+
+    std::uint64_t C_CombatSessionComponent::AddOnCombatResolvedCameraListener(FOnCombatResolvedCameraListener listener)
+    {
+        if (!listener)
+            return 0;
+
+        const std::uint64_t id = m_nextOnCombatResolvedCameraListenerId++;
+        m_onCombatResolvedCameraListeners[id] = std::move(listener);
+        return id;
+    }
+
+    void C_CombatSessionComponent::RemoveOnCombatResolvedCameraListener(std::uint64_t listenerId)
+    {
+        if (listenerId == 0)
+            return;
+        m_onCombatResolvedCameraListeners.erase(listenerId);
     }
 
 	void C_CombatSessionComponent::ForceReset()
@@ -4953,6 +5003,20 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				{
 					OnCombatResolvedVfx.Execute(hit.victimOwner, hit.attackerOwner,
 						static_cast<std::uint8_t>(resolveResult), hit.damage, hit.hitPosWS);
+				}
+
+				if (!m_onCombatResolvedCameraListeners.empty())
+				{
+					auto listenersCopy = m_onCombatResolvedCameraListeners;
+					for (const auto& [listenerId, listener] : listenersCopy)
+					{
+						(void)listenerId;
+						if (listener)
+						{
+							listener(hit.victimOwner, hit.attackerOwner,
+								static_cast<std::uint8_t>(resolveResult), hit.damage, hit.hitPosWS);
+						}
+					}
 				}
 			}
 

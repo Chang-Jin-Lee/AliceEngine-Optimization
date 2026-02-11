@@ -737,6 +737,15 @@ namespace Alice
             .property("bloomRadius", &PostProcessSettings::bloomRadius)
             .property("bOverride_BloomDownsample", &PostProcessSettings::bOverride_BloomDownsample)
             .property("bloomDownsample", &PostProcessSettings::bloomDownsample)
+            // Impact Blur
+            .property("bOverride_ImpactBlurIntensity", &PostProcessSettings::bOverride_ImpactBlurIntensity)
+            .property("impactBlurIntensity", &PostProcessSettings::impactBlurIntensity)
+            .property("bOverride_ImpactBlurRadius", &PostProcessSettings::bOverride_ImpactBlurRadius)
+            .property("impactBlurRadius", &PostProcessSettings::impactBlurRadius)
+            .property("bOverride_ImpactBlurCenterX", &PostProcessSettings::bOverride_ImpactBlurCenterX)
+            .property("impactBlurCenterX", &PostProcessSettings::impactBlurCenterX)
+            .property("bOverride_ImpactBlurCenterY", &PostProcessSettings::bOverride_ImpactBlurCenterY)
+            .property("impactBlurCenterY", &PostProcessSettings::impactBlurCenterY)
             // HalfCut screen split
             .property("bOverride_SplitAmount", &PostProcessSettings::bOverride_SplitAmount)
             .property("splitAmount", &PostProcessSettings::splitAmount)
@@ -753,7 +762,11 @@ namespace Alice
             .property("bOverride_SplitFxSpeed", &PostProcessSettings::bOverride_SplitFxSpeed)
             .property("splitFxSpeed", &PostProcessSettings::splitFxSpeed)
             .property("bOverride_SplitFxTimeSec", &PostProcessSettings::bOverride_SplitFxTimeSec)
-            .property("splitFxTimeSec", &PostProcessSettings::splitFxTimeSec);
+            .property("splitFxTimeSec", &PostProcessSettings::splitFxTimeSec)
+            .property("bOverride_SplitFxColorA", &PostProcessSettings::bOverride_SplitFxColorA)
+            .property("splitFxColorA", &PostProcessSettings::splitFxColorA)
+            .property("bOverride_SplitFxColorB", &PostProcessSettings::bOverride_SplitFxColorB)
+            .property("splitFxColorB", &PostProcessSettings::splitFxColorB);
 
         // === ComputeEffectComponent ��� ===
         rttr::registration::class_<ComputeEffectComponent>("ComputeEffectComponent")
