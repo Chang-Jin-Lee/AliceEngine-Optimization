@@ -19,11 +19,12 @@ namespace Alice
 	{
 		inline bool MaterialAssetEditorFilter(const std::string& propName)
 		{
-			// assetPath/albedoTexturePath/shadingMode는 특별 UI 처리
-			// shadow/toon ramp/self shadow는 커스텀 UI 처리
-			return propName != "assetPath" && propName != "albedoTexturePath" && propName != "shadingMode" &&
+			// assetPath/*TexturePath/shadingMode는 특별 UI 처리
+			// shadow/toon/emissive 관련은 커스텀 UI 처리
+			return propName != "assetPath" && propName != "albedoTexturePath" && propName != "emissiveTexturePath" && propName != "shadingMode" &&
 			       propName != "shadowStrength" && propName != "toonPbrRampIntensity" &&
-			       propName != "toonSelfShadowStrength";
+			       propName != "toonSelfShadowStrength" &&
+			       propName != "emissiveIntensity" && propName != "emissiveBloom";
 		}
 
 		inline std::string NormalizePathKey(const std::filesystem::path& p)
@@ -103,6 +104,20 @@ namespace Alice
 				changed = true;
 			}
 
+			float emissiveIntensity = g_MaterialEditorData.emissiveIntensity;
+			if (ImGui::SliderFloat("Emissive Intensity", &emissiveIntensity, 0.0f, 100.0f, "%.3f"))
+			{
+				g_MaterialEditorData.emissiveIntensity = std::max(emissiveIntensity, 0.0f);
+				changed = true;
+			}
+
+			float emissiveBloom = g_MaterialEditorData.emissiveBloom;
+			if (ImGui::SliderFloat("Emissive Bloom", &emissiveBloom, 0.0f, 10.0f, "%.3f"))
+			{
+				g_MaterialEditorData.emissiveBloom = std::max(emissiveBloom, 0.0f);
+				changed = true;
+			}
+
 			changed |= ReflectionUI::RenderInspector(g_MaterialEditorData, MaterialAssetEditorFilter).changed;
 
 			ImGui::Separator();
@@ -145,6 +160,49 @@ namespace Alice
 
 					ALICE_LOG_INFO("[Editor] Material albedo set from MatEditor: \"%s\"\n",
 						g_MaterialEditorData.albedoTexturePath.c_str());
+				}
+			}
+
+			ImGui::Separator();
+			ImGui::Text("Emissive Texture");
+			if (!g_MaterialEditorData.emissiveTexturePath.empty())
+			{
+				ImGui::TextWrapped("%s", g_MaterialEditorData.emissiveTexturePath.c_str());
+			}
+			else
+			{
+				ImGui::TextDisabled("None");
+			}
+			if (ImGui::Button("Browse Emissive##Mat"))
+			{
+				wchar_t fileBuffer[MAX_PATH] = {};
+				OPENFILENAMEW ofn{};
+				ofn.lStructSize = sizeof(ofn);
+				ofn.hwndOwner = m_hwnd;
+				ofn.lpstrFilter = L"Image Files\0*.png;*.jpg;*.jpeg;*.tga;*.bmp;*.dds\0All Files\0*.*\0";
+				ofn.lpstrFile = fileBuffer;
+				ofn.nMaxFile = MAX_PATH;
+				ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
+
+				if (GetOpenFileNameW(&ofn))
+				{
+					std::filesystem::path absolutePath = fileBuffer;
+
+					// 절대 경로를 논리 경로로 변환
+					std::string logicalPath = absolutePath.string();
+					{
+						std::filesystem::path logical = ResourceManager::NormalizeResourcePathAbsoluteToLogical(absolutePath);
+						if (!logical.empty() && !logical.is_absolute())
+						{
+							logicalPath = logical.string();
+						}
+					}
+
+					g_MaterialEditorData.emissiveTexturePath = logicalPath;
+					changed = true;
+
+					ALICE_LOG_INFO("[Editor] Material emissive set from MatEditor: \"%s\"\n",
+						g_MaterialEditorData.emissiveTexturePath.c_str());
 				}
 			}
 

@@ -27,9 +27,13 @@ namespace Alice {
         float shadowStrength{ 1.0f };                // 0~1 그림자 강도 (0=그림자 없음, 1=기본)
         float envDiffuseStrength{ 1.0f };            // IBL Diffuse 기여도 (0 = 없음)
         float envSpecularStrength{ 1.0f };           // IBL Specular 기여도 (0 = 없음)
+        DirectX::XMFLOAT3 emissiveColor{ 1.0f, 1.0f, 1.0f }; // 에미시브 색상
+        float emissiveIntensity{ 0.0f };             // 에미시브 강도 (0 = 비활성)
+        float emissiveBloom{ 1.0f };                 // 에미시브의 Bloom 기여도
         int shadingMode{ -1 };                       // -1: 전역, 0~7: 개별 셰이딩 모드, 6: OnlyTextureWithOutline, 7: ToonPBREditable
         std::string assetPath;                     // 선택된 머티리얼 에셋 경로 (옵션)
         std::string albedoTexturePath; // 알베도 텍스처 경로 (.alice 또는 원본)
+        std::string emissiveTexturePath; // 에미시브 텍스처 경로 (.alice 또는 원본)
         bool transparent{ false };     // 알파 블렌딩 여부 (투명 오브젝트)
         
         // 노말맵 강도 조절 (0.0: 평평, 1.0: 원본, >1.0: 과장)
@@ -64,9 +68,13 @@ namespace Alice {
         Alice_Get_Set(shadowStrength);
         Alice_Get_Set(envDiffuseStrength);
         Alice_Get_Set(envSpecularStrength);
+        Alice_Get_Set(emissiveColor);
+        Alice_Get_Set(emissiveIntensity);
+        Alice_Get_Set(emissiveBloom);
         Alice_Get_Set(shadingMode);
         Alice_Get_Set(assetPath);
         Alice_Get_Set(albedoTexturePath);
+        Alice_Get_Set(emissiveTexturePath);
         Alice_Get_Set(transparent);
         Alice_Get_Set(normalStrength);
         Alice_Get_Set(outlineColor);
