@@ -20,10 +20,11 @@ namespace Alice
 	{
 		inline bool MaterialInspectorFilter(const std::string& propName)
 		{
-			// assetPath/albedoTexturePath/shadingMode는 특별 UI 처리하므로 제외
-			return propName != "assetPath" && propName != "albedoTexturePath" && propName != "shadingMode" &&
+			// assetPath/*TexturePath/shadingMode 및 커스텀 슬라이더 항목은 특별 UI 처리하므로 제외
+			return propName != "assetPath" && propName != "albedoTexturePath" && propName != "emissiveTexturePath" && propName != "shadingMode" &&
 			       propName != "shadowStrength" && propName != "toonPbrRampIntensity" &&
-			       propName != "toonSelfShadowStrength";
+			       propName != "toonSelfShadowStrength" &&
+			       propName != "emissiveIntensity" && propName != "emissiveBloom";
 		}
 
 		inline bool DragFloatWithInput(const char* label, float* value, float minValue, float maxValue, const char* fmt = "%.3f")
@@ -162,6 +163,24 @@ namespace Alice
 					changed = true;
 				}
 			}
+			// Emissive Intensity (커스텀 UI)
+			{
+				float emissiveIntensity = mat->emissiveIntensity;
+				if (SliderFloatWithDoubleClickInput("Emissive Intensity", &emissiveIntensity, 0.0f, 100.0f, "%.3f"))
+				{
+					mat->emissiveIntensity = std::max(emissiveIntensity, 0.0f);
+					changed = true;
+				}
+			}
+			// Emissive Bloom (커스텀 UI)
+			{
+				float emissiveBloom = mat->emissiveBloom;
+				if (SliderFloatWithDoubleClickInput("Emissive Bloom", &emissiveBloom, 0.0f, 10.0f, "%.3f"))
+				{
+					mat->emissiveBloom = std::max(emissiveBloom, 0.0f);
+					changed = true;
+				}
+			}
 
 			changed |= ReflectionUI::RenderInspector(*mat, MaterialInspectorFilter).changed;
 
@@ -230,6 +249,15 @@ namespace Alice
 					changed = true;
 					g_SceneDirty = true;
 				};
+			auto ApplyEmissivePath = [&](const std::filesystem::path& anyPath)
+				{
+					if (!IsImageExt(anyPath.extension().string()))
+						return;
+
+					mat->emissiveTexturePath = NormalizeToLogicalIfPossible(anyPath);
+					changed = true;
+					g_SceneDirty = true;
+				};
 
 			// ---- UI
 			ImGui::Text("Albedo: %s", mat->albedoTexturePath.empty() ? "None" : mat->albedoTexturePath.c_str());
@@ -250,7 +278,7 @@ namespace Alice
 			}
 
 			// Browse
-			if (ImGui::Button("Browse..."))
+			if (ImGui::Button("Browse Albedo..."))
 			{
 				wchar_t buf[MAX_PATH] = {};
 				OPENFILENAMEW ofn = { sizeof(ofn) };
@@ -263,6 +291,37 @@ namespace Alice
 				if (GetOpenFileNameW(&ofn))
 				{
 					ApplyAlbedoPath(std::filesystem::path(buf));
+				}
+			}
+
+			ImGui::Text("Emissive: %s", mat->emissiveTexturePath.empty() ? "None" : mat->emissiveTexturePath.c_str());
+
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_FILE_PATH"))
+				{
+					const char* pathStr = static_cast<const char*>(payload->Data);
+					if (pathStr && pathStr[0] != '\0')
+					{
+						ApplyEmissivePath(std::filesystem::path(pathStr));
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
+
+			if (ImGui::Button("Browse Emissive..."))
+			{
+				wchar_t buf[MAX_PATH] = {};
+				OPENFILENAMEW ofn = { sizeof(ofn) };
+				ofn.hwndOwner = m_hwnd;
+				ofn.lpstrFilter = L"Images\0*.png;*.jpg;*.jpeg;*.dds;*.tga;*.bmp\0All\0*.*\0";
+				ofn.lpstrFile = buf;
+				ofn.nMaxFile = MAX_PATH;
+				ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+				if (GetOpenFileNameW(&ofn))
+				{
+					ApplyEmissivePath(std::filesystem::path(buf));
 				}
 			}
 
@@ -495,6 +554,7 @@ namespace Alice
 			ppSettings["bloomThreshold"] = m_defaultPostProcessSettings.bloomThreshold;
 			ppSettings["bloomKnee"] = m_defaultPostProcessSettings.bloomKnee;
 			ppSettings["bloomIntensity"] = m_defaultPostProcessSettings.bloomIntensity;
+			ppSettings["emissiveBloomIntensity"] = m_defaultPostProcessSettings.emissiveBloomIntensity;
 			ppSettings["bloomGaussianIntensity"] = m_defaultPostProcessSettings.bloomGaussianIntensity;
 			ppSettings["bloomRadius"] = m_defaultPostProcessSettings.bloomRadius;
 			ppSettings["bloomDownsample"] = m_defaultPostProcessSettings.bloomDownsample;
@@ -599,6 +659,8 @@ namespace Alice
 					m_defaultPostProcessSettings.bloomKnee = ppSettings["bloomKnee"].get<float>();
 				if (ppSettings.contains("bloomIntensity"))
 					m_defaultPostProcessSettings.bloomIntensity = ppSettings["bloomIntensity"].get<float>();
+				if (ppSettings.contains("emissiveBloomIntensity"))
+					m_defaultPostProcessSettings.emissiveBloomIntensity = ppSettings["emissiveBloomIntensity"].get<float>();
 				if (ppSettings.contains("bloomGaussianIntensity"))
 					m_defaultPostProcessSettings.bloomGaussianIntensity = ppSettings["bloomGaussianIntensity"].get<float>();
 				if (ppSettings.contains("bloomRadius"))
@@ -788,6 +850,14 @@ namespace Alice
 					{
 						ImGui::Indent();
 						changed |= ImGui::SliderFloat("Intensity##PostProcessVolume", &settings.bloomIntensity, 0.0f, 5.0f);
+						ImGui::Unindent();
+					}
+
+					changed |= ImGui::Checkbox("Override Emissive Bloom##PostProcessVolume", &settings.bOverride_EmissiveBloomIntensity);
+					if (settings.bOverride_EmissiveBloomIntensity)
+					{
+						ImGui::Indent();
+						changed |= ImGui::SliderFloat("Emissive Bloom##PostProcessVolume", &settings.emissiveBloomIntensity, 0.0f, 10.0f);
 						ImGui::Unindent();
 					}
 

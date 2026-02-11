@@ -280,6 +280,10 @@ namespace Alice
 			ImGui::TextUnformatted("Skybox");
 			lightingChanged |= ImGui::SliderFloat("Global IBL Intensity", &lighting.globalIBLIntensity, 0.0f, 1.0f, "%.3f");
 
+			// 회전 슬라이더
+			lightingChanged |= ImGui::SliderFloat("Skybox Rotation Yaw", &lighting.skyboxRotation, 0.0f, 360.0f, "%.1f deg");
+			lightingChanged |= ImGui::SliderFloat("Skybox Rotation Pitch", &lighting.skyboxRotationPitch, -89.9f, 89.9f, "%.1f deg");
+
 			static int  lastSkyboxChoice = -1;
 			static int  lastSkyboxResolution = -1;
 			static bool lastForward = false;

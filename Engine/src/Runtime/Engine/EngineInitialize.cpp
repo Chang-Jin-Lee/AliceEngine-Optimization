@@ -696,11 +696,19 @@ namespace Alice
 						lighting.ambientOcclusion = p["ambientOcclusion"].get<float>();
 					if (p.contains("globalIBLIntensity") && p["globalIBLIntensity"].is_number())
 						lighting.globalIBLIntensity = p["globalIBLIntensity"].get<float>();
+					if (p.contains("skyboxRotation") && p["skyboxRotation"].is_number())
+						lighting.skyboxRotation = p["skyboxRotation"].get<float>();
+					if (p.contains("skyboxRotationPitch") && p["skyboxRotationPitch"].is_number())
+						lighting.skyboxRotationPitch = p["skyboxRotationPitch"].get<float>();
 					if (p.contains("shadowStrength") && p["shadowStrength"].is_number())
 						lighting.shadowStrength = p["shadowStrength"].get<float>();
 					if (p.contains("toonShadowStrength") && p["toonShadowStrength"].is_number())
 						lighting.toonShadowStrength = p["toonShadowStrength"].get<float>();
 					lighting.globalIBLIntensity = std::clamp(lighting.globalIBLIntensity, 0.0f, 1.0f);
+					lighting.skyboxRotation = std::fmod(lighting.skyboxRotation, 360.0f);
+					if (lighting.skyboxRotation < 0.0f)
+						lighting.skyboxRotation += 360.0f;
+					lighting.skyboxRotationPitch = std::clamp(lighting.skyboxRotationPitch, -89.9f, 89.9f);
 					lighting.shadowStrength = std::clamp(lighting.shadowStrength, 0.0f, 1.0f);
 					lighting.toonShadowStrength = std::clamp(lighting.toonShadowStrength, 0.0f, 1.0f);
 
@@ -769,6 +777,8 @@ namespace Alice
 			p["roughness"] = lighting.roughness;
 			p["ambientOcclusion"] = lighting.ambientOcclusion;
 			p["globalIBLIntensity"] = lighting.globalIBLIntensity;
+			p["skyboxRotation"] = lighting.skyboxRotation;
+			p["skyboxRotationPitch"] = lighting.skyboxRotationPitch;
 			p["shadowStrength"] = lighting.shadowStrength;
 			p["toonShadowStrength"] = lighting.toonShadowStrength;
 			p["keyIntensity"] = lighting.keyIntensity;

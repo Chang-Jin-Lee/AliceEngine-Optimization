@@ -424,11 +424,21 @@ struct GBufferOut
     float4 ToonParams      : SV_Target3;
     float4 ToonAlphas      : SV_Target4;
     float4 OutlineData     : SV_Target5;
+    float4 Emissive        : SV_Target6;
 };
 
 Texture2D  g_DiffuseMap : register(t0);
 Texture2D  g_NormalMap  : register(t1);
+Texture2D  g_EmissiveMap : register(t2);
 SamplerState g_Sam : register(s0);
+
+cbuffer CBPerObjectEmissive : register(b7)
+{
+    float4 gEmissiveColorIntensity; // rgb: color, a: intensity
+    int    gUseEmissiveTexture;
+    float  gEmissiveBloom;
+    float2 gPadEmissive;
+};
 
 float DitherThreshold(float2 pos)
 {
@@ -522,6 +532,17 @@ GBufferOut main(VertexOut pIn)
     // shadingMode + AO를 [0,1] 범위로 인코딩하여 저장
     gOut.BaseColor  = float4(baseColor, saturate(shadingEncoded));
     gOut.OutlineData = float4(saturate(gOutlineColor), max(gOutlineWidth, 0.0f));
+    // Emissive는 텍스처(마스크)가 있을 때만 유효하게 만들어
+    // emissiveColor/emissiveIntensity는 "색/강도 조절" 역할로 사용합니다.
+    float3 emissive = float3(0.0f, 0.0f, 0.0f);
+    if (gUseEmissiveTexture != 0)
+    {
+        float3 emissiveMask = max(g_EmissiveMap.Sample(g_Sam, pIn.TexCoord).rgb, 0.0f);
+        float emissiveIntensity = max(gEmissiveColorIntensity.a, 0.0f);
+        emissive = emissiveMask * gEmissiveColorIntensity.rgb * emissiveIntensity;
+    }
+    float emissiveBloom = (gUseEmissiveTexture != 0) ? max(gEmissiveBloom, 0.0f) : 0.0f;
+    gOut.Emissive = float4(emissive, emissiveBloom);
     
     return gOut;
 }
@@ -754,6 +775,20 @@ float ApplyLocalToonSelfShadow(float ndotl, float shadedNdotL, bool toonEditable
     return saturate(selfShadowNdotL);
 }
 
+float3 RotateYByAngle(float3 v, float angleRad)
+{
+    float s, c;
+    sincos(angleRad, s, c);
+    return float3(v.x * c - v.z * s, v.y, v.x * s + v.z * c);
+}
+
+float3 RotateXByAngle(float3 v, float angleRad)
+{
+    float s, c;
+    sincos(angleRad, s, c);
+    return float3(v.x, v.y * c - v.z * s, v.y * s + v.z * c);
+}
+
 float2 Unpack2x8(float v)
 {
     float raw = saturate(v) * 65535.0f;
@@ -829,6 +864,7 @@ Texture2D<float> g_ShadowMap : register(t10);
 Texture2D g_DecalAlbedo : register(t11);
 Texture2DArray g_LocalShadow2DArray : register(t12);
 TextureCubeArray g_LocalShadowCubeArray : register(t13);
+Texture2D g_Emissive : register(t14);
 
 SamplerState g_Sam : register(s0);
 SamplerComparisonState g_ShadowSampler : register(s1);
@@ -883,7 +919,9 @@ cbuffer DirectionalLightBuffer : register(b3)
     float4 g_LightDirection;
     float4 g_LightColor;
     float g_intensity;
-    float g_pad[3];
+    float g_SkyboxRotationRad;
+    float g_SkyboxRotationPitchRad;
+    float g_pad;
 };
 
 #define MAX_POINT_LIGHTS 16
@@ -1307,6 +1345,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     float4 baseColor = g_BaseColor.Sample(g_Sam, pIn.uv);
     float4 toonParams = g_ToonParams.Sample(g_Sam, pIn.uv);
     float4 toonAlphasSample = g_ToonAlphas.Sample(g_Sam, pIn.uv);
+    float3 emissive = max(g_Emissive.Sample(g_Sam, pIn.uv).rgb, 0.0f);
     
     float depth = g_SceneDepth.Sample(g_Sam, pIn.uv);
 
@@ -1365,7 +1404,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     // TextureOnly 모드
     if (shadingMode == 6)
     {
-        float3 colorTexOnly = lerp(albedoLinear, outlineEdgeColor, outlineEdge);
+        float3 colorTexOnly = lerp(albedoLinear + emissive, outlineEdgeColor, outlineEdge);
         return float4(colorTexOnly, 1.0f);
     }
 
@@ -1460,7 +1499,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
         }
 
         float3 ambient = g_DirLight_ambient.rgb * albedoLinear;
-        float3 color = ambient + totalDiffuse * albedoLinear + totalSpecular * g_Material_specular.rgb;
+        float3 color = ambient + totalDiffuse * albedoLinear + totalSpecular * g_Material_specular.rgb + emissive;
         
         // [아웃라인 합성]
         color = lerp(color, outlineEdgeColor, outlineEdge);
@@ -1560,14 +1599,21 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     float3 kS_IBL_ = fresnelSchlickRoughness(F0, NdotV, roughness);
     float3 kD_IBL_ = (1.0f - kS_IBL_) * (1.0f - metalness);
     
+    // Skybox가 +회전하면 IBL 샘플은 -회전하여 시각/조명 방향을 맞춘다.
+    const float iblYawRad = -g_SkyboxRotationRad;
+    const float iblPitchRad = -g_SkyboxRotationPitchRad;
+    float3 iblNormal = RotateXByAngle(N, iblPitchRad);
+    iblNormal = RotateYByAngle(iblNormal, iblYawRad);
     // Diffuse 샘플링
-    float3 diffuseIBL = kD_IBL_ * g_IBL_Diffuse.Sample(g_Sam, N).rgb * albedoPBR;
+    float3 diffuseIBL = kD_IBL_ * g_IBL_Diffuse.Sample(g_Sam, iblNormal).rgb * albedoPBR;
 
 
     //float3 diffuseIBL = kD * g_IBL_Diffuse.Sample(g_Sam, N).rgb * albedoPBR;
     
     // Specular 계산 및 호라이즌 오클루전 적용
     float3 Renv = reflect(-V, N);
+    Renv = RotateXByAngle(Renv, iblPitchRad);
+    Renv = RotateYByAngle(Renv, iblYawRad);
     
     // 텍스처 밉맵 레벨 (가지고 계신 텍스처가 256x256이면 보통 8, 128x128이면 7 정도입니다)
     const float kMaxSpecularMip = 8.0f; 
@@ -1604,7 +1650,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     // -----------------------------------------------------------------------
 
     // 최종 색상 계산
-    float3 color = directLighting + extraLighting + iblColor;
+    float3 color = directLighting + extraLighting + iblColor + emissive;
 
     // [아웃라인 합성]
     color = lerp(color, outlineEdgeColor, outlineEdge);
@@ -1973,9 +2019,9 @@ cbuffer CBTransparentLight : register(b1)
     float3 g_LightDir;
     float  g_LightIntensity;
     float3 g_LightColor;
-    float  _pad0;
+    float  g_SkyboxRotationRad;
     float3 g_CameraPosW;
-    float  _pad1;
+    float  g_SkyboxRotationPitchRad;
 };
 
 struct PSIn
@@ -1998,6 +2044,20 @@ float DitherThreshold(float2 pos)
 float3 LinearToSRGB(float3 linearColor)
 {
     return pow(max(linearColor, 0.0f), 1.0f / 2.2f);
+}
+
+float3 RotateYByAngle(float3 v, float angleRad)
+{
+    float s, c;
+    sincos(angleRad, s, c);
+    return float3(v.x * c - v.z * s, v.y, v.x * s + v.z * c);
+}
+
+float3 RotateXByAngle(float3 v, float angleRad)
+{
+    float s, c;
+    sincos(angleRad, s, c);
+    return float3(v.x, v.y * c - v.z * s, v.y * s + v.z * c);
 }
 
 float4 main(PSIn pIn) : SV_Target
@@ -2094,8 +2154,14 @@ float4 main(PSIn pIn) : SV_Target
     float3 direct = (diffuse + specular) * radiance * selfShadowNdotL * ao;
 
     // IBL
-    float3 diffuseIBL = kD * g_IBL_Diffuse.Sample(g_Sam, N).rgb * albedoLinear;
+    const float iblYawRad = -g_SkyboxRotationRad;
+    const float iblPitchRad = -g_SkyboxRotationPitchRad;
+    float3 iblNormal = RotateXByAngle(N, iblPitchRad);
+    iblNormal = RotateYByAngle(iblNormal, iblYawRad);
+    float3 diffuseIBL = kD * g_IBL_Diffuse.Sample(g_Sam, iblNormal).rgb * albedoLinear;
     float3 Renv = reflect(-V, N);
+    Renv = RotateXByAngle(Renv, iblPitchRad);
+    Renv = RotateYByAngle(Renv, iblYawRad);
     const float kMaxSpecularMip = 8.0f;
     float3 prefilteredColor = g_IBL_Specular.SampleLevel(g_Sam, Renv, roughness * kMaxSpecularMip).rgb;
     float2 specBRDF = g_IBL_BRDF_LUT.Sample(g_Sam, float2(NdotV, roughness)).rg;

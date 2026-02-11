@@ -177,12 +177,16 @@ namespace Alice
             INT baseVertex = 0;
             ID3D11ShaderResourceView* diffuseSRV = nullptr;
             ID3D11ShaderResourceView* normalSRV = nullptr;
+            ID3D11ShaderResourceView* emissiveSRV = nullptr;
             DirectX::XMFLOAT4 color { 1.0f, 1.0f, 1.0f, 1.0f };
             float roughness = 0.5f;
             float metalness = 0.0f;
             float ambientOcclusion = 1.0f;
             float envDiffuseStrength = 1.0f;
             float envSpecularStrength = 1.0f;
+            DirectX::XMFLOAT3 emissiveColor { 1.0f, 1.0f, 1.0f };
+            float emissiveIntensity = 0.0f;
+            float emissiveBloom = 1.0f;
             float normalStrength = 1.0f;
             DirectX::XMFLOAT4 toonPbrCuts { 0.2f, 0.5f, 0.95f, 1.0f };
             DirectX::XMFLOAT4 toonPbrLevels { 0.1f, 0.4f, 0.7f, 0.0f };
@@ -192,6 +196,7 @@ namespace Alice
             int shadingMode = 0;
             int useTexture = 0;
             int enableNormalMap = 0;
+            int useEmissiveTexture = 0;
 
             bool operator<(const InstancedDrawKey& rhs) const
             {
@@ -203,6 +208,7 @@ namespace Alice
                 if (baseVertex != rhs.baseVertex) return baseVertex < rhs.baseVertex;
                 if (diffuseSRV != rhs.diffuseSRV) return diffuseSRV < rhs.diffuseSRV;
                 if (normalSRV != rhs.normalSRV) return normalSRV < rhs.normalSRV;
+                if (emissiveSRV != rhs.emissiveSRV) return emissiveSRV < rhs.emissiveSRV;
 
                 if (color.x != rhs.color.x) return color.x < rhs.color.x;
                 if (color.y != rhs.color.y) return color.y < rhs.color.y;
@@ -214,6 +220,11 @@ namespace Alice
                 if (ambientOcclusion != rhs.ambientOcclusion) return ambientOcclusion < rhs.ambientOcclusion;
                 if (envDiffuseStrength != rhs.envDiffuseStrength) return envDiffuseStrength < rhs.envDiffuseStrength;
                 if (envSpecularStrength != rhs.envSpecularStrength) return envSpecularStrength < rhs.envSpecularStrength;
+                if (emissiveColor.x != rhs.emissiveColor.x) return emissiveColor.x < rhs.emissiveColor.x;
+                if (emissiveColor.y != rhs.emissiveColor.y) return emissiveColor.y < rhs.emissiveColor.y;
+                if (emissiveColor.z != rhs.emissiveColor.z) return emissiveColor.z < rhs.emissiveColor.z;
+                if (emissiveIntensity != rhs.emissiveIntensity) return emissiveIntensity < rhs.emissiveIntensity;
+                if (emissiveBloom != rhs.emissiveBloom) return emissiveBloom < rhs.emissiveBloom;
                 if (normalStrength != rhs.normalStrength) return normalStrength < rhs.normalStrength;
                 if (toonPbrCuts.x != rhs.toonPbrCuts.x) return toonPbrCuts.x < rhs.toonPbrCuts.x;
                 if (toonPbrCuts.y != rhs.toonPbrCuts.y) return toonPbrCuts.y < rhs.toonPbrCuts.y;
@@ -232,6 +243,7 @@ namespace Alice
                 if (shadingMode != rhs.shadingMode) return shadingMode < rhs.shadingMode;
                 if (useTexture != rhs.useTexture) return useTexture < rhs.useTexture;
                 if (enableNormalMap != rhs.enableNormalMap) return enableNormalMap < rhs.enableNormalMap;
+                if (useEmissiveTexture != rhs.useEmissiveTexture) return useEmissiveTexture < rhs.useEmissiveTexture;
 
                 return false;
             }
@@ -247,6 +259,7 @@ namespace Alice
             if (a.baseVertex != b.baseVertex) return false;
             if (a.diffuseSRV != b.diffuseSRV) return false;
             if (a.normalSRV != b.normalSRV) return false;
+            if (a.emissiveSRV != b.emissiveSRV) return false;
             if (a.color.x != b.color.x) return false;
             if (a.color.y != b.color.y) return false;
             if (a.color.z != b.color.z) return false;
@@ -256,6 +269,11 @@ namespace Alice
             if (a.ambientOcclusion != b.ambientOcclusion) return false;
             if (a.envDiffuseStrength != b.envDiffuseStrength) return false;
             if (a.envSpecularStrength != b.envSpecularStrength) return false;
+            if (a.emissiveColor.x != b.emissiveColor.x) return false;
+            if (a.emissiveColor.y != b.emissiveColor.y) return false;
+            if (a.emissiveColor.z != b.emissiveColor.z) return false;
+            if (a.emissiveIntensity != b.emissiveIntensity) return false;
+            if (a.emissiveBloom != b.emissiveBloom) return false;
             if (a.normalStrength != b.normalStrength) return false;
             if (a.toonPbrCuts.x != b.toonPbrCuts.x) return false;
             if (a.toonPbrCuts.y != b.toonPbrCuts.y) return false;
@@ -274,6 +292,7 @@ namespace Alice
             if (a.shadingMode != b.shadingMode) return false;
             if (a.useTexture != b.useTexture) return false;
             if (a.enableNormalMap != b.enableNormalMap) return false;
+            if (a.useEmissiveTexture != b.useEmissiveTexture) return false;
             return true;
         }
 
@@ -636,6 +655,7 @@ namespace Alice
             DXGI_FORMAT_R16G16B16A16_UNORM,  // 3: ToonParams (Strength/Levels/Env 2x8 packed)
             DXGI_FORMAT_R8G8B8A8_UNORM,      // 4: ToonAlphas (level1~3 alpha)
             DXGI_FORMAT_R16G16B16A16_FLOAT,  // 5: OutlineData (rgb=color, a=width)
+            DXGI_FORMAT_R16G16B16A16_FLOAT,  // 6: Emissive (rgb=color, a=mask/bloom)
         };
 
         // 각 G-Buffer 텍스처 생성
@@ -730,6 +750,7 @@ namespace Alice
             DXGI_FORMAT_R16G16B16A16_UNORM,  // 3: ToonParams (Strength/Levels/Env 2x8 packed)
             DXGI_FORMAT_R8G8B8A8_UNORM,      // 4: ToonAlphas (level1~3 alpha)
             DXGI_FORMAT_R16G16B16A16_FLOAT,  // 5: OutlineData (rgb=color, a=width)
+            DXGI_FORMAT_R16G16B16A16_FLOAT,  // 6: Emissive (rgb=color, a=mask/bloom)
         };
 
         for (int i = 0; i < GBufferCount; ++i)
@@ -1480,6 +1501,11 @@ namespace Alice
         if (FAILED(m_device->CreateBuffer(&cbDesc, nullptr, m_cbPerObject.ReleaseAndGetAddressOf())))
             return false;
 
+        // PerObject Emissive CB (register b7)
+        cbDesc.ByteWidth = 32u; // float4 + int/float + padding (16-byte aligned)
+        if (FAILED(m_device->CreateBuffer(&cbDesc, nullptr, m_cbPerObjectEmissive.ReleaseAndGetAddressOf())))
+            return false;
+
         // Lighting CB (Deferred Light 패스용 - ConstantBuffer register(b0))
         // HLSL의 ConstantBuffer 구조체 크기에 맞춰야 함 (대략 512바이트 이상)
         cbDesc.ByteWidth = 4096; // 충분한 크기
@@ -1487,7 +1513,7 @@ namespace Alice
             return false;
 
         // Directional Light CB
-        cbDesc.ByteWidth = sizeof(DirectX::XMFLOAT4) * 2 + sizeof(float) * 4; // dir, color, intensity, pad
+        cbDesc.ByteWidth = sizeof(DirectX::XMFLOAT4) * 2 + sizeof(float) * 4; // dir, color, intensity + yaw/pitch + pad
         if (FAILED(m_device->CreateBuffer(&cbDesc, nullptr, m_cbDirectionalLight.ReleaseAndGetAddressOf())))
             return false;
 
@@ -1521,7 +1547,7 @@ namespace Alice
         }
 
         // Transparent Forward-Style Light CB (register(b1))
-        // float3 dir + float intensity + float3 color + pad + float3 camPos + pad = 48 bytes (16B 정렬)
+        // float3 dir + intensity + float3 color + yaw + float3 camPos + pitch = 48 bytes (16B 정렬)
         cbDesc.ByteWidth = sizeof(float) * 12;
         if (FAILED(m_device->CreateBuffer(&cbDesc, nullptr, m_cbTransparentLight.ReleaseAndGetAddressOf())))
             return false;
@@ -3199,6 +3225,7 @@ namespace Alice
                 defaultSettings.bloomThreshold = m_bloomSettings.threshold;
                 defaultSettings.bloomKnee = m_bloomSettings.knee;
                 defaultSettings.bloomIntensity = m_bloomSettings.intensity;
+                defaultSettings.emissiveBloomIntensity = m_bloomSettings.emissiveBloomIntensity;
                 defaultSettings.bloomGaussianIntensity = m_bloomSettings.gaussianIntensity;
                 defaultSettings.bloomRadius = m_bloomSettings.radius;
                 defaultSettings.bloomDownsample = m_bloomSettings.downsample;
@@ -3268,6 +3295,7 @@ namespace Alice
             m_bloomSettings.threshold = finalSettings.bloomThreshold;
             m_bloomSettings.knee = finalSettings.bloomKnee;
             m_bloomSettings.intensity = finalSettings.bloomIntensity;
+            m_bloomSettings.emissiveBloomIntensity = finalSettings.emissiveBloomIntensity;
             m_bloomSettings.gaussianIntensity = finalSettings.bloomGaussianIntensity;
             m_bloomSettings.radius = finalSettings.bloomRadius;
             // 다운샘플링 변경 시 리소스 재생성
@@ -3605,6 +3633,7 @@ namespace Alice
         m_context->ClearRenderTargetView(m_gBufferRTVs[3].Get(), clearColor);  // ToonParams
         m_context->ClearRenderTargetView(m_gBufferRTVs[4].Get(), clearColor);  // ToonAlphas
         m_context->ClearRenderTargetView(m_gBufferRTVs[5].Get(), clearColor);  // OutlineData
+        m_context->ClearRenderTargetView(m_gBufferRTVs[6].Get(), clearColor);  // Emissive
         m_context->ClearDepthStencilView(m_sceneDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
         // G-Buffer 렌더 타겟 설정
@@ -3614,7 +3643,8 @@ namespace Alice
             m_gBufferRTVs[2].Get(),
             m_gBufferRTVs[3].Get(),
             m_gBufferRTVs[4].Get(),
-            m_gBufferRTVs[5].Get()
+            m_gBufferRTVs[5].Get(),
+            m_gBufferRTVs[6].Get()
         };
         m_context->OMSetRenderTargets(GBufferCount, rtvs, m_sceneDSV.Get());
         m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
@@ -3690,8 +3720,13 @@ namespace Alice
             float ao = m_lightingParameters.ambientOcclusion;
             float envDiffuseStrength = 1.0f;
             float envSpecularStrength = 1.0f;
+            XMFLOAT3 emissiveColor = { 1.0f, 1.0f, 1.0f };
+            float emissiveIntensity = 0.0f;
+            float emissiveBloom = 1.0f;
             bool useTex = false;
+            bool useEmissiveTex = false;
             ID3D11ShaderResourceView* texSRV = nullptr;
+            ID3D11ShaderResourceView* emissiveSRV = nullptr;
             
             // MaterialComponent가 있으면 값 적용
             XMFLOAT3 outlineColor = {0,0,0};
@@ -3711,6 +3746,9 @@ namespace Alice
                     ao = mat->ambientOcclusion;
                 envDiffuseStrength = mat->envDiffuseStrength;
                 envSpecularStrength = mat->envSpecularStrength;
+                emissiveColor = mat->emissiveColor;
+                emissiveIntensity = mat->emissiveIntensity;
+                emissiveBloom = mat->emissiveBloom;
                 normalStrength = mat->normalStrength;
                 outlineColor = mat->outlineColor;
                 outlineWidth = mat->outlineWidth;
@@ -3724,6 +3762,10 @@ namespace Alice
                 if (!mat->albedoTexturePath.empty()) {
                     texSRV = GetOrCreateTexture(mat->albedoTexturePath);
                     useTex = (texSRV != nullptr);
+                }
+                if (!mat->emissiveTexturePath.empty()) {
+                    emissiveSRV = GetOrCreateTexture(mat->emissiveTexturePath);
+                    useEmissiveTex = (emissiveSRV != nullptr);
                 }
             }
 
@@ -3743,12 +3785,16 @@ namespace Alice
                 item.key.baseVertex = 0;
                 item.key.diffuseSRV = texSRV;
                 item.key.normalSRV = nullptr;
+                item.key.emissiveSRV = emissiveSRV;
                 item.key.color = color;
                 item.key.roughness = rough;
                 item.key.metalness = metal;
                 item.key.ambientOcclusion = ao;
                 item.key.envDiffuseStrength = envDiffuseStrength;
                 item.key.envSpecularStrength = envSpecularStrength;
+                item.key.emissiveColor = emissiveColor;
+                item.key.emissiveIntensity = emissiveIntensity;
+                item.key.emissiveBloom = emissiveBloom;
                 item.key.normalStrength = normalStrength;
                 item.key.toonPbrCuts = toonCuts;
                 item.key.toonPbrLevels = toonLevels;
@@ -3758,21 +3804,23 @@ namespace Alice
                 item.key.shadingMode = objectShadingMode;
                 item.key.useTexture = useTex ? 1 : 0;
                 item.key.enableNormalMap = 0;
+                item.key.useEmissiveTexture = useEmissiveTex ? 1 : 0;
                 item.instance = BuildInstanceData(worldM);
 
                 staticInstancedItems.push_back(item);
                 continue;
             }
 
-            // 텍스처 바인딩 (t0: Diffuse, t1: Normal)
-            ID3D11ShaderResourceView* srvs[] = { texSRV, nullptr }; // 정적 메시는 노말맵 현재 null
-            m_context->PSSetShaderResources(0, 2, srvs);
+            // 텍스처 바인딩 (t0: Diffuse, t1: Normal, t2: Emissive)
+            ID3D11ShaderResourceView* srvs[] = { texSRV, nullptr, emissiveSRV }; // 정적 메시는 노말맵 현재 null
+            m_context->PSSetShaderResources(0, 3, srvs);
 
             // Pass 1. 원본 물체 + 아웃라인 메타데이터 기록
             UpdatePerObjectCB(worldM, view, proj, color, rough, metal, ao, useTex, false,
                               objectShadingMode, normalStrength, toonCuts, toonLevels, toonAlphas, toonRampIntensity, toonSelfShadowStrength,
                               envDiffuseStrength, envSpecularStrength,
-                              outlineColor, outlineWidth);
+                              outlineColor, outlineWidth,
+                              emissiveColor, emissiveIntensity, emissiveBloom, useEmissiveTex);
             m_context->DrawIndexed(m_cubeIndexCount, 0, 0);
         }
 
@@ -3812,8 +3860,8 @@ namespace Alice
                             m_context->IASetVertexBuffers(0, 2, bufs, strides, offsets);
                             m_context->IASetIndexBuffer(currentKey.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-                            ID3D11ShaderResourceView* srvs[] = { currentKey.diffuseSRV, currentKey.normalSRV };
-                            m_context->PSSetShaderResources(0, 2, srvs);
+                            ID3D11ShaderResourceView* srvs[] = { currentKey.diffuseSRV, currentKey.normalSRV, currentKey.emissiveSRV };
+                            m_context->PSSetShaderResources(0, 3, srvs);
 
                             UpdatePerObjectCB(DirectX::XMMatrixIdentity(), view, proj, currentKey.color,
                                               currentKey.roughness, currentKey.metalness, currentKey.ambientOcclusion,
@@ -3821,7 +3869,9 @@ namespace Alice
                                               currentKey.shadingMode, currentKey.normalStrength,
                                               currentKey.toonPbrCuts, currentKey.toonPbrLevels, currentKey.toonPbrAlphas, currentKey.toonPbrRampIntensity, currentKey.toonSelfShadowStrength,
                                               currentKey.envDiffuseStrength, currentKey.envSpecularStrength,
-                                              DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
+                                              DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f,
+                                              currentKey.emissiveColor, currentKey.emissiveIntensity, currentKey.emissiveBloom,
+                                              (currentKey.useEmissiveTexture != 0));
 
                             m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
                                                             currentKey.startIndex, currentKey.baseVertex, 0);
@@ -3849,8 +3899,8 @@ namespace Alice
                     m_context->IASetVertexBuffers(0, 2, bufs, strides, offsets);
                     m_context->IASetIndexBuffer(currentKey.indexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-                    ID3D11ShaderResourceView* srvs[] = { currentKey.diffuseSRV, currentKey.normalSRV };
-                    m_context->PSSetShaderResources(0, 2, srvs);
+                    ID3D11ShaderResourceView* srvs[] = { currentKey.diffuseSRV, currentKey.normalSRV, currentKey.emissiveSRV };
+                    m_context->PSSetShaderResources(0, 3, srvs);
 
                     UpdatePerObjectCB(DirectX::XMMatrixIdentity(), view, proj, currentKey.color,
                                       currentKey.roughness, currentKey.metalness, currentKey.ambientOcclusion,
@@ -3858,7 +3908,9 @@ namespace Alice
                                       currentKey.shadingMode, currentKey.normalStrength,
                                       currentKey.toonPbrCuts, currentKey.toonPbrLevels, currentKey.toonPbrAlphas, currentKey.toonPbrRampIntensity, currentKey.toonSelfShadowStrength,
                                       currentKey.envDiffuseStrength, currentKey.envSpecularStrength,
-                                      DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
+                                      DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f,
+                                      currentKey.emissiveColor, currentKey.emissiveIntensity, currentKey.emissiveBloom,
+                                      (currentKey.useEmissiveTexture != 0));
 
                     m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
                                                     currentKey.startIndex, currentKey.baseVertex, 0);
@@ -3905,6 +3957,9 @@ namespace Alice
                 const XMFLOAT4 color(cmd.color.x, cmd.color.y, cmd.color.z, cmd.alpha);
                 const int objectShadingMode = (cmd.shadingMode >= 0) ? cmd.shadingMode : shadingMode;
                 const float ao = (cmd.shadingMode >= 0) ? cmd.ambientOcclusion : m_lightingParameters.ambientOcclusion;
+                const bool useEmissiveTexOverride = !cmd.emissiveTexturePath.empty();
+                ID3D11ShaderResourceView* emissiveOverrideSrv =
+                    useEmissiveTexOverride ? GetOrCreateTexture(cmd.emissiveTexturePath) : nullptr;
 
                 const bool canInstance = IsRigidSkinnedCommand(cmd) &&
                                          (cmd.outlineWidth <= 0.0f) &&
@@ -3925,6 +3980,7 @@ namespace Alice
                                 (sub.materialIndex < mesh->materialSRVs.size()) ? mesh->materialSRVs[sub.materialIndex].Get() : nullptr;
                             ID3D11ShaderResourceView* norm =
                                 (sub.materialIndex < mesh->normalSRVs.size()) ? mesh->normalSRVs[sub.materialIndex].Get() : nullptr;
+                            ID3D11ShaderResourceView* emissive = emissiveOverrideSrv;
 
                             InstancedDrawItem item{};
                             item.key.vertexBuffer = cmd.vertexBuffer;
@@ -3935,12 +3991,16 @@ namespace Alice
                             item.key.baseVertex = cmd.baseVertex;
                             item.key.diffuseSRV = diff;
                             item.key.normalSRV = norm;
+                            item.key.emissiveSRV = emissive;
                             item.key.color = color;
                             item.key.roughness = cmd.roughness;
                             item.key.metalness = cmd.metalness;
                             item.key.ambientOcclusion = ao;
                             item.key.envDiffuseStrength = cmd.envDiffuseStrength;
                             item.key.envSpecularStrength = cmd.envSpecularStrength;
+                            item.key.emissiveColor = cmd.emissiveColor;
+                            item.key.emissiveIntensity = cmd.emissiveIntensity;
+                            item.key.emissiveBloom = cmd.emissiveBloom;
                             item.key.normalStrength = cmd.normalStrength;
                             item.key.toonPbrCuts = cmd.toonPbrCuts;
                             item.key.toonPbrLevels = cmd.toonPbrLevels;
@@ -3950,6 +4010,7 @@ namespace Alice
                             item.key.shadingMode = objectShadingMode;
                             item.key.useTexture = (diff != nullptr) ? 1 : 0;
                             item.key.enableNormalMap = (norm != nullptr) ? 1 : 0;
+                            item.key.useEmissiveTexture = (emissive != nullptr) ? 1 : 0;
                             item.instance = BuildInstanceData(cmd.world);
 
                             instancedItems.push_back(item);
@@ -3959,6 +4020,7 @@ namespace Alice
                     {
                         // 오버라이드 텍스처(또는 단일 텍스처)만 있는 경우
                         ID3D11ShaderResourceView* diff = GetOrCreateTexture(cmd.albedoTexturePath);
+                        ID3D11ShaderResourceView* emissive = emissiveOverrideSrv;
 
                         InstancedDrawItem item{};
                         item.key.vertexBuffer = cmd.vertexBuffer;
@@ -3969,12 +4031,16 @@ namespace Alice
                         item.key.baseVertex = cmd.baseVertex;
                         item.key.diffuseSRV = diff;
                         item.key.normalSRV = nullptr;
+                        item.key.emissiveSRV = emissive;
                         item.key.color = color;
                         item.key.roughness = cmd.roughness;
                         item.key.metalness = cmd.metalness;
                         item.key.ambientOcclusion = ao;
                         item.key.envDiffuseStrength = cmd.envDiffuseStrength;
                         item.key.envSpecularStrength = cmd.envSpecularStrength;
+                        item.key.emissiveColor = cmd.emissiveColor;
+                        item.key.emissiveIntensity = cmd.emissiveIntensity;
+                        item.key.emissiveBloom = cmd.emissiveBloom;
                         item.key.normalStrength = cmd.normalStrength;
                         item.key.toonPbrCuts = cmd.toonPbrCuts;
                         item.key.toonPbrLevels = cmd.toonPbrLevels;
@@ -3984,6 +4050,7 @@ namespace Alice
                         item.key.shadingMode = objectShadingMode;
                         item.key.useTexture = (diff != nullptr) ? 1 : 0;
                         item.key.enableNormalMap = 0;
+                        item.key.useEmissiveTexture = (emissive != nullptr) ? 1 : 0;
                         item.instance = BuildInstanceData(cmd.world);
 
                         instancedItems.push_back(item);
@@ -4009,16 +4076,19 @@ namespace Alice
                             (sub.materialIndex < mesh->materialSRVs.size()) ? mesh->materialSRVs[sub.materialIndex].Get() : nullptr;
                         ID3D11ShaderResourceView* norm =
                             (sub.materialIndex < mesh->normalSRVs.size()) ? mesh->normalSRVs[sub.materialIndex].Get() : nullptr;
+                        ID3D11ShaderResourceView* emissive = emissiveOverrideSrv;
 
-                        ID3D11ShaderResourceView* srvs[] = { diff, norm };
-                        m_context->PSSetShaderResources(0, 2, srvs);
+                        ID3D11ShaderResourceView* srvs[] = { diff, norm, emissive };
+                        m_context->PSSetShaderResources(0, 3, srvs);
                         
                         // Pass 1. 원본 + 아웃라인 메타데이터 기록
                         UpdatePerObjectCB(cmd.world, view, proj, color, cmd.roughness, cmd.metalness, ao,
                                           (diff != nullptr), (norm != nullptr), objectShadingMode, 
                                           cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                                           cmd.envDiffuseStrength, cmd.envSpecularStrength,
-                                          cmd.outlineColor, cmd.outlineWidth);
+                                          cmd.outlineColor, cmd.outlineWidth,
+                                          cmd.emissiveColor, cmd.emissiveIntensity, cmd.emissiveBloom,
+                                          (emissive != nullptr));
                         m_context->DrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
                     }
                 }
@@ -4026,15 +4096,18 @@ namespace Alice
                 {
                     // 오버라이드 텍스처 (또는 단일 텍스처)만 있는 경우
                     ID3D11ShaderResourceView* diff = GetOrCreateTexture(cmd.albedoTexturePath);
-                    ID3D11ShaderResourceView* srvs[] = { diff, nullptr };
-                    m_context->PSSetShaderResources(0, 2, srvs);
+                    ID3D11ShaderResourceView* emissive = emissiveOverrideSrv;
+                    ID3D11ShaderResourceView* srvs[] = { diff, nullptr, emissive };
+                    m_context->PSSetShaderResources(0, 3, srvs);
                     
                     // Pass 1. 원본 + 아웃라인 메타데이터 기록
                     UpdatePerObjectCB(cmd.world, view, proj, color, cmd.roughness, cmd.metalness, ao,
                                       (diff != nullptr), false, objectShadingMode, 
                                       cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                                       cmd.envDiffuseStrength, cmd.envSpecularStrength,
-                                      cmd.outlineColor, cmd.outlineWidth);
+                                      cmd.outlineColor, cmd.outlineWidth,
+                                      cmd.emissiveColor, cmd.emissiveIntensity, cmd.emissiveBloom,
+                                      (emissive != nullptr));
                     m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
                 }
             }
@@ -4074,8 +4147,8 @@ namespace Alice
                                 m_context->IASetVertexBuffers(0, 2, bufs, strides, offsets);
                                 m_context->IASetIndexBuffer(currentKey.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-                                ID3D11ShaderResourceView* srvs[] = { currentKey.diffuseSRV, currentKey.normalSRV };
-                                m_context->PSSetShaderResources(0, 2, srvs);
+                                ID3D11ShaderResourceView* srvs[] = { currentKey.diffuseSRV, currentKey.normalSRV, currentKey.emissiveSRV };
+                                m_context->PSSetShaderResources(0, 3, srvs);
 
                                 UpdatePerObjectCB(DirectX::XMMatrixIdentity(), view, proj, currentKey.color,
                                                   currentKey.roughness, currentKey.metalness, currentKey.ambientOcclusion,
@@ -4083,7 +4156,9 @@ namespace Alice
                                                   currentKey.shadingMode, currentKey.normalStrength,
                                                   currentKey.toonPbrCuts, currentKey.toonPbrLevels, currentKey.toonPbrAlphas, currentKey.toonPbrRampIntensity, currentKey.toonSelfShadowStrength,
                                                   currentKey.envDiffuseStrength, currentKey.envSpecularStrength,
-                                                  DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
+                                                  DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f,
+                                                  currentKey.emissiveColor, currentKey.emissiveIntensity, currentKey.emissiveBloom,
+                                                  (currentKey.useEmissiveTexture != 0));
 
                                 m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
                                                                 currentKey.startIndex, currentKey.baseVertex, 0);
@@ -4111,8 +4186,8 @@ namespace Alice
                         m_context->IASetVertexBuffers(0, 2, bufs, strides, offsets);
                         m_context->IASetIndexBuffer(currentKey.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-                        ID3D11ShaderResourceView* srvs[] = { currentKey.diffuseSRV, currentKey.normalSRV };
-                        m_context->PSSetShaderResources(0, 2, srvs);
+                        ID3D11ShaderResourceView* srvs[] = { currentKey.diffuseSRV, currentKey.normalSRV, currentKey.emissiveSRV };
+                        m_context->PSSetShaderResources(0, 3, srvs);
 
                         UpdatePerObjectCB(DirectX::XMMatrixIdentity(), view, proj, currentKey.color,
                                           currentKey.roughness, currentKey.metalness, currentKey.ambientOcclusion,
@@ -4120,7 +4195,9 @@ namespace Alice
                                           currentKey.shadingMode, currentKey.normalStrength,
                                           currentKey.toonPbrCuts, currentKey.toonPbrLevels, currentKey.toonPbrAlphas, currentKey.toonPbrRampIntensity, currentKey.toonSelfShadowStrength,
                                           currentKey.envDiffuseStrength, currentKey.envSpecularStrength,
-                                          DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
+                                          DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f,
+                                          currentKey.emissiveColor, currentKey.emissiveIntensity, currentKey.emissiveBloom,
+                                          (currentKey.useEmissiveTexture != 0));
 
                         m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
                                                         currentKey.startIndex, currentKey.baseVertex, 0);
@@ -4220,8 +4297,8 @@ namespace Alice
                                     ? cameraMesh->normalSRVs[sub.materialIndex].Get()
                                     : nullptr;
 
-                            ID3D11ShaderResourceView* srvs[] = { diff, norm };
-                            m_context->PSSetShaderResources(0, 2, srvs);
+                            ID3D11ShaderResourceView* srvs[] = { diff, norm, nullptr };
+                            m_context->PSSetShaderResources(0, 3, srvs);
 
                             UpdatePerObjectCB(cameraIconWorld, view, proj, cameraColor,
                                               0.5f, 0.0f, m_lightingParameters.ambientOcclusion,
@@ -4236,8 +4313,8 @@ namespace Alice
                     }
                     else
                     {
-                        ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr };
-                        m_context->PSSetShaderResources(0, 2, srvs);
+                        ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr };
+                        m_context->PSSetShaderResources(0, 3, srvs);
 
                         UpdatePerObjectCB(cameraIconWorld, view, proj, cameraColor,
                                           0.5f, 0.0f, m_lightingParameters.ambientOcclusion,
@@ -4432,7 +4509,8 @@ namespace Alice
             m_shadowSRV.Get(),       // Shadow Map
             m_dBufferSRVs[0].Get(),  // Decal D-Buffer
             m_localShadow2DSRV.Get(), // Local Spot/Rect Shadow Array
-            m_localPointShadowSRV.Get() // Local Point Shadow CubeArray
+            m_localPointShadowSRV.Get(), // Local Point Shadow CubeArray
+            m_gBufferSRVs[6].Get() // Emissive (t14)
         };
         m_context->PSSetShaderResources(0, static_cast<UINT>(srvs.size()), srvs.data());
 
@@ -4528,8 +4606,8 @@ namespace Alice
         m_context->DrawIndexed(m_quadIndexCount, 0, 0);
 
         // 리소스 해제
-        ID3D11ShaderResourceView* nullSRVs[14] = { nullptr };
-        m_context->PSSetShaderResources(0, 14, nullSRVs);
+        ID3D11ShaderResourceView* nullSRVs[15] = { nullptr };
+        m_context->PSSetShaderResources(0, 15, nullSRVs);
     }
 
     void DeferredRenderSystem::PassTransparentForward(
@@ -4581,15 +4659,17 @@ namespace Alice
             DirectX::XMFLOAT3 lightDir;
             float             intensity;
             DirectX::XMFLOAT3 lightColor;
-            float             pad0;
+            float             skyboxRotationRad;
             DirectX::XMFLOAT3 cameraPos;
-            float             pad1;
+            float             skyboxRotationPitchRad;
         };
 
         TransparentLightCB tl{};
         tl.lightDir = m_lightingParameters.keyDirection;
         tl.intensity = m_lightingParameters.keyIntensity;
         tl.lightColor = m_lightingParameters.diffuseColor;
+        tl.skyboxRotationRad = XMConvertToRadians(m_lightingParameters.skyboxRotation);
+        tl.skyboxRotationPitchRad = XMConvertToRadians(m_lightingParameters.skyboxRotationPitch);
         tl.cameraPos = camera.GetPosition();
 
         D3D11_MAPPED_SUBRESOURCE mapped{};
@@ -4964,15 +5044,22 @@ namespace Alice
         m_context->VSSetShader(m_skyboxVS.Get(), nullptr, 0);
         m_context->PSSetShader(m_skyboxPS.Get(), nullptr, 0);
 
-        // 행렬 계산 (Translation 제거)
-        XMMATRIX view = camera.GetViewMatrix();
-        view.r[3] = XMVectorSet(0.f, 0.f, 0.f, 1.f);
-        XMMATRIX wvpT = XMMatrixTranspose(view * camera.GetProjectionMatrix());
+		// 회전 행렬 생성 및 적용
+		XMMATRIX view = camera.GetViewMatrix();
+		view.r[3] = XMVectorSet(0.f, 0.f, 0.f, 1.f); // 카메라 이동 무시
+
+		// 회전값 라디안 변환 및 행렬 생성 (Yaw + Pitch)
+		float yawRad = XMConvertToRadians(m_lightingParameters.skyboxRotation);
+		float pitchRad = XMConvertToRadians(m_lightingParameters.skyboxRotationPitch);
+		XMMATRIX skyRotation = XMMatrixRotationRollPitchYaw(pitchRad, yawRad, 0.0f);
+
+		// WVP = SkyRotation * View * Proj (스카이박스 지오메트리를 회전시킴)
+		XMMATRIX wvpT = XMMatrixTranspose(skyRotation * view * camera.GetProjectionMatrix());
 
         D3D11_MAPPED_SUBRESOURCE map;
         if (SUCCEEDED(m_context->Map(m_cbSkybox.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &map)))
         {
-            memcpy(map.pData, &wvpT, sizeof(XMMATRIX));
+            memcpy(map.pData, &wvpT, sizeof(XMMATRIX)); 
             m_context->Unmap(m_cbSkybox.Get(), 0);
         }
 
@@ -5025,7 +5112,11 @@ namespace Alice
                                                  float envDiffuseStrength,
                                                  float envSpecularStrength,
                                                  const XMFLOAT3& outlineColor,
-                                                 float outlineWidth)
+                                                 float outlineWidth,
+                                                 const XMFLOAT3& emissiveColor,
+                                                 float emissiveIntensity,
+                                                 float emissiveBloom,
+                                                 bool useEmissiveTexture)
     {
 		struct CBPerObjectData
 		{
@@ -5087,10 +5178,38 @@ namespace Alice
             data->gOutlineWidth = outlineWidth;
             m_context->Unmap(m_cbPerObject.Get(), 0);
         }
+        if (m_cbPerObjectEmissive &&
+            SUCCEEDED(m_context->Map(m_cbPerObjectEmissive.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+        {
+            struct CBPerObjectEmissiveData
+            {
+                XMFLOAT4 gEmissiveColorIntensity; // rgb: color, a: intensity
+                int      gUseEmissiveTexture;
+                float    gEmissiveBloom;
+                float    gPad[2];
+            };
+
+            auto* data = static_cast<CBPerObjectEmissiveData*>(mapped.pData);
+            data->gEmissiveColorIntensity = XMFLOAT4(
+                emissiveColor.x,
+                emissiveColor.y,
+                emissiveColor.z,
+                std::max(0.0f, emissiveIntensity));
+            data->gUseEmissiveTexture = useEmissiveTexture ? 1 : 0;
+            data->gEmissiveBloom = std::max(0.0f, emissiveBloom);
+            data->gPad[0] = 0.0f;
+            data->gPad[1] = 0.0f;
+            m_context->Unmap(m_cbPerObjectEmissive.Get(), 0);
+        }
 
         m_context->VSSetConstantBuffers(0, 1, m_cbPerObject.GetAddressOf());
         // PS에서도 재질 정보를 사용하므로 반드시 바인딩
         m_context->PSSetConstantBuffers(0, 1, m_cbPerObject.GetAddressOf());
+        if (m_cbPerObjectEmissive)
+        {
+            ID3D11Buffer* cbEmissive = m_cbPerObjectEmissive.Get();
+            m_context->PSSetConstantBuffers(7, 1, &cbEmissive); // b7
+        }
     }
 
     void DeferredRenderSystem::UpdateLightingCB(const Camera& camera, int shadingMode, bool /*enableFillLight*/, DirectX::CXMMATRIX lightViewProj)
@@ -5170,6 +5289,8 @@ namespace Alice
                                    m_lightingParameters.diffuseColor.z,
                                    0.0f);
         lightData.intensity = m_lightingParameters.keyIntensity;
+        lightData.skyboxRotationRad = XMConvertToRadians(m_lightingParameters.skyboxRotation);
+        lightData.skyboxRotationPitchRad = XMConvertToRadians(m_lightingParameters.skyboxRotationPitch);
 
         if (SUCCEEDED(m_context->Map(m_cbDirectionalLight.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
         {
@@ -5495,6 +5616,7 @@ namespace Alice
 		defaultSettings.bloomThreshold = m_bloomSettings.threshold;
 		defaultSettings.bloomKnee = m_bloomSettings.knee;
 		defaultSettings.bloomIntensity = m_bloomSettings.intensity;
+		defaultSettings.emissiveBloomIntensity = m_bloomSettings.emissiveBloomIntensity;
 		defaultSettings.bloomGaussianIntensity = m_bloomSettings.gaussianIntensity;
 		defaultSettings.bloomRadius = m_bloomSettings.radius;
 		defaultSettings.bloomDownsample = m_bloomSettings.downsample;
@@ -5568,6 +5690,7 @@ namespace Alice
 		m_bloomSettings.threshold = finalSettings.bloomThreshold;
 		m_bloomSettings.knee = finalSettings.bloomKnee;
 		m_bloomSettings.intensity = finalSettings.bloomIntensity;
+		m_bloomSettings.emissiveBloomIntensity = finalSettings.emissiveBloomIntensity;
 		m_bloomSettings.gaussianIntensity = finalSettings.bloomGaussianIntensity;
 		m_bloomSettings.radius = finalSettings.bloomRadius;
 	}
@@ -5953,6 +6076,7 @@ namespace Alice
 			bloomCB.threshold = m_bloomSettings.threshold;
 			bloomCB.knee = m_bloomSettings.knee;
 			bloomCB.bloomIntensity = m_bloomSettings.intensity;
+			bloomCB.emissiveBloomIntensity = m_bloomSettings.emissiveBloomIntensity;
 			bloomCB.gaussianIntensity = m_bloomSettings.gaussianIntensity;
 			bloomCB.radius = m_bloomSettings.radius;
 			bloomCB.texelSize = DirectX::XMFLOAT2(texelSizeX, texelSizeY);
@@ -5970,7 +6094,9 @@ namespace Alice
 			
 			m_context->RSSetViewports(1, &level0Viewport);
 			m_context->OMSetRenderTargets(1, m_bloomLevelRTV[0][0].GetAddressOf(), nullptr); // level0 A
-			m_context->PSSetShaderResources(0, 1, &sourceSRV);
+            ID3D11ShaderResourceView* emissiveSRV = m_gBufferSRVs[6].Get();
+            ID3D11ShaderResourceView* brightPassSRVs[2] = { sourceSRV, emissiveSRV };
+            m_context->PSSetShaderResources(0, 2, brightPassSRVs);
 			m_context->PSSetSamplers(0, 1, &sampler);
 			m_context->PSSetConstantBuffers(3, 1, &cbBloom);
 			m_context->PSSetShader(m_bloomBrightPassPS.Get(), nullptr, 0);
@@ -5995,6 +6121,7 @@ namespace Alice
 			bloomCB.threshold = m_bloomSettings.threshold;
 			bloomCB.knee = m_bloomSettings.knee;
 			bloomCB.bloomIntensity = m_bloomSettings.intensity;
+			bloomCB.emissiveBloomIntensity = m_bloomSettings.emissiveBloomIntensity;
 			bloomCB.gaussianIntensity = m_bloomSettings.gaussianIntensity;
 			bloomCB.radius = m_bloomSettings.radius;
 			bloomCB.texelSize = DirectX::XMFLOAT2(inputTexelSizeX, inputTexelSizeY);
@@ -6038,6 +6165,7 @@ namespace Alice
 			bloomCB.threshold = m_bloomSettings.threshold;
 			bloomCB.knee = m_bloomSettings.knee;
 			bloomCB.bloomIntensity = m_bloomSettings.intensity;
+			bloomCB.emissiveBloomIntensity = m_bloomSettings.emissiveBloomIntensity;
 			bloomCB.gaussianIntensity = m_bloomSettings.gaussianIntensity;
 			bloomCB.radius = m_bloomSettings.radius;
 			bloomCB.texelSize = DirectX::XMFLOAT2(texelSizeX, texelSizeY);
@@ -6116,6 +6244,7 @@ namespace Alice
 			bloomCB.threshold = m_bloomSettings.threshold;
 			bloomCB.knee = m_bloomSettings.knee;
 			bloomCB.bloomIntensity = m_bloomSettings.intensity;
+			bloomCB.emissiveBloomIntensity = m_bloomSettings.emissiveBloomIntensity;
 			bloomCB.gaussianIntensity = m_bloomSettings.gaussianIntensity;
 			bloomCB.radius = m_bloomSettings.radius;
 			bloomCB.texelSize = DirectX::XMFLOAT2(texelSizeX, texelSizeY);
@@ -6221,6 +6350,7 @@ namespace Alice
 			bloomCB.threshold = m_bloomSettings.threshold;
 			bloomCB.knee = m_bloomSettings.knee;
 			bloomCB.bloomIntensity = m_bloomSettings.intensity;
+			bloomCB.emissiveBloomIntensity = m_bloomSettings.emissiveBloomIntensity;
 			bloomCB.gaussianIntensity = m_bloomSettings.gaussianIntensity;
 			bloomCB.radius = m_bloomSettings.radius;
 			bloomCB.texelSize = DirectX::XMFLOAT2(texelSizeX, texelSizeY);
