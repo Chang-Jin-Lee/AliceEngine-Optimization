@@ -10095,7 +10095,7 @@
             "WeaponTrace": {
                 "active": false,
                 "attackInstanceId": 505,
-                "baseDamage": 99.0,
+                "baseDamage": 199.0,
                 "debugDraw": false,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
@@ -10103,7 +10103,7 @@
                 "guardBreakPushbackDuration": 0.25,
                 "guardBreakPushbackSpeed": 3.0,
                 "guardBreakWeakSec": 1.5,
-                "guardDurabilityCost": 100.0,
+                "guardDurabilityCost": 200.0,
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",

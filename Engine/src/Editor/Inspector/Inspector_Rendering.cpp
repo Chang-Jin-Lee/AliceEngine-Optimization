@@ -498,6 +498,10 @@ namespace Alice
 			ppSettings["bloomGaussianIntensity"] = m_defaultPostProcessSettings.bloomGaussianIntensity;
 			ppSettings["bloomRadius"] = m_defaultPostProcessSettings.bloomRadius;
 			ppSettings["bloomDownsample"] = m_defaultPostProcessSettings.bloomDownsample;
+			ppSettings["impactBlurIntensity"] = m_defaultPostProcessSettings.impactBlurIntensity;
+			ppSettings["impactBlurRadius"] = m_defaultPostProcessSettings.impactBlurRadius;
+			ppSettings["impactBlurCenterX"] = m_defaultPostProcessSettings.impactBlurCenterX;
+			ppSettings["impactBlurCenterY"] = m_defaultPostProcessSettings.impactBlurCenterY;
 
 			j["defaultPostProcess"] = ppSettings;
 
@@ -601,6 +605,14 @@ namespace Alice
 					m_defaultPostProcessSettings.bloomRadius = ppSettings["bloomRadius"].get<float>();
 				if (ppSettings.contains("bloomDownsample"))
 					m_defaultPostProcessSettings.bloomDownsample = ppSettings["bloomDownsample"].get<int>();
+				if (ppSettings.contains("impactBlurIntensity"))
+					m_defaultPostProcessSettings.impactBlurIntensity = ppSettings["impactBlurIntensity"].get<float>();
+				if (ppSettings.contains("impactBlurRadius"))
+					m_defaultPostProcessSettings.impactBlurRadius = ppSettings["impactBlurRadius"].get<float>();
+				if (ppSettings.contains("impactBlurCenterX"))
+					m_defaultPostProcessSettings.impactBlurCenterX = ppSettings["impactBlurCenterX"].get<float>();
+				if (ppSettings.contains("impactBlurCenterY"))
+					m_defaultPostProcessSettings.impactBlurCenterY = ppSettings["impactBlurCenterY"].get<float>();
 
 				ALICE_LOG_INFO("Default PostProcess Settings loaded from EngineSettings.json");
 			}
@@ -816,6 +828,44 @@ namespace Alice
 							settings.bloomDownsample = downsampleValues[currentIndex];
 							changed = true;
 						}
+						ImGui::Unindent();
+					}
+
+					ImGui::TreePop();
+				}
+
+				// Impact Blur
+				if (ImGui::TreeNode("Impact Blur##PostProcessVolume"))
+				{
+					changed |= ImGui::Checkbox("Override Impact Blur Intensity##PostProcessVolume", &settings.bOverride_ImpactBlurIntensity);
+					if (settings.bOverride_ImpactBlurIntensity)
+					{
+						ImGui::Indent();
+						changed |= ImGui::SliderFloat("Impact Blur Intensity##PostProcessVolume", &settings.impactBlurIntensity, 0.0f, 5.0f, "%.3f");
+						ImGui::Unindent();
+					}
+
+					changed |= ImGui::Checkbox("Override Impact Blur Radius##PostProcessVolume", &settings.bOverride_ImpactBlurRadius);
+					if (settings.bOverride_ImpactBlurRadius)
+					{
+						ImGui::Indent();
+						changed |= ImGui::SliderFloat("Impact Blur Radius##PostProcessVolume", &settings.impactBlurRadius, 0.0f, 1.0f, "%.3f");
+						ImGui::Unindent();
+					}
+
+					changed |= ImGui::Checkbox("Override Impact Blur Center X##PostProcessVolume", &settings.bOverride_ImpactBlurCenterX);
+					if (settings.bOverride_ImpactBlurCenterX)
+					{
+						ImGui::Indent();
+						changed |= ImGui::SliderFloat("Impact Blur Center X##PostProcessVolume", &settings.impactBlurCenterX, 0.0f, 1.0f, "%.3f");
+						ImGui::Unindent();
+					}
+
+					changed |= ImGui::Checkbox("Override Impact Blur Center Y##PostProcessVolume", &settings.bOverride_ImpactBlurCenterY);
+					if (settings.bOverride_ImpactBlurCenterY)
+					{
+						ImGui::Indent();
+						changed |= ImGui::SliderFloat("Impact Blur Center Y##PostProcessVolume", &settings.impactBlurCenterY, 0.0f, 1.0f, "%.3f");
 						ImGui::Unindent();
 					}
 

@@ -94,6 +94,9 @@ cbuffer PostProcessConstantBuffer : register(b2)
                                       // 주의: 이것은 "출력 감마 보정"이 아니라 Color Grading 단계에서 색상을 곱하는 룩 조절 파라미터입니다.
     float4 g_SplitParams;            // x: splitAmount, y: splitAngleDeg, z: splitLineOffset, w: splitFeather
     float4 g_SplitFxParams;          // x: splitFxIntensity, y: splitFxWidth, z: splitFxSpeed, w: splitFxTimeSec
+    float4 g_SplitFxColorA;          // rgb: core/glow color, w: reserved
+    float4 g_SplitFxColorB;          // rgb: fringe/spark color, w: reserved
+    float4 g_ImpactBlurParams;       // x: intensity, y: radius, z: centerX, w: centerY
 };
 
 struct PS_INPUT_QUAD
@@ -218,8 +221,8 @@ float3 ApplySplitCutFx(float3 color, float2 uv)
     float sparks = saturate((n0 * 0.65f + n1 * 0.35f) * 1.9f - 1.0f);
     sparks *= sparks;
 
-    float3 glowColor = float3(2.8f, 1.2f, 0.45f);
-    float3 fringeColor = float3(0.10f, 1.05f, 0.95f);
+    float3 glowColor = max(g_SplitFxColorA.rgb, 0.0f);
+    float3 fringeColor = max(g_SplitFxColorB.rgb, 0.0f);
 
     float glow = edgeBand * (0.35f + sparks * 1.25f);
     float dark = core * 0.55f;
@@ -229,10 +232,48 @@ float3 ApplySplitCutFx(float3 color, float2 uv)
     return result;
 }
 
+float3 ApplyImpactRadialBlur(float2 sampleUV, float2 effectUV)
+{
+    const float intensity = max(g_ImpactBlurParams.x, 0.0f);
+    if (intensity <= 1e-6f)
+        return g_SceneHDR.Sample(g_SamplerLinear, saturate(sampleUV)).rgb;
+
+    const float radius = max(g_ImpactBlurParams.y, 1e-5f);
+    const float2 center = g_ImpactBlurParams.zw;
+    const float2 toPixel = effectUV - center;
+    const float dist = length(toPixel);
+    const float falloff = saturate(1.0f - (dist / radius));
+    const float blurStrength = intensity * falloff;
+    if (blurStrength <= 1e-6f)
+        return g_SceneHDR.Sample(g_SamplerLinear, saturate(sampleUV)).rgb;
+
+    float2 dir = (dist > 1e-6f) ? (toPixel / dist) : float2(1.0f, 0.0f);
+    float2 blurVec = dir * (blurStrength * 0.01f);
+
+    float3 accum = 0.0f;
+    float weightSum = 0.0f;
+
+    accum += g_SceneHDR.Sample(g_SamplerLinear, saturate(sampleUV)).rgb * 0.4f;
+    weightSum += 0.4f;
+
+    [unroll]
+    for (int i = 1; i <= 4; ++i)
+    {
+        const float t = (float)i / 4.0f;
+        const float2 offset = blurVec * t;
+        const float w = 0.075f;
+        accum += g_SceneHDR.Sample(g_SamplerLinear, saturate(sampleUV + offset)).rgb * w;
+        accum += g_SceneHDR.Sample(g_SamplerLinear, saturate(sampleUV - offset)).rgb * w;
+        weightSum += 2.0f * w;
+    }
+
+    return accum / max(weightSum, 1e-5f);
+}
+
 float4 main(PS_INPUT_QUAD input) : SV_Target
 {
     float2 splitUV = ApplyHalfCutUV(input.uv);
-    float3 C_linear709 = g_SceneHDR.Sample(g_SamplerLinear, splitUV).rgb;
+    float3 C_linear709 = ApplyImpactRadialBlur(splitUV, input.uv);
     C_linear709 = ApplySplitCutFx(C_linear709, input.uv);
     
     // 1. Exposure 적용
@@ -278,6 +319,9 @@ cbuffer PostProcessConstantBuffer : register(b2)
                                       // 주의: 이것은 "출력 감마 보정"이 아니라 Color Grading 단계에서 색상을 곱하는 룩 조절 파라미터입니다.
     float4 g_SplitParams;            // x: splitAmount, y: splitAngleDeg, z: splitLineOffset, w: splitFeather
     float4 g_SplitFxParams;          // x: splitFxIntensity, y: splitFxWidth, z: splitFxSpeed, w: splitFxTimeSec
+    float4 g_SplitFxColorA;          // rgb: core/glow color, w: reserved
+    float4 g_SplitFxColorB;          // rgb: fringe/spark color, w: reserved
+    float4 g_ImpactBlurParams;       // x: intensity, y: radius, z: centerX, w: centerY
 };
 
 struct PS_INPUT_QUAD
@@ -399,8 +443,8 @@ float3 ApplySplitCutFx(float3 color, float2 uv)
     float sparks = saturate((n0 * 0.65f + n1 * 0.35f) * 1.9f - 1.0f);
     sparks *= sparks;
 
-    float3 glowColor = float3(2.8f, 1.2f, 0.45f);
-    float3 fringeColor = float3(0.10f, 1.05f, 0.95f);
+    float3 glowColor = max(g_SplitFxColorA.rgb, 0.0f);
+    float3 fringeColor = max(g_SplitFxColorB.rgb, 0.0f);
 
     float glow = edgeBand * (0.35f + sparks * 1.25f);
     float dark = core * 0.55f;
@@ -408,6 +452,44 @@ float3 ApplySplitCutFx(float3 color, float2 uv)
     float3 result = color * (1.0f - dark * saturate(intensity * 0.8f));
     result += (glowColor * glow + fringeColor * sparks * edgeBand) * intensity;
     return result;
+}
+
+float3 ApplyImpactRadialBlur(float2 sampleUV, float2 effectUV)
+{
+    const float intensity = max(g_ImpactBlurParams.x, 0.0f);
+    if (intensity <= 1e-6f)
+        return g_SceneHDR.Sample(g_SamplerLinear, saturate(sampleUV)).rgb;
+
+    const float radius = max(g_ImpactBlurParams.y, 1e-5f);
+    const float2 center = g_ImpactBlurParams.zw;
+    const float2 toPixel = effectUV - center;
+    const float dist = length(toPixel);
+    const float falloff = saturate(1.0f - (dist / radius));
+    const float blurStrength = intensity * falloff;
+    if (blurStrength <= 1e-6f)
+        return g_SceneHDR.Sample(g_SamplerLinear, saturate(sampleUV)).rgb;
+
+    float2 dir = (dist > 1e-6f) ? (toPixel / dist) : float2(1.0f, 0.0f);
+    float2 blurVec = dir * (blurStrength * 0.01f);
+
+    float3 accum = 0.0f;
+    float weightSum = 0.0f;
+
+    accum += g_SceneHDR.Sample(g_SamplerLinear, saturate(sampleUV)).rgb * 0.4f;
+    weightSum += 0.4f;
+
+    [unroll]
+    for (int i = 1; i <= 4; ++i)
+    {
+        const float t = (float)i / 4.0f;
+        const float2 offset = blurVec * t;
+        const float w = 0.075f;
+        accum += g_SceneHDR.Sample(g_SamplerLinear, saturate(sampleUV + offset)).rgb * w;
+        accum += g_SceneHDR.Sample(g_SamplerLinear, saturate(sampleUV - offset)).rgb * w;
+        weightSum += 2.0f * w;
+    }
+
+    return accum / max(weightSum, 1e-5f);
 }
 
 // Rec709 to Rec2020 색공간 변환
@@ -443,7 +525,7 @@ float4 main(PS_INPUT_QUAD input) : SV_Target
 {
     // 예제 프로젝트 36_ToneMappingPS_HDR.hlsl와 동일한 로직
     float2 splitUV = ApplyHalfCutUV(input.uv);
-    float3 C_linear709 = g_SceneHDR.Sample(g_SamplerLinear, splitUV).rgb;
+    float3 C_linear709 = ApplyImpactRadialBlur(splitUV, input.uv);
     C_linear709 = ApplySplitCutFx(C_linear709, input.uv);
     
     // 1. Exposure 적용
