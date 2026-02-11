@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include <filesystem>
+#include <string>
+#include <vector>
 
 #include "Runtime/ECS/Entity.h"
 
@@ -14,6 +16,12 @@ namespace Alice
     /// - Unity 의 Prefab / Instantiate 개념을 간단하게 흉내내기 위한 용도입니다.
     namespace Prefab
     {
+        struct DependencyInfo
+        {
+            std::vector<std::string> unityEffectPaths;
+            std::vector<std::string> computeShaderNames;
+        };
+
         /// 엔진 전역 기본 World 를 등록합니다. (InstantiateFromFileAuto에서 사용)
         void SetDefaultWorld(World* world);
         /// 엔진 전역 기본 ResourceManager 를 등록합니다. (InstantiateFromFileAuto에서 사용)
@@ -28,6 +36,12 @@ namespace Alice
         /// - gameMode  : Cooked/Chunks에서 로드
         /// \return 생성된 엔티티 ID (실패 시 InvalidEntityId)
         EntityId InstantiateFromFileAuto(const std::filesystem::path& logicalPath);
+
+        /// 논리 경로 프리팹 JSON을 미리 파싱/캐시합니다. (빌드 로딩 단계 워밍업용)
+        bool PreloadJsonAuto(const std::filesystem::path& logicalPath);
+
+        /// 프리팹에 선언된 UnityVfx/ComputeEffect 의존성을 수집합니다.
+        bool CollectDependenciesAuto(const std::filesystem::path& logicalPath, DependencyInfo& outInfo);
 
         /// 현재 월드에 존재하는 엔티티를 프리팹 파일로 저장합니다.
         /// - Transform 과 Script 이름 한 개를 간단한 텍스트 포맷으로 기록합니다.

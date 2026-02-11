@@ -1,0 +1,130 @@
+{
+    "entities": [
+        {
+            "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 5000.0,
+                "Near Plane": 0.1,
+                "aspectOverride": 0.0,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 1.8,
+                    "z": -8.5
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "18000000000000000001",
+            "name": "MainCamera"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "JoyStickInputDisplay",
+                    "props": {
+                        "m_playerIndex": 0,
+                        "m_waitingText": "조이스틱 연결 대기중",
+                        "m_idleText": "버튼/스틱 입력 대기중",
+                        "m_stickActivationThreshold": 0.15000000596046448,
+                        "m_vibrationStrength": 1.0,
+                        "m_vibrationDurationSec": 0.30000001192092896,
+                        "m_eventHoldSec": 1.5
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "UIText": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 44.0,
+                "lineSpacing": 10.0,
+                "maxWidth": 1500.0,
+                "text": "조이스틱 연결 대기중",
+                "wrap": true
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 1500.0,
+                    "y": 420.0
+                },
+                "sortOrder": 100,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_JoyStickText"
+            },
+            "guid": "18000000000000000002",
+            "name": "UI_JoyStickText"
+        }
+    ],
+    "sceneName": "JoyStickPlay",
+    "version": 1
+}

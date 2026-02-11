@@ -36,6 +36,9 @@ namespace Alice
             AttackA,
             AttackB,
             AttackC,
+            BoostAttackA,
+            BoostAttackB,
+            BoostAttackC,
             Dash,
             Ranged,
             Kick,
@@ -142,9 +145,9 @@ namespace Alice
         ALICE_PROPERTY(float, m_specialIntervalSec, 60.0f);
         ALICE_PROPERTY(bool, m_usePhaseRules, true);
         ALICE_PROPERTY(float, m_phase2HpRatio, 0.7f);
-        ALICE_PROPERTY(float, m_chargeIntervalSec, 30.0f);
+        ALICE_PROPERTY(float, m_chargeIntervalSec, 20.0f);
         ALICE_PROPERTY(float, m_chargeRerollSec, 5.0f);
-        ALICE_PROPERTY(float, m_walkDashTimeoutSec, 5.0f);
+        ALICE_PROPERTY(float, m_walkDashTimeoutSec, 2.0f);
         ALICE_PROPERTY(int, m_patternQueueTarget, 2);
         ALICE_PROPERTY(int, m_patternQueueMax, 3);
         ALICE_PROPERTY(bool, m_testSwingLoop, false);
@@ -159,7 +162,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_testIdleMaxSec, 3.0f);
         ALICE_PROPERTY(float, m_patrolDistance, 4.0f);
         ALICE_PROPERTY(float, m_patrolTolerance, 0.8f);
-        ALICE_PROPERTY(float, m_meleeDistance, 2.5f);
+        ALICE_PROPERTY(float, m_meleeDistance, 4.0f);
         ALICE_PROPERTY(float, m_chaseDistance, 7.0f);
         ALICE_PROPERTY(float, m_patrolBlockedCooldownSec, 0.25f);
         ALICE_PROPERTY(float, m_stuckTimeoutSec, 3.0f);
@@ -172,6 +175,8 @@ namespace Alice
         // 공격 사거리 (단순 디버그용)
         ALICE_PROPERTY(float, m_dashRangeMin, 4.0f);
         ALICE_PROPERTY(float, m_dashRangeMax, 6.5f);
+        ALICE_PROPERTY(float, m_dashBlockedMinMoveDist, 1.0f);
+        ALICE_PROPERTY(float, m_dashRetryOrbitHoldSec, 2.0f);
         ALICE_PROPERTY(float, m_rangedRangeMin, 6.0f);
         ALICE_PROPERTY(float, m_chargeRangeMax, 4.0f);
         ALICE_PROPERTY(float, m_kickRange, 2.0f);
@@ -310,5 +315,20 @@ namespace Alice
         std::deque<PatternType> m_followupQueue;
         float m_traceTargetSec = 0.0f;
         float m_retreatTargetDist = 0.0f;
+        bool m_retreatSingleStep = false;
+        bool m_retreatUseFixedDirection = false;
+        Combat::Vec2 m_retreatFixedDirection{};
+        float m_retreatStartX = 0.0f;
+        float m_retreatStartZ = 0.0f;
+        float m_retreatTravelDist = 0.0f;
+        bool m_postAttackRetreatPending = false;
+        bool m_postAttackRetreatRangeCheckPending = false;
+        float m_postAttackRetreatStartDist = -1.0f;
+        bool m_dashMoveTracking = false;
+        float m_dashMoveStartX = 0.0f;
+        float m_dashMoveStartZ = 0.0f;
+        float m_dashMoveMaxDist = 0.0f;
+        bool m_dashRetryOrbitPending = false;
+        float m_dashRetryOrbitRemainSec = 0.0f;
     };
 }

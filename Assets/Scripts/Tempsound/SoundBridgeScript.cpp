@@ -284,11 +284,22 @@ namespace Alice
                         // AttackA: 바로 1번 재생
                         bus->RequestBossAttackSfxDelayed(BossAttackState::Attack1, 0.2f);
                         break;
+                    case C_BossBrainComponent::PatternType::BoostAttackA:
+                        bus->RequestBossAttackSfx(BossAttackState::Attack1);
+                        break;
                     case C_BossBrainComponent::PatternType::AttackB:
                         {
                             // AttackB: Attack1 사운드 즉시 + 1초 후 Attack2 사운드
                             bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, 0.2f);
                             bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, 0.4f);
+                        }
+                        break;
+                    case C_BossBrainComponent::PatternType::BoostAttackB:
+                        {
+                            // BoostAttackB: 기본 BC의 1.5배속 타이밍.
+                            constexpr float kBoostDelay = 1.0f / 1.5f;
+                            bus->RequestBossAttackSfx(BossAttackState::Attack1);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, kBoostDelay);
                         }
                         break;
                     case C_BossBrainComponent::PatternType::AttackC:
@@ -299,6 +310,17 @@ namespace Alice
                             // Attack2가 1초 후 실행되므로, Attack3는 2초 후 실행 (1초 + 1초)
                             bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, 1.6f);
                             // AttackABC 사운드도 재생
+                            bus->RequestBossAttackSfx(BossAttackState::AttackABC);
+                        }
+                        break;
+                    case C_BossBrainComponent::PatternType::BoostAttackC:
+                        {
+                            // BoostAttackC: 기본 ABC의 1.5배속 타이밍.
+                            constexpr float kBoostDelayAB = 1.0f / 1.5f;
+                            constexpr float kBoostDelayAC = 2.0f / 1.5f;
+                            bus->RequestBossAttackSfx(BossAttackState::Attack1);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, kBoostDelayAB);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, kBoostDelayAC);
                             bus->RequestBossAttackSfx(BossAttackState::AttackABC);
                         }
                         break;

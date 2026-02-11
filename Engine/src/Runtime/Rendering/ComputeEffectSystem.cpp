@@ -492,6 +492,10 @@ namespace Alice
             return false;
         }
 
+        m_activePresetsPrevFrame.clear();
+        m_warmedPresets.clear();
+        m_warmedUnityEffects.clear();
+
         // 기본 파티클 셰이더 세트 등록
         ALICE_LOG_INFO("ComputeEffectSystem::Initialize: registering shader set 'Particle'...");
         if (!RegisterParticleShaderSet("Particle",
@@ -599,6 +603,8 @@ namespace Alice
             preset.pool.count = 0;
         }
         m_activePresetsPrevFrame.clear();
+        m_warmedPresets.clear();
+        m_warmedUnityEffects.clear();
     }
 
     void ComputeEffectSystem::SetEmitterNormalized(float x, float y, float radius)
@@ -1059,6 +1065,184 @@ namespace Alice
             names.push_back(name);
         }
         return names;
+    }
+
+    bool ComputeEffectSystem::PrewarmPreset(const std::string& presetName, std::uint32_t expectedEmitterCount)
+    {
+        if (presetName.empty())
+            return false;
+        if (!m_device || !m_context || !m_constantBuffer || !m_outputUAV)
+            return false;
+
+        std::string resolvedPreset = presetName;
+        auto presetIt = m_presets.find(resolvedPreset);
+        if (presetIt == m_presets.end())
+        {
+            const std::string targetLower = ToLower(presetName);
+            for (const auto& [registeredName, preset] : m_presets)
+            {
+                if (ToLower(registeredName) == targetLower)
+                {
+                    resolvedPreset = registeredName;
+                    presetIt = m_presets.find(resolvedPreset);
+                    break;
+                }
+            }
+        }
+        if (presetIt == m_presets.end())
+        {
+            ALICE_LOG_WARN("ComputeEffectSystem::PrewarmPreset: preset not found (%s)", presetName.c_str());
+            return false;
+        }
+
+        const std::uint32_t particleCountForPreset = ResolvePoolParticleCount(resolvedPreset, m_particleCount);
+        if (!EnsureParticlePool(resolvedPreset, particleCountForPreset))
+        {
+            ALICE_LOG_ERRORF("ComputeEffectSystem::PrewarmPreset: EnsureParticlePool failed (preset=%s)",
+                resolvedPreset.c_str());
+            return false;
+        }
+
+        const std::uint32_t emitterCount = (std::max)(expectedEmitterCount, 1u);
+        if (!EnsureEmitterBufferCapacity(resolvedPreset, emitterCount))
+        {
+            ALICE_LOG_ERRORF("ComputeEffectSystem::PrewarmPreset: EnsureEmitterBufferCapacity failed (preset=%s)",
+                resolvedPreset.c_str());
+            return false;
+        }
+
+        const bool alreadyWarmed = (m_warmedPresets.find(resolvedPreset) != m_warmedPresets.end());
+        if (alreadyWarmed)
+            return true;
+
+        PresetRuntime& preset = presetIt->second;
+        std::vector<EmitterGPU> emitterData(emitterCount);
+        for (EmitterGPU& emitter : emitterData)
+        {
+            emitter.p0 = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.5f);
+            emitter.p1 = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+            emitter.p2 = XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f);
+            emitter.p3 = XMFLOAT4(0.0f, 0.0f, 1.0f, 0.0f);
+            emitter.p4 = XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f);
+            emitter.p5 = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+            emitter.p6 = XMFLOAT4(0.1f, 0.1f, 0.0f, 1.0f);
+            emitter.p7 = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+        }
+
+        D3D11_MAPPED_SUBRESOURCE mapped{};
+        HRESULT hr = m_context->Map(preset.emitters.buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+        if (FAILED(hr))
+        {
+            ALICE_LOG_ERRORF("ComputeEffectSystem::PrewarmPreset: Map failed (preset=%s, hr=0x%08X)",
+                resolvedPreset.c_str(), static_cast<unsigned>(hr));
+            return false;
+        }
+        std::memcpy(mapped.pData, emitterData.data(), sizeof(EmitterGPU) * emitterCount);
+        m_context->Unmap(preset.emitters.buffer.Get(), 0);
+
+        m_viewProj = XMMatrixIdentity();
+        m_cameraPos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+        m_nearPlane = 0.1f;
+        m_farPlane = 1000.0f;
+        m_dtSec = 0.0f;
+
+        const std::uint32_t warmDispatchParticleCount = (std::min)(particleCountForPreset, 4096u);
+        UpdateConstantBuffer(emitterCount, warmDispatchParticleCount);
+
+        if (m_clearShader)
+            DispatchClear(m_clearShader.Get());
+
+        DispatchParticlesUpdate(preset.shaders.updateShader.Get(),
+            preset.pool.uav.Get(),
+            preset.emitters.srv.Get(),
+            warmDispatchParticleCount);
+
+        DispatchParticlesDraw(preset.shaders.drawShader.Get(),
+            preset.pool.srv.Get(),
+            warmDispatchParticleCount,
+            preset.emitters.srv.Get(),
+            m_dummyDepthSRV.Get());
+
+        UnbindCS();
+        ID3D11UnorderedAccessView* nullUAVs[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+        m_context->CSSetUnorderedAccessViews(0, 8, nullUAVs, nullptr);
+
+        m_warmedPresets.insert(resolvedPreset);
+        ALICE_LOG_INFO("ComputeEffectSystem::PrewarmPreset: warmed preset=%s particlePool=%u emitterCapacity=%u",
+            resolvedPreset.c_str(), particleCountForPreset, preset.emitters.capacity);
+        return true;
+    }
+
+    std::size_t ComputeEffectSystem::PrewarmPresets(const std::vector<std::string>& presetNames, std::uint32_t expectedEmitterCount)
+    {
+        std::size_t warmedCount = 0;
+        for (const std::string& presetName : presetNames)
+        {
+            if (PrewarmPreset(presetName, expectedEmitterCount))
+                ++warmedCount;
+        }
+        return warmedCount;
+    }
+
+    std::size_t ComputeEffectSystem::PrewarmAllRegisteredPresets(std::uint32_t expectedEmitterCount)
+    {
+        std::vector<std::string> presetNames;
+        presetNames.reserve(m_presets.size());
+        for (const auto& [name, preset] : m_presets)
+            presetNames.push_back(name);
+
+        std::sort(presetNames.begin(), presetNames.end());
+        return PrewarmPresets(presetNames, expectedEmitterCount);
+    }
+
+    bool ComputeEffectSystem::PrewarmUnityEffect(const std::string& effectPath, std::uint32_t expectedEmitterCount)
+    {
+        if (effectPath.empty())
+            return false;
+
+        const std::string effectKey = ToLower(effectPath);
+        if (m_warmedUnityEffects.find(effectKey) != m_warmedUnityEffects.end())
+            return true;
+
+        const UnityEffectCache* cache = GetUnityEffectCache(effectPath);
+        if (!cache || !cache->valid)
+        {
+            ALICE_LOG_WARN("ComputeEffectSystem::PrewarmUnityEffect: effect cache invalid (%s)", effectPath.c_str());
+            return false;
+        }
+
+        std::unordered_map<std::string, std::pair<std::string, std::uint32_t>> presetEmitterCounts;
+        presetEmitterCounts.reserve(cache->emitters.size());
+
+        for (const UnityEmitterDesc& emitter : cache->emitters)
+        {
+            std::string presetName = emitter.effect.shaderName;
+            if (presetName.empty())
+                presetName = "Particle";
+
+            const std::string presetKey = ToLower(presetName);
+            auto [it, inserted] = presetEmitterCounts.emplace(
+                presetKey,
+                std::make_pair(presetName, 0u));
+            if (inserted)
+                it->second.first = presetName;
+
+            if (it->second.second < (std::numeric_limits<std::uint32_t>::max)())
+                ++it->second.second;
+        }
+
+        bool ok = true;
+        for (const auto& [_, value] : presetEmitterCounts)
+        {
+            const std::string& presetName = value.first;
+            const std::uint32_t emitterCount = (std::max)(expectedEmitterCount, value.second);
+            ok = PrewarmPreset(presetName, emitterCount) && ok;
+        }
+
+        if (ok)
+            m_warmedUnityEffects.insert(effectKey);
+
+        return ok;
     }
 
     bool ComputeEffectSystem::EnsureParticlePool(const std::string& presetName, std::uint32_t particleCount)
