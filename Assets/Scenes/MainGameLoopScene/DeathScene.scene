@@ -183,10 +183,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 2000.0,
+                        "baseSizeY": 1000.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -196,8 +195,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Image",
-                        "useCurrentAsReference": false,
-                        "useNonUniformScale": true
+                        "useNonUniformScale": false
                     }
                 }
             ],
@@ -377,10 +375,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1200.0,
+                        "baseSizeY": 675.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -390,7 +387,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Loading_image",
-                        "useCurrentAsReference": false,
                         "useNonUniformScale": true
                     }
                 }

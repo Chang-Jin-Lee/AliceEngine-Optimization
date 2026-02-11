@@ -29,32 +29,32 @@ namespace Alice
         ALICE_PROPERTY(std::string, targetEntityName, ""); // 3D 사운드 위치를 가져올 대상 엔티티 이름 (비어있으면 스크립트가 붙은 엔티티 사용)
 
         // 플레이어 공격 상태별 경로 (ImGui Inspector에서 설정 가능)
-        ALICE_PROPERTY(std::string, pathHeavyAttack, "Resource/Test/4_Resources/sound/SFX/플레이어/강공격/Player_HeavyAttack_01.mp3");
-        ALICE_PROPERTY(std::string, pathAttack1, "Resource/Test/4_Resources/sound/SFX/플레이어/공격 1/Player_Attack_01.wav");
-        ALICE_PROPERTY(std::string, pathAttack2, "Resource/Test/4_Resources/sound/SFX/플레이어/공격 2/Player_Attack_02.wav");
-        ALICE_PROPERTY(std::string, pathAttack3, "Resource/Test/4_Resources/sound/SFX/플레이어/공격 3/Player_Attack_03.wav");
-        ALICE_PROPERTY(std::string, pathGuard, "Resource/Test/4_Resources/sound/SFX/플레이어/가드/Player_Guard_01.mp3");
-        ALICE_PROPERTY(std::string, pathParry, "Resource/Test/4_Resources/sound/SFX/플레이어/패링/Player_Parry_01.wav");
+        ALICE_PROPERTY(std::string, pathHeavyAttack, "Resource/Test/4_Resources/sound/SFX/Player/HeavyAttack/Player_HeavyAttack_01.mp3");
+        ALICE_PROPERTY(std::string, pathAttack1, "Resource/Test/4_Resources/sound/SFX/Player/Attack1/Player_Attack_01.wav");
+        ALICE_PROPERTY(std::string, pathAttack2, "Resource/Test/4_Resources/sound/SFX/Player/Attack2/Player_Attack_02.wav");
+        ALICE_PROPERTY(std::string, pathAttack3, "Resource/Test/4_Resources/sound/SFX/Player/Attack3/Player_Attack_03.wav");
+        ALICE_PROPERTY(std::string, pathGuard, "Resource/Test/4_Resources/sound/SFX/Player/Guard/Player_Guard_01.mp3");
+        ALICE_PROPERTY(std::string, pathParry, "Resource/Test/4_Resources/sound/SFX/Player/parry/Player_Parry_01.wav");
         
         // 광폭화 공격 경로 (광폭화 상태일 때 Attack1/2/3 대신 사용)
-        ALICE_PROPERTY(std::string, pathRageAttack1, "Resource/Test/4_Resources/sound/SFX/플레이어/광폭화 공격/Player_Attack_01.wav");
-        ALICE_PROPERTY(std::string, pathRageAttack2, "Resource/Test/4_Resources/sound/SFX/플레이어/광폭화 공격/Player_Attack_02.wav");
-        ALICE_PROPERTY(std::string, pathRageAttack3, "Resource/Test/4_Resources/sound/SFX/플레이어/광폭화 공격/Player_Attack_03.wav");
+        ALICE_PROPERTY(std::string, pathRageAttack1, "Resource/Test/4_Resources/sound/SFX/Player/BuffAttack/Player_Buff_Attack_A_01.mp3");
+        ALICE_PROPERTY(std::string, pathRageAttack2, "Resource/Test/4_Resources/sound/SFX/Player/BuffAttack/Player_Buff_Attack_B_01.mp3");
+        ALICE_PROPERTY(std::string, pathRageAttack3, "Resource/Test/4_Resources/sound/SFX/Player/BuffAttack/Player_Buff_Attack_C_01.mp3");
 
         // 플레이어 움직임 상태별 경로
-        ALICE_PROPERTY(std::string, pathRoll, "Resource/Test/4_Resources/sound/SFX/플레이어/구르기/Player_Rolling_01.mp3");
-        ALICE_PROPERTY(std::string, pathRun, "Resource/Test/4_Resources/sound/SFX/플레이어/달리기/Player_Footstep_1.wav");
-        ALICE_PROPERTY(std::string, pathDash, "Resource/Test/4_Resources/sound/SFX/플레이어/대시/Player_Dash_01.mp3");
-        ALICE_PROPERTY(std::string, pathStop, "Resource/Test/4_Resources/sound/SFX/플레이어/멈추기/Player_Stop_1.wav");
-        ALICE_PROPERTY(std::string, pathHitRoll, "Resource/Test/4_Resources/sound/SFX/플레이어/피격 후 구르기/Player_Attacked_Rolling.mp3");
+        ALICE_PROPERTY(std::string, pathRoll, "Resource/Test/4_Resources/sound/SFX/Player/Rolling/Player_Rolling_01.mp3");
+        ALICE_PROPERTY(std::string, pathRun, "Resource/Test/4_Resources/sound/SFX/Player/Run/Player_Footstep_1.wav");
+        ALICE_PROPERTY(std::string, pathDash, "Resource/Test/4_Resources/sound/SFX/Player/Dash/Player_Dash_01.mp3");
+        ALICE_PROPERTY(std::string, pathStop, "Resource/Test/4_Resources/sound/SFX/Player/stop/Player_Stop_1.wav");
+        ALICE_PROPERTY(std::string, pathHitRoll, "Resource/Test/4_Resources/sound/SFX/Player/HitAndRoll/Player_Attacked_Rolling.mp3");
 
         // 플레이어 기타 상태별 경로
-        ALICE_PROPERTY(std::string, pathGuardBreakAlarm, "Resource/Test/4_Resources/sound/SFX/플레이어/가드 브레이크 전조음/Player_GuardBreak_Alarm_01.wav");
-        ALICE_PROPERTY(std::string, pathGuardBreak, "Resource/Test/4_Resources/sound/SFX/플레이어/가드 브레이크/Player_GuardBreak_01.mp3");
-        ALICE_PROPERTY(std::string, pathEgoCombine, "Resource/Test/4_Resources/sound/SFX/플레이어/에고웨폰 재결합/Player_Weapon_Gather_01.wav");
-        ALICE_PROPERTY(std::string, pathHeal, "Resource/Sound/SFX/플레이어/회복/Player_Healing_01.wav");
-        ALICE_PROPERTY(std::string, pathGroggyAttack, "Resource/Test/4_Resources/sound/SFX/플레이어/그로기어택/Player_GroggyAttack_01.mp3");
-        ALICE_PROPERTY(std::string, pathDeath, "Resource/Sound/SFX/플레이어/사망/Player_Death_01.wav");
+        ALICE_PROPERTY(std::string, pathGuardBreakAlarm, "Resource/Test/4_Resources/sound/SFX/Player/preGuardBreak/Player_GuardBreak_Alarm_01.wav");
+        ALICE_PROPERTY(std::string, pathGuardBreak, "Resource/Test/4_Resources/sound/SFX/Player/GuardBreak/Player_GuardBreak_01.mp3");
+        ALICE_PROPERTY(std::string, pathEgoCombine, "Resource/Test/4_Resources/sound/SFX/Player/WeaponCombine/Player_Weapon_Gather_01.wav");
+        ALICE_PROPERTY(std::string, pathHeal, "Resource/Test/4_Resources/sound/SFX/Player/heal/Player_Healing_01.wav");
+        ALICE_PROPERTY(std::string, pathGroggyAttack, "Resource/Test/4_Resources/sound/SFX/Player/GroggyAttack/Player_GroggyAttack_01.mp3");
+        ALICE_PROPERTY(std::string, pathDeath, "Resource/Test/4_Resources/sound/SFX/Player/Dead/Player_Death_01.wav");
 
         /// 공격 상태 → OnPlayerAttackSfxRequest 델리게이트로 바인딩
         // Per-file volume controls (Inspector)
