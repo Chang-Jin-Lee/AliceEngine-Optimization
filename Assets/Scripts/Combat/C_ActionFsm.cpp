@@ -99,10 +99,6 @@ namespace Alice::Combat
             m_parrySuccessLatched = true;
 
         const bool hasMove = (Abs(intent.move.x) + Abs(intent.move.y)) > 0.001f;
-        if (m_state == ActionState::Guard && guardPressedInput && !sensors.weakActive)
-        {
-            Enter(ActionState::Guard, true);
-        }
         const bool guardEnterActive = (m_state == ActionState::Guard)
             && (guardEnterDurationSec > 0.0f)
             && (m_stateTime < guardEnterDurationSec);
@@ -200,7 +196,11 @@ namespace Alice::Combat
         }
         else if (m_state == ActionState::HealLoop)
         {
-            if (!healHeld)
+            if (intent.dodgePressed && sensors.stamina >= 10.0f)
+            {
+                BeginDodge();
+            }
+            else if (!healHeld)
                 Enter(ActionState::HealExit);
         }
         else if (m_state == ActionState::HealExit)
@@ -282,12 +282,11 @@ namespace Alice::Combat
                     ? sensors.attackStateDurationSec
                     : m_attackFallbackDurationSec;
                 const bool attackFinished = (attackDuration > 0.0f) && (m_stateTime >= attackDuration);
-                const bool preWindow = !sensors.attackWindowActive && !m_attackWindowSeen;
                 const bool postWindow = !sensors.attackWindowActive && m_attackWindowSeen;
-                const bool canGuardCancel = preWindow
-                    && sensors.attackCancelable
+                const bool noHitWindow = !sensors.attackWindowActive;
+                const bool canGuardCancel = noHitWindow
                     && wantsGuard;
-                const bool canDodgeCancel = postWindow
+                const bool canDodgeCancel = noHitWindow
                     && intent.dodgePressed
                     && sensors.stamina >= 10.0f;
                 const float restartLateRatio = 0.7f;
@@ -306,10 +305,12 @@ namespace Alice::Combat
                 else if (canDodgeCancel)
                 {
                     BeginDodge();
+                    out.attackMotionCanceled = true;
                 }
                 else if (canGuardCancel)
                 {
                     Enter(ActionState::Guard);
+                    out.attackMotionCanceled = true;
                 }
                 else if (attackFinished)
                 {

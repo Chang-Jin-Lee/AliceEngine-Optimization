@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/ceramic_0.mat"
+    ],
+    "mesh": "ceramic",
+    "source_fbx": "Resource/Test/4_Resources/background/ceramic/ceramic.fbx"
+}

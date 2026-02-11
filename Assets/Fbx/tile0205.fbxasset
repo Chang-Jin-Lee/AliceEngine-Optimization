@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/tile0205_0.mat"
+    ],
+    "mesh": "tile0205",
+    "source_fbx": "Resource/Test/4_Resources/background/tile0205/tile0205.fbx"
+}

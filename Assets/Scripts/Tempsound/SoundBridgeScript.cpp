@@ -156,17 +156,21 @@ namespace Alice
             switch (state)
             {
             case Combat::ActionState::Attack:
-                if (chargeActive && chargeLevel > 0)
-                    bus->RequestPlayerAttackSfx(PlayerAttackState::HeavyAttack);
-                else
                 {
-                    switch (attackComboIndex)
-                    {
-                    case 1: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
-                    case 2: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack2); break;
-                    case 3: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack3); break;
-                    default: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
-                    }
+                    // 보스가 그로기 상태인지 확인
+					// 일반 공격 사운드 재생
+					if (chargeActive && chargeLevel > 0)
+						bus->RequestPlayerAttackSfx(PlayerAttackState::HeavyAttack);
+					else
+					{
+						switch (attackComboIndex)
+						{
+						case 1: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
+						case 2: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack2); break;
+						case 3: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack3); break;
+						default: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
+						}
+					}
                 }
                 if (Get_combo2ExtraEnabled() && attackComboIndex == 3 && !(chargeActive && chargeLevel > 0))
                 {
@@ -250,6 +254,13 @@ namespace Alice
             switch (state)
             {
             case Combat::ActionState::Attack:
+                // Attack 상태로 전환될 때 Walk 사운드 중지
+                if (prev == Combat::ActionState::Move)
+                {
+                    // Walk 루프 사운드 중지 (None 상태로 전환하여 중지)
+                    bus->RequestBossMovementSfx(BossMovementState::None);
+                }
+                
                 if (bossBrain)
                 {
                     const auto pattern = bossBrain->GetActivePattern();
@@ -271,23 +282,45 @@ namespace Alice
                         break;
                     case C_BossBrainComponent::PatternType::AttackA:
                         // AttackA: 바로 1번 재생
+                        bus->RequestBossAttackSfxDelayed(BossAttackState::Attack1, 0.2f);
+                        break;
+                    case C_BossBrainComponent::PatternType::BoostAttackA:
                         bus->RequestBossAttackSfx(BossAttackState::Attack1);
                         break;
                     case C_BossBrainComponent::PatternType::AttackB:
                         {
                             // AttackB: Attack1 사운드 즉시 + 1초 후 Attack2 사운드
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, 0.2f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, 0.4f);
+                        }
+                        break;
+                    case C_BossBrainComponent::PatternType::BoostAttackB:
+                        {
+                            // BoostAttackB: 기본 BC의 1.5배속 타이밍.
+                            constexpr float kBoostDelay = 1.0f / 1.5f;
                             bus->RequestBossAttackSfx(BossAttackState::Attack1);
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, 1.0f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, kBoostDelay);
                         }
                         break;
                     case C_BossBrainComponent::PatternType::AttackC:
                         {
                             // AttackC: Attack1 사운드 즉시 + 1초 후 Attack2 사운드 + Attack2 실행 후 1초 뒤 Attack3 사운드
-                            bus->RequestBossAttackSfx(BossAttackState::Attack1);
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, 1.0f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack1, 0.2f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, 0.8f);
                             // Attack2가 1초 후 실행되므로, Attack3는 2초 후 실행 (1초 + 1초)
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, 2.0f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, 1.6f);
                             // AttackABC 사운드도 재생
+                            bus->RequestBossAttackSfx(BossAttackState::AttackABC);
+                        }
+                        break;
+                    case C_BossBrainComponent::PatternType::BoostAttackC:
+                        {
+                            // BoostAttackC: 기본 ABC의 1.5배속 타이밍.
+                            constexpr float kBoostDelayAB = 1.0f / 1.5f;
+                            constexpr float kBoostDelayAC = 2.0f / 1.5f;
+                            bus->RequestBossAttackSfx(BossAttackState::Attack1);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, kBoostDelayAB);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, kBoostDelayAC);
                             bus->RequestBossAttackSfx(BossAttackState::AttackABC);
                         }
                         break;

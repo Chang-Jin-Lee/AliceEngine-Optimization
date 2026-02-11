@@ -17,13 +17,14 @@ namespace Alice
 
     void LoadVFXFromPrefab::Start()
     {
+        const bool forceBuildPrewarm = IsGameMode();
         for (int i = 0; i < 9; ++i)
         {
             m_loopTimers[i] = 0.0f;
             m_looping[i] = false;
             m_cachedPaths[i] = GetPrefabPath(i);
 
-            if (m_prewarm && !m_cachedPaths[i].empty())
+            if ((m_prewarm || forceBuildPrewarm) && !m_cachedPaths[i].empty())
                 PrewarmSlot(i);
         }
     }
@@ -68,6 +69,7 @@ namespace Alice
 
     void LoadVFXFromPrefab::UpdatePathCacheAndPools()
     {
+        const bool forceBuildPrewarm = IsGameMode();
         for (int i = 0; i < 9; ++i)
         {
             const std::string& current = GetPrefabPath(i);
@@ -75,7 +77,7 @@ namespace Alice
             {
                 ClearSlot(i);
                 m_cachedPaths[i] = current;
-                if (m_prewarm && !current.empty())
+                if ((m_prewarm || forceBuildPrewarm) && !current.empty())
                     PrewarmSlot(i);
             }
         }

@@ -40,6 +40,9 @@ namespace Alice
         bool bOverride_BloomIntensity = false;
         float bloomIntensity = 0.0f;
 
+        bool bOverride_EmissiveBloomIntensity = false;
+        float emissiveBloomIntensity = 1.0f;
+
         bool bOverride_BloomGaussianIntensity = false;
         float bloomGaussianIntensity = 1.0f;
 
@@ -137,6 +140,7 @@ namespace Alice
             settings.bloomThreshold = 1.0f;
             settings.bloomKnee = 0.5f;
             settings.bloomIntensity = 0.0f;
+            settings.emissiveBloomIntensity = 1.0f;
             settings.bloomGaussianIntensity = 1.0f;
             settings.bloomRadius = 1.0f;
             settings.bloomDownsample = 2;
@@ -210,6 +214,7 @@ namespace Alice
             BlendFloat(final.bloomThreshold, volume.bloomThreshold, weight, volume.bOverride_BloomThreshold);
             BlendFloat(final.bloomKnee, volume.bloomKnee, weight, volume.bOverride_BloomKnee);
             BlendFloat(final.bloomIntensity, volume.bloomIntensity, weight, volume.bOverride_BloomIntensity);
+            BlendFloat(final.emissiveBloomIntensity, volume.emissiveBloomIntensity, weight, volume.bOverride_EmissiveBloomIntensity);
             BlendFloat(final.bloomGaussianIntensity, volume.bloomGaussianIntensity, weight, volume.bOverride_BloomGaussianIntensity);
             BlendFloat(final.bloomRadius, volume.bloomRadius, weight, volume.bOverride_BloomRadius);
             BlendInt(final.bloomDownsample, volume.bloomDownsample, weight, volume.bOverride_BloomDownsample);

@@ -1,0 +1,56 @@
+{
+    "ComputeEffect": {
+        "color": {
+            "x": 1.0,
+            "y": 0.4901960790157318,
+            "z": 0.0
+        },
+        "depthBiasMeters": 0.05000000074505806,
+        "depthTest": true,
+        "drag": 0.2720000147819519,
+        "emissionDurationSec": 0.25,
+        "emitNewParticles": true,
+        "enabled": true,
+        "gravity": {
+            "x": 0.0,
+            "y": -0.32899999618530273,
+            "z": 0.0
+        },
+        "intensity": 2.309000015258789,
+        "lifeMax": 1.7289999723434448,
+        "lifeMin": 0.40700000524520874,
+        "localOffset": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "loop": false,
+        "radius": 1.5,
+        "shaderName": "Vortex",
+        "simulationSpace": "World",
+        "sizePx": 6.0,
+        "spawnRate": 0.03500000014901161,
+        "startSpeed": 0.0
+    },
+    "Transform": {
+        "enabled": true,
+        "position": {
+            "x": 0.0,
+            "y": 0.800000011920929,
+            "z": 0.0
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "visible": true
+    },
+    "name": "GameObject827",
+    "version": 1
+}

@@ -1,0 +1,8 @@
+{
+    "materials": [
+        "Assets/Materials/candledisk_indiv2_0.mat",
+        "Assets/Materials/candledisk_indiv2_1.mat"
+    ],
+    "mesh": "candledisk_indiv2",
+    "source_fbx": "Resource/Test/4_Resources/background/0209scene/candledisk_indiv2.fbx"
+}

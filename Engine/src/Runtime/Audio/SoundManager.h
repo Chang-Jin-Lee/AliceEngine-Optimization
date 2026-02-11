@@ -52,6 +52,8 @@ namespace Alice::Sound
     // - loop=false: Fire-and-forget (중첩 재생 가능)
     void PlaySFX(const std::wstring& key, float volume = 1.0f, float pitch = 1.0f, bool loop = false);
     FMOD::Channel* PlaySFXDelayed(const std::wstring& key, float delaySeconds, float volume = 1.0f, float pitch = 1.0f, bool loop = false);
+    // One-shot SFX 재생 (채널 반환 - 인스턴스별 볼륨 조절용)
+    FMOD::Channel* PlaySFXOneShotWithChannel(const std::wstring& key, float volume = 1.0f, float pitch = 1.0f);
     bool IsSfxPlaying(const std::wstring& key);
     void StopSfx(const std::wstring& key);
     void StopAllSFX();
@@ -60,6 +62,15 @@ namespace Alice::Sound
     void SetSFXPitch(float pitch);
     void SetSfxVolume(const std::wstring& key, float volume);
     void SetSfxPitch(const std::wstring& key, float pitch);
+
+    // 보스 사운드 상태별 ChannelGroup 관리
+    FMOD::ChannelGroup* GetOrCreateBossAttackGroup(const std::wstring& stateName);
+    FMOD::ChannelGroup* GetOrCreateBossMovementGroup(const std::wstring& stateName);
+    FMOD::ChannelGroup* GetOrCreateBossOtherGroup(const std::wstring& stateName);
+    void SetBossGroupVolume(const std::wstring& groupName, float volume);
+    // 상태별 그룹으로 SFX 재생
+    void PlaySFXWithGroup(const std::wstring& key, FMOD::ChannelGroup* group, 
+                          float volume = 1.0f, float pitch = 1.0f, bool loop = false);
 
     // 3D
     void SetListener(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& vel,

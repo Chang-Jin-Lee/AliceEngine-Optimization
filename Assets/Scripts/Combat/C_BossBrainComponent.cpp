@@ -283,20 +283,60 @@ namespace Alice
                     }
                     if (next != BrainState::Idle)
                         m_idleTargetSec = 0.0f;
+                    if (next != BrainState::Retreat)
+                    {
+                        m_retreatSingleStep = false;
+                        m_retreatUseFixedDirection = false;
+                        m_retreatFixedDirection = {};
+                        m_retreatStartX = 0.0f;
+                        m_retreatStartZ = 0.0f;
+                        m_retreatTravelDist = 0.0f;
+                        m_postAttackRetreatStartDist = -1.0f;
+                    }
+                    else if (!m_retreatUseFixedDirection)
+                    {
+                        m_retreatFixedDirection = {};
+                        m_retreatStartX = 0.0f;
+                        m_retreatStartZ = 0.0f;
+                        m_retreatTravelDist = 0.0f;
+                    }
                 }
             };
 
-        auto BeginAttack = [&](PatternType type)
-            {
-                m_activePattern = type;
-                m_attackIssued = false;
-                m_chargeTimer = (type == PatternType::Charge) ? std::max(0.0f, m_chargeHoldSec) : 0.0f;
+            auto BeginAttack = [&](PatternType type)
+                {
+                    m_activePattern = type;
+                    m_attackIssued = false;
+                    m_chargeTimer = (type == PatternType::Charge) ? std::max(0.0f, m_chargeHoldSec) : 0.0f;
                 m_attackOutcome = AttackOutcome::None;
                 m_attackOutcomeSet = false;
-                m_lastAttackPattern = type;
-                m_lastPattern = type;
-                if (type == PatternType::Charge)
-                    m_chargePending = false;
+                m_postAttackRetreatPending = false;
+                m_postAttackRetreatRangeCheckPending = false;
+                m_retreatUseFixedDirection = false;
+                m_retreatFixedDirection = {};
+                m_retreatStartX = 0.0f;
+                    m_retreatStartZ = 0.0f;
+                    m_retreatTravelDist = 0.0f;
+                    m_postAttackRetreatStartDist = -1.0f;
+                    m_dashRetryOrbitPending = false;
+                    m_dashRetryOrbitRemainSec = 0.0f;
+                    m_dashMoveTracking = (type == PatternType::Dash);
+                    if (m_dashMoveTracking)
+                    {
+                        m_dashMoveStartX = selfTr->position.x;
+                        m_dashMoveStartZ = selfTr->position.z;
+                        m_dashMoveMaxDist = 0.0f;
+                    }
+                    else
+                    {
+                        m_dashMoveStartX = 0.0f;
+                        m_dashMoveStartZ = 0.0f;
+                        m_dashMoveMaxDist = 0.0f;
+                    }
+                    m_lastAttackPattern = type;
+                    m_lastPattern = type;
+                    if (type == PatternType::Charge)
+                        m_chargePending = false;
                 m_decision.lockedSector = m_decision.sector;
                 m_decision.sectorLocked = true;
                 m_decision.sectorLockedSec = 0.0f;
@@ -504,10 +544,48 @@ namespace Alice
                     m_intentRoot = PatternType::None;
                     m_followupQueue.clear();
                 };
-            auto StartRetreat = [&](float targetDist)
+            auto StartRetreat = [&](float targetDist, bool allowSingleStep)
                 {
                     m_retreatTargetDist = std::max(0.0f, targetDist);
+                    m_retreatUseFixedDirection = false;
+                    m_retreatFixedDirection = {};
+                    m_retreatStartX = 0.0f;
+                    m_retreatStartZ = 0.0f;
+                    m_retreatTravelDist = 0.0f;
+                    if (allowSingleStep)
+                    {
+                        const float closeThreshold = std::max(
+                            std::max(0.0f, m_idleRetreatTriggerDist),
+                            std::max(0.0f, m_postAttackRetreatTriggerDist));
+                        m_retreatSingleStep = (closeThreshold > 0.0f) && (dist <= closeThreshold);
+                    }
+                    else
+                    {
+                        m_retreatSingleStep = false;
+                    }
                     EnterState(BrainState::Retreat);
+                };
+            auto StartRetreatFromSnapshot = [&](float retreatStepDist) -> bool
+                {
+                    const float stepDist = std::max(0.0f, retreatStepDist);
+                    if (stepDist <= 0.0f)
+                        return false;
+
+                    Combat::Vec2 toTargetSnapshot{};
+                    const float snapshotDx = targetTr->position.x - selfTr->position.x;
+                    const float snapshotDz = targetTr->position.z - selfTr->position.z;
+                    if (!Normalize2D(snapshotDx, snapshotDz, toTargetSnapshot))
+                        return false;
+
+                    m_retreatTargetDist = 0.0f;
+                    m_retreatSingleStep = false;
+                    m_retreatUseFixedDirection = true;
+                    m_retreatFixedDirection = { -toTargetSnapshot.x, -toTargetSnapshot.y };
+                    m_retreatStartX = selfTr->position.x;
+                    m_retreatStartZ = selfTr->position.z;
+                    m_retreatTravelDist = stepDist;
+                    EnterState(BrainState::Retreat);
+                    return true;
                 };
             auto PeekPendingPattern = [&]() -> PatternType
                 {
@@ -599,10 +677,16 @@ namespace Alice
                                         PatternType prevPattern) -> PatternType
                 {
                     std::vector<PatternType> pool;
-                    pool.reserve(4);
+                    pool.reserve(7);
                     pool.push_back(PatternType::AttackA);
                     pool.push_back(PatternType::AttackB);
                     pool.push_back(PatternType::AttackC);
+                    if (m_phase2Active)
+                    {
+                        pool.push_back(PatternType::BoostAttackA);
+                        pool.push_back(PatternType::BoostAttackB);
+                        pool.push_back(PatternType::BoostAttackC);
+                    }
                     if (includeCharge)
                         pool.push_back(PatternType::Charge);
 
@@ -625,6 +709,9 @@ namespace Alice
                         idx = pool.size() - 1;
                     return pool[idx];
                 };
+
+            const bool stuckRisk = (m_stuckTimeoutSec > 0.0f)
+                && (m_stuckTimer >= std::max(0.1f, m_stuckTimeoutSec * 0.5f));
 
             if (m_activePattern == PatternType::Special)
             {
@@ -687,6 +774,9 @@ namespace Alice
                     case PatternType::AttackA:
                     case PatternType::AttackB:
                     case PatternType::AttackC:
+                    case PatternType::BoostAttackA:
+                    case PatternType::BoostAttackB:
+                    case PatternType::BoostAttackC:
                     case PatternType::Dash:
                     case PatternType::Ranged:
                     case PatternType::Side:
@@ -701,6 +791,14 @@ namespace Alice
                     m_attackIssued = true;
                 }
 
+                if (m_activePattern == PatternType::Dash && m_dashMoveTracking)
+                {
+                    const float movedX = selfTr->position.x - m_dashMoveStartX;
+                    const float movedZ = selfTr->position.z - m_dashMoveStartZ;
+                    const float movedDist = std::sqrt(movedX * movedX + movedZ * movedZ);
+                    m_dashMoveMaxDist = std::max(m_dashMoveMaxDist, movedDist);
+                }
+
                 const float holdSec = std::max(0.0f, m_attackStateHoldSec);
                 float minAttackTime = (m_activePattern == PatternType::Charge)
                     ? (std::max(0.0f, m_chargeHoldSec) + holdSec)
@@ -711,6 +809,9 @@ namespace Alice
 
                 if (m_attackIssued && m_stateTimer >= minAttackTime)
                 {
+                    const bool dashBlockedByObstacle = (m_activePattern == PatternType::Dash)
+                        && m_dashMoveTracking
+                        && (m_dashMoveMaxDist + 0.001f < std::max(0.0f, m_dashBlockedMinMoveDist));
                     AttackOutcome outcome = m_attackOutcomeSet ? m_attackOutcome : AttackOutcome::Evaded;
                     PatternType followUp = PatternType::None;
                     if (m_intentActive && !m_intentFollowupUsed && m_phase2Active && outcome == AttackOutcome::Evaded)
@@ -718,11 +819,24 @@ namespace Alice
                         switch (m_lastAttackPattern)
                         {
                         case PatternType::AttackB: followUp = PatternType::AttackA; break;
+                        case PatternType::BoostAttackB: followUp = PatternType::BoostAttackA; break;
                         case PatternType::Kick:
                         case PatternType::Side: followUp = PatternType::Charge; break;
                         case PatternType::AttackA: followUp = PatternType::Charge; break;
+                        case PatternType::BoostAttackA: followUp = PatternType::Charge; break;
                         case PatternType::AttackC: followUp = PatternType::AttackC; break;
+                        case PatternType::BoostAttackC: followUp = PatternType::BoostAttackC; break;
                         default: break;
+                        }
+
+                        // Phase2 root normal-pattern followups:
+                        // if player is not in boss front at pattern end, mix follow-up and Side 50/50.
+                        if (followUp != PatternType::None
+                            && IsNormalPattern(m_lastAttackPattern)
+                            && !targetInFront
+                            && RandomRange(0.0f, 1.0f) < 0.5f)
+                        {
+                            followUp = PatternType::Side;
                         }
                     }
 
@@ -734,6 +848,10 @@ namespace Alice
                     m_decision.sectorLockedSec = 0.0f;
                     m_decision.lockedSector = Sector::Unknown;
                     m_faceTargetSuppressTimer = std::max(m_faceTargetSuppressTimer, std::max(0.0f, m_actionDelaySec));
+                    m_dashMoveTracking = false;
+                    m_dashMoveStartX = 0.0f;
+                    m_dashMoveStartZ = 0.0f;
+                    m_dashMoveMaxDist = 0.0f;
 
                     if (m_deactivateAfterCurrentAttack)
                     {
@@ -742,7 +860,22 @@ namespace Alice
                         return intent;
                     }
 
-                    if (m_rerollAfterAttack)
+                    if (dashBlockedByObstacle)
+                    {
+                        m_activePattern = PatternType::None;
+                        m_attackCooldownTimer = 0.0f;
+                        m_forceWalkAfterAttack = false;
+                        m_rerollAfterAttack = false;
+                        m_postAttackRetreatPending = false;
+                        m_postAttackRetreatRangeCheckPending = false;
+                        m_postAttackRetreatStartDist = -1.0f;
+                        m_patternQueue.clear();
+                        CompleteIntent();
+                        m_dashRetryOrbitPending = true;
+                        m_dashRetryOrbitRemainSec = std::max(0.0f, m_dashRetryOrbitHoldSec);
+                        EnterState(BrainState::Orbit);
+                    }
+                    else if (m_rerollAfterAttack)
                     {
                         m_rerollAfterAttack = false;
                         m_activePattern = PatternType::None;
@@ -762,78 +895,102 @@ namespace Alice
                     else
                     {
                         m_activePattern = PatternType::None;
-                        m_attackCooldownTimer = std::max(0.0f, m_attackCooldown);
+                        m_attackCooldownTimer = 0.0f;
                         const bool intentJustCompleted = m_intentActive;
                         if (intentJustCompleted)
                             CompleteIntent();
-
-                        const float retreatTrigger = std::max(0.0f, m_postAttackRetreatTriggerDist);
-                        const float retreatStep = std::max(0.0f, m_postAttackRetreatStepDist);
-                        if (intentJustCompleted && retreatTrigger > 0.0f && retreatStep > 0.0f && dist <= retreatTrigger)
-                        {
-                            m_forceWalkAfterAttack = false;
-                            StartRetreat(dist + retreatStep);
-                        }
-                        else if (m_forceWalkAfterAttack)
-                        {
-                            m_forceWalkAfterAttack = false;
-                            EnterState(BrainState::Approach);
-                        }
-                        else
-                        {
-                            m_idleTargetSec = std::max(0.0f, m_actionDelaySec);
-                            EnterState(BrainState::Idle);
-                        }
+                        m_forceWalkAfterAttack = false;
+                        // No-followup branch should allow idle-facing correction immediately.
+                        m_faceTargetSuppressTimer = 0.0f;
+                        m_postAttackRetreatPending = intentJustCompleted
+                            && IsNormalPattern(m_lastAttackPattern);
+                        m_postAttackRetreatRangeCheckPending = false;
+                        m_postAttackRetreatStartDist = -1.0f;
+                        m_idleTargetSec = std::max(0.0f, m_actionDelaySec);
+                        EnterState(BrainState::Idle);
                     }
                 }
             }
             else if (m_state == BrainState::Orbit)
             {
-                const bool rangedReady = (m_rangedCooldownSec <= 0.0f)
-                    || (m_decision.timeSinceRangedSec >= m_rangedCooldownSec);
-                const float rangedTraceMinDist = std::max(0.0f, GetPatternMinRange(PatternType::Ranged));
-                if (m_traceTargetSec <= 0.0f)
+                bool dashRetryJustStarted = false;
+                if (m_dashRetryOrbitPending)
                 {
-                    const float traceMinHoldSec = std::max(0.0f, m_traceMaxHoldMinSec);
-                    const float traceMaxHoldSec = std::max(traceMinHoldSec, m_traceMaxHoldMaxSec);
-                    m_traceTargetSec = (traceMaxHoldSec > 0.0f)
-                        ? RandomRange(traceMinHoldSec, traceMaxHoldSec)
-                        : std::max(0.0f, m_traceDelaySec);
-                }
-                const float traceHoldSec = std::max(0.0f, m_traceTargetSec);
-                const float traceFarThreshold = m_traceEnterDist + 2.0f;
-                const float traceNearThreshold = std::max(0.0f, m_traceEnterDist - 1.0f);
-                const bool traceFar = (dist >= traceFarThreshold);
-                const bool traceNear = (dist <= traceNearThreshold);
-                const bool traceTimeReady = (traceHoldSec <= 0.0f) || (m_stateTimer >= traceHoldSec);
-                bool allowDecision = traceNear || traceTimeReady;
-                const bool traceAttackRangeReady = (dist <= meleeRange);
-                if (traceAttackRangeReady)
-                    allowDecision = true;
-
-                if (traceFar
-                    && dist >= rangedTraceMinDist
-                    && rangedReady
-                    && PeekQueuedPattern() == PatternType::None)
-                {
-                    PushQueuedPattern(PatternType::Ranged);
-                    m_forceWalkAfterAttack = true;
-                    allowDecision = true;
-                }
-                if (traceNear)
-                    m_attackCooldownTimer = 0.0f;
-
-                if (allowDecision && PeekQueuedPattern() == PatternType::None && m_attackCooldownTimer <= 0.0f)
-                {
-                    const float closeRange = std::max(0.0f, m_kickRange);
-                    PatternType nextPattern = PatternType::None;
-                    const PatternType prevPattern = m_lastPattern;
-                    if (dist <= closeRange)
+                    m_dashRetryOrbitRemainSec = std::max(0.0f, m_dashRetryOrbitRemainSec - dt);
+                    if (m_dashRetryOrbitRemainSec <= 0.0f && IsFacingReadyForPattern(PatternType::Dash))
                     {
-                        const PatternType harass = targetInFront ? PatternType::Kick : PatternType::Side;
-                        if (IsTransitionAllowed(prevPattern, harass))
+                        m_dashRetryOrbitPending = false;
+                        m_dashRetryOrbitRemainSec = 0.0f;
+                        BeginAttack(PatternType::Dash);
+                        dashRetryJustStarted = true;
+                    }
+                }
+
+                if (!m_dashRetryOrbitPending && !dashRetryJustStarted)
+                {
+                    const bool rangedReady = (m_rangedCooldownSec <= 0.0f)
+                        || (m_decision.timeSinceRangedSec >= m_rangedCooldownSec);
+                    const float rangedTraceMinDist = std::max(0.0f, GetPatternMinRange(PatternType::Ranged));
+                    if (m_traceTargetSec <= 0.0f)
+                    {
+                        const float traceMinHoldSec = std::max(0.0f, m_traceMaxHoldMinSec);
+                        const float traceMaxHoldSec = std::max(traceMinHoldSec, m_traceMaxHoldMaxSec);
+                        m_traceTargetSec = (traceMaxHoldSec > 0.0f)
+                            ? RandomRange(traceMinHoldSec, traceMaxHoldSec)
+                            : std::max(0.0f, m_traceDelaySec);
+                    }
+                    const float traceHoldSec = std::max(0.0f, m_traceTargetSec);
+                    const float traceFarThreshold = m_traceEnterDist + 2.0f;
+                    const float traceNearThreshold = std::max(0.0f, m_traceEnterDist - 1.0f);
+                    const bool traceFar = (dist >= traceFarThreshold);
+                    const bool traceNear = (dist <= traceNearThreshold);
+                    const bool traceTimeReady = (traceHoldSec <= 0.0f) || (m_stateTimer >= traceHoldSec);
+                    bool allowDecision = traceNear || traceTimeReady;
+                    const bool traceAttackRangeReady = (dist <= meleeRange);
+                    if (traceAttackRangeReady)
+                        allowDecision = true;
+
+                    if (traceFar
+                        && dist >= rangedTraceMinDist
+                        && rangedReady
+                        && PeekQueuedPattern() == PatternType::None)
+                    {
+                        PushQueuedPattern(PatternType::Ranged);
+                        m_forceWalkAfterAttack = true;
+                        allowDecision = true;
+                    }
+                    if (traceNear)
+                        m_attackCooldownTimer = 0.0f;
+
+                    if (allowDecision && PeekQueuedPattern() == PatternType::None && m_attackCooldownTimer <= 0.0f)
+                    {
+                        const float sideHarassRange = std::max(0.0f, m_kickRange);
+                        const float kickHarassRange = sideHarassRange * 0.5f;
+                        PatternType nextPattern = PatternType::None;
+                        const PatternType prevPattern = m_lastPattern;
+                        const bool canUseKick = targetInFront && dist <= kickHarassRange;
+                        const bool canUseSideHarass = !targetInFront && dist <= sideHarassRange;
+                        if (canUseKick || canUseSideHarass)
                         {
-                            nextPattern = harass;
+                            const PatternType harass = canUseKick ? PatternType::Kick : PatternType::Side;
+                            if (IsTransitionAllowed(prevPattern, harass))
+                            {
+                                nextPattern = harass;
+                            }
+                            else
+                            {
+                                const bool includeCharge = m_chargePending;
+                                nextPattern = PickRandomPattern(m_lastPattern, includeCharge, prevPattern);
+                                if (nextPattern == PatternType::Charge)
+                                    m_chargePending = false;
+                            }
+                        }
+                        else if (m_chargePending
+                            && m_lastPattern != PatternType::Charge
+                            && IsTransitionAllowed(prevPattern, PatternType::Charge))
+                        {
+                            nextPattern = PatternType::Charge;
+                            m_chargePending = false;
                         }
                         else
                         {
@@ -842,40 +999,26 @@ namespace Alice
                             if (nextPattern == PatternType::Charge)
                                 m_chargePending = false;
                         }
+                        if (nextPattern != PatternType::None)
+                            PushQueuedPattern(nextPattern);
                     }
-                    else if (m_chargePending
-                        && m_lastPattern != PatternType::Charge
-                        && IsTransitionAllowed(prevPattern, PatternType::Charge))
-                    {
-                        nextPattern = PatternType::Charge;
-                        m_chargePending = false;
-                    }
-                    else
-                    {
-                        const bool includeCharge = m_chargePending;
-                        nextPattern = PickRandomPattern(m_lastPattern, includeCharge, prevPattern);
-                        if (nextPattern == PatternType::Charge)
-                            m_chargePending = false;
-                    }
-                    if (nextPattern != PatternType::None)
-                        PushQueuedPattern(nextPattern);
-                }
 
-                PatternType pending = PeekPendingPattern();
-                if (pending != PatternType::None)
-                {
-                    const bool pendingInRange = (pending == PatternType::Dash) || IsPatternInRange(pending);
-                    const bool facingReady = IsFacingReadyForPattern(pending);
-                    if (pendingInRange && facingReady)
+                    PatternType pending = PeekPendingPattern();
+                    if (pending != PatternType::None)
                     {
-                        if (pending == PatternType::Ranged)
-                            m_forceWalkAfterAttack = true;
-                        m_activePattern = PopPendingPattern();
-                        BeginAttack(m_activePattern);
-                    }
-                    else if (allowDecision)
-                    {
-                        EnterState(BrainState::Approach);
+                        const bool pendingInRange = (pending == PatternType::Dash) || IsPatternInRange(pending);
+                        const bool facingReady = IsFacingReadyForPattern(pending);
+                        if (pendingInRange && facingReady)
+                        {
+                            if (pending == PatternType::Ranged)
+                                m_forceWalkAfterAttack = true;
+                            m_activePattern = PopPendingPattern();
+                            BeginAttack(m_activePattern);
+                        }
+                        else if (allowDecision)
+                        {
+                            EnterState(BrainState::Approach);
+                        }
                     }
                 }
             }
@@ -937,28 +1080,117 @@ namespace Alice
             }
             else if (m_state == BrainState::Retreat)
             {
-                if (m_retreatTargetDist <= 0.0f || dist >= m_retreatTargetDist)
+                bool retreatCompleted = false;
+                if (m_retreatUseFixedDirection && m_retreatTravelDist > 0.0f)
                 {
+                    const float movedX = selfTr->position.x - m_retreatStartX;
+                    const float movedZ = selfTr->position.z - m_retreatStartZ;
+                    const float movedDistSq = movedX * movedX + movedZ * movedZ;
+                    const float targetDist = m_retreatTravelDist;
+                    retreatCompleted = movedDistSq >= (targetDist * targetDist);
+                }
+                else
+                {
+                    retreatCompleted = (m_retreatTargetDist <= 0.0f) || (dist >= m_retreatTargetDist);
+                }
+                const bool retreatSingleStepDone = m_retreatSingleStep && (m_stateTimer > 0.0f);
+                if (retreatCompleted || retreatSingleStepDone)
+                {
+                    const float retreatStartDist = m_postAttackRetreatStartDist;
+                    const bool retreatFollowedByPlayer = (retreatStartDist >= 0.0f) && (dist <= retreatStartDist + 0.05f);
+                    const bool retreatFollowKickInRange = dist <= std::max(0.0f, m_meleeDistance);
                     m_retreatTargetDist = 0.0f;
-                    EnterState(BrainState::Orbit);
+                    m_retreatSingleStep = false;
+                    m_retreatUseFixedDirection = false;
+                    m_retreatFixedDirection = {};
+                    m_retreatStartX = 0.0f;
+                    m_retreatStartZ = 0.0f;
+                    m_retreatTravelDist = 0.0f;
+                    if (m_postAttackRetreatRangeCheckPending)
+                    {
+                        m_postAttackRetreatRangeCheckPending = false;
+                        m_postAttackRetreatStartDist = -1.0f;
+                        if (retreatFollowedByPlayer && retreatFollowKickInRange)
+                        {
+                            m_rerollAfterAttack = true;
+                            BeginAttack(PatternType::Kick);
+                        }
+                        else
+                        {
+                            PatternType pending = PeekPendingPattern();
+                            if (pending == PatternType::None)
+                            {
+                                const PatternType avoidA = m_lastPattern;
+                                const PatternType avoidB = PatternType::None;
+                                PatternType next = PickNextPattern(dist, targetInFront, hpRatio, stuckRisk, avoidA, avoidB);
+                                if (next != PatternType::None)
+                                    PushQueuedPattern(next);
+                                pending = PeekPendingPattern();
+                            }
+
+                            if (pending != PatternType::None
+                                && ((pending == PatternType::Dash) || IsPatternInRange(pending))
+                                && IsFacingReadyForPattern(pending))
+                            {
+                                if (pending == PatternType::Ranged)
+                                    m_forceWalkAfterAttack = true;
+                                m_activePattern = PopPendingPattern();
+                                BeginAttack(m_activePattern);
+                            }
+                            else
+                            {
+                                EnterState(BrainState::Orbit);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        m_postAttackRetreatStartDist = -1.0f;
+                        EnterState(BrainState::Orbit);
+                    }
                 }
             }
             else if (m_state == BrainState::Idle)
             {
-                const float idleRetreatTriggerDist = std::max(0.0f, m_idleRetreatTriggerDist);
-                const float idleRetreatStepDist = std::max(0.0f, m_idleRetreatStepDist);
-                if (idleRetreatTriggerDist > 0.0f
-                    && idleRetreatStepDist > 0.0f
-                    && dist <= idleRetreatTriggerDist)
+                if (m_postAttackRetreatPending)
                 {
-                    StartRetreat(dist + idleRetreatStepDist);
+                    const bool facingReady = (!hasDir) || (targetDot >= GetTurnInPlaceDotThreshold());
+                    const float idleHoldSec = std::max(0.0f, m_idleTargetSec);
+                    if ((idleHoldSec <= 0.0f || m_stateTimer >= idleHoldSec) && facingReady)
+                    {
+                        m_postAttackRetreatPending = false;
+                        m_postAttackRetreatStartDist = dist;
+                        const float postAttackRetreatStepDist = std::max(0.0f, m_postAttackRetreatStepDist);
+                        if (postAttackRetreatStepDist > 0.0f)
+                        {
+                            m_postAttackRetreatRangeCheckPending = true;
+                            if (!StartRetreatFromSnapshot(postAttackRetreatStepDist))
+                                StartRetreat(dist + postAttackRetreatStepDist, false);
+                        }
+                        else
+                        {
+                            m_postAttackRetreatStartDist = -1.0f;
+                            EnterState(BrainState::Orbit);
+                        }
+                    }
                 }
                 else
                 {
-                    const float idleHoldSec = std::max(0.0f, m_idleTargetSec);
-                    if ((idleHoldSec <= 0.0f || m_stateTimer >= idleHoldSec)
-                        && m_attackCooldownTimer <= 0.0f)
-                        EnterState(BrainState::Orbit);
+                    const float idleRetreatTriggerDist = std::max(0.0f, m_idleRetreatTriggerDist);
+                    const float idleRetreatStepDist = std::max(0.0f, m_idleRetreatStepDist);
+                    if (idleRetreatTriggerDist > 0.0f
+                        && idleRetreatStepDist > 0.0f
+                        && dist <= idleRetreatTriggerDist)
+                    {
+                        StartRetreat(dist + idleRetreatStepDist, true);
+                    }
+                    else
+                    {
+                        const float idleHoldSec = std::max(0.0f, m_idleTargetSec);
+                        if ((idleHoldSec <= 0.0f || m_stateTimer >= idleHoldSec)
+                            && m_attackCooldownTimer <= 0.0f)
+                            EnterState(BrainState::Orbit);
+                    }
                 }
             }
 
@@ -969,8 +1201,14 @@ namespace Alice
             }
             else if (m_state == BrainState::Retreat)
             {
-                if (hasDir)
+                if (m_retreatUseFixedDirection)
+                {
+                    intent.move = m_retreatFixedDirection;
+                }
+                else if (hasDir)
+                {
                     intent.move = { -toTarget.x, -toTarget.y };
+                }
             }
             else if (m_state == BrainState::Approach || m_state == BrainState::Chase)
             {
@@ -1066,7 +1304,6 @@ namespace Alice
         const float patrolMin = std::max(0.0f, patrolDist - patrolTol);
         const float patrolMax = patrolDist + patrolTol;
         const float chaseDist = std::max(patrolMax, m_chaseDistance);
-
         const bool stuckRisk = (m_stuckTimeoutSec > 0.0f)
             && (m_stuckTimer >= std::max(0.1f, m_stuckTimeoutSec * 0.5f));
 
@@ -1181,6 +1418,9 @@ namespace Alice
                     case PatternType::AttackA:
                     case PatternType::AttackB:
                     case PatternType::AttackC:
+                    case PatternType::BoostAttackA:
+                    case PatternType::BoostAttackB:
+                    case PatternType::BoostAttackC:
                     case PatternType::Dash:
                     case PatternType::Ranged:
                     case PatternType::Side:
@@ -1360,7 +1600,7 @@ namespace Alice
                                                                              PatternType avoidA,
                                                                              PatternType avoidB)
     {
-        std::array<PatternType, 12> candidates{};
+        std::array<PatternType, 16> candidates{};
         size_t count = 0;
         auto PushUnique = [&](PatternType type)
             {
@@ -1375,9 +1615,11 @@ namespace Alice
             };
 
         const float closeRange = std::max(0.0f, m_kickRange);
+        const float kickRange = closeRange * 0.5f;
         const float meleeRange = std::max(closeRange, m_meleeDistance);
         const float midRange = std::max(meleeRange, m_dashRangeMax);
 
+        const bool inKickRange = dist <= kickRange;
         const bool inClose = dist <= closeRange;
         const bool inMelee = dist <= meleeRange;
         const bool inMid = dist <= midRange;
@@ -1387,6 +1629,7 @@ namespace Alice
             PushUnique(PatternType::Ranged);
 
         const PatternType cycle[] = { PatternType::AttackA, PatternType::AttackB, PatternType::AttackC };
+        const PatternType boostCycle[] = { PatternType::BoostAttackA, PatternType::BoostAttackB, PatternType::BoostAttackC };
         auto PushCycle = [&]()
             {
                 for (size_t i = 0; i < std::size(cycle); ++i)
@@ -1394,12 +1637,23 @@ namespace Alice
                     const size_t idx = (static_cast<size_t>(m_attackCycleIndex) + i) % std::size(cycle);
                     PushUnique(cycle[idx]);
                 }
+                if (m_phase2Active)
+                {
+                    for (size_t i = 0; i < std::size(boostCycle); ++i)
+                    {
+                        const size_t idx = (static_cast<size_t>(m_attackCycleIndex) + i) % std::size(boostCycle);
+                        PushUnique(boostCycle[idx]);
+                    }
+                }
             };
 
         if (inClose)
         {
             if (targetInFront)
-                PushUnique(PatternType::Kick);
+            {
+                if (inKickRange)
+                    PushUnique(PatternType::Kick);
+            }
             else
                 PushUnique(PatternType::Dash);
             PushCycle();
@@ -1454,12 +1708,15 @@ namespace Alice
         switch (chosen)
         {
         case PatternType::AttackA:
+        case PatternType::BoostAttackA:
             m_attackCycleIndex = 1;
             break;
         case PatternType::AttackB:
+        case PatternType::BoostAttackB:
             m_attackCycleIndex = 2;
             break;
         case PatternType::AttackC:
+        case PatternType::BoostAttackC:
             m_attackCycleIndex = 0;
             break;
         default:
@@ -1508,7 +1765,7 @@ namespace Alice
         case PatternType::Side:
             return std::max(0.0f, m_backAttackRange);
         case PatternType::Kick:
-            return std::max(0.0f, m_kickRange);
+            return std::max(0.0f, m_kickRange * 0.5f);
         case PatternType::Charge:
             return std::max(0.0f, m_chargeRangeMax);
         case PatternType::Dash:
@@ -1518,6 +1775,9 @@ namespace Alice
         case PatternType::AttackA:
         case PatternType::AttackB:
         case PatternType::AttackC:
+        case PatternType::BoostAttackA:
+        case PatternType::BoostAttackB:
+        case PatternType::BoostAttackC:
         default:
             return std::max(0.0f, m_meleeDistance);
         }
@@ -1545,6 +1805,9 @@ namespace Alice
         case PatternType::AttackA: return "Attack A";
         case PatternType::AttackB: return "Attack B";
         case PatternType::AttackC: return "Attack C";
+        case PatternType::BoostAttackA: return "Boost Attack A";
+        case PatternType::BoostAttackB: return "Boost Attack B,C";
+        case PatternType::BoostAttackC: return "Boost Attack A,B,C";
         case PatternType::Dash: return "Dash";
         case PatternType::Ranged: return "Ranged";
         case PatternType::Kick: return "Kick";
@@ -1570,6 +1833,9 @@ namespace Alice
         case PatternType::AttackA: return m_clipAttackA;
         case PatternType::AttackB: return m_clipAttackBC;
         case PatternType::AttackC: return m_clipAttackABC;
+        case PatternType::BoostAttackA: return m_clipAttackA;
+        case PatternType::BoostAttackB: return m_clipAttackBC;
+        case PatternType::BoostAttackC: return m_clipAttackABC;
         case PatternType::Dash: return m_clipDash;
         case PatternType::Ranged: return m_clipSoul;
         case PatternType::Kick: return m_clipKick;
@@ -1646,6 +1912,20 @@ namespace Alice
         m_rerollAfterAttack = false;
         m_attackOutcome = AttackOutcome::None;
         m_attackOutcomeSet = false;
+        m_postAttackRetreatPending = false;
+        m_postAttackRetreatRangeCheckPending = false;
+        m_retreatUseFixedDirection = false;
+        m_retreatFixedDirection = {};
+        m_retreatStartX = 0.0f;
+        m_retreatStartZ = 0.0f;
+        m_retreatTravelDist = 0.0f;
+        m_postAttackRetreatStartDist = -1.0f;
+        m_dashMoveTracking = false;
+        m_dashMoveStartX = 0.0f;
+        m_dashMoveStartZ = 0.0f;
+        m_dashMoveMaxDist = 0.0f;
+        m_dashRetryOrbitPending = false;
+        m_dashRetryOrbitRemainSec = 0.0f;
     }
 
     bool C_BossBrainComponent::ConsumePhase2HowlingStarted()
@@ -1673,6 +1953,21 @@ namespace Alice
         m_decision.sectorLockedSec = 0.0f;
         m_decision.lockedSector = Sector::Unknown;
         m_retreatTargetDist = 0.0f;
+        m_retreatSingleStep = false;
+        m_retreatUseFixedDirection = false;
+        m_retreatFixedDirection = {};
+        m_retreatStartX = 0.0f;
+        m_retreatStartZ = 0.0f;
+        m_retreatTravelDist = 0.0f;
+        m_postAttackRetreatPending = false;
+        m_postAttackRetreatRangeCheckPending = false;
+        m_postAttackRetreatStartDist = -1.0f;
+        m_dashMoveTracking = false;
+        m_dashMoveStartX = 0.0f;
+        m_dashMoveStartZ = 0.0f;
+        m_dashMoveMaxDist = 0.0f;
+        m_dashRetryOrbitPending = false;
+        m_dashRetryOrbitRemainSec = 0.0f;
         m_traceTargetSec = 0.0f;
         m_faceTargetSuppressTimer = 0.0f;
         m_deactivateAfterCurrentAttack = false;
@@ -1690,7 +1985,10 @@ namespace Alice
     {
         return type == PatternType::AttackA
             || type == PatternType::AttackB
-            || type == PatternType::AttackC;
+            || type == PatternType::AttackC
+            || type == PatternType::BoostAttackA
+            || type == PatternType::BoostAttackB
+            || type == PatternType::BoostAttackC;
     }
 
     bool C_BossBrainComponent::IsTransitionAllowed(PatternType prev, PatternType next) const
@@ -1846,6 +2144,21 @@ namespace Alice
         m_testRetreatTimer = 0.0f;
         m_idleTargetSec = 0.0f;
         m_retreatTargetDist = 0.0f;
+        m_retreatSingleStep = false;
+        m_retreatUseFixedDirection = false;
+        m_retreatFixedDirection = {};
+        m_retreatStartX = 0.0f;
+        m_retreatStartZ = 0.0f;
+        m_retreatTravelDist = 0.0f;
+        m_postAttackRetreatPending = false;
+        m_postAttackRetreatRangeCheckPending = false;
+        m_postAttackRetreatStartDist = -1.0f;
+        m_dashMoveTracking = false;
+        m_dashMoveStartX = 0.0f;
+        m_dashMoveStartZ = 0.0f;
+        m_dashMoveMaxDist = 0.0f;
+        m_dashRetryOrbitPending = false;
+        m_dashRetryOrbitRemainSec = 0.0f;
         m_debugLabel = m_brainActivated ? "Idle" : "Standby | Idle | Inactive";
         m_traceEnterDist = 0.0f;
         m_traceTargetSec = 0.0f;
