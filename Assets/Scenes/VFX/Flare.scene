@@ -1,0 +1,203 @@
+{
+    "entities": [
+        {
+            "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
+                "aspectOverride": 0.0,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "CameraWASDMove",
+                    "props": {
+                        "m_dragMoveSpeed": 0.5199999809265137,
+                        "m_moveSpeed": 8.109999656677246
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -0.03246195614337921,
+                    "y": 0.4349607825279236,
+                    "z": -4.190817356109619
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0852658674120903,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "6045284604150159740",
+            "name": "MainCamera"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "FlareFlickerDemo",
+                    "props": {
+                        "m_alphaAmplitude": 0.0,
+                        "m_baseAlpha": 1.0,
+                        "m_baseColor": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "m_baseSize": {
+                            "x": 2.5,
+                            "y": 2.5
+                        },
+                        "m_billboard": true,
+                        "m_framePath1": "Resource/Image/redCircle.png",
+                        "m_framePath2": "Resource/Image/Bricks059_1K-JPG_Color.png",
+                        "m_framePath3": "Resource/Image/Bricks059_1K-JPG_NormalDX.png",
+                        "m_framePath4": "Resource/Image/Bricks059_Specular.png",
+                        "m_framePath5": "Resource/Image/GrayHuman.png",
+                        "m_framePath6": "Resource/Image/YellowHuman.png",
+                        "m_framePath7": "Resource/Image/RedHuman.png",
+                        "m_framePath8": "Resource/Image/redCircle.png",
+                        "m_frameRate": 7.789999961853027,
+                        "m_loopFrames": true,
+                        "m_maxAlpha": 1.0,
+                        "m_maxColorScale": 1.149999976158142,
+                        "m_minAlpha": 1.0,
+                        "m_minColorScale": 0.8500000238418579,
+                        "m_primarySpeed": 8.0,
+                        "m_responseCurve": 1.350000023841858,
+                        "m_scaleAmplitude": 0.05999999865889549,
+                        "m_secondarySpeed": 17.0,
+                        "m_secondaryWeight": 0.44999998807907104,
+                        "m_texturePath": "Resource/Image/redCircle.png",
+                        "m_timeScale": 1.0,
+                        "m_useAlphaFlicker": false,
+                        "m_useFrameAnimation": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": -6.003548622131348,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.077313780784607,
+                    "y": 1.077313780784607,
+                    "z": 1.077313780784607
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Image/Bricks059_Specular.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.0,
+                    "y": 1.100000023841858
+                },
+                "anchorMin": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 0.9823342561721802,
+                    "y": 0.9823342561721802
+                },
+                "size": {
+                    "x": 2.5,
+                    "y": 2.5
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "FlareUI"
+            },
+            "guid": "16298872751955367987",
+            "name": "Flare"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.7000000476837158,
+                    "z": 0.5000000596046448
+                },
+                "enabled": true,
+                "intensity": 14.75,
+                "range": 5.0970001220703125
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -1.5
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.03839724510908127,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "10133454070682601705",
+            "name": "FlareFillLight"
+        }
+    ],
+    "sceneName": "Flare",
+    "version": 1
+}
