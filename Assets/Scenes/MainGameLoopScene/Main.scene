@@ -76,19 +76,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -15.507979393005371,
-                    "y": 1.1046319007873535,
-                    "z": -25.791982650756836
+                    "x": -15.55840015411377,
+                    "y": 1.1714463233947754,
+                    "z": -25.765609741210938
                 },
                 "rotation": {
-                    "x": 0.02379809506237507,
-                    "y": 1.5646401643753052,
-                    "z": -0.03192020580172539
+                    "x": -0.05933142825961113,
+                    "y": 0.5137602686882019,
+                    "z": -0.01220023911446333
                 },
                 "scale": {
                     "x": 0.9999999403953552,
-                    "y": 0.9999997019767761,
-                    "z": 0.9999998211860657
+                    "y": 0.9999995827674866,
+                    "z": 0.9999996423721313
                 },
                 "visible": false
             },
@@ -171,19 +171,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -15.516156196594238,
-                    "y": 0.862225353717804,
-                    "z": -25.792551040649414
+                    "x": -15.550543785095215,
+                    "y": 0.9291797876358032,
+                    "z": -25.755870819091797
                 },
                 "rotation": {
-                    "x": 0.0556640662252903,
-                    "y": 1.584734559059143,
-                    "z": 0.02053418941795826
+                    "x": -0.03126056492328644,
+                    "y": 0.6526079177856445,
+                    "z": 0.0013553093886002898
                 },
                 "scale": {
                     "x": 0.9999999403953552,
-                    "y": 0.9999994039535522,
-                    "z": 0.9999995231628418
+                    "y": 0.9999993443489075,
+                    "z": 0.9999994039535522
                 },
                 "visible": false
             },
@@ -266,17 +266,17 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -15.655860900878906,
-                    "y": 0.24325290322303772,
-                    "z": -25.687116622924805
+                    "x": -15.710139274597168,
+                    "y": 0.25011757016181946,
+                    "z": -25.744386672973633
                 },
                 "rotation": {
-                    "x": 0.05561390519142151,
-                    "y": 2.6598377227783203,
-                    "z": 2.6327567100524902
+                    "x": 0.0947326198220253,
+                    "y": 1.8954259157180786,
+                    "z": 2.8782379627227783
                 },
                 "scale": {
-                    "x": 0.9999995231628418,
+                    "x": 0.999999463558197,
                     "y": 1.0000001192092896,
                     "z": 1.0000001192092896
                 },
@@ -361,19 +361,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -15.505854606628418,
-                    "y": 0.22444173693656921,
-                    "z": -25.905677795410156
+                    "x": -15.425694465637207,
+                    "y": 0.2505248486995697,
+                    "z": -25.785123825073242
                 },
                 "rotation": {
-                    "x": 0.04063577204942703,
-                    "y": -0.11977335810661316,
-                    "z": -2.4849166870117188
+                    "x": 0.0283155869692564,
+                    "y": -0.8421803712844849,
+                    "z": -2.7297098636627197
                 },
                 "scale": {
-                    "x": 0.9999995827674866,
-                    "y": 0.9999996423721313,
-                    "z": 0.9999999403953552
+                    "x": 0.9999994039535522,
+                    "y": 0.9999993443489075,
+                    "z": 0.9999997019767761
                 },
                 "visible": false
             },
@@ -456,19 +456,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -30.383310317993164,
-                    "y": 2.3341779708862305,
-                    "z": -5.7218918800354
+                    "x": -30.385425567626953,
+                    "y": 2.3373100757598877,
+                    "z": -5.715069770812988
                 },
                 "rotation": {
-                    "x": -0.13997124135494232,
-                    "y": -0.6201147437095642,
-                    "z": 0.014641092158854008
+                    "x": -0.14003443717956543,
+                    "y": -0.6138405203819275,
+                    "z": 0.01121918112039566
                 },
                 "scale": {
-                    "x": 0.009999996051192284,
-                    "y": 0.009999994188547134,
-                    "z": 0.00999999325722456
+                    "x": 0.009999995119869709,
+                    "y": 0.009999996051192284,
+                    "z": 0.009999995119869709
                 },
                 "visible": false
             },
@@ -551,18 +551,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -30.548673629760742,
-                    "y": 1.500558853149414,
-                    "z": -5.3542327880859375
+                    "x": -30.548542022705078,
+                    "y": 1.5005810260772705,
+                    "z": -5.35315465927124
                 },
                 "rotation": {
-                    "x": -0.43749532103538513,
-                    "y": -0.42428991198539734,
-                    "z": 0.00905642006546259
+                    "x": -0.4300055503845215,
+                    "y": -0.41985219717025757,
+                    "z": 0.006382758729159832
                 },
                 "scale": {
-                    "x": 0.009999998845160007,
-                    "y": 0.009999996982514858,
+                    "x": 0.009999997913837433,
+                    "y": 0.009999997913837433,
                     "z": 0.009999998845160007
                 },
                 "visible": false
@@ -646,19 +646,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -30.669212341308594,
-                    "y": 1.7262800931930542,
-                    "z": -5.948315143585205
+                    "x": -30.67278289794922,
+                    "y": 1.7312729358673096,
+                    "z": -5.9445013999938965
                 },
                 "rotation": {
-                    "x": 0.24168062210083008,
-                    "y": -2.514136552810669,
-                    "z": 2.12650990486145
+                    "x": 0.23678287863731384,
+                    "y": -2.5096986293792725,
+                    "z": 2.117706298828125
                 },
                 "scale": {
                     "x": 0.009999996051192284,
-                    "y": 0.009999996982514858,
-                    "z": 0.009999996982514858
+                    "y": 0.009999995119869709,
+                    "z": 0.00999999325722456
                 },
                 "visible": false
             },
@@ -741,18 +741,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -30.063982009887695,
-                    "y": 1.7190014123916626,
-                    "z": -5.519408226013184
+                    "x": -30.064823150634766,
+                    "y": 1.7205899953842163,
+                    "z": -5.520120620727539
                 },
                 "rotation": {
-                    "x": 0.05445316061377525,
-                    "y": 1.668865442276001,
-                    "z": -2.490936756134033
+                    "x": 0.05711665377020836,
+                    "y": 1.6807514429092407,
+                    "z": -2.4913063049316406
                 },
                 "scale": {
-                    "x": 0.009999998845160007,
-                    "y": 0.009999998845160007,
+                    "x": 0.009999997913837433,
+                    "y": 0.009999997913837433,
                     "z": 0.010000001639127731
                 },
                 "visible": false
@@ -836,19 +836,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -30.873533248901367,
-                    "y": 0.609993577003479,
-                    "z": -5.4906792640686035
+                    "x": -30.868696212768555,
+                    "y": 0.6100530028343201,
+                    "z": -5.495543479919434
                 },
                 "rotation": {
-                    "x": -0.4438820779323578,
-                    "y": 0.06369948387145996,
-                    "z": 2.9012084007263184
+                    "x": -0.4500330984592438,
+                    "y": 0.06081385537981987,
+                    "z": 2.9157497882843018
                 },
                 "scale": {
-                    "x": 0.010000023059546947,
+                    "x": 0.010000022128224373,
                     "y": 0.010000033304095268,
-                    "z": 0.010000056587159634
+                    "z": 0.010000055655837059
                 },
                 "visible": false
             },
@@ -931,19 +931,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -30.184120178222656,
-                    "y": 0.6564937233924866,
-                    "z": -5.4654059410095215
+                    "x": -30.1820011138916,
+                    "y": 0.6556535363197327,
+                    "z": -5.462804317474365
                 },
                 "rotation": {
-                    "x": -0.07864560931921005,
-                    "y": -0.5596156120300293,
-                    "z": -2.9876163005828857
+                    "x": -0.05972860008478165,
+                    "y": -0.5583918690681458,
+                    "z": -2.98337984085083
                 },
                 "scale": {
-                    "x": 0.010000035166740417,
-                    "y": 0.010000023059546947,
-                    "z": 0.01000002771615982
+                    "x": 0.010000036098062992,
+                    "y": 0.010000026784837246,
+                    "z": 0.010000026784837246
                 },
                 "visible": false
             },
@@ -3558,7 +3558,7 @@
                 "maxDistance": 8.079999923706055,
                 "minDistance": 0.0,
                 "mode": 0,
-                "pitchDeg": 8.823853492736816,
+                "pitchDeg": 11.708183288574219,
                 "pitchMaxDeg": 80.0,
                 "pitchMinDeg": -45.0,
                 "positionDamping": 8.0,
@@ -3567,7 +3567,7 @@
                 "shoulderOffset": 0.0,
                 "shoulderSide": 1.0,
                 "targetName": "Player(Tia)",
-                "yawDeg": -110.12923431396484
+                "yawDeg": -151.24713134765625
             },
             "CameraInput": {
                 "blendTimeKey3": 0.6000000238418579,
@@ -3598,7 +3598,7 @@
                 "frequency": 20.0
             },
             "CameraSpringArm": {
-                "distance": 1.025242567062378,
+                "distance": 3.999997615814209,
                 "distanceDamping": 6.0,
                 "enableCollision": false,
                 "enableZoom": true,
@@ -3675,14 +3675,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -14.584514617919922,
-                    "y": 1.3572521209716797,
-                    "z": -25.435287475585938
+                    "x": -13.705975532531738,
+                    "y": 2.0027072429656982,
+                    "z": -22.370018005371094
                 },
                 "rotation": {
-                    "x": 0.15400530397891998,
-                    "y": -1.922117829322815,
-                    "z": -1.862644971595273e-08
+                    "x": 0.20434635877609253,
+                    "y": -2.6397604942321777,
+                    "z": 2.2351741790771484e-08
                 },
                 "scale": {
                     "x": 1.0,
@@ -4858,18 +4858,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -14.877312660217285,
-                    "y": 1.072246789932251,
-                    "z": -25.557907104492188
+                    "x": -15.255403518676758,
+                    "y": 1.082838773727417,
+                    "z": -25.275970458984375
                 },
                 "rotation": {
-                    "x": 1.0042070150375366,
-                    "y": 2.081024646759033,
-                    "z": 0.5607600212097168
+                    "x": 0.6770185232162476,
+                    "y": 1.721396803855896,
+                    "z": 0.6360160708427429
                 },
                 "scale": {
-                    "x": 1.0,
-                    "y": 0.9999999403953552,
+                    "x": 0.9999998807907104,
+                    "y": 0.9999998807907104,
                     "z": 1.000000238418579
                 },
                 "visible": true
@@ -6288,19 +6288,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -15.467916488647461,
-                    "y": 0.8294963836669922,
-                    "z": -25.793840408325195
+                    "x": -15.519594192504883,
+                    "y": 0.9007572531700134,
+                    "z": -25.715444564819336
                 },
                 "rotation": {
-                    "x": 0.0556640662252903,
-                    "y": 1.584734559059143,
-                    "z": 0.02053418941795826
+                    "x": -0.03126056492328644,
+                    "y": 0.6526079177856445,
+                    "z": 0.0013553093886002898
                 },
                 "scale": {
                     "x": 0.9999999403953552,
-                    "y": 0.9999994039535522,
-                    "z": 0.9999995231628418
+                    "y": 0.9999993443489075,
+                    "z": 0.9999994039535522
                 },
                 "visible": true
             },
@@ -6336,8 +6336,8 @@
                     "loopB": false,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.08251859992742538,
-                    "timeB": 0.08251859992742538
+                    "timeA": 1.8333333730697632,
+                    "timeB": 1.8333333730697632
                 },
                 "enabled": true,
                 "ik": {
@@ -6502,7 +6502,7 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.0035000001080334187,
                 "teleport": false,
-                "verticalVelocity": -0.06360902637243271
+                "verticalVelocity": 0.0
             },
             "Health": {
                 "alive": true,
@@ -6771,7 +6771,7 @@
                 },
                 "rotation": {
                     "x": 0.0,
-                    "y": 1.2194750308990479,
+                    "y": 0.5018322467803955,
                     "z": 0.0
                 },
                 "scale": {
@@ -6813,8 +6813,8 @@
                     "loopB": false,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.08251859992742538,
-                    "timeB": 0.08251859992742538
+                    "timeA": 1.8333333730697632,
+                    "timeB": 1.8333333730697632
                 },
                 "enabled": true,
                 "ik": {
@@ -7038,25 +7038,25 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -14.877312660217285,
-                    "y": 1.072246789932251,
-                    "z": -25.557907104492188
+                    "x": -15.255403518676758,
+                    "y": 1.082838773727417,
+                    "z": -25.275970458984375
                 },
                 "rotation": {
-                    "x": 1.0042070150375366,
-                    "y": 2.081024646759033,
-                    "z": 0.5607600212097168
+                    "x": 0.6770185232162476,
+                    "y": 1.721396803855896,
+                    "z": 0.6360160708427429
                 },
                 "scale": {
-                    "x": 1.0,
-                    "y": 0.9999999403953552,
+                    "x": 0.9999998807907104,
+                    "y": 0.9999998807907104,
                     "z": 1.000000238418579
                 },
                 "visible": true
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 1827,
+                "attackInstanceId": 1828,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -7306,8 +7306,8 @@
                     "loopB": true,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.2952658534049988,
-                    "timeB": 1.2952462434768677
+                    "timeA": 0.6537898182868958,
+                    "timeB": 0.38712286949157715
                 },
                 "enabled": true,
                 "ik": {
@@ -7515,7 +7515,7 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.0010000000474974513,
                 "teleport": false,
-                "verticalVelocity": -0.06360902637243271
+                "verticalVelocity": 0.0
             },
             "Health": {
                 "alive": true,
@@ -7855,7 +7855,7 @@
                 "enabled": true,
                 "position": {
                     "x": -30.555849075317383,
-                    "y": 0.0010033845901489258,
+                    "y": 0.001003265380859375,
                     "z": -5.348754405975342
                 },
                 "rotation": {
@@ -7947,19 +7947,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -30.6980037689209,
-                    "y": 1.0834687948226929,
-                    "z": -5.752569198608398
+                    "x": -30.696359634399414,
+                    "y": 1.0855330228805542,
+                    "z": -5.754915714263916
                 },
                 "rotation": {
-                    "x": -0.001433969009667635,
-                    "y": 0.7023926377296448,
-                    "z": -0.8667493462562561
+                    "x": 0.0031445971690118313,
+                    "y": 0.7105214595794678,
+                    "z": -0.8552258014678955
                 },
                 "scale": {
-                    "x": 1.4999992847442627,
-                    "y": 1.4999991655349731,
-                    "z": 1.4999994039535522
+                    "x": 1.499998927116394,
+                    "y": 1.4999990463256836,
+                    "z": 1.499998688697815
                 },
                 "visible": true
             },
@@ -8340,19 +8340,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -15.48609733581543,
-                    "y": 0.7746483683586121,
-                    "z": -25.64520263671875
+                    "x": -15.628161430358887,
+                    "y": 0.6680280566215515,
+                    "z": -25.58948516845703
                 },
                 "rotation": {
-                    "x": -1.054618000984192,
-                    "y": 1.6915737390518188,
-                    "z": -0.16078908741474152
+                    "x": -1.197389841079712,
+                    "y": 2.3027994632720947,
+                    "z": 3.113909959793091
                 },
                 "scale": {
-                    "x": 1.0000001192092896,
-                    "y": 0.9999993443489075,
-                    "z": 0.9999998211860657
+                    "x": 0.9999998807907104,
+                    "y": 0.9999996423721313,
+                    "z": 0.9999999403953552
                 },
                 "visible": true
             },
@@ -8435,19 +8435,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -15.589164733886719,
-                    "y": 0.7576996684074402,
-                    "z": -25.868350982666016
+                    "x": -15.43117618560791,
+                    "y": 0.6647258400917053,
+                    "z": -25.877063751220703
                 },
                 "rotation": {
-                    "x": -0.9469916224479675,
-                    "y": 1.868809700012207,
-                    "z": 2.3989450931549072
+                    "x": -1.5296168327331543,
+                    "y": -1.0946738719940186,
+                    "z": -2.038792848587036
                 },
                 "scale": {
-                    "x": 1.0,
-                    "y": 0.9999991655349731,
-                    "z": 0.9999995231628418
+                    "x": 1.0000001192092896,
+                    "y": 0.999999463558197,
+                    "z": 0.9999995827674866
                 },
                 "visible": true
             },
@@ -8537,26 +8537,26 @@
                         "loop": false,
                         "maxDistance": 50.0,
                         "minDistance": 1.0,
-                        "pathAttack1": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/怨듦꺽 1/Player_Attack_01.wav",
-                        "pathAttack2": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/怨듦꺽 2/Player_Attack_02.wav",
-                        "pathAttack3": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/怨듦꺽 3/Player_Attack_03.wav",
-                        "pathDash": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/???Player_Dash_01.mp3",
-                        "pathDeath": "Resource/Sound/SFX/?뚮젅?댁뼱/?щ쭩/Player_Death_01.wav",
-                        "pathEgoCombine": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/?먭퀬?⑦룿 ?ш껐??Player_Weapon_Gather_01.wav",
-                        "pathGroggyAttack": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/洹몃줈湲곗뼱??Player_GroggyAttack_01.mp3",
-                        "pathGuard": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/媛??Player_Guard_01.mp3",
-                        "pathGuardBreak": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/媛??釉뚮젅?댄겕/Player_GuardBreak_01.mp3",
-                        "pathGuardBreakAlarm": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/媛??釉뚮젅?댄겕 ?꾩“??Player_GuardBreak_Alarm_01.wav",
-                        "pathHeal": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/?뚮났/Player_Healing_01.wav",
-                        "pathHeavyAttack": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/媛뺢났寃?Player_HeavyAttack_01.mp3",
-                        "pathHitRoll": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/?쇨꺽 ??援щⅤ湲?Player_Attacked_Rolling.mp3",
-                        "pathParry": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/?⑤쭅/Player_Parry_01.wav",
-                        "pathRageAttack1": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/愿묓룺??怨듦꺽/Player_Buff_Attack_A_01.mp3",
-                        "pathRageAttack2": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/愿묓룺??怨듦꺽/Player_Buff_Attack_B_01.mp3",
-                        "pathRageAttack3": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/愿묓룺??怨듦꺽/Player_Buff_Attack_C_01.mp3",
-                        "pathRoll": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/援щⅤ湲?Player_Rolling_01.mp3",
-                        "pathRun": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/?щ━湲?Player_Footstep_1.wav",
-                        "pathStop": "Resource/Test/4_Resources/sound/SFX/?뚮젅?댁뼱/硫덉텛湲?Player_Stop_1.wav",
+                        "pathAttack1": "Resource/Test/4_Resources/sound/SFX/Player/Attack1/Player_Attack_01.wav",
+                        "pathAttack2": "Resource/Test/4_Resources/sound/SFX/Player/Attack2/Player_Attack_02.wav",
+                        "pathAttack3": "Resource/Test/4_Resources/sound/SFX/Player/Attack3/Player_Attack_03.wav",
+                        "pathDash": "Resource/Test/4_Resources/sound/SFX/Player/Dash/Player_Dash_01.mp3",
+                        "pathDeath": "Resource/Test/4_Resources/sound/SFX/플레이어/사망/Player_Death_01.wav",
+                        "pathEgoCombine": "Resource/Test/4_Resources/sound/SFX/Player/WeaponCombine/Player_Weapon_Gather_01.wav",
+                        "pathGroggyAttack": "Resource/Test/4_Resources/sound/SFX/Player/GroggyAttack/Player_GroggyAttack_01.mp3",
+                        "pathGuard": "Resource/Test/4_Resources/sound/SFX/Player/Gaurd/Player_Guard_01.mp3",
+                        "pathGuardBreak": "Resource/Test/4_Resources/sound/SFX/Player/GaurdBreak/Player_GuardBreak_01.mp3",
+                        "pathGuardBreakAlarm": "Resource/Test/4_Resources/sound/SFX/Player/preGaurdBreak/Player_GuardBreak_Alarm_01.wav",
+                        "pathHeal": "Resource/Test/4_Resources/sound/SFX/Player/heal/Player_Healing_01.wav",
+                        "pathHeavyAttack": "Resource/Test/4_Resources/sound/SFX/Player/HeavyAttack/Player_HeavyAttack_01.mp3",
+                        "pathHitRoll": "Resource/Test/4_Resources/sound/SFX/Player/HitAndRoll/Player_Attacked_Rolling.mp3",
+                        "pathParry": "Resource/Test/4_Resources/sound/SFX/Player/parry/Player_Parry_01.wav",
+                        "pathRageAttack1": "Resource/Test/4_Resources/sound/SFX/Player/BuffAttack/Player_Buff_Attack_A_01.mp3",
+                        "pathRageAttack2": "Resource/Test/4_Resources/sound/SFX/Player/BuffAttack/Player_Buff_Attack_B_01.mp3",
+                        "pathRageAttack3": "Resource/Test/4_Resources/sound/SFX/Player/BuffAttack/Player_Buff_Attack_C_01.mp3",
+                        "pathRoll": "Resource/Test/4_Resources/sound/SFX/Player/Rolling/Player_Rolling_01.mp3",
+                        "pathRun": "Resource/Test/4_Resources/sound/SFX/Player/Run/Player_Footstep_1.wav",
+                        "pathStop": "Resource/Test/4_Resources/sound/SFX/Player/stop/Player_Stop_1.wav",
                         "pitch": 1.0,
                         "sessionEntityName": "SceneManager",
                         "targetEntityName": "Player(Tia)",
@@ -8825,21 +8825,21 @@
                         "loop": false,
                         "maxDistance": 50.0,
                         "minDistance": 1.0,
-                        "pathAttack1": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/怨듦꺽 1/Boss_Attack_01.mp3",
-                        "pathAttack2": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/怨듦꺽 2/Boss_Attack_02.wav",
-                        "pathAttack3": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/怨듦꺽 3/Boss_Attack_03.wav",
-                        "pathAttackABC": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/怨듦꺽 ABC/Boss_Attack_ABC.wav",
-                        "pathAttackAlarm": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/怨듦꺽 ?꾩“ ?뚮┝/Boss_Attack_Alarm_01.mp3",
-                        "pathDashAttack": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/??ш났寃?Boss_DashAttack_01.mp3",
-                        "pathDeath": "Resource/Sound/SFX/蹂댁뒪/?щ쭩/Boss_Death_01.wav",
-                        "pathGroggyEnter": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/洹몃줈湲?吏꾩엯/Boss_Groggy_Alarm_01.wav",
-                        "pathHit": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/?쇨꺽/Boss_Hit_01.wav",
-                        "pathRoar": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/?ы슚/Boss_Roaring_01.mp3",
-                        "pathRotate": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/紐??뚮━湲?Boss_Rotate_01.wav",
-                        "pathSideAttack": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/?? 寃ъ젣 怨듦꺽/Boss_Attack_Side_01.mp3",
-                        "pathSoulSwordAttack": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/?곹샎?寃 怨듦꺽/Boss_SoulAttack_Attack_01.wav",
-                        "pathSoulSwordCharge": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/?곹샎?寃 李⑥?/Boss_SoulAttack_Charging_01.mp3",
-                        "pathWalk": "Resource/Test/4_Resources/sound/SFX/蹂댁뒪/嫄룰린/Boss_Footstep_01.mp3",
+                        "pathAttack1": "Resource/Test/4_Resources/sound/SFX/Boss/Attack1/Boss_Attack_01.mp3",
+                        "pathAttack2": "Resource/Test/4_Resources/sound/SFX/Boss/Attack2/Boss_Attack_02.wav",
+                        "pathAttack3": "Resource/Test/4_Resources/sound/SFX/Boss/Attack3/Boss_Attack_03.wav",
+                        "pathAttackABC": "Resource/Test/4_Resources/sound/SFX/보스/공격 ABC/Boss_Attack_ABC.wav",
+                        "pathAttackAlarm": "Resource/Test/4_Resources/sound/SFX/Boss/preAttackAlarm/Boss_Attack_Alarm_01.mp3",
+                        "pathDashAttack": "Resource/Test/4_Resources/sound/SFX/Boss/DashAttack/Boss_DashAttack_01.mp3",
+                        "pathDeath": "Resource/Test/4_Resources/sound/SFX/Boss/Dead/Boss_Die_01.mp3",
+                        "pathGroggyEnter": "Resource/Test/4_Resources/sound/SFX/Boss/EnterGroggy/Boss_Groggy_Alarm_01.wav",
+                        "pathHit": "Resource/Test/4_Resources/sound/SFX/Boss/BossHit/Boss_Hit_01.wav",
+                        "pathRoar": "Resource/Test/4_Resources/sound/SFX/Boss/Hawling/Boss_Roaring_01.mp3",
+                        "pathRotate": "Resource/Test/4_Resources/sound/SFX/Boss/turnBody/Boss_Rotate_01.wav",
+                        "pathSideAttack": "Resource/Test/4_Resources/sound/SFX/Boss/sideAttack/Boss_Attack_Side_01.mp3",
+                        "pathSoulSwordAttack": "Resource/Test/4_Resources/sound/SFX/Boss/SoulAttack/Boss_SoulAttack_Attack_01.wav",
+                        "pathSoulSwordCharge": "Resource/Test/4_Resources/sound/SFX/Boss/SoulAttackcharge/Boss_SoulAttack_Charging_01.mp3",
+                        "pathWalk": "Resource/Test/4_Resources/sound/SFX/Boss/FootStep/Boss_Footstep_01.mp3",
                         "pitch": 1.0099999904632568,
                         "targetEntityName": "Boss",
                         "useBus": true,
@@ -46940,10 +46940,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 10.0,
+                        "baseSizeY": 10.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -46953,7 +46952,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_playeInfo",
-                        "useCurrentAsReference": true,
                         "useNonUniformScale": false
                     }
                 }
@@ -46979,7 +46977,7 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 1.0,
+                    "w": 0.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
@@ -47018,8 +47016,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 16.0,
-                    "y": 16.0
+                    "x": 10.0,
+                    "y": 10.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -47058,10 +47056,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 385.7300109863281,
+                        "baseSizeY": 14.170000076293945,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -47071,7 +47068,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Gauge3",
-                        "useCurrentAsReference": false,
                         "useNonUniformScale": false
                     }
                 }
@@ -47094,6 +47090,18 @@
                     "z": 1.0
                 },
                 "visible": true
+            },
+            "UIEmptyGaugeEffect": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "enabled": true,
+                "frequency": 6.0,
+                "intensity": 0.25999999046325684,
+                "speed": 1.0
             },
             "UIGauge": {
                 "backgroundColor": {
@@ -47123,19 +47131,19 @@
                 "minValue": 0.0,
                 "normalized": true,
                 "smoothing": 0.0,
-                "useBackground": true,
+                "useBackground": false,
                 "useCustomShader": true,
                 "useFillLate": true,
                 "useUvClip": false,
                 "uvClipMax": {
-                    "x": 1.0,
-                    "y": 1.0
+                    "x": 0.0,
+                    "y": 0.0
                 },
                 "uvClipMin": {
                     "x": 0.0,
                     "y": 0.0
                 },
-                "value": 0.3199999928474426
+                "value": 0.4099999964237213
             },
             "UITransform": {
                 "alignH": "Center",
@@ -47162,8 +47170,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 618.0,
-                    "y": 22.0
+                    "x": 386.0,
+                    "y": 14.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -47204,10 +47212,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 382.07000732421875,
+                        "baseSizeY": 14.170000076293945,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -47217,7 +47224,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Gauge4",
-                        "useCurrentAsReference": false,
                         "useNonUniformScale": false
                     }
                 }
@@ -47241,6 +47247,18 @@
                 },
                 "visible": true
             },
+            "UIEmptyGaugeEffect": {
+                "color": {
+                    "w": 1.0,
+                    "x": 0.545098066329956,
+                    "y": 0.14509804546833038,
+                    "z": 0.1921568661928177
+                },
+                "enabled": true,
+                "frequency": 1.5,
+                "intensity": 0.3499999940395355,
+                "speed": 1.0
+            },
             "UIGauge": {
                 "backgroundColor": {
                     "w": 0.8999999761581421,
@@ -47263,25 +47281,25 @@
                     "z": 1.0
                 },
                 "fillLateShaderName": "GaugeCustom",
-                "fillLateTexture": "Resource/Test/4_Resources/UI/StateBar/Egoweapon_Gauge_IN.png",
+                "fillLateTexture": "",
                 "fillTexture": "Resource/Test/4_Resources/UI/StateBar/Egoweapon_Gauge_IN.png",
                 "maxValue": 1.0,
                 "minValue": 0.0,
                 "normalized": true,
                 "smoothing": 0.0,
-                "useBackground": true,
+                "useBackground": false,
                 "useCustomShader": true,
                 "useFillLate": true,
                 "useUvClip": false,
                 "uvClipMax": {
-                    "x": 1.0,
-                    "y": 1.0
+                    "x": 0.949999988079071,
+                    "y": 0.949999988079071
                 },
                 "uvClipMin": {
-                    "x": 0.0,
-                    "y": 0.0
+                    "x": 0.05000000074505806,
+                    "y": 0.05000000074505806
                 },
-                "value": 1.0
+                "value": 0.8700000047683716
             },
             "UITransform": {
                 "alignH": "Center",
@@ -47308,8 +47326,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 611.0,
-                    "y": 22.0
+                    "x": 382.0,
+                    "y": 14.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -47333,10 +47351,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 400.8299865722656,
+                        "baseSizeY": 29.170000076293945,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -47346,7 +47363,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_GaugeBackground1",
-                        "useCurrentAsReference": true,
                         "useNonUniformScale": false
                     }
                 }
@@ -47411,8 +47427,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 642.0,
-                    "y": 46.0
+                    "x": 401.0,
+                    "y": 29.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -47447,10 +47463,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 397.5,
+                        "baseSizeY": 46.66999816894531,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -47460,7 +47475,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_GaugeBackground2",
-                        "useCurrentAsReference": true,
                         "useNonUniformScale": false
                     }
                 }
@@ -47525,8 +47539,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 637.0,
-                    "y": 75.0
+                    "x": 398.0,
+                    "y": 47.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -47550,10 +47564,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 10.0,
+                        "baseSizeY": 10.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -47563,7 +47576,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "",
-                        "useCurrentAsReference": true,
                         "useNonUniformScale": false
                     }
                 }
@@ -47589,7 +47601,7 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 1.0,
+                    "w": 0.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
@@ -47628,8 +47640,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 16.0,
-                    "y": 16.0
+                    "x": 10.0,
+                    "y": 10.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -47666,10 +47678,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1201.6700439453125,
+                        "baseSizeY": 14.170000076293945,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -47679,7 +47690,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Gauge1",
-                        "useCurrentAsReference": true,
                         "useNonUniformScale": false
                     }
                 }
@@ -47702,6 +47712,18 @@
                     "z": 1.0
                 },
                 "visible": true
+            },
+            "UIEmptyGaugeEffect": {
+                "color": {
+                    "w": 1.0,
+                    "x": 0.501960813999176,
+                    "y": 0.1568627506494522,
+                    "z": 0.05098039284348488
+                },
+                "enabled": true,
+                "frequency": 1.5,
+                "intensity": 0.3499999940395355,
+                "speed": 1.0
             },
             "UIGauge": {
                 "backgroundColor": {
@@ -47731,17 +47753,17 @@
                 "minValue": 0.0,
                 "normalized": true,
                 "smoothing": 0.0,
-                "useBackground": true,
+                "useBackground": false,
                 "useCustomShader": true,
                 "useFillLate": true,
                 "useUvClip": false,
                 "uvClipMax": {
-                    "x": 1.0,
-                    "y": 1.0
+                    "x": 0.949999988079071,
+                    "y": 0.949999988079071
                 },
                 "uvClipMin": {
-                    "x": 0.0,
-                    "y": 0.0
+                    "x": 0.05000000074505806,
+                    "y": 0.05000000074505806
                 },
                 "value": 0.10000000149011612
             },
@@ -47770,8 +47792,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1920.0,
-                    "y": 22.0
+                    "x": 1202.0,
+                    "y": 14.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -47810,10 +47832,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1201.6700439453125,
+                        "baseSizeY": 14.170000076293945,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -47823,7 +47844,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Gauge2",
-                        "useCurrentAsReference": true,
                         "useNonUniformScale": false
                     }
                 }
@@ -47846,6 +47866,18 @@
                     "z": 1.0
                 },
                 "visible": true
+            },
+            "UIEmptyGaugeEffect": {
+                "color": {
+                    "w": 1.0,
+                    "x": 0.05098039284348488,
+                    "y": 0.3960784375667572,
+                    "z": 0.4000000059604645
+                },
+                "enabled": true,
+                "frequency": 1.5,
+                "intensity": 0.3499999940395355,
+                "speed": 1.0
             },
             "UIGauge": {
                 "backgroundColor": {
@@ -47875,17 +47907,17 @@
                 "minValue": 0.0,
                 "normalized": true,
                 "smoothing": 0.0,
-                "useBackground": true,
-                "useCustomShader": false,
+                "useBackground": false,
+                "useCustomShader": true,
                 "useFillLate": true,
                 "useUvClip": false,
                 "uvClipMax": {
-                    "x": 1.0,
-                    "y": 1.0
+                    "x": 0.949999988079071,
+                    "y": 0.949999988079071
                 },
                 "uvClipMin": {
-                    "x": 0.0,
-                    "y": 0.0
+                    "x": 0.05000000074505806,
+                    "y": 0.05000000074505806
                 },
                 "value": 0.7799999713897705
             },
@@ -47914,8 +47946,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1923.0,
-                    "y": 22.0
+                    "x": 1202.0,
+                    "y": 14.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -47939,10 +47971,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1205.0,
+                        "baseSizeY": 17.5,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -47952,7 +47983,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Background3",
-                        "useCurrentAsReference": true,
                         "useNonUniformScale": false
                     }
                 }
@@ -48017,8 +48047,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1928.0,
-                    "y": 29.0
+                    "x": 1205.0,
+                    "y": 18.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -48042,10 +48072,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1205.0,
+                        "baseSizeY": 17.5,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -48055,7 +48084,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Background4",
-                        "useCurrentAsReference": true,
                         "useNonUniformScale": false
                     }
                 }
@@ -48120,8 +48148,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1928.0,
-                    "y": 29.0
+                    "x": 1205.0,
+                    "y": 18.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -48303,10 +48331,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -48316,7 +48343,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Vignette_Effect",
-                        "useCurrentAsReference": true,
                         "useNonUniformScale": true
                     }
                 }
@@ -48381,8 +48407,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 3440.0,
-                    "y": 1440.0
+                    "x": 1600.0,
+                    "y": 900.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -48684,10 +48710,9 @@
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "applyInitialSize": false,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 500.0,
                         "forceScaleOne": true,
-                        "initialSizeX": 0.0,
-                        "initialSizeY": 0.0,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
                         "overrideHeight": 0.0,
@@ -48697,7 +48722,6 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Die",
-                        "useCurrentAsReference": true,
                         "useNonUniformScale": false
                     }
                 }
@@ -48769,8 +48793,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 3200.0,
-                    "y": 480.0
+                    "x": 1600.0,
+                    "y": 500.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -48869,6 +48893,27 @@
             "name": "UI_DieText"
         },
         {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_Death",
+                        "useNonUniformScale": false
+                    }
+                }
+            ],
             "Transform": {
                 "enabled": true,
                 "position": {
@@ -48929,8 +48974,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 0.0,
-                    "y": 0.0
+                    "x": 1600.0,
+                    "y": 900.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -48958,6 +49003,25 @@
                         "rootWidgetName": "UI_Fade",
                         "startAlpha": 0.0,
                         "targetWidgetName": "UI_Fade"
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_Fade",
+                        "useNonUniformScale": false
                     }
                 }
             ],
@@ -49641,6 +49705,30 @@
             "_parentGuid": "30461785112241862",
             "guid": "6386983674414922764",
             "name": "Combo_slash_fx_04_03_NoParticle"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": false
+            },
+            "_parentGuid": "8917386486070800600",
+            "guid": "16753938974136646487",
+            "name": "__CombatVfxPool_923"
         }
     ],
     "sceneName": "Main",
