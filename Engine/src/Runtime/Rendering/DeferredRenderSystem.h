@@ -563,7 +563,7 @@ namespace Alice
         DirectX::XMFLOAT3                               m_lastShadowLightDir{ 0.0f, 0.0f, 0.0f };
         bool                                            m_shadowCacheDirty = true;
         bool                                            m_shadowEnabledLast = true;
-        std::uint32_t                                   m_shadowUpdateInterval = 2; // 1: 매 프레임
+        std::uint32_t                                   m_shadowUpdateInterval = 1; // 1: 매 프레임
         std::uint32_t                                   m_shadowResolutionScale = 1; // 1: 원본, 2: 1/2
         std::uint32_t                                   m_shadowMapSizePxEffective = 0;
 
