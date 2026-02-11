@@ -4,29 +4,29 @@
 
 namespace Alice
 {
-    /// 보스 공격 상태 (델리게이트: OnBossAttackSfxRequest)
-    enum class BossAttackState : std::uint8_t
-    {
-        None = 0,
-        AttackAlarm,
-        Attack1,
-        Attack2,
-        Attack3,
-        AttackABC,
-        SoulSwordCharge,
-        SoulSwordAttack,
-        SideAttack,
-        DashAttack,
-        Count
-    };
+        /// 보스 공격 상태 (델리게이트: OnBossAttackSfxRequest)
+        enum class BossAttackState : std::uint8_t
+        {
+            None = 0,
+            AttackAlarm,
+            Attack1,
+            Attack2,
+            Attack3,
+            AttackABC,
+            SoulSwordCharge,
+            SoulSwordAttack,
+            SideAttack,
+            DashAttack,
+            Count
+        };
 
-    /// 보스 움직임 상태 (델리게이트: OnBossMovementSfxRequest)
+    /// 蹂댁뒪 ?吏곸엫 ?곹깭 (?몃━寃뚯씠?? OnBossMovementSfxRequest)
     enum class BossMovementState : std::uint8_t
     {
         None = 0,
-        DashAttack,
         Walk,
         Rotate,
+        DashAttack,
         Count
     };
 
@@ -74,6 +74,7 @@ namespace Alice
         GuardBreak,
         EgoCombine,
         Heal,
+        GroggyAttack,
         Death,
         Count
     };

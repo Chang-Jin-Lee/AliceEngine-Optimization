@@ -1,4 +1,4 @@
-#include "SceneChangeButtonScript.h"
+﻿#include "SceneChangeButtonScript.h"
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/ECS/World.h"
@@ -7,8 +7,11 @@
 #include "Runtime/UI/UITextComponent.h"
 #include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/BindWidget.h"
+#include "FadeInOutScript.h"
 #include "../Tempsound/UISoundScript.h"
 #include "Runtime/ECS/GameObject.h"
+
+#include <algorithm>
 
 namespace Alice
 {
@@ -44,6 +47,24 @@ namespace Alice
             }
             return nullptr;
         }
+
+        FadeInOutScript* FindFadeScript(World& world, const std::string& name)
+        {
+            if (name.empty())
+                return nullptr;
+            GameObject go = world.FindGameObject(name);
+            if (!go.IsValid())
+                return nullptr;
+            auto* scripts = world.GetScripts(go.id());
+            if (!scripts)
+                return nullptr;
+            for (auto& sc : *scripts)
+            {
+                if (sc.scriptName == "FadeInOutScript" && sc.instance)
+                    return static_cast<FadeInOutScript*>(sc.instance.get());
+            }
+            return nullptr;
+        }
     }
 
     void SceneChangeButtonScript::Start()
@@ -52,7 +73,7 @@ namespace Alice
         if (!w)
             return;
 
-        // UI 루트 위젯 찾기
+        // UI 猷⑦듃 ?꾩젽 李얘린
         const EntityId root = FindRootWidgetByName(*w, Get_rootWidgetName());
         if (root == InvalidEntityId)
         {
@@ -60,7 +81,7 @@ namespace Alice
             return;
         }
 
-        // 위젯 바인딩
+        // ?꾩젽 諛붿씤??
         const std::string buttonName = Get_buttonWidgetName();
         if (buttonName.empty())
         {
@@ -82,6 +103,7 @@ namespace Alice
         m_buttonEntityId = buttonEntity;
 
         m_uiSound = FindUISound(*w, Get_uiSoundEntityName());
+        m_fade = FindFadeScript(*w, Get_fadeEntityName());
 
         const std::string textName = Get_TextWidgetName();
         if (!textName.empty())
@@ -101,9 +123,19 @@ namespace Alice
             if (auto* imgComp = w->GetComponent<UIImageComponent>(m_underLineEntityId))
                 m_lineNormalColor = imgComp->color;
         }
+        if (m_buttonEntityId != InvalidEntityId)
+        {
+            if (auto* imgComp = w->GetComponent<UIImageComponent>(m_buttonEntityId))
+            {
+                m_buttonNormalColor = imgComp->color;
+                m_buttonNormalTexturePath = imgComp->texturePath;
+                if (Get_showButtonImageOnHoverOnly())
+                    imgComp->texturePath.clear();
+            }
+        }
 
 
-        // 버튼 클릭 이벤트 등록 (델리게이트 방식)
+        // 踰꾪듉 ?대┃ ?대깽???깅줉 (?몃━寃뚯씠??諛⑹떇)
         const EntityId ownerId = GetOwnerId();
         const std::uint32_t ownerGen = w->GetEntityGeneration(ownerId);
         const auto isValid = [w, ownerId, ownerGen, self = this]() -> bool
@@ -125,7 +157,7 @@ namespace Alice
 
         ApplyChildColors(AliceUI::UIButtonState::Normal);
 
-		//  Scene 변경 요청 플래그 설정
+		//  Scene 蹂寃??붿껌 ?뚮옒洹??ㅼ젙
         if (isChangeSceneRequested)
         {
             auto* scenes = Scenes();
@@ -148,22 +180,20 @@ namespace Alice
 
 
 
-        // 호버 시 사운드
+        // ?몃쾭 ???ъ슫??
         changeSceneButton->AddOnHoveredSafe([this]()
         {
             if (m_uiSound)
                 m_uiSound->PlayHover();
         }, isValid);
 
-        // 버튼이 눌렸을 때 클릭 사운드 재생 후, 타이머로 지연 씬 전환
+        //
         changeSceneButton->AddOnReleasedSafe([this]()
         {
             if (m_uiSound)
                 m_uiSound->PlayClick();
 
-            isChangeSceneRequested = true;
-            m_pendingSceneChange = true;
-            m_sceneChangeTimer = 2.0f;
+            RequestSceneChange();
         }, isValid);
     }
 
@@ -173,6 +203,7 @@ namespace Alice
         if (!w)
             return;
 
+        const bool isHovered = (state == AliceUI::UIButtonState::Hovered || state == AliceUI::UIButtonState::Pressed);
         const DirectX::XMFLOAT4* textColor = &m_textNormalColor;
         const DirectX::XMFLOAT4* lineColor = &m_lineNormalColor;
         switch (state)
@@ -192,18 +223,63 @@ namespace Alice
         if (m_textEntityId != InvalidEntityId)
         {
             if (auto* textComp = w->GetComponent<UITextComponent>(m_textEntityId))
-                textComp->color = *textColor;
+            {
+                m_textNormalColor = textComp->color;
+                // Alpha가 0이라면 강제로 1로 설정 (보험)
+                if (m_textNormalColor.w <= 0.0f) m_textNormalColor.w = 1.0f;
+            }
         }
         if (m_underLineEntityId != InvalidEntityId)
         {
             if (auto* imgComp = w->GetComponent<UIImageComponent>(m_underLineEntityId))
+            {
+                const std::string& normalPath = Get_underImageNormalPath();
+                const std::string& hoverPath = Get_underImageHoverPath();
+                const bool hasPaths = !normalPath.empty() || !hoverPath.empty();
+                if (hasPaths || Get_showUnderImageOnHoverOnly())
+                {
+                    std::string desired;
+                    if (Get_showUnderImageOnHoverOnly())
+                    {
+                        if (isHovered)
+                            desired = hoverPath.empty() ? normalPath : hoverPath;
+                        else
+                            desired.clear();
+                    }
+                    else
+                    {
+                        desired = isHovered
+                            ? (hoverPath.empty() ? normalPath : hoverPath)
+                            : (normalPath.empty() ? hoverPath : normalPath);
+                    }
+
+                    if (imgComp->texturePath != desired)
+                        imgComp->texturePath = desired;
+                }
+
                 imgComp->color = *lineColor;
+            }
+
+        }
+
+        if (m_buttonEntityId != InvalidEntityId)
+        {
+            if (auto* imgComp = w->GetComponent<UIImageComponent>(m_buttonEntityId))
+            {
+                if (Get_showButtonImageOnHoverOnly())
+                {
+                    const std::string desired = isHovered ? m_buttonNormalTexturePath : std::string();
+                    if (imgComp->texturePath != desired)
+                        imgComp->texturePath = desired;
+                }
+                imgComp->color = m_buttonNormalColor;
+            }
         }
     }
 
     void SceneChangeButtonScript::Update(float deltaTime)
     {
-        // 지연 씬 전환: 클릭 소리 재생 후 타이머가 끝나면 전환
+        // 吏?????꾪솚: ?대┃ ?뚮━ ?ъ깮 ????대㉧媛 ?앸굹硫??꾪솚
         if (m_pendingSceneChange)
         {
             m_sceneChangeTimer -= deltaTime;
@@ -223,14 +299,13 @@ namespace Alice
             }
         }
 
-        // ConsumeClick: 클릭 시 소리만 재생하고 씬 전환은 타이머로 예약
+        // ConsumeClick: ?대┃ ???뚮━留??ъ깮?섍퀬 ???꾪솚? ??대㉧濡??덉빟
         if (changeSceneButton && changeSceneButton->ConsumeClick())
         {
             if (m_uiSound)
                 m_uiSound->PlayClick();
 
-            m_pendingSceneChange = true;
-            m_sceneChangeTimer = 1.0f;
+            RequestSceneChange();
         }
 
         if (changeSceneButton)
@@ -241,5 +316,41 @@ namespace Alice
     {
         if (changeSceneButton)
             changeSceneButton->ClearDelegates();
+    }
+
+    float SceneChangeButtonScript::ComputeAutoDelaySec() const
+    {
+        if (!m_fade)
+            return 0.0f;
+
+        const float speed = std::max(0.0f, m_fade->Get_fadeSpeed());
+        if (speed <= 0.0f)
+            return 0.0f;
+
+        const float startAlpha = std::clamp(m_fade->Get_startAlpha(), 0.0f, 1.0f);
+        return (1.0f - startAlpha) / speed;
+    }
+
+    void SceneChangeButtonScript::RequestSceneChange()
+    {
+        if (m_pendingSceneChange)
+            return;
+
+        isChangeSceneRequested = true;
+
+        if (Get_useFadeOnClick() && m_fade)
+        {
+            // Reset alpha from configured startAlpha to ensure consistent fade,
+            // then drive direction via boolean-based control.
+            m_fade->OnEnable();
+            m_fade->StartFadeIn(); // fade to black
+        }
+
+        float delay = Get_sceneChangeDelaySec();
+        if (delay < 0.0f)
+            delay = ComputeAutoDelaySec();
+
+        m_pendingSceneChange = true;
+        m_sceneChangeTimer = std::max(0.0f, delay);
     }
 }

@@ -12,7 +12,7 @@
 namespace Alice
 {
     // 무기 게이지 스크립트
-    // 델리게이트 바인딩과 SmoothDamp를 사용하며, Circle.png 이미지를 사용합니다.
+    // 델리게이트 바인딩과 SmoothDamp를 사용하며, Egoweapon_Gauge_IN.png 이미지를 사용합니다.
     class WeaponScript : public IScript
     {
         ALICE_BODY(WeaponScript);
@@ -31,6 +31,9 @@ namespace Alice
 
         ALICE_PROPERTY(std::string, targetScriptName, "BoxDeligateScript");  // 그 엔티티에 붙어 있는 스크립트 이름
 
+        // HealthComponent를 직접 읽을 엔티티 이름 (설정되면 BoxDeligateScript 대신 사용)
+        ALICE_PROPERTY(std::string, healthEntityName, "Player(Tia)");
+
         // 표시 값 (0~maxValue 정규화, changeValue 콜백으로 갱신됨)
         ALICE_PROPERTY(float, maxValue, 100.0f);
 
@@ -40,7 +43,13 @@ namespace Alice
         ALICE_PROPERTY(float, fillLateSmoothTime, 0.25f);
 
         // 사용할 이미지 텍스처 경로 (1장만 사용)
-        ALICE_PROPERTY(std::string, texturePath, "Resource/Image/Circle.png");
+        ALICE_PROPERTY(std::string, texturePath, "Resource/Test/4_Resources/UI/StateBar/Egoweapon_Gauge_IN.png");
+
+        // UI_Hit_VignetEffect 위젯 이름 (게이지가 threshold 이하일 때만 표시)
+        ALICE_PROPERTY(std::string, vignetEffectWidgetName, "UI_Hit_VignetEffect");
+        
+        // 트리거 임계값 (기본값 0.3)
+        ALICE_PROPERTY(float, visibilityThreshold, 0.3f);
 
         // Start()에서 이름으로 찾아 바인딩된 게이지 (런타임)
         UIGaugeComponent* TargetGauge = nullptr;
@@ -57,5 +66,7 @@ namespace Alice
 
     private:
         float fillLateVelocity = 0.0f;
+        UIWidgetComponent* VignetEffectWidget = nullptr;  // UI_Hit_VignetEffect 위젯
+        bool wasLowValue = false;  // 이전 상태 추적
     };
 }
