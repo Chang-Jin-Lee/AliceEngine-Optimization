@@ -44,6 +44,6 @@ namespace Alice
         ALICE_PROPERTY(bool, m_enableGamepadLook, true)
         ALICE_PROPERTY(int, m_gamepadPlayerIndex, 0)
         ALICE_PROPERTY(float, m_gamepadLookDeadzone, 0.15f)
-        ALICE_PROPERTY(float, m_gamepadLookSpeedDegPerSec, 180.0f)
+        ALICE_PROPERTY(float, m_gamepadLookSpeedDegPerSec, 450.0f)
     };
 }

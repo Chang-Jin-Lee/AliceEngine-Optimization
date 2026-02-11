@@ -146,7 +146,7 @@ namespace Alice
         auto toKey = [](int v) { return static_cast<KeyCode>(v); };
         auto toMouse = [](int v) { return static_cast<MouseCode>(v); };
         // Xbox-style default mapping:
-        // Move=LStick, Attack=RB, Heavy=RT, Guard=LB, Heal=LT, Dodge=A, Interact=X, Rage=Y, LockOn=RStickClick.
+        // Move=LStick, Attack=RB, ChargeHeavy=RT(=Shift+Attack), Guard=LB, Heal=LT, Dodge=A, Interact=X, Rage=Y, LockOn=RStickClick.
         const int gamepadPlayerIndex = std::clamp(Get_m_gamepadPlayerIndex(), 0, 3);
         const bool gamepadConnected = Get_m_useGamepadInput() && input->GetGamepadConnected(gamepadPlayerIndex);
         const float gamepadMoveDeadzone = std::clamp(Get_m_gamepadMoveDeadzone(), 0.0f, 0.99f);
@@ -226,15 +226,18 @@ namespace Alice
         const bool attackKeyDown = input->GetKeyDown(toKey(m_keyAttack));
         const bool attackMouseDown = m_useMouseAttack && input->GetMouseButtonDown(toMouse(m_mouseAttackButton));
         const bool attackPadDown = GetPadButtonDown(GamepadButton::RightShoulder);
+        const bool attackTriggerDown = GetPadButtonDown(GamepadButton::RightTrigger);
         const bool attackKeyHeld = input->GetKey(toKey(m_keyAttack));
         const bool attackMouseHeld = m_useMouseAttack && input->GetMouseButton(toMouse(m_mouseAttackButton));
         const bool attackPadHeld = GetPadButton(GamepadButton::RightShoulder);
-        const bool attackPressed = attackKeyDown || attackMouseDown || attackPadDown;
-        const bool attackHeld = attackKeyHeld || attackMouseHeld || attackPadHeld;
+        const bool attackTriggerHeld = GetPadButton(GamepadButton::RightTrigger);
+        const bool attackPressed = attackKeyDown || attackMouseDown || attackPadDown || attackTriggerDown;
+        const bool attackHeld = attackKeyHeld || attackMouseHeld || attackPadHeld || attackTriggerHeld;
         const bool attackReleased = (!attackHeld && m_attackHeldPrev);
 
         const bool chargeModifierHeld =
-            input->GetKey(toKey(m_keyChargeModifier)) || input->GetKey(toKey(m_keyChargeModifierAlt));
+            input->GetKey(toKey(m_keyChargeModifier)) || input->GetKey(toKey(m_keyChargeModifierAlt))
+            || attackTriggerHeld;
 
         if (attackPressed && chargeModifierHeld)
         {
@@ -306,19 +309,6 @@ namespace Alice
         {
             if (attackPressed && !chargeModifierHeld)
                 intent.lightAttackPressed = true;
-        }
-
-        const bool heavyPadDown = GetPadButtonDown(GamepadButton::RightTrigger);
-        if (heavyPadDown)
-        {
-            intent.heavyAttackPressed = true;
-            intent.lightAttackPressed = false;
-            intent.chargeActive = false;
-            intent.chargeHeldSec = 0.0f;
-            intent.chargeLevel = std::max(intent.chargeLevel, 1);
-            m_chargeActive = false;
-            m_chargeHeldSec = 0.0f;
-            m_chargeLevel = 0;
         }
 
         intent.attackPressed = intent.lightAttackPressed || intent.heavyAttackPressed;
