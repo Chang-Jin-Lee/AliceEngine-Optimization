@@ -934,6 +934,7 @@ namespace Alice
 
     void CombatVfxBridgeScript::UpdatePathCacheAndPools()
     {
+        const bool forceBuildPrewarm = IsGameMode();
         for (int slot = 0; slot < SlotCount; ++slot)
         {
             const std::string path = GetPrefabPath(slot);
@@ -942,7 +943,7 @@ namespace Alice
                 ClearSlot(slot);
                 m_cachedPaths[slot] = path;
 
-                if (Get_prewarm() && !path.empty())
+                if ((Get_prewarm() || forceBuildPrewarm) && !path.empty())
                     PrewarmSlot(slot);
             }
 
