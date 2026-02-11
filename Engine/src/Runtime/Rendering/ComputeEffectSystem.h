@@ -4,9 +4,11 @@
 #include <Windows.h>
 
 #include <cstdint>
+#include <cstddef>
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
+#include <vector>
 #include <wrl/client.h>
 #include <d3d11.h>
 #include <DirectXMath.h>
@@ -58,6 +60,15 @@ namespace Alice
         
         /// 등록된 파티클 셰이더 이름 목록을 반환합니다 (인스펙터 UI용)
         std::vector<std::string> GetRegisteredShaderNames() const;
+
+        /// 로딩 단계에서 프리셋별 GPU 리소스를 미리 생성/웜업합니다.
+        bool PrewarmPreset(const std::string& presetName, std::uint32_t expectedEmitterCount = 1);
+        /// 여러 프리셋을 한 번에 웜업합니다. 성공한 프리셋 수를 반환합니다.
+        std::size_t PrewarmPresets(const std::vector<std::string>& presetNames, std::uint32_t expectedEmitterCount = 1);
+        /// 등록된 모든 프리셋을 웜업합니다. 성공한 프리셋 수를 반환합니다.
+        std::size_t PrewarmAllRegisteredPresets(std::uint32_t expectedEmitterCount = 1);
+        /// Unity effect.json을 미리 파싱하고, 내부에서 참조하는 compute preset 리소스를 웜업합니다.
+        bool PrewarmUnityEffect(const std::string& effectPath, std::uint32_t expectedEmitterCount = 1);
 
     private:
         bool CreateComputeShaders();
@@ -169,6 +180,8 @@ namespace Alice
         // 엔티티별 방출 재생 상태 (loop/one-shot 제어)
         std::unordered_map<EntityId, EmitterPlaybackState> m_emitterPlaybackStates;
         std::unordered_set<std::string> m_activePresetsPrevFrame;
+        std::unordered_set<std::string> m_warmedPresets;
+        std::unordered_set<std::string> m_warmedUnityEffects;
 
         std::uint32_t m_width  = 0;
         std::uint32_t m_height = 0;
