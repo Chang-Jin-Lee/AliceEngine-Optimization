@@ -4108,6 +4108,10 @@ namespace Alice
                         // Pass 2. Toon Geometry Outline (노멀 익스트루전 + Front Cull)
                         if (objectShadingMode == 3 && cmd.outlineWidth > 0.0f)
                         {
+                            // 방어: 아웃라인 쉘이 scene depth를 덮어써 가림/겹침 오작동을 만들지 않도록
+                            // Depth Test는 유지하고, Depth Write만 차단한다.
+                            if (m_depthStencilStateReadOnly)
+                                m_context->OMSetDepthStencilState(m_depthStencilStateReadOnly.Get(), 0);
                             m_context->RSSetState(m_rsCullFront.Get());
                             const XMFLOAT4 outlineBaseColor(cmd.outlineColor.x, cmd.outlineColor.y, cmd.outlineColor.z, 1.0f);
                             UpdatePerObjectCB(cmd.world, view, proj, outlineBaseColor, 0.5f, 0.0f, ao,
@@ -4119,6 +4123,7 @@ namespace Alice
                                               false);
                             m_context->DrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
                             m_context->RSSetState(m_rasterizerState.Get());
+                            m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
                         }
                     }
                 }
@@ -4143,6 +4148,10 @@ namespace Alice
                     // Pass 2. Toon Geometry Outline (노멀 익스트루전 + Front Cull)
                     if (objectShadingMode == 3 && cmd.outlineWidth > 0.0f)
                     {
+                        // 방어: 아웃라인 쉘이 scene depth를 덮어써 가림/겹침 오작동을 만들지 않도록
+                        // Depth Test는 유지하고, Depth Write만 차단한다.
+                        if (m_depthStencilStateReadOnly)
+                            m_context->OMSetDepthStencilState(m_depthStencilStateReadOnly.Get(), 0);
                         m_context->RSSetState(m_rsCullFront.Get());
                         const XMFLOAT4 outlineBaseColor(cmd.outlineColor.x, cmd.outlineColor.y, cmd.outlineColor.z, 1.0f);
                         UpdatePerObjectCB(cmd.world, view, proj, outlineBaseColor, 0.5f, 0.0f, ao,
@@ -4154,6 +4163,7 @@ namespace Alice
                                           false);
                         m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
                         m_context->RSSetState(m_rasterizerState.Get());
+                        m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
                     }
                 }
             }
