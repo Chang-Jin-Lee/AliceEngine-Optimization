@@ -870,6 +870,8 @@ namespace Alice
     {
         if (!Get_m_gamepadRumbleEnabled())
             return;
+        if (m_session && m_session->Get_m_disableLegacyCameraRumble())
+            return;
 
         auto* input = Input();
         if (!input)
