@@ -556,18 +556,20 @@ float4 main(PS_INPUT_QUAD input) : SV_Target
         // Bloom Bright Pass Pixel Shader
         inline static const char* BloomBrightPassPS = R"(
 Texture2D g_SceneHDR : register(t0);
+Texture2D g_Emissive : register(t1);
 SamplerState g_SamplerLinear : register(s0);
 
 cbuffer BloomConstantBuffer : register(b3)
 {
     float g_Threshold;
     float g_Knee;
-    float g_BloomIntensity;      // Bloom 합성 강도 (Composite 패스에서 사용)
+    float g_BloomIntensity;      // 장면 밝기 Bloom 강도
+    float g_EmissiveBloomIntensity; // Emissive 전용 Bloom 강도
     float g_GaussianIntensity;   // Gaussian 블러 강도 (Blur 패스에서 사용)
     float g_Radius;
     float2 g_TexelSize;
     int g_Downsample;
-    float g_Padding;
+    float3 g_Padding;
 };
 
 struct PS_INPUT_QUAD
@@ -579,16 +581,22 @@ struct PS_INPUT_QUAD
 float4 main(PS_INPUT_QUAD input) : SV_Target
 {
     float3 color = g_SceneHDR.Sample(g_SamplerLinear, input.uv).rgb;
+    float4 emissiveSample = g_Emissive.Sample(g_SamplerLinear, input.uv);
+    float3 emissiveColor = max(emissiveSample.rgb, 0.0f);
+    float3 sceneNoEmissive = max(color - emissiveColor, 0.0f);
     
     // Luminance 계산
-    float luminance = dot(color, float3(0.2126f, 0.7152f, 0.0722f));
+    float luminance = dot(sceneNoEmissive, float3(0.2126f, 0.7152f, 0.0722f));
     
     // Soft threshold 적용
     float softThreshold = g_Threshold - g_Knee;
     float contribution = max(luminance - softThreshold, 0.0f);
     contribution = contribution / (g_Knee * 2.0f + contribution);
     
-    float3 result = color * contribution;
+    float3 sceneBright = sceneNoEmissive * contribution * max(g_BloomIntensity, 0.0f);
+    float emissiveMask = max(emissiveSample.a, 0.0f);
+    float3 emissiveBloom = emissiveColor * emissiveMask * max(g_EmissiveBloomIntensity, 0.0f);
+    float3 result = sceneBright + emissiveBloom;
     return float4(result, 1.0f);
 }
 )";
@@ -602,12 +610,13 @@ cbuffer BloomConstantBuffer : register(b3)
 {
     float g_Threshold;
     float g_Knee;
-    float g_BloomIntensity;      // Bloom 합성 강도 (Composite 패스에서 사용)
+    float g_BloomIntensity;      // 장면 밝기 Bloom 강도
+    float g_EmissiveBloomIntensity; // Emissive 전용 Bloom 강도
     float g_GaussianIntensity;   // Gaussian 블러 강도 (Blur 패스에서 사용)
     float g_Radius;
     float2 g_TexelSize;
     int g_Downsample;
-    float g_Padding;
+    float3 g_Padding;
 };
 
 struct PS_INPUT_QUAD
@@ -649,12 +658,13 @@ cbuffer BloomConstantBuffer : register(b3)
 {
     float g_Threshold;
     float g_Knee;
-    float g_BloomIntensity;      // Bloom 합성 강도 (Composite 패스에서 사용)
+    float g_BloomIntensity;      // 장면 밝기 Bloom 강도
+    float g_EmissiveBloomIntensity; // Emissive 전용 Bloom 강도
     float g_GaussianIntensity;   // Gaussian 블러 강도 (Blur 패스에서 사용)
     float g_Radius;
     float2 g_TexelSize;
     int g_Downsample;
-    float g_Padding;
+    float3 g_Padding;
 };
 
 struct PS_INPUT_QUAD
@@ -696,12 +706,13 @@ cbuffer BloomConstantBuffer : register(b3)
 {
     float g_Threshold;
     float g_Knee;
-    float g_BloomIntensity;      // Bloom 합성 강도 (Composite 패스에서 사용)
+    float g_BloomIntensity;      // 장면 밝기 Bloom 강도
+    float g_EmissiveBloomIntensity; // Emissive 전용 Bloom 강도
     float g_GaussianIntensity;   // Gaussian 블러 강도 (Blur 패스에서 사용)
     float g_Radius;
     float2 g_TexelSize;
     int g_Downsample;
-    float g_Padding;
+    float3 g_Padding;
 };
 
 struct PS_INPUT_QUAD
@@ -741,12 +752,13 @@ cbuffer BloomConstantBuffer : register(b3)
 {
     float g_Threshold;
     float g_Knee;
-    float g_BloomIntensity;      // Bloom 합성 강도 (Composite 패스에서 사용)
+    float g_BloomIntensity;      // 장면 밝기 Bloom 강도
+    float g_EmissiveBloomIntensity; // Emissive 전용 Bloom 강도
     float g_GaussianIntensity;   // Gaussian 블러 강도 (Blur 패스에서 사용)
     float g_Radius;
     float2 g_TexelSize;
     int g_Downsample;
-    float g_Padding;
+    float3 g_Padding;
 };
 
 struct PS_INPUT_QUAD
@@ -775,12 +787,13 @@ cbuffer BloomConstantBuffer : register(b3)
 {
     float g_Threshold;
     float g_Knee;
-    float g_BloomIntensity;      // Bloom 합성 강도 (Composite 패스에서 사용)
+    float g_BloomIntensity;      // 장면 밝기 Bloom 강도
+    float g_EmissiveBloomIntensity; // Emissive 전용 Bloom 강도
     float g_GaussianIntensity;   // Gaussian 블러 강도 (Blur 패스에서 사용)
     float g_Radius;
     float2 g_TexelSize;
     int g_Downsample;
-    float g_Padding;
+    float3 g_Padding;
 };
 
 struct PS_INPUT_QUAD
@@ -797,8 +810,9 @@ float4 main(PS_INPUT_QUAD input) : SV_Target
     float3 bloomColor = g_Bloom.Sample(g_SamplerLinear, input.uv).rgb;
     
     // HDR 합성만 수행 (ToneMapping은 별도 패스에서 수행)
-    // Bloom Intensity는 최종 합성 단계에서 적용
-    float3 combined = sceneColor + bloomColor * g_BloomIntensity;
+    // BrightPass에서 이미 장면 Bloom/Emissive Bloom 강도를 반영했으므로
+    // 여기서는 단순 합성만 수행한다.
+    float3 combined = sceneColor + bloomColor;
     
     return float4(combined, 1.0f);
 }

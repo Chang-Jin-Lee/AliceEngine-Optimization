@@ -475,6 +475,7 @@ namespace Alice
         //    텍스처는 FBX 파일의 실제 위치를 기준으로 찾아야 하므로 resolved 경로 사용
         int embeddedCounter = 0;
         std::vector<std::string> materialAlbedoPaths(scene->mNumMaterials);
+        std::vector<std::string> materialEmissivePaths(scene->mNumMaterials);
 
         // 각 머티리얼에서 텍스처 추출 및 저장
         for (unsigned mi = 0; mi < scene->mNumMaterials; ++mi)
@@ -486,8 +487,10 @@ namespace Alice
             std::string albedoPath = ProcessTexture(m_resources, scene, mat, aiTextureType_DIFFUSE, resolved, modelName, "D", embeddedCounter);
             if (albedoPath.empty())
                 albedoPath = ProcessTexture(m_resources, scene, mat, aiTextureType_BASE_COLOR, resolved, modelName, "D", embeddedCounter);
+            std::string emissivePath = ProcessTexture(m_resources, scene, mat, aiTextureType_EMISSIVE, resolved, modelName, "E", embeddedCounter);
 
             materialAlbedoPaths[mi] = std::move(albedoPath);
+            materialEmissivePaths[mi] = std::move(emissivePath);
         }
 
         // 4) .mat 파일 생성 (서브셋 개수만큼)
@@ -517,6 +520,10 @@ namespace Alice
             if (sourceMatIndex < materialAlbedoPaths.size())
             {
                 matComp.albedoTexturePath = materialAlbedoPaths[sourceMatIndex];
+            }
+            if (sourceMatIndex < materialEmissivePaths.size())
+            {
+                matComp.emissiveTexturePath = materialEmissivePaths[sourceMatIndex];
             }
 
             MaterialFile::Save(matPath, matComp);

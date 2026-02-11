@@ -2,12 +2,16 @@
 
 #include <vector>
 #include <functional>
+#include <unordered_map>
+#include <filesystem>
 
 #include "Runtime/ECS/World.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/Rendering/ForwardRenderSystem.h"
 #include "Runtime/Rendering/SkinnedMeshRegistry.h"
+#include "Runtime/Rendering/Data/Material.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Resources/ResourceManager.h"
 
 namespace Alice
 {
@@ -123,12 +127,55 @@ namespace Alice
                     cmd.ambientOcclusion = mat->ambientOcclusion;
                     cmd.envDiffuseStrength = mat->envDiffuseStrength;
                     cmd.envSpecularStrength = mat->envSpecularStrength;
+                    cmd.emissiveColor = mat->emissiveColor;
+                    cmd.emissiveIntensity = mat->emissiveIntensity;
+                    cmd.emissiveBloom = mat->emissiveBloom;
                     cmd.normalStrength = mat->normalStrength;
                     cmd.shadingMode = mat->shadingMode;
                     cmd.transparent = mat->transparent;
                     cmd.outlineColor = mat->outlineColor;
                     cmd.outlineWidth = mat->outlineWidth;
                     cmd.albedoTexturePath = mat->albedoTexturePath;
+                    cmd.emissiveTexturePath = mat->emissiveTexturePath;
+                    if (cmd.emissiveTexturePath.empty() && !mat->assetPath.empty())
+                    {
+                        // 구(旧) 씬/프리팹에 emissiveTexturePath가 없는 경우를 위해 .mat에서 보강 로드
+                        static std::unordered_map<std::string, std::string> s_matEmissivePathCache;
+                        auto it = s_matEmissivePathCache.find(mat->assetPath);
+                        if (it == s_matEmissivePathCache.end())
+                        {
+                            MaterialComponent loaded{};
+                            std::string resolvedPath;
+                            std::filesystem::path matPath = std::filesystem::path(mat->assetPath);
+                            ResourceManager& resources = ResourceManager::Get();
+                            const std::filesystem::path resolvedMatPath = resources.Resolve(matPath);
+                            if (!resolvedMatPath.empty())
+                            {
+                                matPath = resolvedMatPath;
+                            }
+                            if (MaterialFile::Load(matPath, loaded, &resources))
+                            {
+                                resolvedPath = loaded.emissiveTexturePath;
+                                if (resolvedPath.empty())
+                                {
+                                    ALICE_LOG_WARN("[SkinnedMeshSystem] Emissive fallback: material has no emissiveTexturePath. asset=\"%s\"",
+                                                   mat->assetPath.c_str());
+                                }
+                            }
+                            else
+                            {
+                                ALICE_LOG_WARN("[SkinnedMeshSystem] Emissive fallback: failed to load material asset=\"%s\" resolved=\"%s\"",
+                                               mat->assetPath.c_str(),
+                                               matPath.string().c_str());
+                            }
+                            it = s_matEmissivePathCache.emplace(mat->assetPath, std::move(resolvedPath)).first;
+                        }
+
+                        if (it != s_matEmissivePathCache.end() && !it->second.empty())
+                        {
+                            cmd.emissiveTexturePath = it->second;
+                        }
+                    }
                     cmd.toonPbrCuts = DirectX::XMFLOAT4(mat->toonPbrCut1, mat->toonPbrCut2, mat->toonPbrCut3, mat->toonPbrStrength);
                     cmd.toonPbrLevels = DirectX::XMFLOAT4(mat->toonPbrLevel1, mat->toonPbrLevel2, mat->toonPbrLevel3,
                                                           mat->toonPbrBlur ? 1.0f : 0.0f);
