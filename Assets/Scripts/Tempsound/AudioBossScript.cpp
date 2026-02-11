@@ -8,6 +8,7 @@
 #include "Runtime/Foundation/Helper.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/Scripting/ScriptFactory.h"
+#include <fmod.hpp>
 #include <cstdlib>
 
 namespace Alice
@@ -39,12 +40,67 @@ namespace Alice
 
     REGISTER_SCRIPT(AudioBossScript);
 
+    void AudioBossScript::InitializeAttackGroupVolume(BossAttackState state, float volume)
+    {
+        std::wstring groupName = L"Attack" + std::to_wstring(static_cast<int>(state));
+        Sound::GetOrCreateBossAttackGroup(groupName);
+        Sound::SetBossGroupVolume(groupName, volume);
+        m_attackGroupNames[state] = groupName;
+        ALICE_LOG_INFO("[AudioBoss] InitializeAttackGroupVolume: state=%d, volume=%.2f", 
+            static_cast<int>(state), volume);
+    }
+
+    void AudioBossScript::InitializeMovementGroupVolume(BossMovementState state, float volume)
+    {
+        std::wstring groupName = L"Movement" + std::to_wstring(static_cast<int>(state));
+        Sound::GetOrCreateBossMovementGroup(groupName);
+        Sound::SetBossGroupVolume(groupName, volume);
+        m_movementGroupNames[state] = groupName;
+        ALICE_LOG_INFO("[AudioBoss] InitializeMovementGroupVolume: state=%d, volume=%.2f", 
+            static_cast<int>(state), volume);
+    }
+
+    void AudioBossScript::InitializeOtherGroupVolume(BossOtherState state, float volume)
+    {
+        std::wstring groupName = L"Other" + std::to_wstring(static_cast<int>(state));
+        Sound::GetOrCreateBossOtherGroup(groupName);
+        Sound::SetBossGroupVolume(groupName, volume);
+        m_otherGroupNames[state] = groupName;
+        ALICE_LOG_INFO("[AudioBoss] InitializeOtherGroupVolume: state=%d, volume=%.2f", 
+            static_cast<int>(state), volume);
+    }
+
     void AudioBossScript::Start()
     {
         m_currentAttack = BossAttackState::None;
         m_currentMovement = BossMovementState::None;
         m_currentOther = BossOtherState::None;
         m_delayedSoundQueue.clear();
+        m_attackGroupNames.clear();
+        m_movementGroupNames.clear();
+        m_otherGroupNames.clear();
+
+        // 인스펙터에서 설정한 볼륨을 각 그룹에 적용
+        // Attack 상태별 볼륨 초기화
+        InitializeAttackGroupVolume(BossAttackState::AttackAlarm, Get_volumeAttackAlarm());
+        InitializeAttackGroupVolume(BossAttackState::Attack1, Get_volumeAttack1());
+        InitializeAttackGroupVolume(BossAttackState::Attack2, Get_volumeAttack2());
+        InitializeAttackGroupVolume(BossAttackState::Attack3, Get_volumeAttack3());
+        InitializeAttackGroupVolume(BossAttackState::AttackABC, Get_volumeAttackABC());
+        InitializeAttackGroupVolume(BossAttackState::SoulSwordCharge, Get_volumeSoulSwordCharge());
+        InitializeAttackGroupVolume(BossAttackState::SoulSwordAttack, Get_volumeSoulSwordAttack());
+        InitializeAttackGroupVolume(BossAttackState::SideAttack, Get_volumeSideAttack());
+        InitializeAttackGroupVolume(BossAttackState::DashAttack, Get_volumeDashAttack());
+
+        // Movement 상태별 볼륨 초기화
+        InitializeMovementGroupVolume(BossMovementState::Walk, Get_volumeWalk());
+        InitializeMovementGroupVolume(BossMovementState::Rotate, Get_volumeRotate());
+
+        // Other 상태별 볼륨 초기화
+        InitializeOtherGroupVolume(BossOtherState::GroggyEnter, Get_volumeGroggyEnter());
+        InitializeOtherGroupVolume(BossOtherState::Roar, Get_volumeRoar());
+        InitializeOtherGroupVolume(BossOtherState::Hit, Get_volumeHit());
+        InitializeOtherGroupVolume(BossOtherState::Death, Get_volumeDeath());
 
         // 디버그: pathGroggyEnter 값 확인
         std::string groggyPath = Get_pathGroggyEnter();
@@ -77,9 +133,24 @@ namespace Alice
             if (audio)
             {
                 DirectX::XMFLOAT3 pos{ 0.0f, 0.0f, 0.0f };
-                if (auto* tr = GetTransform())
-                    pos = tr->position;
-                audio->Update3D(m_loopInstanceId, pos, Get_volume(), Get_minDistance(), Get_maxDistance());
+                if (!Get_targetEntityName().empty())
+                {
+                    GameObject targetGo = GetWorld()->FindGameObject(Get_targetEntityName());
+                    if (targetGo.IsValid())
+                    {
+                        if (auto* tr = GetWorld()->GetComponent<TransformComponent>(targetGo.id()))
+                            pos = tr->position;
+                    }
+                }
+                else
+                {
+                    if (auto* tr = GetTransform())
+                        pos = tr->position;
+                }
+                float volume = Get_volume();
+                if (m_currentMovement != BossMovementState::None)
+                    volume *= GetMovementStateVolume(m_currentMovement);
+                audio->Update3D(m_loopInstanceId, pos, volume, Get_minDistance(), Get_maxDistance());
             }
         }
         
@@ -108,13 +179,32 @@ namespace Alice
                     if (Get_is3D())
                     {
                         DirectX::XMFLOAT3 pos{ 0.0f, 0.0f, 0.0f };
-                        if (auto* tr = GetTransform())
-                            pos = tr->position;
-                        audio->Play3D(L"", it->key, pos, it->volume, it->pitch, false);
+                        if (!Get_targetEntityName().empty())
+                        {
+                            GameObject targetGo = GetWorld()->FindGameObject(Get_targetEntityName());
+                            if (targetGo.IsValid())
+                            {
+                                if (auto* tr = GetWorld()->GetComponent<TransformComponent>(targetGo.id()))
+                                    pos = tr->position;
+                            }
+                        }
+                        else
+                        {
+                            if (auto* tr = GetTransform())
+                                pos = tr->position;
+                        }
+                        const float volume = it->volume * GetAttackStateVolume(it->state);
+                        audio->Play3D(L"", it->key, pos, volume, it->pitch, false);
                     }
                     else
                     {
-                        audio->PlaySFX(it->key, it->volume, it->pitch, false);
+                        std::wstring groupName = L"Attack" + std::to_wstring(static_cast<int>(it->state));
+                        FMOD::ChannelGroup* group = Sound::GetOrCreateBossAttackGroup(groupName);
+                        m_attackGroupNames[it->state] = groupName;
+                        if (group)
+                            Sound::PlaySFXWithGroup(it->key, group, it->volume, it->pitch, false);
+                        else
+                            audio->PlaySFX(it->key, it->volume, it->pitch, false);
                     }
                     
                     it = m_delayedSoundQueue.erase(it);
@@ -169,6 +259,48 @@ namespace Alice
         }
     }
 
+    float AudioBossScript::GetAttackStateVolume(BossAttackState state) const
+    {
+        switch (state)
+        {
+        case BossAttackState::AttackAlarm:     return Get_volumeAttackAlarm();
+        case BossAttackState::Attack1:         return Get_volumeAttack1();
+        case BossAttackState::Attack2:         return Get_volumeAttack2();
+        case BossAttackState::Attack3:         return Get_volumeAttack3();
+        case BossAttackState::AttackABC:       return Get_volumeAttackABC();
+        case BossAttackState::SoulSwordCharge: return Get_volumeSoulSwordCharge();
+        case BossAttackState::SoulSwordAttack: return Get_volumeSoulSwordAttack();
+        case BossAttackState::SideAttack:      return Get_volumeSideAttack();
+        case BossAttackState::DashAttack:      return Get_volumeDashAttack();
+        default:
+            return 1.0f;
+        }
+    }
+
+    float AudioBossScript::GetMovementStateVolume(BossMovementState state) const
+    {
+        switch (state)
+        {
+        case BossMovementState::Walk:   return Get_volumeWalk();
+        case BossMovementState::Rotate: return Get_volumeRotate();
+        default:
+            return 1.0f;
+        }
+    }
+
+    float AudioBossScript::GetOtherStateVolume(BossOtherState state) const
+    {
+        switch (state)
+        {
+        case BossOtherState::GroggyEnter: return Get_volumeGroggyEnter();
+        case BossOtherState::Roar:        return Get_volumeRoar();
+        case BossOtherState::Hit:         return Get_volumeHit();
+        case BossOtherState::Death:       return Get_volumeDeath();
+        default:
+            return 1.0f;
+        }
+    }
+
     float AudioBossScript::GetDelayForAttackState(BossAttackState state) const
     {
         switch (state)
@@ -177,6 +309,7 @@ namespace Alice
         case BossAttackState::Attack1:         return Get_delayAttack1();
         case BossAttackState::Attack2:         return Get_delayAttack2();
         case BossAttackState::Attack3:         return Get_delayAttack3();
+        case BossAttackState::AttackABC:       return Get_delayAttackABC();
         case BossAttackState::SoulSwordCharge: return Get_delaySoulSwordCharge();
         case BossAttackState::SoulSwordAttack: return Get_delaySoulSwordAttack();
         case BossAttackState::SideAttack:      return Get_delaySideAttack();
@@ -225,7 +358,10 @@ namespace Alice
         }
     }
 
-    void AudioBossScript::PlayPathInternal(const std::string& path, bool isLooping)
+    void AudioBossScript::PlayPathInternal(const std::string& path, bool isLooping,
+                                           BossAttackState attackState,
+                                           BossMovementState movementState,
+                                           BossOtherState otherState)
     {
         if (path.empty())
             return;
@@ -247,14 +383,56 @@ namespace Alice
             return;
         }
 
-        const float volume = Get_volume();
+        float volume = Get_volume();
         const float pitch = Get_pitch();
+        
+        // 상태별 그룹 결정
+        FMOD::ChannelGroup* targetGroup = nullptr;
+        std::wstring groupName;
+        
+        if (attackState != BossAttackState::None)
+        {
+            groupName = L"Attack" + std::to_wstring(static_cast<int>(attackState));
+            targetGroup = Sound::GetOrCreateBossAttackGroup(groupName);
+            m_attackGroupNames[attackState] = groupName;
+        }
+        else if (movementState != BossMovementState::None)
+        {
+            groupName = L"Movement" + std::to_wstring(static_cast<int>(movementState));
+            targetGroup = Sound::GetOrCreateBossMovementGroup(groupName);
+            m_movementGroupNames[movementState] = groupName;
+        }
+        else if (otherState != BossOtherState::None)
+        {
+            groupName = L"Other" + std::to_wstring(static_cast<int>(otherState));
+            targetGroup = Sound::GetOrCreateBossOtherGroup(groupName);
+            m_otherGroupNames[otherState] = groupName;
+        }
 
         if (Get_is3D())
         {
+            if (attackState != BossAttackState::None)
+                volume *= GetAttackStateVolume(attackState);
+            else if (movementState != BossMovementState::None)
+                volume *= GetMovementStateVolume(movementState);
+            else if (otherState != BossOtherState::None)
+                volume *= GetOtherStateVolume(otherState);
+
             DirectX::XMFLOAT3 pos{ 0.0f, 0.0f, 0.0f };
-            if (auto* tr = GetTransform())
-                pos = tr->position;
+            if (!Get_targetEntityName().empty())
+            {
+                GameObject targetGo = GetWorld()->FindGameObject(Get_targetEntityName());
+                if (targetGo.IsValid())
+                {
+                    if (auto* tr = GetWorld()->GetComponent<TransformComponent>(targetGo.id()))
+                        pos = tr->position;
+                }
+            }
+            else
+            {
+                if (auto* tr = GetTransform())
+                    pos = tr->position;
+            }
 
             if (isLooping)
             {
@@ -266,16 +444,29 @@ namespace Alice
             }
             else
             {
+                // 3D one-shot은 그룹 지원이 없으므로 기존 방식 유지
                 audio->Play3D(L"", key, pos, volume, pitch, false);
             }
         }
         else
         {
-            audio->PlaySFX(key, volume, pitch, isLooping);
             if (isLooping)
             {
+                // Loop는 그룹 지원 함수 사용
+                if (targetGroup)
+                    Sound::PlaySFXWithGroup(key, targetGroup, volume, pitch, true);
+                else
+                    audio->PlaySFX(key, volume, pitch, true);
                 m_loopKey = key;
                 m_loopPlaying = true;
+            }
+            else
+            {
+                // One-shot은 그룹 지원 함수 사용
+                if (targetGroup)
+                    Sound::PlaySFXWithGroup(key, targetGroup, volume, pitch, false);
+                else
+                    audio->PlaySFX(key, volume, pitch, false);
             }
         }
     }
@@ -286,7 +477,7 @@ namespace Alice
             return;
         std::string path = GetPathForAttackState(state);
         if (!path.empty())
-            PlayPathInternal(path, false);
+            PlayPathInternal(path, false, state, BossMovementState::None, BossOtherState::None);
     }
 
     void AudioBossScript::PlayAttackStateDelayed(BossAttackState state, float delaySeconds)
@@ -360,10 +551,31 @@ namespace Alice
     void AudioBossScript::PlayMovementState(BossMovementState state)
     {
         if (state == BossMovementState::None)
+        {
+            // None 상태는 Walk 사운드 중지를 의미
+            if (m_currentMovement == BossMovementState::Walk)
+            {
+                StopLoop();
+                m_currentMovement = BossMovementState::None;
+            }
             return;
+        }
+        
+        // 상태가 변경되었을 때만 재생
+        if (state == m_currentMovement)
+            return;
+        
+        // 이전 Walk 사운드가 재생 중이면 중지
+        if (m_currentMovement == BossMovementState::Walk)
+        {
+            StopLoop();
+        }
+        
+        m_currentMovement = state;
         std::string path = GetPathForMovementState(state);
         if (!path.empty())
-            PlayPathInternal(path, state == BossMovementState::Walk);
+            PlayPathInternal(path, state == BossMovementState::Walk, 
+                            BossAttackState::None, state, BossOtherState::None);
     }
 
     void AudioBossScript::PlayOtherState(BossOtherState state)
@@ -374,7 +586,7 @@ namespace Alice
         std::string path = GetPathForOtherState(state);
         ALICE_LOG_INFO("[AudioBoss] path=%s", path.c_str());
         if (!path.empty())
-            PlayPathInternal(path, false);
+            PlayPathInternal(path, false, BossAttackState::None, BossMovementState::None, state);
     }
 
     void AudioBossScript::PlaySfxPath(const std::string& path)
@@ -425,6 +637,74 @@ namespace Alice
             audio->StopSfx(m_loopKey);
 
         m_loopPlaying = false;
+    }
+
+    void AudioBossScript::SetAttackStateVolume(BossAttackState state, float volume)
+    {
+        // 1.0f 이상도 허용 (증폭)
+        volume = std::max(0.0f, volume);
+        
+        auto it = m_attackGroupNames.find(state);
+        if (it != m_attackGroupNames.end() && !it->second.empty())
+        {
+            Sound::SetBossGroupVolume(it->second, volume);
+            ALICE_LOG_INFO("[AudioBoss] SetAttackStateVolume: state=%d, group='%ls', volume=%.2f", 
+                static_cast<int>(state), it->second.c_str(), volume);
+        }
+        else
+        {
+            // 그룹이 아직 생성되지 않았으면 미리 생성
+            std::wstring groupName = L"Attack" + std::to_wstring(static_cast<int>(state));
+            Sound::GetOrCreateBossAttackGroup(groupName);
+            m_attackGroupNames[state] = groupName;
+            Sound::SetBossGroupVolume(groupName, volume);
+            ALICE_LOG_INFO("[AudioBoss] SetAttackStateVolume: created group '%ls', volume=%.2f", 
+                groupName.c_str(), volume);
+        }
+    }
+
+    void AudioBossScript::SetMovementStateVolume(BossMovementState state, float volume)
+    {
+        volume = std::max(0.0f, volume);
+        
+        auto it = m_movementGroupNames.find(state);
+        if (it != m_movementGroupNames.end() && !it->second.empty())
+        {
+            Sound::SetBossGroupVolume(it->second, volume);
+            ALICE_LOG_INFO("[AudioBoss] SetMovementStateVolume: state=%d, group='%ls', volume=%.2f", 
+                static_cast<int>(state), it->second.c_str(), volume);
+        }
+        else
+        {
+            std::wstring groupName = L"Movement" + std::to_wstring(static_cast<int>(state));
+            Sound::GetOrCreateBossMovementGroup(groupName);
+            m_movementGroupNames[state] = groupName;
+            Sound::SetBossGroupVolume(groupName, volume);
+            ALICE_LOG_INFO("[AudioBoss] SetMovementStateVolume: created group '%ls', volume=%.2f", 
+                groupName.c_str(), volume);
+        }
+    }
+
+    void AudioBossScript::SetOtherStateVolume(BossOtherState state, float volume)
+    {
+        volume = std::max(0.0f, volume);
+        
+        auto it = m_otherGroupNames.find(state);
+        if (it != m_otherGroupNames.end() && !it->second.empty())
+        {
+            Sound::SetBossGroupVolume(it->second, volume);
+            ALICE_LOG_INFO("[AudioBoss] SetOtherStateVolume: state=%d, group='%ls', volume=%.2f", 
+                static_cast<int>(state), it->second.c_str(), volume);
+        }
+        else
+        {
+            std::wstring groupName = L"Other" + std::to_wstring(static_cast<int>(state));
+            Sound::GetOrCreateBossOtherGroup(groupName);
+            m_otherGroupNames[state] = groupName;
+            Sound::SetBossGroupVolume(groupName, volume);
+            ALICE_LOG_INFO("[AudioBoss] SetOtherStateVolume: created group '%ls', volume=%.2f", 
+                groupName.c_str(), volume);
+        }
     }
 
     void AudioBossScript::PlaySfx1() { PlaySfxPath(GetPathForAttackState(BossAttackState::Attack1)); }

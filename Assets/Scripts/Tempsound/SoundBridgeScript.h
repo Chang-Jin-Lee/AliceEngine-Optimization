@@ -29,6 +29,8 @@ namespace Alice
         ALICE_PROPERTY(std::string, sessionEntityName, "SceneManager");
         /// AudioEventBusScript가 붙은 엔티티 이름 (예: AudioBus)
         ALICE_PROPERTY(std::string, busEntityName, "AudioBus");
+        /// AudioBossScript가 붙은 엔티티 이름 (예: AudioBoss)
+        ALICE_PROPERTY(std::string, audioBossEntityName, "AudioBoss");
         ALICE_PROPERTY(float, combo2ExtraDelaySec, 1.0f);
         ALICE_PROPERTY(bool, combo2ExtraEnabled, true);
 

@@ -1303,6 +1303,9 @@ namespace Alice
             .property("backgroundColor", &UIGaugeComponent::backgroundColor)
             .property("useBackground", &UIGaugeComponent::useBackground)
             .property("useCustomShader", &UIGaugeComponent::useCustomShader)
+            .property("useUvClip", &UIGaugeComponent::useUvClip)
+            .property("uvClipMin", &UIGaugeComponent::uvClipMin)
+            .property("uvClipMax", &UIGaugeComponent::uvClipMax)
             .property("useFillLate", &UIGaugeComponent::useFillLate)
             .property("smoothing", &UIGaugeComponent::smoothing);
         rttr::registration::class_<UIEffectComponent>("UIEffectComponent")
