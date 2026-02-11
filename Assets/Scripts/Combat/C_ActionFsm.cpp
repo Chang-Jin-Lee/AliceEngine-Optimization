@@ -99,10 +99,6 @@ namespace Alice::Combat
             m_parrySuccessLatched = true;
 
         const bool hasMove = (Abs(intent.move.x) + Abs(intent.move.y)) > 0.001f;
-        if (m_state == ActionState::Guard && guardPressedInput && !sensors.weakActive)
-        {
-            Enter(ActionState::Guard, true);
-        }
         const bool guardEnterActive = (m_state == ActionState::Guard)
             && (guardEnterDurationSec > 0.0f)
             && (m_stateTime < guardEnterDurationSec);
