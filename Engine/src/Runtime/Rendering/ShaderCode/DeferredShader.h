@@ -261,7 +261,10 @@ VSOutput main(VSInput input)
     
     float3 N = normalize(mul(float4(skinnedN, 0.0f), gWorld).xyz);
     
-    float3 posOffset = float3(0.0f, 0.0f, 0.0f);
+    // Toon 아웃라인 패스에서만 사용 (기본 패스는 width=0으로 들어옴)
+    float3 skinnedSmoothN = normalize(mul(input.SmoothNormal, M3));
+    float3 smoothN = normalize(mul(float4(skinnedSmoothN, 0.0f), gWorld).xyz);
+    float3 posOffset = (gOutlineWidth > 0.0f) ? (smoothN * gOutlineWidth) : float3(0.0f, 0.0f, 0.0f);
     
     float4 posW = mul(float4(skinnedPos.xyz + posOffset, 1.0f), gWorld);
     output.Position = mul(mul(posW, gView), gProj);
@@ -354,7 +357,8 @@ VSOutput main(VSInput input)
     //float3 N = normalize(mul(float4(input.Normal, 0.0f), world).xyz);
 
     float3 N = normalize(mul(world, float4(input.Normal, 0.0f)).xyz);
-    float3 posOffset = float3(0.0f, 0.0f, 0.0f);
+    float3 smoothN = normalize(mul(world, float4(input.SmoothNormal, 0.0f)).xyz);
+    float3 posOffset = (gOutlineWidth > 0.0f) ? (smoothN * gOutlineWidth) : float3(0.0f, 0.0f, 0.0f);
 
     //float4 posW = mul(float4(input.Position + posOffset, 1.0f), world);
     float4 posW = mul(world, float4(input.Position + posOffset, 1.0f));
@@ -559,7 +563,8 @@ GBufferOut main(VertexOut pIn)
     gOut.ToonAlphas = float4(saturate(gToonPbrAlphas.xyz), packedShadowSelf);
     // shadingMode + AO를 [0,1] 범위로 인코딩하여 저장
     gOut.BaseColor  = float4(baseColor, saturate(shadingEncoded));
-    gOut.OutlineData = float4(saturate(gOutlineColor), max(gOutlineWidth, 0.0f));
+    // Toon 아웃라인은 스크린 엣지 디텍팅을 사용하지 않고 별도 Geometry Pass로 처리
+    gOut.OutlineData = float4(0.0f, 0.0f, 0.0f, 0.0f);
     // Emissive는 텍스처(마스크)가 있을 때만 유효하게 만들어
     // emissiveColor/emissiveIntensity는 "색/강도 조절" 역할로 사용합니다.
     float3 emissive = float3(0.0f, 0.0f, 0.0f);
@@ -1377,15 +1382,14 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     
     float depth = g_SceneDepth.Sample(g_Sam, pIn.uv);
 
-    // [수정] 아웃라인 계산 (pIn.Position -> pIn.position 소문자로 수정)
+    // 스크린 엣지 디텍팅 아웃라인 비활성화 (Toon은 Geometry Outline 사용)
     float3 outlineEdgeColor = float3(0.0f, 0.0f, 0.0f);
-    float outlineMaxWidth = 0.0f;
-    float outlineEdge = ComputeOutlineEdge(pIn.position.xy, outlineEdgeColor, outlineMaxWidth);
+    float outlineEdge = 0.0f;
 
     // [배경 처리] Depth가 1.0(배경)이라도 아웃라인이 있으면 그려야 함
     if (depth >= 0.9999f) 
     {
-        if (outlineEdge > 1e-4f) 
+        if (outlineEdge > 1e-4f)
         {
             return float4(outlineEdgeColor, 1.0f);
         }

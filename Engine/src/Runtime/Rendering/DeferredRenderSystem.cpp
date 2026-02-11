@@ -4095,15 +4095,31 @@ namespace Alice
                         ID3D11ShaderResourceView* srvs[] = { diff, norm, emissive };
                         m_context->PSSetShaderResources(0, 3, srvs);
                         
-                        // Pass 1. 원본 + 아웃라인 메타데이터 기록
+                        // Pass 1. 원본
                         UpdatePerObjectCB(cmd.world, view, proj, color, cmd.roughness, cmd.metalness, ao,
                                           (diff != nullptr), (norm != nullptr), objectShadingMode, 
                                           cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                                           cmd.envDiffuseStrength, cmd.envSpecularStrength,
-                                          cmd.outlineColor, cmd.outlineWidth,
+                                          cmd.outlineColor, 0.0f,
                                           cmd.emissiveColor, cmd.emissiveIntensity, cmd.emissiveBloom,
                                           (emissive != nullptr));
                         m_context->DrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
+
+                        // Pass 2. Toon Geometry Outline (노멀 익스트루전 + Front Cull)
+                        if (objectShadingMode == 3 && cmd.outlineWidth > 0.0f)
+                        {
+                            m_context->RSSetState(m_rsCullFront.Get());
+                            const XMFLOAT4 outlineBaseColor(cmd.outlineColor.x, cmd.outlineColor.y, cmd.outlineColor.z, 1.0f);
+                            UpdatePerObjectCB(cmd.world, view, proj, outlineBaseColor, 0.5f, 0.0f, ao,
+                                              (diff != nullptr), false, 6,
+                                              1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(), 0.0f, 1.0f,
+                                              1.0f, 1.0f,
+                                              cmd.outlineColor, cmd.outlineWidth,
+                                              XMFLOAT3(1.0f, 1.0f, 1.0f), 0.0f, 0.0f,
+                                              false);
+                            m_context->DrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
+                            m_context->RSSetState(m_rasterizerState.Get());
+                        }
                     }
                 }
                 else
@@ -4114,15 +4130,31 @@ namespace Alice
                     ID3D11ShaderResourceView* srvs[] = { diff, nullptr, emissive };
                     m_context->PSSetShaderResources(0, 3, srvs);
                     
-                    // Pass 1. 원본 + 아웃라인 메타데이터 기록
+                    // Pass 1. 원본
                     UpdatePerObjectCB(cmd.world, view, proj, color, cmd.roughness, cmd.metalness, ao,
                                       (diff != nullptr), false, objectShadingMode, 
                                       cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                                       cmd.envDiffuseStrength, cmd.envSpecularStrength,
-                                      cmd.outlineColor, cmd.outlineWidth,
+                                      cmd.outlineColor, 0.0f,
                                       cmd.emissiveColor, cmd.emissiveIntensity, cmd.emissiveBloom,
                                       (emissive != nullptr));
                     m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
+
+                    // Pass 2. Toon Geometry Outline (노멀 익스트루전 + Front Cull)
+                    if (objectShadingMode == 3 && cmd.outlineWidth > 0.0f)
+                    {
+                        m_context->RSSetState(m_rsCullFront.Get());
+                        const XMFLOAT4 outlineBaseColor(cmd.outlineColor.x, cmd.outlineColor.y, cmd.outlineColor.z, 1.0f);
+                        UpdatePerObjectCB(cmd.world, view, proj, outlineBaseColor, 0.5f, 0.0f, ao,
+                                          (diff != nullptr), false, 6,
+                                          1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(), 0.0f, 1.0f,
+                                          1.0f, 1.0f,
+                                          cmd.outlineColor, cmd.outlineWidth,
+                                          XMFLOAT3(1.0f, 1.0f, 1.0f), 0.0f, 0.0f,
+                                          false);
+                        m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
+                        m_context->RSSetState(m_rasterizerState.Get());
+                    }
                 }
             }
 
@@ -4920,8 +4952,8 @@ namespace Alice
                                       outlineColor, 0.0f);
                     m_context->DrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
                     
-                    // Pass 2. 아웃라인
-                    if (outlineWidth > 0.0f)
+                    // Pass 2. 아웃라인 (Toon 모드에서만 활성)
+                    if (outlineWidth > 0.0f && objectShadingMode == 3)
                     {
                         m_context->RSSetState(m_rsCullFront.Get());
                         UpdatePerObjectCB(cmd.world, view, proj, color, cmd.roughness, cmd.metalness, ao,
@@ -4948,8 +4980,8 @@ namespace Alice
                                   outlineColor, 0.0f);
                 m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
                 
-                // [Pass 2] 아웃라인
-                if (outlineWidth > 0.0f)
+                // [Pass 2] 아웃라인 (Toon 모드에서만 활성)
+                if (outlineWidth > 0.0f && objectShadingMode == 3)
                 {
                     m_context->RSSetState(m_rsCullFront.Get());
                     UpdatePerObjectCB(cmd.world, view, proj, color, cmd.roughness, cmd.metalness, ao,
