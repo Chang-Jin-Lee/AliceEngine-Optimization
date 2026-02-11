@@ -169,6 +169,7 @@ namespace Alice
 		float playerLightComboWindowSec = 0.0f;
 		bool playerRageActive = false;
 		float playerRageRemainingSec = 0.0f;
+		float playerRageCooldownRemainingSec = 0.0f;
 		bool playerAttackWindowSeen = false;
 		float playerParryNoDurabilitySec = 0.0f;
 		float bossParryNoDurabilitySec = 0.0f;
@@ -255,6 +256,7 @@ namespace Alice
 			playerLightComboWindowSec = 0.0f;
 			playerRageActive = false;
 			playerRageRemainingSec = 0.0f;
+			playerRageCooldownRemainingSec = 0.0f;
 			playerAttackWindowSeen = false;
 			playerParryNoDurabilitySec = 0.0f;
 			bossParryNoDurabilitySec = 0.0f;
@@ -305,27 +307,6 @@ namespace Alice
 				return sc.instance.get();
 		}
 		return nullptr;
-	}
-
-	static EntityId ResolveTraceEntity(World& world, EntityId ownerOrWeapon)
-	{
-		if (world.GetComponent<WeaponTraceComponent>(ownerOrWeapon))
-			return ownerOrWeapon;
-
-		auto* driver = world.GetComponent<AttackDriverComponent>(ownerOrWeapon);
-		if (!driver || driver->traceGuid == 0)
-			return ownerOrWeapon;
-
-		EntityId resolved = world.FindEntityByGuid(driver->traceGuid);
-		return (resolved != InvalidEntityId) ? resolved : ownerOrWeapon;
-	}
-
-	static float GetWeaponTraceBaseDamage(World& world, EntityId ownerOrWeapon)
-	{
-		const EntityId traceId = ResolveTraceEntity(world, ownerOrWeapon);
-		if (auto* trace = world.GetComponent<WeaponTraceComponent>(traceId))
-			return trace->baseDamage;
-		return 0.0f;
 	}
 
 	static EntityId FindNamedDescendant(World& world, EntityId rootId, const std::string& targetName)
@@ -908,6 +889,19 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
         return m_state ? std::max(0.0f, m_state->playerRageRemainingSec) : 0.0f;
     }
 
+    float C_CombatSessionComponent::GetPlayerRageCooldownRemainingSec() const
+    {
+        return m_state ? std::max(0.0f, m_state->playerRageCooldownRemainingSec) : 0.0f;
+    }
+
+    float C_CombatSessionComponent::GetPlayerRageCooldownNormalized() const
+    {
+        const float cooldownSec = std::max(0.0f, m_rageCooldownSec);
+        if (!m_state || cooldownSec <= 0.0f)
+            return 0.0f;
+        return std::clamp(m_state->playerRageCooldownRemainingSec / cooldownSec, 0.0f, 1.0f);
+    }
+
 	void C_CombatSessionComponent::ForceReset()
 	{
 		if (m_state)
@@ -1134,23 +1128,18 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			}
 		}
 
-		const float minWeaponRatio = std::max(0.0f, m_healWeaponMinRatio);
-		const float maxHpRatio = std::max(0.0f, m_healPlayerMaxRatio);
-		float playerHpRatio = 1.0f;
-		float playerWeaponRatio = 0.0f;
+		// Legacy ratio-based heal tuning is preserved on the component, but runtime healing now uses fixed ticks.
+		float playerHpMissing = 0.0f;
+		float playerWeaponCurrent = 0.0f;
 		if (playerHealth)
 		{
-			const float hpMax = std::max(0.0001f, playerHealth->maxHealth);
-			playerHpRatio = playerHealth->currentHealth / hpMax;
-			const float weaponMax = playerHealth->weaponDurabilityMax;
-			if (weaponMax > 0.0001f)
-				playerWeaponRatio = playerHealth->weaponDurability / weaponMax;
-			else
-				playerWeaponRatio = 0.0f;
+			const float hpMax = std::max(0.0f, playerHealth->maxHealth);
+			playerHpMissing = std::max(0.0f, hpMax - playerHealth->currentHealth);
+			playerWeaponCurrent = std::max(0.0f, playerHealth->weaponDurability);
 		}
 		const bool playerCanHeal = playerHealth
-			&& (playerWeaponRatio > minWeaponRatio)
-			&& (playerHpRatio <= maxHpRatio)
+			&& (playerWeaponCurrent > 0.0f)
+			&& (playerHpMissing > 0.0f)
 			&& !blockPlayerActions;
 		const bool playerCanInteract = m_playerInteractionEnabled && !blockPlayerActions;
 		const auto* skinnedRegistry = SkinnedRegistry();
@@ -1535,24 +1524,35 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		}
 
 		const float rageDurationSec = std::max(0.0f, m_rageDurationSec);
-		if (playerIntent.ragePressed && rageDurationSec > 0.0f)
+		const float rageCooldownSec = std::max(0.0f, m_rageCooldownSec);
+		if (!m_state->playerRageActive)
+		{
+			m_state->playerRageCooldownRemainingSec =
+				std::max(0.0f, m_state->playerRageCooldownRemainingSec - playerLogicDt);
+		}
+		if (playerIntent.ragePressed
+			&& rageDurationSec > 0.0f
+			&& !m_state->playerRageActive
+			&& m_state->playerRageCooldownRemainingSec <= 0.0f)
 		{
 			m_state->playerRageActive = true;
 			m_state->playerRageRemainingSec = rageDurationSec;
+			m_state->playerRageCooldownRemainingSec = 0.0f;
 		}
 		if (m_state->playerRageActive)
 		{
-			if (rageDurationSec <= 0.0f)
+			m_state->playerRageRemainingSec = std::max(0.0f, m_state->playerRageRemainingSec - playerLogicDt);
+			if (rageDurationSec <= 0.0f || m_state->playerRageRemainingSec <= 0.0f)
 			{
 				m_state->playerRageActive = false;
 				m_state->playerRageRemainingSec = 0.0f;
+				m_state->playerRageCooldownRemainingSec =
+					std::max(m_state->playerRageCooldownRemainingSec, rageCooldownSec);
 			}
-			else
-			{
-				m_state->playerRageRemainingSec = std::max(0.0f, m_state->playerRageRemainingSec - playerLogicDt);
-				if (m_state->playerRageRemainingSec <= 0.0f)
-					m_state->playerRageActive = false;
-			}
+		}
+		else
+		{
+			m_state->playerRageRemainingSec = 0.0f;
 		}
 
 		// Combo input is handled after sensors are available.
@@ -1654,10 +1654,7 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						playerTr->position.z + dir.z * dist
 					};
 
-					const float heavyDamage = GetWeaponTraceBaseDamage(world, playerId);
-					const float scale = std::max(0.0f, m_fatalDamageScale);
-					if (heavyDamage > 0.0f && scale > 0.0f)
-						m_state->fatal.damageAmount = heavyDamage * scale;
+					m_state->fatal.damageAmount = std::max(0.0f, m_playerDamageExecution);
 
 					const float approachSec = std::max(0.0f, m_fatalApproachSec);
 					float holdSec = std::max(0.0f, m_fatalHoldSec);
@@ -3168,10 +3165,27 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			if (enteredHealExit || cancelledHeal)
 				healGimmick->EndHeal(healExitDurationSec);
 		}
+		auto ApplyFixedHealTick = [&](float requestedAmount)
+			{
+				if (!playerHealth)
+					return;
+				const float amount = std::max(0.0f, requestedAmount);
+				const float healthMax = std::max(0.0f, playerHealth->maxHealth);
+				if (amount <= 0.0f || healthMax <= 0.0f)
+					return;
+				const float hpMissing = std::max(0.0f, healthMax - playerHealth->currentHealth);
+				const float weaponAvailable = std::max(0.0f, playerHealth->weaponDurability);
+				const float exchange = std::min(amount, std::min(hpMissing, weaponAvailable));
+				if (exchange <= 0.0f)
+					return;
+				playerHealth->weaponDurability = std::max(0.0f, playerHealth->weaponDurability - exchange);
+				playerHealth->currentHealth = std::min(healthMax, playerHealth->currentHealth + exchange);
+			};
 		if (enteredHealLoop)
 		{
 			m_state->playerHealLoopSec = 0.0f;
-			m_state->playerHealNextTickSec = std::max(0.0f, m_healStartDelaySec);
+			m_state->playerHealNextTickSec = std::max(0.01f, m_healHoldTickIntervalSec);
+			ApplyFixedHealTick(m_healInitialAmount);
 		}
 		if (!playerHealLoop)
 		{
@@ -3181,28 +3195,15 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		else if (playerLogicDt > 0.0f && playerHealth)
 		{
 			m_state->playerHealLoopSec += playerLogicDt;
-			const float interval = std::max(0.01f, m_healTickIntervalSec);
-			const float transferRatio = std::max(0.0f, m_healTransferRatio);
-			const float weaponMax = std::max(0.0f, playerHealth->weaponDurabilityMax);
-			const float healthMax = std::max(0.0f, playerHealth->maxHealth);
-			while (interval > 0.0f && transferRatio > 0.0f
-				&& m_state->playerHealLoopSec >= m_state->playerHealNextTickSec)
+			const float interval = std::max(0.01f, m_healHoldTickIntervalSec);
+			while (m_state->playerHealLoopSec >= m_state->playerHealNextTickSec)
 			{
-				if (healthMax > 0.0f && (playerHealth->currentHealth / healthMax) > maxHpRatio)
-					break;
-				const float minWeapon = weaponMax * minWeaponRatio;
-				const float available = std::max(0.0f, playerHealth->weaponDurability - minWeapon);
-				if (available <= 0.0f)
-					break;
-				float amount = weaponMax * transferRatio;
-				if (amount > available)
-					amount = available;
-				if (amount <= 0.0f)
-					break;
-				playerHealth->weaponDurability = std::max(0.0f, playerHealth->weaponDurability - amount);
-				playerHealth->currentHealth = std::min(healthMax, playerHealth->currentHealth + amount);
+				ApplyFixedHealTick(m_healHoldTickAmount);
 				m_state->playerHealNextTickSec += interval;
 			}
+		}
+		if (playerHealth)
+		{
 			m_state->player.hp = playerHealth->currentHealth;
 			m_state->player.weaponDurability = playerHealth->weaponDurability;
 			m_state->player.weaponDurabilityMax = playerHealth->weaponDurabilityMax;
@@ -3699,6 +3700,21 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 					fatalCmds.push_back({ Combat::CommandType::ApplyDamage,
 						Combat::CmdApplyDamage{ bossId, m_state->fatal.damageAmount } });
 					m_state->apply.ApplyImmediate(world, m_state->fighterMap, m_state->bus, fatalCmds, false);
+					if (!m_state->playerRageActive)
+					{
+						if (auto* executionPlayerHealth = world.GetComponent<HealthComponent>(playerId))
+						{
+							const float executionHeal = std::max(0.0f, m_weaponHealOnHitExecution);
+							if (executionHeal > 0.0f && executionPlayerHealth->weaponDurabilityMax > 0.0f)
+							{
+								executionPlayerHealth->weaponDurability = std::min(
+									executionPlayerHealth->weaponDurabilityMax,
+									executionPlayerHealth->weaponDurability + executionHeal);
+								m_state->player.weaponDurability = executionPlayerHealth->weaponDurability;
+								m_state->player.weaponDurabilityMax = executionPlayerHealth->weaponDurabilityMax;
+							}
+						}
+					}
 					m_state->fatal.damageApplied = true;
 				}
 
@@ -5395,15 +5411,103 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 		}
 
 		bool bossGroggyTriggered = false;
-		auto ChargeScale = [&](int level) -> float
+		enum class PlayerAttackProfile : std::uint8_t
+		{
+			None,
+			Light1,
+			Light2,
+			Light3,
+			Heavy1,
+			Heavy2,
+			Heavy3,
+			Execution
+		};
+		auto ResolvePlayerAttackProfile = [&]() -> PlayerAttackProfile
 			{
-				switch (level)
+				if (m_state->fatal.active || fatalTriggered)
+					return PlayerAttackProfile::Execution;
+				if (m_state->playerLastAttackHeavy)
 				{
-				case 1: return std::max(0.0f, m_chargeScale1);
-				case 2: return std::max(0.0f, m_chargeScale2);
-				case 3: return std::max(0.0f, m_chargeScale3);
-				default: return std::max(0.0f, m_chargeScale0);
+					const int heavyLevel = std::clamp(m_state->playerLastAttackChargeLevel, 1, 3);
+					switch (heavyLevel)
+					{
+					case 1: return PlayerAttackProfile::Heavy1;
+					case 2: return PlayerAttackProfile::Heavy2;
+					case 3: return PlayerAttackProfile::Heavy3;
+					default: return PlayerAttackProfile::Heavy1;
+					}
 				}
+				const int comboIndex = std::clamp(m_state->playerLightComboIndex, 1, 3);
+				switch (comboIndex)
+				{
+				case 1: return PlayerAttackProfile::Light1;
+				case 2: return PlayerAttackProfile::Light2;
+				case 3: return PlayerAttackProfile::Light3;
+				default: return PlayerAttackProfile::Light1;
+				}
+			};
+		auto PlayerDamageFromProfile = [&](PlayerAttackProfile profile) -> float
+			{
+				switch (profile)
+				{
+				case PlayerAttackProfile::Light1: return std::max(0.0f, m_playerDamageLight1);
+				case PlayerAttackProfile::Light2: return std::max(0.0f, m_playerDamageLight2);
+				case PlayerAttackProfile::Light3: return std::max(0.0f, m_playerDamageLight3);
+				case PlayerAttackProfile::Heavy1: return std::max(0.0f, m_playerDamageHeavy1);
+				case PlayerAttackProfile::Heavy2: return std::max(0.0f, m_playerDamageHeavy2);
+				case PlayerAttackProfile::Heavy3: return std::max(0.0f, m_playerDamageHeavy3);
+				case PlayerAttackProfile::Execution: return std::max(0.0f, m_playerDamageExecution);
+				default: return 0.0f;
+				}
+			};
+		auto BossGroggyGainFromProfile = [&](PlayerAttackProfile profile) -> float
+			{
+				switch (profile)
+				{
+				case PlayerAttackProfile::Light1: return std::max(0.0f, m_bossGroggyGainLight1);
+				case PlayerAttackProfile::Light2: return std::max(0.0f, m_bossGroggyGainLight2);
+				case PlayerAttackProfile::Light3: return std::max(0.0f, m_bossGroggyGainLight3);
+				case PlayerAttackProfile::Heavy1: return std::max(0.0f, m_bossGroggyGainHeavy1);
+				case PlayerAttackProfile::Heavy2: return std::max(0.0f, m_bossGroggyGainHeavy2);
+				case PlayerAttackProfile::Heavy3: return std::max(0.0f, m_bossGroggyGainHeavy3);
+				default: return 0.0f;
+				}
+			};
+		auto WeaponHealFromProfile = [&](PlayerAttackProfile profile) -> float
+			{
+				switch (profile)
+				{
+				case PlayerAttackProfile::Light1: return std::max(0.0f, m_weaponHealOnHitLight1);
+				case PlayerAttackProfile::Light2: return std::max(0.0f, m_weaponHealOnHitLight2);
+				case PlayerAttackProfile::Light3: return std::max(0.0f, m_weaponHealOnHitLight3);
+				case PlayerAttackProfile::Heavy1: return std::max(0.0f, m_weaponHealOnHitHeavy1);
+				case PlayerAttackProfile::Heavy2: return std::max(0.0f, m_weaponHealOnHitHeavy2);
+				case PlayerAttackProfile::Heavy3: return std::max(0.0f, m_weaponHealOnHitHeavy3);
+				case PlayerAttackProfile::Execution: return std::max(0.0f, m_weaponHealOnHitExecution);
+				default: return 0.0f;
+				}
+			};
+		auto RageCooldownReduceFromProfile = [&](PlayerAttackProfile profile) -> float
+			{
+				switch (profile)
+				{
+				case PlayerAttackProfile::Light1: return std::max(0.0f, m_rageCooldownReduceLight1Sec);
+				case PlayerAttackProfile::Light2: return std::max(0.0f, m_rageCooldownReduceLight2Sec);
+				case PlayerAttackProfile::Light3: return std::max(0.0f, m_rageCooldownReduceLight3Sec);
+				case PlayerAttackProfile::Heavy1: return std::max(0.0f, m_rageCooldownReduceHeavy1Sec);
+				case PlayerAttackProfile::Heavy2: return std::max(0.0f, m_rageCooldownReduceHeavy2Sec);
+				case PlayerAttackProfile::Heavy3: return std::max(0.0f, m_rageCooldownReduceHeavy3Sec);
+				default: return 0.0f;
+				}
+			};
+		auto ApplyRageCooldownReduction = [&](float reduceSec)
+			{
+				if (reduceSec <= 0.0f || m_state->playerRageActive)
+					return;
+				if (m_state->playerRageCooldownRemainingSec <= 0.0f)
+					return;
+				m_state->playerRageCooldownRemainingSec =
+					std::max(0.0f, m_state->playerRageCooldownRemainingSec - reduceSec);
 			};
 
 		const float hitstopSec = std::max(0.0f, m_hitstopSec);
@@ -5490,12 +5594,14 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 				victim.flags.invulnActive = false;
 			}
 
-			float chargeScale = 1.0f;
-			if (hit.attackerOwner == playerId && m_state->playerLastAttackHeavy)
+			PlayerAttackProfile playerAttackProfile = PlayerAttackProfile::None;
+			if (hit.attackerOwner == playerId && hit.victimOwner == bossId)
 			{
-				chargeScale = ChargeScale(m_state->playerLastAttackChargeLevel);
-				if (chargeScale != 1.0f && chargeScale > 0.0f)
-					hit.damage *= chargeScale;
+				playerAttackProfile = ResolvePlayerAttackProfile();
+				const float tunedDamage = PlayerDamageFromProfile(playerAttackProfile);
+				if (tunedDamage > 0.0f)
+					hit.damage = tunedDamage;
+				// TODO: Player dash attack profile is not wired in current combat data.
 			}
 
 			auto resolvedDetail = m_state->resolver.ResolveOneDetailed(hit, attacker, victim);
@@ -5568,7 +5674,32 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 			const bool wasGuardBreak = (resolveResult == Combat::ResolveResult::GuardBreak);
 			const bool wasHit = (resolveResult == Combat::ResolveResult::Hit);
 			if (parrySuccess && hit.victimOwner == playerId)
+			{
 				++m_state->playerParrySuccessCount;
+				ApplyRageCooldownReduction(std::max(0.0f, m_rageCooldownReduceParrySec));
+			}
+			if (wasHit && hit.attackerOwner == playerId && hit.victimOwner == bossId)
+			{
+				const PlayerAttackProfile appliedProfile = (playerAttackProfile != PlayerAttackProfile::None)
+					? playerAttackProfile
+					: ResolvePlayerAttackProfile();
+				if (!m_state->playerRageActive)
+				{
+					if (auto* playerHealthOnHit = world.GetComponent<HealthComponent>(playerId))
+					{
+						const float weaponHeal = WeaponHealFromProfile(appliedProfile);
+						if (weaponHeal > 0.0f && playerHealthOnHit->weaponDurabilityMax > 0.0f)
+						{
+							playerHealthOnHit->weaponDurability = std::min(
+								playerHealthOnHit->weaponDurabilityMax,
+								playerHealthOnHit->weaponDurability + weaponHeal);
+							m_state->player.weaponDurability = playerHealthOnHit->weaponDurability;
+							m_state->player.weaponDurabilityMax = playerHealthOnHit->weaponDurabilityMax;
+						}
+					}
+				}
+				ApplyRageCooldownReduction(RageCooldownReduceFromProfile(appliedProfile));
+			}
 			if (wasHit && hit.victimOwner == bossId)
 			{
 				nextBossSignals.hitThisFrame = true;
@@ -5797,17 +5928,10 @@ C_CombatSessionComponent::AnimConfig C_CombatSessionComponent::BuildAnimConfig(E
 						{
 							if (hc->groggy < hc->groggyMax)
 							{
-								const bool heavy = m_state->playerLastAttackHeavy;
-								float gain = heavy ? m_bossGroggyGainHeavy : m_bossGroggyGainLight;
-								bool gainFromDamage = false;
-								if (gain <= 0.0f)
-								{
-									const float gainScale = (hc->groggyGainScale > 0.0f) ? hc->groggyGainScale : 0.0f;
-									gain = hit.damage * gainScale;
-									gainFromDamage = true;
-								}
-								if (heavy && !gainFromDamage && chargeScale != 1.0f && chargeScale > 0.0f)
-									gain *= chargeScale;
+								const PlayerAttackProfile appliedProfile = (playerAttackProfile != PlayerAttackProfile::None)
+									? playerAttackProfile
+									: ResolvePlayerAttackProfile();
+								const float gain = BossGroggyGainFromProfile(appliedProfile);
 								if (gain > 0.0f)
 									hc->groggy = std::min(hc->groggy + gain, hc->groggyMax);
 							}

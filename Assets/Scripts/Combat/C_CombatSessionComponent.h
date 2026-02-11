@@ -33,6 +33,9 @@ namespace Alice
         std::uint64_t GetPlayerParrySuccessCount() const;
         bool IsPlayerRageActive() const;
         float GetPlayerRageRemainingSec() const;
+        float GetPlayerRageCooldownRemainingSec() const;
+        // TODO: HUD/UI gauge binding should use this normalized cooldown value (0..1).
+        float GetPlayerRageCooldownNormalized() const;
 
         // Combat resolve delegate: called when a hit is resolved
         // Parameters: victimId, attackerId, resolveResult, damage, hitPosWS
@@ -75,6 +78,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_healTransferRatio, 0.1f);
         ALICE_PROPERTY(float, m_healWeaponMinRatio, 0.1f);
         ALICE_PROPERTY(float, m_healPlayerMaxRatio, 0.9f);
+        // Legacy ratio heal tuning kept for backward compatibility; fixed-tick heal logic ignores these.
 
         // Boss groggy tuning
         ALICE_PROPERTY(float, m_bossGroggyGainLight, 8.0f);
@@ -89,6 +93,37 @@ namespace Alice
         ALICE_PROPERTY(float, m_chargeCombo2Speed, 0.7f);
         ALICE_PROPERTY(float, m_playerRageLightAttackSpeedScale, 1.5f);
         ALICE_PROPERTY(float, m_rageDurationSec, 15.0f);
+        ALICE_PROPERTY(float, m_rageCooldownSec, 30.0f);
+        ALICE_PROPERTY(float, m_rageCooldownReduceLight1Sec, 1.0f);
+        ALICE_PROPERTY(float, m_rageCooldownReduceLight2Sec, 1.0f);
+        ALICE_PROPERTY(float, m_rageCooldownReduceLight3Sec, 3.0f);
+        ALICE_PROPERTY(float, m_rageCooldownReduceHeavy1Sec, 1.0f);
+        ALICE_PROPERTY(float, m_rageCooldownReduceHeavy2Sec, 1.0f);
+        ALICE_PROPERTY(float, m_rageCooldownReduceHeavy3Sec, 3.0f);
+        ALICE_PROPERTY(float, m_rageCooldownReduceParrySec, 1.0f);
+        ALICE_PROPERTY(float, m_playerDamageLight1, 100.0f);
+        ALICE_PROPERTY(float, m_playerDamageLight2, 150.0f);
+        ALICE_PROPERTY(float, m_playerDamageLight3, 200.0f);
+        ALICE_PROPERTY(float, m_playerDamageHeavy1, 200.0f);
+        ALICE_PROPERTY(float, m_playerDamageHeavy2, 300.0f);
+        ALICE_PROPERTY(float, m_playerDamageHeavy3, 500.0f);
+        ALICE_PROPERTY(float, m_playerDamageExecution, 1000.0f);
+        ALICE_PROPERTY(float, m_bossGroggyGainLight1, 50.0f);
+        ALICE_PROPERTY(float, m_bossGroggyGainLight2, 75.0f);
+        ALICE_PROPERTY(float, m_bossGroggyGainLight3, 100.0f);
+        ALICE_PROPERTY(float, m_bossGroggyGainHeavy1, 100.0f);
+        ALICE_PROPERTY(float, m_bossGroggyGainHeavy2, 150.0f);
+        ALICE_PROPERTY(float, m_bossGroggyGainHeavy3, 200.0f);
+        ALICE_PROPERTY(float, m_weaponHealOnHitLight1, 25.0f);
+        ALICE_PROPERTY(float, m_weaponHealOnHitLight2, 50.0f);
+        ALICE_PROPERTY(float, m_weaponHealOnHitLight3, 100.0f);
+        ALICE_PROPERTY(float, m_weaponHealOnHitHeavy1, 50.0f);
+        ALICE_PROPERTY(float, m_weaponHealOnHitHeavy2, 100.0f);
+        ALICE_PROPERTY(float, m_weaponHealOnHitHeavy3, 150.0f);
+        ALICE_PROPERTY(float, m_weaponHealOnHitExecution, 500.0f);
+        ALICE_PROPERTY(float, m_healInitialAmount, 100.0f);
+        ALICE_PROPERTY(float, m_healHoldTickIntervalSec, 0.5f);
+        ALICE_PROPERTY(float, m_healHoldTickAmount, 50.0f);
         // Player rage trail (red) on weapon target.
         ALICE_PROPERTY(bool, m_enablePlayerRageTrailVfx, true);
         ALICE_PROPERTY(std::string, m_playerRageTrailTargetName, "W_Target");
