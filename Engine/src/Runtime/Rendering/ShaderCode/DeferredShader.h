@@ -1527,11 +1527,16 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     // Indirect Light (IBL)
     //  Diffuse 계산 시 거칠기(Roughness)를 고려한 Fresnel 사용
     // 기존에는 그냥 kD를 구했지만, 이제는 거친 표면에서 에너지가 보존되도록 kS를 먼저 구합니다.
+    
+
     float3 kS_IBL_ = fresnelSchlickRoughness(F0, NdotV, roughness);
     float3 kD_IBL_ = (1.0f - kS_IBL_) * (1.0f - metalness);
     
     // Diffuse 샘플링
     float3 diffuseIBL = kD_IBL_ * g_IBL_Diffuse.Sample(g_Sam, N).rgb * albedoPBR;
+
+
+    //float3 diffuseIBL = kD * g_IBL_Diffuse.Sample(g_Sam, N).rgb * albedoPBR;
     
     // Specular 계산 및 호라이즌 오클루전 적용
     float3 Renv = reflect(-V, N);
