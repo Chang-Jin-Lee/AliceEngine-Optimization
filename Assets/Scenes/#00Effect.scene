@@ -3202,6 +3202,12 @@
                         "m_bossGroggyEnterBlendSec": 1.5,
                         "m_bossGroggyGainHeavy": 16.0,
                         "m_bossGroggyGainLight": 8.0,
+                        "m_bossGroggyGainHeavy1": 100.0,
+                        "m_bossGroggyGainHeavy2": 150.0,
+                        "m_bossGroggyGainHeavy3": 200.0,
+                        "m_bossGroggyGainLight1": 50.0,
+                        "m_bossGroggyGainLight2": 75.0,
+                        "m_bossGroggyGainLight3": 100.0,
                         "m_bossGroggyLoopClip": "Boss|Boss|Groggy_Loop",
                         "m_bossGroggyRecoverBlendSec": 1.0,
                         "m_bossGuardBreakClip": "",
@@ -3259,6 +3265,9 @@
                         "m_healStartDelaySec": 1.0,
                         "m_healTickIntervalSec": 1.0,
                         "m_healTransferRatio": 0.10000000149011612,
+                        "m_healHoldTickAmount": 50.0,
+                        "m_healHoldTickIntervalSec": 0.5,
+                        "m_healInitialAmount": 100.0,
                         "m_healWeaponMinRatio": 0.10000000149011612,
                         "m_heavyAttackClipA": "rig|Tia_Normal_Attack_hard",
                         "m_heavyAttackClipB": "",
@@ -3319,6 +3328,13 @@
                         "m_playerMoveInputDamping": 14.0,
                         "m_playerMoveYawDamping": 12.0,
                         "m_playerName": "Player(Tia)",
+                        "m_playerDamageExecution": 1000.0,
+                        "m_playerDamageHeavy1": 200.0,
+                        "m_playerDamageHeavy2": 300.0,
+                        "m_playerDamageHeavy3": 500.0,
+                        "m_playerDamageLight1": 100.0,
+                        "m_playerDamageLight2": 150.0,
+                        "m_playerDamageLight3": 200.0,
                         "m_playerParryClip": "rig|Tia_Parrying",
                         "m_playerParryRecoverBlendSec": 0.10000000149011612,
                         "m_playerRageAttackClip": "rig|Tia_Normal_Attack_1,2,3",
@@ -3351,7 +3367,22 @@
                         "m_playerRageTrailSizeScale": 0.017999999225139618,
                         "m_playerRageTrailSpawnRateScale": 1.5,
                         "m_playerRageTrailTargetName": "W_Target",
-                        "m_rageDurationSec": 30.0,
+                        "m_rageCooldownReduceHeavy1Sec": 1.0,
+                        "m_rageCooldownReduceHeavy2Sec": 1.0,
+                        "m_rageCooldownReduceHeavy3Sec": 3.0,
+                        "m_rageCooldownReduceLight1Sec": 1.0,
+                        "m_rageCooldownReduceLight2Sec": 1.0,
+                        "m_rageCooldownReduceLight3Sec": 3.0,
+                        "m_rageCooldownReduceParrySec": 1.0,
+                        "m_rageCooldownSec": 30.0,
+                        "m_rageDurationSec": 15.0,
+                        "m_weaponHealOnHitExecution": 500.0,
+                        "m_weaponHealOnHitHeavy1": 50.0,
+                        "m_weaponHealOnHitHeavy2": 100.0,
+                        "m_weaponHealOnHitHeavy3": 150.0,
+                        "m_weaponHealOnHitLight1": 25.0,
+                        "m_weaponHealOnHitLight2": 50.0,
+                        "m_weaponHealOnHitLight3": 100.0,
                         "m_rotationOffsetDeg": 180.0
                     }
                 },
@@ -6868,7 +6899,7 @@
             },
             "Health": {
                 "alive": true,
-                "currentHealth": 50.0,
+                "currentHealth": 1000.0,
                 "dodgeActive": false,
                 "dodgeAvoidedThisFrame": false,
                 "groggy": 0.0,
@@ -6894,7 +6925,7 @@
                     "y": 1.2090158462524414,
                     "z": 2.0039703845977783
                 },
-                "maxHealth": 100.0,
+                "maxHealth": 1000.0,
                 "pushbackDir": {
                     "x": 0.999069333076477,
                     "y": 0.0,
@@ -6904,8 +6935,8 @@
                 "pushbackSpeed": 0.6000000238418579,
                 "teamId": 0,
                 "weakRemainingSec": 0.0,
-                "weaponDurability": 100.0,
-                "weaponDurabilityMax": 100.0
+                "weaponDurability": 1000.0,
+                "weaponDurabilityMax": 1000.0
             },
             "Material": {
                 "albedoTexturePath": "",
@@ -7719,7 +7750,7 @@
                         "endTimeSec": 0.9490000009536743,
                         "source": "Explicit",
                         "startTimeSec": 0.8159999847412109,
-                        "traceSlotMask": 3,
+                        "traceSlotMask": 2,
                         "type": "Attack"
                     },
                     {
@@ -7729,7 +7760,7 @@
                         "endTimeSec": 1.093000054359436,
                         "source": "Explicit",
                         "startTimeSec": 0.9589999914169312,
-                        "traceSlotMask": 5,
+                        "traceSlotMask": 4,
                         "type": "Attack"
                     },
                     {
@@ -7739,7 +7770,7 @@
                         "endTimeSec": 1.9919999837875366,
                         "source": "Explicit",
                         "startTimeSec": 1.8339999914169312,
-                        "traceSlotMask": 9,
+                        "traceSlotMask": 8,
                         "type": "Attack"
                     },
                     {
@@ -7749,7 +7780,7 @@
                         "endTimeSec": 0.9490000009536743,
                         "source": "Explicit",
                         "startTimeSec": 0.8159999847412109,
-                        "traceSlotMask": 3,
+                        "traceSlotMask": 2,
                         "type": "Attack"
                     },
                     {
@@ -7759,7 +7790,7 @@
                         "endTimeSec": 1.7269999980926514,
                         "source": "Explicit",
                         "startTimeSec": 1.5889999866485596,
-                        "traceSlotMask": 5,
+                        "traceSlotMask": 4,
                         "type": "Attack"
                     },
                     {
@@ -7769,7 +7800,7 @@
                         "endTimeSec": 2.6110000610351563,
                         "source": "Explicit",
                         "startTimeSec": 2.4630000591278076,
-                        "traceSlotMask": 9,
+                        "traceSlotMask": 8,
                         "type": "Attack"
                     },
                     {
@@ -7799,7 +7830,7 @@
                         "endTimeSec": 0.6000000238418579,
                         "source": "Explicit",
                         "startTimeSec": 0.37599998712539673,
-                        "traceSlotMask": 33,
+                        "traceSlotMask": 32,
                         "type": "Attack"
                     },
                     {
@@ -7809,7 +7840,7 @@
                         "endTimeSec": 2.489000082015991,
                         "source": "Explicit",
                         "startTimeSec": 2.0,
-                        "traceSlotMask": 1,
+                        "traceSlotMask": 64,
                         "type": "Attack"
                     },
                     {
@@ -7819,7 +7850,7 @@
                         "endTimeSec": 3.5999999046325684,
                         "source": "Explicit",
                         "startTimeSec": 2.450000047683716,
-                        "traceSlotMask": 65,
+                        "traceSlotMask": 64,
                         "type": "Attack"
                     },
                     {
@@ -7829,7 +7860,7 @@
                         "endTimeSec": 1.7000000476837158,
                         "source": "Explicit",
                         "startTimeSec": 1.4190000295639038,
-                        "traceSlotMask": 1,
+                        "traceSlotMask": 128,
                         "type": "Attack"
                     },
                     {
@@ -7839,7 +7870,7 @@
                         "endTimeSec": 2.4000000953674316,
                         "source": "Explicit",
                         "startTimeSec": 1.7999999523162842,
-                        "traceSlotMask": 129,
+                        "traceSlotMask": 128,
                         "type": "Attack"
                     }
                 ],
@@ -7881,13 +7912,13 @@
             },
             "Health": {
                 "alive": true,
-                "currentHealth": 100.0,
+                "currentHealth": 7000.0,
                 "dodgeActive": false,
                 "dodgeAvoidedThisFrame": false,
-                "groggy": 95.0,
+                "groggy": 0.0,
                 "groggyDuration": 6.0,
                 "groggyGainScale": 1.0,
-                "groggyMax": 100.0,
+                "groggyMax": 1000.0,
                 "guardActive": false,
                 "guardDamageScale": 0.5,
                 "guardHitThisFrame": false,
@@ -7907,7 +7938,7 @@
                     "y": 1.1842684745788574,
                     "z": 2.0613739490509033
                 },
-                "maxHealth": 100.0,
+                "maxHealth": 7000.0,
                 "pushbackDir": {
                     "x": 0.0,
                     "y": 0.0,
@@ -8328,7 +8359,7 @@
             "WeaponTrace": {
                 "active": false,
                 "attackInstanceId": 318,
-                "baseDamage": 10.0,
+                "baseDamage": 199.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
@@ -8336,7 +8367,7 @@
                 "guardBreakPushbackDuration": 0.25,
                 "guardBreakPushbackSpeed": 3.0,
                 "guardBreakWeakSec": 1.5,
-                "guardDurabilityCost": 0.0,
+                "guardDurabilityCost": 200.0,
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
@@ -9760,7 +9791,7 @@
             "WeaponTrace": {
                 "active": false,
                 "attackInstanceId": 25,
-                "baseDamage": 10.0,
+                "baseDamage": 199.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
@@ -9768,7 +9799,7 @@
                 "guardBreakPushbackDuration": 0.25,
                 "guardBreakPushbackSpeed": 3.0,
                 "guardBreakWeakSec": 1.5,
-                "guardDurabilityCost": 0.0,
+                "guardDurabilityCost": 200.0,
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
@@ -9848,7 +9879,7 @@
             "WeaponTrace": {
                 "active": false,
                 "attackInstanceId": 10,
-                "baseDamage": 10.0,
+                "baseDamage": 249.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
@@ -9856,7 +9887,7 @@
                 "guardBreakPushbackDuration": 0.25,
                 "guardBreakPushbackSpeed": 3.0,
                 "guardBreakWeakSec": 1.5,
-                "guardDurabilityCost": 0.0,
+                "guardDurabilityCost": 250.0,
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
@@ -9936,7 +9967,7 @@
             "WeaponTrace": {
                 "active": false,
                 "attackInstanceId": 12,
-                "baseDamage": 10.0,
+                "baseDamage": 249.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
@@ -9944,7 +9975,7 @@
                 "guardBreakPushbackDuration": 0.25,
                 "guardBreakPushbackSpeed": 3.0,
                 "guardBreakWeakSec": 1.5,
-                "guardDurabilityCost": 0.0,
+                "guardDurabilityCost": 250.0,
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
@@ -10024,7 +10055,7 @@
             "WeaponTrace": {
                 "active": false,
                 "attackInstanceId": 505,
-                "baseDamage": 10.0,
+                "baseDamage": 99.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
@@ -10032,7 +10063,7 @@
                 "guardBreakPushbackDuration": 0.25,
                 "guardBreakPushbackSpeed": 3.0,
                 "guardBreakWeakSec": 1.5,
-                "guardDurabilityCost": 0.0,
+                "guardDurabilityCost": 100.0,
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
@@ -10112,7 +10143,7 @@
             "WeaponTrace": {
                 "active": false,
                 "attackInstanceId": 0,
-                "baseDamage": 10.0,
+                "baseDamage": 599.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
@@ -10120,14 +10151,288 @@
                 "guardBreakPushbackDuration": 0.25,
                 "guardBreakPushbackSpeed": 3.0,
                 "guardBreakWeakSec": 1.5,
-                "guardDurabilityCost": 0.0,
+                "guardDurabilityCost": 1000.0,
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
                 "parryGroggyGain": 10.0,
                 "parryLockSec": 0.0,
                 "queryLayerBits": 0,
-                "shapes": [],
+                "shapes": [
+                    {
+                        "boxHalfExtents": {
+                            "x": 0.05000000074505806,
+                            "y": 0.05000000074505806,
+                            "z": 0.20000000298023224
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 2.6600000858306885,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "X+",
+                        "pathControlLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathEnabled": false,
+                        "pathEndLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathMode": "Linear",
+                        "pathStartLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "radius": 0.5,
+                        "type": "Sphere"
+                    },
+                    {
+                        "boxHalfExtents": {
+                            "x": 0.05000000074505806,
+                            "y": 0.05000000074505806,
+                            "z": 0.20000000298023224
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 3.8499999046325684,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "X-",
+                        "pathControlLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathEnabled": false,
+                        "pathEndLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathMode": "Linear",
+                        "pathStartLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "radius": 0.5,
+                        "type": "Sphere"
+                    },
+                    {
+                        "boxHalfExtents": {
+                            "x": 0.05000000074505806,
+                            "y": 0.05000000074505806,
+                            "z": 0.20000000298023224
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 1.899999976158142,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "Base",
+                        "pathControlLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathEnabled": false,
+                        "pathEndLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathMode": "Linear",
+                        "pathStartLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "radius": 0.5,
+                        "type": "Sphere"
+                    },
+                    {
+                        "boxHalfExtents": {
+                            "x": 0.05000000074505806,
+                            "y": 0.05000000074505806,
+                            "z": 0.20000000298023224
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 1.2699999809265137,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "Shape",
+                        "pathControlLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathEnabled": false,
+                        "pathEndLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathMode": "Linear",
+                        "pathStartLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "radius": 0.5,
+                        "type": "Sphere"
+                    },
+                    {
+                        "boxHalfExtents": {
+                            "x": 0.05000000074505806,
+                            "y": 0.05000000074505806,
+                            "z": 0.20000000298023224
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 0.6499999761581421,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "Shape",
+                        "pathControlLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathEnabled": false,
+                        "pathEndLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathMode": "Linear",
+                        "pathStartLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "radius": 0.5,
+                        "type": "Sphere"
+                    },
+                    {
+                        "boxHalfExtents": {
+                            "x": 0.05000000074505806,
+                            "y": 0.05000000074505806,
+                            "z": 0.20000000298023224
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "Shape",
+                        "pathControlLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathEnabled": false,
+                        "pathEndLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathMode": "Linear",
+                        "pathStartLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "radius": 0.30000001192092896,
+                        "type": "Sphere"
+                    },
+                    {
+                        "boxHalfExtents": {
+                            "x": 0.05000000074505806,
+                            "y": 0.05000000074505806,
+                            "z": 0.20000000298023224
+                        },
+                        "capsuleHalfHeight": 0.20000000298023224,
+                        "enabled": true,
+                        "localPos": {
+                            "x": 0.0,
+                            "y": 3.240000009536743,
+                            "z": 0.0
+                        },
+                        "localRotDeg": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "name": "Shape",
+                        "pathControlLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathEnabled": false,
+                        "pathEndLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "pathMode": "Linear",
+                        "pathStartLocalPos": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "radius": 0.5,
+                        "type": "Sphere"
+                    }
+                ],
                 "subSteps": 1,
                 "targetLayerBits": 0,
                 "teamId": 1,
@@ -10160,7 +10465,7 @@
             "WeaponTrace": {
                 "active": false,
                 "attackInstanceId": 20,
-                "baseDamage": 10.0,
+                "baseDamage": 199.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
@@ -10168,7 +10473,7 @@
                 "guardBreakPushbackDuration": 0.25,
                 "guardBreakPushbackSpeed": 3.0,
                 "guardBreakWeakSec": 1.5,
-                "guardDurabilityCost": 0.0,
+                "guardDurabilityCost": 400.0,
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
@@ -10248,7 +10553,7 @@
             "WeaponTrace": {
                 "active": false,
                 "attackInstanceId": 21,
-                "baseDamage": 10.0,
+                "baseDamage": 249.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
@@ -10256,7 +10561,7 @@
                 "guardBreakPushbackDuration": 0.25,
                 "guardBreakPushbackSpeed": 3.0,
                 "guardBreakWeakSec": 1.5,
-                "guardDurabilityCost": 0.0,
+                "guardDurabilityCost": 250.0,
                 "guardLockSec": 0.25,
                 "ownerGuid": "11831490326238347819",
                 "ownerNameDebug": "Boss",
