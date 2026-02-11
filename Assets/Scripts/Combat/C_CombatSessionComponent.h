@@ -265,7 +265,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_bossChargeFacingTrackSec, 0.6f);
         ALICE_PROPERTY(float, m_bossSoulFacingTrackSec, 0.5f);
         ALICE_PROPERTY(float, m_bossDashMoveStartSec, -1.0f);
-        ALICE_PROPERTY(float, m_bossKickAttackSpeedScale, 1.5f);
+        ALICE_PROPERTY(float, m_bossKickAttackSpeedScale, 1.0f);
         ALICE_PROPERTY(float, m_bossBoostAttackSpeedScale, 1.5f);
         ALICE_PROPERTY(std::string, m_bossBoostDashVfxName, "BossDeshEffect");
         ALICE_PROPERTY(float, m_bossGapStepDistance, 0.5f);

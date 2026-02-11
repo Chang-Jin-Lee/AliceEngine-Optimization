@@ -1903,13 +1903,13 @@ namespace Alice
 				switch (currentChargeLevel)
 				{
 				case 1:
-					EmitHapticPulse(0.20f, 0.32f, 0.06f, GamepadVibrationBlend::Max, HapticCooldownKey::ChargeLevel1, 0.0f);
+					EmitHapticPulse(0.05f, 0.11f, 0.10f, GamepadVibrationBlend::Add, HapticCooldownKey::ChargeLevel1, 0.0f);
 					break;
 				case 2:
-					EmitHapticPulse(0.35f, 0.55f, 0.08f, GamepadVibrationBlend::Max, HapticCooldownKey::ChargeLevel2, 0.0f);
+					EmitHapticPulse(0.07f, 0.14f, 0.11f, GamepadVibrationBlend::Add, HapticCooldownKey::ChargeLevel2, 0.0f);
 					break;
 				case 3:
-					EmitHapticPulse(0.50f, 0.75f, 0.10f, GamepadVibrationBlend::Max, HapticCooldownKey::ChargeLevel3, 0.0f);
+					EmitHapticPulse(0.10f, 0.18f, 0.12f, GamepadVibrationBlend::Add, HapticCooldownKey::ChargeLevel3, 0.0f);
 					break;
 				default:
 					break;
@@ -2833,7 +2833,7 @@ namespace Alice
 			bossOut.flags.hitActive = false;
 		if (bossBrain && bossBrain->ConsumePhase2HowlingStarted())
 		{
-			EmitHapticPulse(0.88f, 1.00f, 0.24f, GamepadVibrationBlend::Max, HapticCooldownKey::HowlingStart, 0.50f);
+			EmitHapticPulse(0.88f, 1.00f, 0.42f, GamepadVibrationBlend::Max, HapticCooldownKey::HowlingStart, 0.50f);
 
 			float basePushSpeed = 3.0f;
 			if (auto* trace = world.GetComponent<WeaponTraceComponent>(bossId))
@@ -4488,7 +4488,7 @@ namespace Alice
 					&& m_state->fatal.damageAmount > 0.0f
 					&& m_state->fatal.timerSec >= damageApplySec)
 				{
-					EmitHapticPulse(1.00f, 1.00f, 0.22f, GamepadVibrationBlend::Max, HapticCooldownKey::FatalDamage, 0.35f);
+					EmitHapticPulse(1.00f, 1.00f, 0.42f, GamepadVibrationBlend::Max, HapticCooldownKey::FatalDamage, 0.40f);
 
 					std::vector<Combat::Command> fatalCmds;
 					fatalCmds.push_back({ Combat::CommandType::ApplyDamage,
@@ -5378,7 +5378,10 @@ namespace Alice
 						}
 
 						if (isBossKickClip)
-							attackSpeedScale = std::max(0.0f, m_bossKickAttackSpeedScale);
+						{
+							// Keep kick at baseline speed so animation playback and hit timing stay aligned.
+							attackSpeedScale = 1.0f;
+						}
 					}
 				}
 				if (entityId == playerId)
@@ -6587,27 +6590,27 @@ namespace Alice
 			const bool wasHit = (resolveResult == Combat::ResolveResult::Hit);
 			if (parrySuccess && hit.victimOwner == playerId)
 			{
-				EmitHapticPulse(0.40f, 0.75f, 0.10f, GamepadVibrationBlend::Max, HapticCooldownKey::ParrySuccess, 0.08f);
+				EmitHapticPulse(0.58f, 0.95f, 0.14f, GamepadVibrationBlend::Max, HapticCooldownKey::ParrySuccess, 0.08f);
 			}
 			if (wasGuarded && hit.victimOwner == playerId)
 			{
-				EmitHapticPulse(0.25f, 0.42f, 0.08f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardSuccess, 0.06f);
+				EmitHapticPulse(0.38f, 0.62f, 0.11f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardSuccess, 0.06f);
 			}
 			if (wasHit && hit.victimOwner == playerId)
 			{
-				EmitHapticPulse(0.72f, 0.95f, 0.18f, GamepadVibrationBlend::Max, HapticCooldownKey::PlayerHit, 0.12f);
+				EmitHapticPulse(0.88f, 1.00f, 0.22f, GamepadVibrationBlend::Max, HapticCooldownKey::PlayerHit, 0.12f);
 			}
 			if (wasHit && hit.attackerOwner == playerId && hit.victimOwner == bossId)
 			{
-				EmitHapticPulse(0.12f, 0.22f, 0.045f, GamepadVibrationBlend::Max, HapticCooldownKey::PlayerAttackHit, 0.04f);
+				EmitHapticPulse(0.22f, 0.34f, 0.06f, GamepadVibrationBlend::Max, HapticCooldownKey::PlayerAttackHit, 0.04f);
 			}
 			if (wasGuardBreak && hit.victimOwner == playerId)
 			{
-				EmitHapticPulse(0.85f, 1.00f, 0.24f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardBreakVictim, 0.30f);
+				EmitHapticPulse(0.85f, 1.00f, 0.38f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardBreakVictim, 0.40f);
 			}
 			if (wasGuardBreak && hit.attackerOwner == playerId && hit.victimOwner == bossId)
 			{
-				EmitHapticPulse(0.55f, 0.72f, 0.13f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardBreakAttacker, 0.10f);
+				EmitHapticPulse(0.60f, 0.80f, 0.20f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardBreakAttacker, 0.12f);
 			}
 			const bool recordAttempt = m_state->encounterRecordingActive;
 
