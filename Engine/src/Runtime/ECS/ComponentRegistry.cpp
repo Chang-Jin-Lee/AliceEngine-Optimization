@@ -604,6 +604,7 @@ namespace Alice
             .property("enabled", &CameraSpringArmComponent::enabled)
             .property("enableCollision", &CameraSpringArmComponent::enableCollision)
             .property("enableZoom", &CameraSpringArmComponent::enableZoom)
+            .property("hideFollowTargetAtCollisionMin", &CameraSpringArmComponent::hideFollowTargetAtCollisionMin)
             .property("collisionLayerMask", &CameraSpringArmComponent::collisionLayerMask)
             .property("collisionQueryMask", &CameraSpringArmComponent::collisionQueryMask)
             .property("collisionMinDistance", &CameraSpringArmComponent::collisionMinDistance)

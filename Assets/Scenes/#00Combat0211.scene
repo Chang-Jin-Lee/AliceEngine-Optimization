@@ -3638,11 +3638,12 @@
                 "enableCollision": true,
                 "enableZoom": true,
                 "enabled": true,
+                "hideFollowTargetAtCollisionMin": true,
                 "maxDistance": 4.0,
                 "minDistance": 1.0,
                 "minHeight": -1000.0,
                 "probePadding": 0.20000000298023224,
-                "probeRadius": 0.3499999940395355,
+                "probeRadius": 0.15000000596046448,
                 "zoomSpeed": 0.009999999776482582
             },
             "Scripts": [
