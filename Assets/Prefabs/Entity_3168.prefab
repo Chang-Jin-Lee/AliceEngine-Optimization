@@ -1,0 +1,53 @@
+{
+    "Transform": {
+        "enabled": false,
+        "position": {
+            "x": -0.20000000298023224,
+            "y": 2.299999952316284,
+            "z": 0.0
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 0.009999999776482582,
+            "y": 0.009999999776482582,
+            "z": 9.999999974752427e-07
+        },
+        "visible": false
+    },
+    "UnityVfx": {
+        "alphaScale": 1.0,
+        "colorScale": 3.0,
+        "colorTint": {
+            "x": 1.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "dissolveOffset": 0.0,
+        "effectPath": "Assets/VFX/UnityExport/(Opt)Effect_06_PortalEffect_2__Smoke_1_2/effect.json",
+        "emitNewParticles": false,
+        "enableTrails": true,
+        "enabled": false,
+        "hdrColorClamp": 1.0,
+        "intensityScale": 1.0,
+        "lifetimeScale": 0.5,
+        "loop": false,
+        "noiseScale": 1.0,
+        "overrideLoop": false,
+        "rampScale": 1.0,
+        "sizeScale": 0.10000000149011612,
+        "spawnRateScale": 2.0,
+        "speedScale": 1.0,
+        "timeScale": 0.30000001192092896,
+        "trailLifeScale": 1.0,
+        "trailWidthScale": 1.0,
+        "useComputeEffect": false,
+        "useMeshRenderer": true,
+        "uvScrollScale": 1.0
+    },
+    "name": "Boss_AttackTrailVfx",
+    "version": 1
+}

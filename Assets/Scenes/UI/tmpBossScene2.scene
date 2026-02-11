@@ -3312,7 +3312,7 @@
                         "m_playerMoveYawDamping": 12.0,
                         "m_playerName": "Player(Tia)",
                         "m_playerRageAttackClip": "rig|Tia_Normal_Attack_1,2,3",
-                        "m_rageDurationSec": 30.0,
+                        "m_rageDurationSec": 15.0,
                         "m_rotationOffsetDeg": 180.0
                     }
                 },
@@ -7349,7 +7349,7 @@
                         "m_backAttackRange": 2.5,
                         "m_backAttackTriggerSec": 1.2000000476837158,
                         "m_chargeHoldSec": 0.5,
-                        "m_chargeIntervalSec": 30.0,
+                        "m_chargeIntervalSec": 20.0,
                         "m_chargeLevel": 2,
                         "m_chargeRangeMax": 4.0,
                         "m_chargeRerollSec": 5.0,
@@ -7417,7 +7417,7 @@
                         "m_traceDelaySec": 0.5,
                         "m_turnInPlaceAngleDeg": 65.0,
                         "m_usePhaseRules": true,
-                        "m_walkDashTimeoutSec": 5.0
+                        "m_walkDashTimeoutSec": 2.0
                     }
                 }
             ],
@@ -8509,3 +8509,4 @@
     "sceneName": "tmpBossScene2",
     "version": 1
 }
+

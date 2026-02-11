@@ -248,6 +248,7 @@ namespace Alice::Combat
         ActionFlags flags{};
         std::vector<Command> commands;
         bool attackRestarted = false;
+        bool attackMotionCanceled = false;
         bool parryRecoverToIdle = false;
     };
 

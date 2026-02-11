@@ -1,0 +1,87 @@
+{
+    "Transform": {
+        "enabled": true,
+        "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+        },
+        "visible": true
+    },
+    "WeaponTrace": {
+        "active": false,
+        "attackInstanceId": 21,
+        "baseDamage": 10.0,
+        "debugDraw": true,
+        "debugPathGridSteps": 6,
+        "debugPathGuide": true,
+        "debugPathMarkerRadius": 0.05000000074505806,
+        "guardBreakPushbackDuration": 0.25,
+        "guardBreakPushbackSpeed": 3.0,
+        "guardBreakWeakSec": 1.5,
+        "guardDurabilityCost": 0.0,
+        "guardLockSec": 0.25,
+        "ownerGuid": "11831490326238347819",
+        "ownerNameDebug": "Boss",
+        "parryGroggyGain": 10.0,
+        "parryLockSec": 0.0,
+        "queryLayerBits": 0,
+        "shapes": [
+            {
+                "boxHalfExtents": {
+                    "x": 1.0,
+                    "y": 0.5,
+                    "z": 12.0
+                },
+                "capsuleHalfHeight": 0.20000000298023224,
+                "enabled": true,
+                "localPos": {
+                    "x": 0.0,
+                    "y": 0.6299999952316284,
+                    "z": 0.0
+                },
+                "localRotDeg": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "name": "Shape",
+                "pathControlLocalPos": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "pathEnabled": false,
+                "pathEndLocalPos": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "pathMode": "Linear",
+                "pathStartLocalPos": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "radius": 0.7599999904632568,
+                "type": "Sphere"
+            }
+        ],
+        "subSteps": 1,
+        "targetLayerBits": 0,
+        "teamId": 1,
+        "traceBasisGuid": "0"
+    },
+    "name": "Attack_Body",
+    "version": 1
+}
