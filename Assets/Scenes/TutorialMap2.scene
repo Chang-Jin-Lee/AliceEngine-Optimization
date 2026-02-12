@@ -1,0 +1,3795 @@
+{
+    "entities": [
+        {
+            "Camera": {
+                "FOV": 60.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
+                "aspectOverride": 0.0,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 6.699999809265137,
+                    "y": 3.700000047683716,
+                    "z": -1.899999976158142
+                },
+                "rotation": {
+                    "x": 0.6108651757240295,
+                    "y": -1.0890854597091675,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "10001",
+            "name": "MainCamera"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/ceramic/ceramic_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/ceramic_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/ceramic.fbxasset",
+                "meshAssetPath": "ceramic"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -0.5372611284255981,
+                    "y": 0.08579098433256149,
+                    "z": -4.450494766235352
+                },
+                "rotation": {
+                    "x": 1.3526301383972168,
+                    "y": -0.47758835554122925,
+                    "z": 2.2719423213857226e-06
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 0.9999999403953552,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "15521853530585934636",
+            "guid": "9507717455742438298",
+            "name": "vase1"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/ceramic/ceramic_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/ceramic_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/ceramic.fbxasset",
+                "meshAssetPath": "ceramic"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 3.0825014114379883,
+                    "y": 0.0,
+                    "z": -0.6741817593574524
+                },
+                "rotation": {
+                    "x": 1.3526298999786377,
+                    "y": -2.2661025524139404,
+                    "z": -9.638514484322513e-07
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "15521853530585934636",
+            "guid": "12271626038755552346",
+            "name": "vase2"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/door_animation/door_animation_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/door_animation_0.mat",
+                "color": {
+                    "x": 0.1834796816110611,
+                    "y": 0.2011861652135849,
+                    "z": 0.2625482678413391
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 0.07699999958276749,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": 3,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": false,
+                "speed": 1.0,
+                "timeSec": 0.014000000432133675
+            },
+            "SkinnedMesh": {
+                "boneCount": 3,
+                "instanceAssetPath": "Assets/Fbx/door_animation.fbxasset",
+                "meshAssetPath": "door_animation"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 6.0
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": -3.141592502593994,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "5680790219464207772",
+            "guid": "14787538078399498714",
+            "name": "door"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/candle/candle_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/candle_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/candle.fbxasset",
+                "meshAssetPath": "candle"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -3.9042959213256836,
+                    "y": -0.007131919264793396,
+                    "z": -1.7661964893341064
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 0.20000000298023224,
+                    "y": 0.20000000298023224,
+                    "z": 0.20000000298023224
+                },
+                "visible": true
+            },
+            "_parentGuid": "231161483791228102",
+            "guid": "18145460244380919064",
+            "name": "candle1"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/candle/candle_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/candle_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/candle.fbxasset",
+                "meshAssetPath": "candle"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -3.346919536590576,
+                    "y": 0.0,
+                    "z": -1.3062238693237305
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 0.20000000298023224,
+                    "y": 0.20000000298023224,
+                    "z": 0.20000000298023224
+                },
+                "visible": true
+            },
+            "_parentGuid": "231161483791228102",
+            "guid": "2708126781774372380",
+            "name": "candle2"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/candle/candle_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/candle_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/candle.fbxasset",
+                "meshAssetPath": "candle"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -5.3021931648254395,
+                    "y": 0.0,
+                    "z": -2.3298230171203613
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 0.20000000298023224,
+                    "y": 0.20000000298023224,
+                    "z": 0.20000000298023224
+                },
+                "visible": true
+            },
+            "_parentGuid": "231161483791228102",
+            "guid": "16879410096915862898",
+            "name": "candle3"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/candle/candle_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/candle_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/candle.fbxasset",
+                "meshAssetPath": "candle"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -3.3480007648468018,
+                    "y": 0.0,
+                    "z": 1.2892136573791504
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 0.20000000298023224,
+                    "y": 0.20000000298023224,
+                    "z": 0.20000000298023224
+                },
+                "visible": true
+            },
+            "_parentGuid": "231161483791228102",
+            "guid": "1156874579729995478",
+            "name": "candle4"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/candle/candle_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/candle_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/candle.fbxasset",
+                "meshAssetPath": "candle"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -5.1010918617248535,
+                    "y": -3.725290298461914e-09,
+                    "z": 2.4854562282562256
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 0.20000000298023224,
+                    "y": 0.20000000298023224,
+                    "z": 0.20000000298023224
+                },
+                "visible": true
+            },
+            "_parentGuid": "231161483791228102",
+            "guid": "7421811773928850974",
+            "name": "candle5"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/statue/statue_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/statue_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0499999523162842,
+                "envSpecularStrength": 1.0399999618530273,
+                "metalness": 0.035999998450279236,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.6240000128746033,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/statue.fbxasset",
+                "meshAssetPath": "statue"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -5.098756313323975,
+                    "y": 0.0,
+                    "z": -4.255256769170046e-08
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": -1.570796251296997,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "5680790219464207772",
+            "guid": "4725410520311213721",
+            "name": "statue"
+        },
+        {
+            "RectLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 0.4220867156982422,
+                    "y": 0.4753064215183258,
+                    "z": 0.5521235466003418
+                },
+                "enabled": true,
+                "height": 40.7400016784668,
+                "intensity": 0.5,
+                "range": 11.093999862670898,
+                "width": 0.10000000149011612
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.5758498907089233,
+                    "y": 7.819004535675049,
+                    "z": 0.10635766386985779
+                },
+                "rotation": {
+                    "x": 1.2070311307907104,
+                    "y": -1.916608452796936,
+                    "z": 2.8130509853363037
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "9373386258049905881",
+            "name": "Rect Light"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/candle/candle_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/candle_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/candle.fbxasset",
+                "meshAssetPath": "candle"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -3.9105687141418457,
+                    "y": 0.0,
+                    "z": 1.8604849576950073
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 0.20000000298023224,
+                    "y": 0.20000000298023224,
+                    "z": 0.20000000298023224
+                },
+                "visible": true
+            },
+            "_parentGuid": "231161483791228102",
+            "guid": "11192840426960059483",
+            "name": "candle6"
+        },
+        {
+            "DebugDrawBox": {
+                "boundsMax": {
+                    "x": 5.0,
+                    "y": 5.0,
+                    "z": 5.0
+                },
+                "boundsMin": {
+                    "x": -5.0,
+                    "y": -5.0,
+                    "z": -5.0
+                },
+                "color": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 1.0,
+                    "z": 0.0
+                },
+                "depthTest": false,
+                "enabled": false
+            },
+            "PostProcessVolume": {
+                "blendRadius": 0.0,
+                "blendWeight": 1.0,
+                "boxSize": {
+                    "x": 10.0,
+                    "y": 10.0,
+                    "z": 10.0
+                },
+                "priority": 0,
+                "referenceObjectName": "",
+                "settings": {
+                    "bOverride_BloomDownsample": true,
+                    "bOverride_BloomGaussianIntensity": true,
+                    "bOverride_BloomIntensity": true,
+                    "bOverride_BloomKnee": true,
+                    "bOverride_BloomRadius": true,
+                    "bOverride_BloomThreshold": true,
+                    "bOverride_ColorGradingContrast": false,
+                    "bOverride_ColorGradingGain": false,
+                    "bOverride_ColorGradingGamma": false,
+                    "bOverride_ColorGradingSaturation": true,
+                    "bOverride_EmissiveBloomIntensity": true,
+                    "bOverride_Exposure": true,
+                    "bOverride_ImpactBlurCenterX": false,
+                    "bOverride_ImpactBlurCenterY": false,
+                    "bOverride_ImpactBlurIntensity": false,
+                    "bOverride_ImpactBlurRadius": false,
+                    "bOverride_MaxHDRNits": false,
+                    "bOverride_SplitAmount": false,
+                    "bOverride_SplitAngleDeg": false,
+                    "bOverride_SplitFeather": false,
+                    "bOverride_SplitFxColorA": false,
+                    "bOverride_SplitFxColorB": false,
+                    "bOverride_SplitFxIntensity": false,
+                    "bOverride_SplitFxSpeed": false,
+                    "bOverride_SplitFxTimeSec": false,
+                    "bOverride_SplitFxWidth": false,
+                    "bOverride_SplitLineOffset": false,
+                    "bloomDownsample": 4,
+                    "bloomGaussianIntensity": 1.0,
+                    "bloomIntensity": 0.5879999995231628,
+                    "bloomKnee": 0.2619999945163727,
+                    "bloomRadius": 1.0,
+                    "bloomThreshold": 0.3619999885559082,
+                    "contrast": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "emissiveBloomIntensity": 1.2259999513626099,
+                    "exposure": -0.03999999910593033,
+                    "gain": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "gamma": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "impactBlurCenterX": 0.5,
+                    "impactBlurCenterY": 0.5,
+                    "impactBlurIntensity": 0.0,
+                    "impactBlurRadius": 0.25,
+                    "maxHDRNits": 1000.0,
+                    "saturation": {
+                        "x": 0.96138995885849,
+                        "y": 0.96138995885849,
+                        "z": 0.96138995885849
+                    },
+                    "splitAmount": 0.0,
+                    "splitAngleDeg": 0.0,
+                    "splitFeather": 0.0010000000474974513,
+                    "splitFxColorA": {
+                        "x": 2.799999952316284,
+                        "y": 1.2000000476837158,
+                        "z": 0.44999998807907104
+                    },
+                    "splitFxColorB": {
+                        "x": 0.10000000149011612,
+                        "y": 1.0499999523162842,
+                        "z": 0.949999988079071
+                    },
+                    "splitFxIntensity": 0.0,
+                    "splitFxSpeed": 30.0,
+                    "splitFxTimeSec": 0.0,
+                    "splitFxWidth": 0.009999999776482582,
+                    "splitLineOffset": 0.0
+                },
+                "shape": "Box",
+                "unbound": true,
+                "useReferenceObject": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "6516153013430234243",
+            "name": "PostProcessVolume"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "5680790219464207772",
+            "guid": "13046843695846348464",
+            "name": "Walls"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "5680790219464207772",
+            "guid": "989034425088471054",
+            "name": "Columns"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "5680790219464207772",
+            "guid": "231161483791228102",
+            "name": "candles"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "5680790219464207772",
+            "name": "Objects"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "5680790219464207772",
+            "guid": "15521853530585934636",
+            "name": "vase"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/ceramic/ceramic_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/ceramic_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/ceramic.fbxasset",
+                "meshAssetPath": "ceramic"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 5.257528305053711,
+                    "y": 0.0,
+                    "z": -4.419234752655029
+                },
+                "rotation": {
+                    "x": 1.3526309728622437,
+                    "y": -1.0794035196304321,
+                    "z": -5.50776633190253e-07
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 0.9999999403953552,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "15521853530585934636",
+            "guid": "4484840499349594885",
+            "name": "vase3"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Box(texture)/Box(texture)_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Box(texture)_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Box(texture).fbxasset",
+                "meshAssetPath": "Box(texture)"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 4.208343505859375,
+                    "y": 0.0,
+                    "z": 0.0816577672958374
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.7270683646202087,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "5680790219464207772",
+            "guid": "3018508502407554235",
+            "name": "Box"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Column/Column_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Column_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Column.fbxasset",
+                "meshAssetPath": "Column"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -8.0,
+                    "y": 0.0,
+                    "z": 6.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "14125390691098379035",
+            "name": "Column0"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Column/Column_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Column_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Column.fbxasset",
+                "meshAssetPath": "Column"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 8.0,
+                    "y": 0.0,
+                    "z": 6.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "15433943505910368075",
+            "name": "Column1"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Column/Column_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Column_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Column.fbxasset",
+                "meshAssetPath": "Column"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -8.0,
+                    "y": 0.0,
+                    "z": -6.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "14201664140062208216",
+            "name": "Column2"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Column/Column_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Column_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Column.fbxasset",
+                "meshAssetPath": "Column"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 8.0,
+                    "y": 0.0,
+                    "z": -6.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "11136753115647645329",
+            "name": "Column3"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/acrh_low/acrh_low_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/acrh_low_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/acrh_low.fbxasset",
+                "meshAssetPath": "acrh_low"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 6.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 3.141592502593994,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "14787538078399498714",
+            "guid": "4991813349817177941",
+            "name": "DoorArch"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Box(texture)/Box(texture)_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Box(texture)_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Box(texture).fbxasset",
+                "meshAssetPath": "Box(texture)"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 4.121038913726807,
+                    "y": 0.0,
+                    "z": -1.7706081867218018
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 2.094395160675049,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "17609786223180980013",
+            "name": "Box1"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Box(texture)/Box(texture)_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Box(texture)_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Box(texture).fbxasset",
+                "meshAssetPath": "Box(texture)"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 4.168278694152832,
+                    "y": 0.8505048751831055,
+                    "z": -0.8581436276435852
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 1.7107576131820679,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "2485300717058558311",
+            "name": "Box2"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/ceramic/ceramic_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/ceramic_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/ceramic.fbxasset",
+                "meshAssetPath": "ceramic"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 5.164738655090332,
+                    "y": 0.0,
+                    "z": 2.939587116241455
+                },
+                "rotation": {
+                    "x": 1.3526301383972168,
+                    "y": -0.5741634368896484,
+                    "z": 8.261599759862293e-07
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "12490064607413545449",
+            "name": "Vase0"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/ceramic/ceramic_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/ceramic_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/ceramic.fbxasset",
+                "meshAssetPath": "ceramic"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 5.065090179443359,
+                    "y": 0.0,
+                    "z": 1.9854505062103271
+                },
+                "rotation": {
+                    "x": 1.3526406288146973,
+                    "y": -2.5305325984954834,
+                    "z": 4.406406333146151e-06
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "13956065727835644656",
+            "name": "Vase1"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/ceramic/ceramic_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/ceramic_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/ceramic.fbxasset",
+                "meshAssetPath": "ceramic"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 3.7273526191711426,
+                    "y": 0.7906296849250793,
+                    "z": -2.1474287509918213
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "10392718626691481377",
+            "name": "Vase2"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Tutorial_Ceiling/Tutorial_Ceiling_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Tutorial_Ceiling_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Tutorial_Ceiling.fbxasset",
+                "meshAssetPath": "Tutorial_Ceiling"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "11086856153358133273",
+            "name": "Ceiling"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/TutorialWallback/TutorialWallback_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/TutorialWallback_0.mat",
+                "color": {
+                    "x": 0.7019608020782471,
+                    "y": 0.7019608020782471,
+                    "z": 0.7019608020782471
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/TutorialWallback.fbxasset",
+                "meshAssetPath": "TutorialWallback"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -6.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "12641310413547308069"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/TutorialWallleft/TutorialWallleft_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/TutorialWallleft_0.mat",
+                "color": {
+                    "x": 0.7019608020782471,
+                    "y": 0.7019608020782471,
+                    "z": 0.7019608020782471
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.21699999272823334,
+                "toonPbrCut2": 0.46399998664855957,
+                "toonPbrCut3": 1.0,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/TutorialWallleft.fbxasset",
+                "meshAssetPath": "TutorialWallleft"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -8.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "13338594941797325149"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/TutorialWallright/TutorialWallright_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/TutorialWallright_0.mat",
+                "color": {
+                    "x": 0.7019608020782471,
+                    "y": 0.7019608020782471,
+                    "z": 0.7019608020782471
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/TutorialWallright.fbxasset",
+                "meshAssetPath": "TutorialWallright"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 8.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "9022228240157129399"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/TutorialWallfront/TutorialWallfront_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/TutorialWallfront_0.mat",
+                "color": {
+                    "x": 0.7019608020782471,
+                    "y": 0.7019608020782471,
+                    "z": 0.7019608020782471
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/TutorialWallfront.fbxasset",
+                "meshAssetPath": "TutorialWallfront"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 6.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "5855289854732530098"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Cube/Cube_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -32.9278678894043,
+                    "y": 15.603658676147461,
+                    "z": -40.80333709716797
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 1.6423548460006714,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 100.0,
+                    "y": 100.0,
+                    "z": 10.0
+                },
+                "visible": true
+            },
+            "guid": "12785659588091526140",
+            "name": "Cube(FBX)"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Cube/Cube_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 63.38027572631836,
+                    "y": 0.0,
+                    "z": 60.93993377685547
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 100.0,
+                    "y": 100.0,
+                    "z": 10.0
+                },
+                "visible": true
+            },
+            "guid": "7883237693050427118",
+            "name": "Cube(FBX)"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/TutorialFloor/TutorialFloor_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/TutorialFloor_0.mat",
+                "color": {
+                    "x": 0.7374517321586609,
+                    "y": 0.7374517321586609,
+                    "z": 0.7374517321586609
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.453000009059906,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/TutorialFloor.fbxasset",
+                "meshAssetPath": "TutorialFloor"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "15307888365046795490",
+            "name": "TutorialFloor"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "FlareFlickerDemo",
+                    "props": {
+                        "m_alphaAmplitude": 0.10999999940395355,
+                        "m_baseAlpha": 0.800000011920929,
+                        "m_baseColor": {
+                            "x": 1.0,
+                            "y": 0.550000011920929,
+                            "z": 0.3499999940395355
+                        },
+                        "m_baseSize": {
+                            "x": 2.5,
+                            "y": 2.5
+                        },
+                        "m_billboard": true,
+                        "m_framePath1": "Resource/Image/candle_fire.png",
+                        "m_framePath2": "",
+                        "m_framePath3": "",
+                        "m_framePath4": "",
+                        "m_framePath5": "",
+                        "m_framePath6": "",
+                        "m_framePath7": "",
+                        "m_framePath8": "",
+                        "m_frameRate": 11.460000038146973,
+                        "m_loopFrames": true,
+                        "m_maxAlpha": 1.0700000524520874,
+                        "m_maxColorScale": 0.9200000166893005,
+                        "m_minAlpha": 0.41999998688697815,
+                        "m_minColorScale": 0.75,
+                        "m_primarySpeed": 2.8499999046325684,
+                        "m_responseCurve": 0.9900000095367432,
+                        "m_scaleAmplitude": 0.07999999821186066,
+                        "m_secondarySpeed": 5.860000133514404,
+                        "m_secondaryWeight": 0.44999998807907104,
+                        "m_texturePath": "Resource/Image/candle_fire.png",
+                        "m_timeScale": 1.0,
+                        "m_useAlphaFlicker": true,
+                        "m_useFrameAnimation": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -3.2884340286254883,
+                    "y": 0.2155928909778595,
+                    "z": -1.3428633213043213
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 3.1415927410125732,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 0.7840080261230469,
+                    "x": 0.8226425647735596,
+                    "y": 0.4524534344673157,
+                    "z": 0.2879248857498169
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Image/candle_fire.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.0,
+                    "y": 1.100000023841858
+                },
+                "anchorMin": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0203028917312622,
+                    "y": 1.0203028917312622
+                },
+                "size": {
+                    "x": 2.5,
+                    "y": 2.5
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "FlareUI"
+            },
+            "guid": "1703516215743815889",
+            "name": "Flare"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.4289292097091675,
+                    "z": 0.05791503190994263
+                },
+                "enabled": true,
+                "intensity": 3.0,
+                "range": 2.5
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 1.66972017288208,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "1703516215743815889",
+            "guid": "17229507491804259915",
+            "name": "FlareFillLight"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "FlareFlickerDemo",
+                    "props": {
+                        "m_alphaAmplitude": 0.10999999940395355,
+                        "m_baseAlpha": 0.800000011920929,
+                        "m_baseColor": {
+                            "x": 1.0,
+                            "y": 0.550000011920929,
+                            "z": 0.3499999940395355
+                        },
+                        "m_baseSize": {
+                            "x": 2.5,
+                            "y": 2.5
+                        },
+                        "m_billboard": true,
+                        "m_framePath1": "Resource/Image/candle_fire.png",
+                        "m_framePath2": "",
+                        "m_framePath3": "",
+                        "m_framePath4": "",
+                        "m_framePath5": "",
+                        "m_framePath6": "",
+                        "m_framePath7": "",
+                        "m_framePath8": "",
+                        "m_frameRate": 11.460000038146973,
+                        "m_loopFrames": true,
+                        "m_maxAlpha": 1.0700000524520874,
+                        "m_maxColorScale": 0.9200000166893005,
+                        "m_minAlpha": 0.41999998688697815,
+                        "m_minColorScale": 0.75,
+                        "m_primarySpeed": 2.8499999046325684,
+                        "m_responseCurve": 0.9900000095367432,
+                        "m_scaleAmplitude": 0.07999999821186066,
+                        "m_secondarySpeed": 5.860000133514404,
+                        "m_secondaryWeight": 0.44999998807907104,
+                        "m_texturePath": "Resource/Image/candle_fire.png",
+                        "m_timeScale": 1.0,
+                        "m_useAlphaFlicker": true,
+                        "m_useFrameAnimation": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -3.850295066833496,
+                    "y": 0.22452646493911743,
+                    "z": -1.8022749423980713
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 0.7840080261230469,
+                    "x": 0.8226425647735596,
+                    "y": 0.4524534344673157,
+                    "z": 0.2879248857498169
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Image/candle_fire.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.0,
+                    "y": 1.100000023841858
+                },
+                "anchorMin": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0203028917312622,
+                    "y": 1.0203028917312622
+                },
+                "size": {
+                    "x": 2.5,
+                    "y": 2.5
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "FlareUI"
+            },
+            "guid": "16251485458052492688",
+            "name": "Flare"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.4274509847164154,
+                    "z": 0.05882352963089943
+                },
+                "enabled": true,
+                "intensity": 2.25,
+                "range": 5.0
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 2.097050905227661,
+                    "z": 7.62939453125e-06
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "16251485458052492688",
+            "guid": "10475553441738734478",
+            "name": "FlareFillLight"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "FlareFlickerDemo",
+                    "props": {
+                        "m_alphaAmplitude": 0.10999999940395355,
+                        "m_baseAlpha": 0.800000011920929,
+                        "m_baseColor": {
+                            "x": 1.0,
+                            "y": 0.550000011920929,
+                            "z": 0.3499999940395355
+                        },
+                        "m_baseSize": {
+                            "x": 2.5,
+                            "y": 2.5
+                        },
+                        "m_billboard": true,
+                        "m_framePath1": "Resource/Image/candle_fire.png",
+                        "m_framePath2": "",
+                        "m_framePath3": "",
+                        "m_framePath4": "",
+                        "m_framePath5": "",
+                        "m_framePath6": "",
+                        "m_framePath7": "",
+                        "m_framePath8": "",
+                        "m_frameRate": 11.460000038146973,
+                        "m_loopFrames": true,
+                        "m_maxAlpha": 1.0700000524520874,
+                        "m_maxColorScale": 0.9200000166893005,
+                        "m_minAlpha": 0.41999998688697815,
+                        "m_minColorScale": 0.75,
+                        "m_primarySpeed": 2.8499999046325684,
+                        "m_responseCurve": 0.9900000095367432,
+                        "m_scaleAmplitude": 0.07999999821186066,
+                        "m_secondarySpeed": 5.860000133514404,
+                        "m_secondaryWeight": 0.44999998807907104,
+                        "m_texturePath": "Resource/Image/candle_fire.png",
+                        "m_timeScale": 1.0,
+                        "m_useAlphaFlicker": true,
+                        "m_useFrameAnimation": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -5.246524810791016,
+                    "y": 0.2153586745262146,
+                    "z": -2.3684892654418945
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": -6.003548622131348,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 0.7840080261230469,
+                    "x": 0.8226425647735596,
+                    "y": 0.4524534344673157,
+                    "z": 0.2879248857498169
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Image/candle_fire.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.0,
+                    "y": 1.100000023841858
+                },
+                "anchorMin": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0203028917312622,
+                    "y": 1.0203028917312622
+                },
+                "size": {
+                    "x": 2.5,
+                    "y": 2.5
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "FlareUI"
+            },
+            "guid": "930882810396255000",
+            "name": "Flare"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.4274509847164154,
+                    "z": 0.05882352963089943
+                },
+                "enabled": true,
+                "intensity": 3.0,
+                "range": 2.5
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -0.152587890625,
+                    "y": 3.0312254428863525,
+                    "z": -3.814697265625e-05
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "930882810396255000",
+            "guid": "9720539795790581226",
+            "name": "FlareFillLight"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "FlareFlickerDemo",
+                    "props": {
+                        "m_alphaAmplitude": 0.10999999940395355,
+                        "m_baseAlpha": 0.800000011920929,
+                        "m_baseColor": {
+                            "x": 1.0,
+                            "y": 0.550000011920929,
+                            "z": 0.3499999940395355
+                        },
+                        "m_baseSize": {
+                            "x": 2.5,
+                            "y": 2.5
+                        },
+                        "m_billboard": true,
+                        "m_framePath1": "Resource/Image/candle_fire.png",
+                        "m_framePath2": "",
+                        "m_framePath3": "",
+                        "m_framePath4": "",
+                        "m_framePath5": "",
+                        "m_framePath6": "",
+                        "m_framePath7": "",
+                        "m_framePath8": "",
+                        "m_frameRate": 11.460000038146973,
+                        "m_loopFrames": true,
+                        "m_maxAlpha": 1.0700000524520874,
+                        "m_maxColorScale": 0.9200000166893005,
+                        "m_minAlpha": 0.41999998688697815,
+                        "m_minColorScale": 0.75,
+                        "m_primarySpeed": 2.8499999046325684,
+                        "m_responseCurve": 0.9900000095367432,
+                        "m_scaleAmplitude": 0.07999999821186066,
+                        "m_secondarySpeed": 5.860000133514404,
+                        "m_secondaryWeight": 0.44999998807907104,
+                        "m_texturePath": "Resource/Image/candle_fire.png",
+                        "m_timeScale": 1.0,
+                        "m_useAlphaFlicker": true,
+                        "m_useFrameAnimation": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -3.296604633331299,
+                    "y": 0.21906614303588867,
+                    "z": 1.2454872131347656
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 0.7840080261230469,
+                    "x": 0.8226425647735596,
+                    "y": 0.4524534344673157,
+                    "z": 0.2879248857498169
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Image/candle_fire.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.0,
+                    "y": 1.100000023841858
+                },
+                "anchorMin": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0203028917312622,
+                    "y": 1.0203028917312622
+                },
+                "size": {
+                    "x": 2.5,
+                    "y": 2.5
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "FlareUI"
+            },
+            "guid": "5590529102027941144",
+            "name": "Flare"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.4274509847164154,
+                    "z": 0.05882352963089943
+                },
+                "enabled": true,
+                "intensity": 3.0,
+                "range": 2.5
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 3.2125227451324463,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "5590529102027941144",
+            "guid": "7702388224761873146",
+            "name": "FlareFillLight"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "FlareFlickerDemo",
+                    "props": {
+                        "m_alphaAmplitude": 0.10999999940395355,
+                        "m_baseAlpha": 0.800000011920929,
+                        "m_baseColor": {
+                            "x": 1.0,
+                            "y": 0.550000011920929,
+                            "z": 0.3499999940395355
+                        },
+                        "m_baseSize": {
+                            "x": 2.5,
+                            "y": 2.5
+                        },
+                        "m_billboard": true,
+                        "m_framePath1": "Resource/Image/candle_fire.png",
+                        "m_framePath2": "",
+                        "m_framePath3": "",
+                        "m_framePath4": "",
+                        "m_framePath5": "",
+                        "m_framePath6": "",
+                        "m_framePath7": "",
+                        "m_framePath8": "",
+                        "m_frameRate": 11.460000038146973,
+                        "m_loopFrames": true,
+                        "m_maxAlpha": 1.0700000524520874,
+                        "m_maxColorScale": 0.9200000166893005,
+                        "m_minAlpha": 0.41999998688697815,
+                        "m_minColorScale": 0.75,
+                        "m_primarySpeed": 2.8499999046325684,
+                        "m_responseCurve": 0.9900000095367432,
+                        "m_scaleAmplitude": 0.07999999821186066,
+                        "m_secondarySpeed": 5.860000133514404,
+                        "m_secondaryWeight": 0.44999998807907104,
+                        "m_texturePath": "Resource/Image/candle_fire.png",
+                        "m_timeScale": 1.0,
+                        "m_useAlphaFlicker": true,
+                        "m_useFrameAnimation": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -3.854384183883667,
+                    "y": 0.23978523910045624,
+                    "z": 1.8148878812789917
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": -6.003548622131348,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 0.7840080261230469,
+                    "x": 0.8226425647735596,
+                    "y": 0.4524534344673157,
+                    "z": 0.2879248857498169
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Image/candle_fire.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.0,
+                    "y": 1.100000023841858
+                },
+                "anchorMin": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0203028917312622,
+                    "y": 1.0203028917312622
+                },
+                "size": {
+                    "x": 2.5,
+                    "y": 2.5
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "FlareUI"
+            },
+            "guid": "9889423444556548446",
+            "name": "Flare"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.4274509847164154,
+                    "z": 0.05882352963089943
+                },
+                "enabled": true,
+                "intensity": 2.25,
+                "range": 5.0
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -7.62939453125e-06,
+                    "y": 1.446429967880249,
+                    "z": -2.86102294921875e-06
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "9889423444556548446",
+            "guid": "11927140883957067957",
+            "name": "FlareFillLight"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "FlareFlickerDemo",
+                    "props": {
+                        "m_alphaAmplitude": 0.10999999940395355,
+                        "m_baseAlpha": 0.800000011920929,
+                        "m_baseColor": {
+                            "x": 1.0,
+                            "y": 0.550000011920929,
+                            "z": 0.3499999940395355
+                        },
+                        "m_baseSize": {
+                            "x": 2.5,
+                            "y": 2.5
+                        },
+                        "m_billboard": true,
+                        "m_framePath1": "Resource/Image/candle_fire.png",
+                        "m_framePath2": "",
+                        "m_framePath3": "",
+                        "m_framePath4": "",
+                        "m_framePath5": "",
+                        "m_framePath6": "",
+                        "m_framePath7": "",
+                        "m_framePath8": "",
+                        "m_frameRate": 11.460000038146973,
+                        "m_loopFrames": true,
+                        "m_maxAlpha": 1.0700000524520874,
+                        "m_maxColorScale": 0.9200000166893005,
+                        "m_minAlpha": 0.41999998688697815,
+                        "m_minColorScale": 0.75,
+                        "m_primarySpeed": 2.8499999046325684,
+                        "m_responseCurve": 0.9900000095367432,
+                        "m_scaleAmplitude": 0.07999999821186066,
+                        "m_secondarySpeed": 5.860000133514404,
+                        "m_secondaryWeight": 0.44999998807907104,
+                        "m_texturePath": "Resource/Image/candle_fire.png",
+                        "m_timeScale": 1.0,
+                        "m_useAlphaFlicker": true,
+                        "m_useFrameAnimation": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -5.047382831573486,
+                    "y": 0.22401317954063416,
+                    "z": 2.4459095001220703
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612,
+                    "z": 0.10000000149011612
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 0.7840080261230469,
+                    "x": 0.8226425647735596,
+                    "y": 0.4524534344673157,
+                    "z": 0.2879248857498169
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Image/candle_fire.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.0,
+                    "y": 1.100000023841858
+                },
+                "anchorMin": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0203028917312622,
+                    "y": 1.0203028917312622
+                },
+                "size": {
+                    "x": 2.5,
+                    "y": 2.5
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "FlareUI"
+            },
+            "guid": "3932132552491546720",
+            "name": "Flare"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.4274509847164154,
+                    "z": 0.05882352963089943
+                },
+                "enabled": true,
+                "intensity": 3.0,
+                "range": 2.5
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -0.00089263916015625,
+                    "y": 2.1283504962921143,
+                    "z": -5.7220458984375e-06
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "3932132552491546720",
+            "guid": "72042036434627611",
+            "name": "FlareFillLight"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/tia_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": 3,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/tia.fbxasset",
+                "meshAssetPath": "tia"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -3.3578686714172363,
+                    "y": 0.0,
+                    "z": 0.20431165397167206
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 1.6776869297027588,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "2762030642974699528"
+        },
+        {
+            "RectLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 0.42352941632270813,
+                    "y": 0.4745098054409027,
+                    "z": 0.5529412031173706
+                },
+                "enabled": true,
+                "height": 40.7400016784668,
+                "intensity": 0.5,
+                "range": 13.093000411987305,
+                "width": 0.10000000149011612
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.5759999752044678,
+                    "y": 7.818999767303467,
+                    "z": 1.0056178569793701
+                },
+                "rotation": {
+                    "x": 1.2070342302322388,
+                    "y": -1.9166136980056763,
+                    "z": 2.813051700592041
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "7857887671798081385",
+            "name": "Rect Light"
+        }
+    ],
+    "sceneName": "TutorialMap2",
+    "version": 1
+}

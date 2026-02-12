@@ -61,10 +61,10 @@ namespace Alice
         TargetImage = nullptr;
         NormalImage = nullptr;
         CooldownImage = nullptr;
-        NormalBaseAlpha = 1.0f;
-        CooldownBaseAlpha = 1.0f;
+        NormalImageEntity = InvalidEntityId;
+        CooldownImageEntity = InvalidEntityId;
         wasLowValue = false;
-        ImageBlendInitialized = false;
+        VisibilityInitialized = false;
 
         TryResolveSession();
 
@@ -127,14 +127,14 @@ namespace Alice
             const EntityId imageEntity = FindWidgetEntityByName(*w, openEyeWidgetName);
             if (imageEntity != InvalidEntityId)
             {
+                NormalImageEntity = imageEntity;
                 NormalImage = w->GetComponent<UIImageComponent>(imageEntity);
                 if (NormalImage)
                 {
                     if (!Get_normalImagePath().empty())
                         NormalImage->texturePath = Get_normalImagePath();
-                    NormalBaseAlpha = std::clamp(NormalImage->color.w, 0.0f, 1.0f);
-                    if (NormalBaseAlpha <= 0.0f)
-                        NormalBaseAlpha = 1.0f;
+                    // Visibility 스왑 방식에서는 알파가 0이면 보이지 않으므로 고정.
+                    NormalImage->color.w = 1.0f;
                     ALICE_LOG_INFO("[PlayerGauge] Open-eye image resolved: %s", openEyeWidgetName.c_str());
                 }
             }
@@ -145,14 +145,14 @@ namespace Alice
             const EntityId imageEntity = FindWidgetEntityByName(*w, closedEyeWidgetName);
             if (imageEntity != InvalidEntityId)
             {
+                CooldownImageEntity = imageEntity;
                 CooldownImage = w->GetComponent<UIImageComponent>(imageEntity);
                 if (CooldownImage)
                 {
                     if (!Get_lowValueImagePath().empty())
                         CooldownImage->texturePath = Get_lowValueImagePath();
-                    CooldownBaseAlpha = std::clamp(CooldownImage->color.w, 0.0f, 1.0f);
-                    if (CooldownBaseAlpha <= 0.0f)
-                        CooldownBaseAlpha = 1.0f;
+                    // Visibility 스왑 방식에서는 알파가 0이면 보이지 않으므로 고정.
+                    CooldownImage->color.w = 1.0f;
                     ALICE_LOG_INFO("[PlayerGauge] Closed-eye image resolved: %s", closedEyeWidgetName.c_str());
                 }
             }
@@ -169,12 +169,6 @@ namespace Alice
             }
         }
 
-        if (!ImageBlendInitialized && NormalImage && CooldownImage)
-        {
-            NormalImage->color.w = NormalBaseAlpha;
-            CooldownImage->color.w = 0.0f;
-            ImageBlendInitialized = true;
-        }
     }
 
     void PlayerGauge::Update(float deltaTime)
@@ -183,14 +177,11 @@ namespace Alice
         TryResolveSession();
         TryResolveImages();
 
-        // 기본값(세션 미탐색): 준비됨 상태
-        float openEyeAlpha = 1.0f;
-        float closedEyeAlpha = 0.0f;
+        // 기본값(세션 미탐색): 정상 상태
         bool isLowValue = false;
 
         if (TargetSession)
         {
-            const bool inGuardBreak = (TargetSession->GetPlayerState() == Combat::ActionState::GuardBreakWeak);
             const bool inWeak = TargetSession->IsPlayerWeakActive();
             bool inWeaponBreak = false;
 
@@ -207,67 +198,63 @@ namespace Alice
                 inWeaponBreak = (gauge01 <= breakThreshold);
             }
 
-            // 강제 불가 상태(가드브레이크/weak/무기파괴): 감은눈을 완전히 덮음
-            if (inGuardBreak || inWeak || inWeaponBreak)
-            {
-                openEyeAlpha = 1.0f;
-                closedEyeAlpha = 1.0f;
-                isLowValue = true;
-            }
-            else
-            {
-                const bool isRageActive = TargetSession->IsPlayerRageActive();
-                const float cooldownNormRemain =
-                    std::clamp(TargetSession->GetPlayerRageCooldownNormalized(), 0.0f, 1.0f);
-
-                // 준비됨 또는 광폭화 활성화: 항상 뜬눈
-                if (isRageActive || cooldownNormRemain <= 0.0f)
-                {
-                    openEyeAlpha = 1.0f;
-                    closedEyeAlpha = 0.0f;
-                    isLowValue = false;
-                }
-                else
-                {
-                    // 쿨다운 중: 뜬눈은 항상 1.0, 감은눈만 1.0 -> 0.2로 감소
-                    openEyeAlpha = 1.0f;
-                    closedEyeAlpha = 0.2f + (0.8f * cooldownNormRemain);
-                    isLowValue = true;
-                }
-            }
+            // 단순 상태 구분:
+            // 1) weak 또는 weaponBreak -> low(감은눈)
+            // 2) 그 외 -> normal(뜬눈)
+            isLowValue = (inWeak || inWeaponBreak);
         }
 
-        // 2개 위젯이 모두 있으면 알파 보간으로 처리
+        // 2개 위젯이 모두 있으면 visibility 스왑으로 처리
         if (NormalImage && CooldownImage)
         {
-            NormalImage->color.w = std::clamp(NormalBaseAlpha * openEyeAlpha, 0.0f, 1.0f);
-            CooldownImage->color.w = std::clamp(CooldownBaseAlpha * closedEyeAlpha, 0.0f, 1.0f);
+            World* w = GetWorld();
+            if (w && (!VisibilityInitialized || (isLowValue != wasLowValue)))
+            {
+                auto setVisible = [&](EntityId id, bool visible)
+                {
+                    if (id == InvalidEntityId)
+                        return;
+                    if (auto* widget = w->GetComponent<UIWidgetComponent>(id))
+                        widget->visibility = visible ? AliceUI::UIVisibility::Visible : AliceUI::UIVisibility::Collapsed;
+                };
+
+                // 다른 로직/기존 데이터로 알파가 0일 수 있어 매번 보정.
+                if (NormalImage)
+                    NormalImage->color.w = 1.0f;
+                if (CooldownImage)
+                    CooldownImage->color.w = 1.0f;
+
+                setVisible(NormalImageEntity, !isLowValue);
+                setVisible(CooldownImageEntity, isLowValue);
+                VisibilityInitialized = true;
+                wasLowValue = isLowValue;
+            }
             return;
         }
 
         if (!TargetImage)
             return;
 
-        // 단일 위젯 fallback: 텍스처 스왑(체력 조건 미사용)
+        // 단일 위젯 fallback: 텍스처 스왑
         if (isLowValue != wasLowValue)
         {
             if (isLowValue)
             {
-                // 낮은 값일 때 이미지 변경
                 if (!Get_lowValueImagePath().empty())
                 {
                     TargetImage->texturePath = Get_lowValueImagePath();
-                    ALICE_LOG_INFO("[PlayerGauge] Rage cooldown active. Switching to cooldown image: %s",
+                    TargetImage->color.w = 1.0f;
+                    ALICE_LOG_INFO("[PlayerGauge] Weak/weapon-break active. Switching to low image: %s",
                         Get_lowValueImagePath().c_str());
                 }
             }
             else
             {
-                // 정상 값일 때 이미지 변경
                 if (!Get_normalImagePath().empty())
                 {
                     TargetImage->texturePath = Get_normalImagePath();
-                    ALICE_LOG_INFO("[PlayerGauge] Rage cooldown ready/active(or no session). Switching to normal image: %s",
+                    TargetImage->color.w = 1.0f;
+                    ALICE_LOG_INFO("[PlayerGauge] Normal state. Switching to normal image: %s",
                         Get_normalImagePath().c_str());
                 }
             }

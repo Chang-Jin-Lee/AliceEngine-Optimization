@@ -1126,6 +1126,16 @@ namespace Alice
 		return std::clamp(m_state->playerRageCooldownRemainingSec / cooldownSec, 0.0f, 1.0f);
 	}
 
+	bool C_CombatSessionComponent::IsPlayerLockOnActive() const
+	{
+		return m_state ? m_state->playerLockOnActive : false;
+	}
+
+	EntityId C_CombatSessionComponent::GetPlayerLockOnTarget() const
+	{
+		return m_state ? m_state->playerLockOnTarget : InvalidEntityId;
+	}
+
 	bool C_CombatSessionComponent::IsFatalActive() const
 	{
 		return m_state ? m_state->fatal.active : false;
@@ -2416,6 +2426,7 @@ namespace Alice
 			&& bossBrain
 			&& (bossBrain->GetActivePattern() == C_BossBrainComponent::PatternType::Special);
 		const bool playerGuardBreakCameraActive = hasBossForLockOn && (m_state->playerGuardBreakLockOnSec > 0.0f);
+		const bool playerFatalForceLockOnActive = hasBossForLockOn && (m_state->fatal.active || fatalTriggered);
 		const bool forceLockOnZoomActive = bossPhaseHowlingActive || playerGuardBreakCameraActive;
 		float forcedZoomInRatio = 0.0f;
 		if (bossPhaseHowlingActive)
@@ -2449,6 +2460,12 @@ namespace Alice
 				camSpring->desiredDistance = defaultDistance;
 				camSpring->distance = defaultDistance;
 			}
+		}
+		else if (playerFatalForceLockOnActive)
+		{
+			// Keep lock-on fixed while fatal(front stab) sequence is active.
+			m_state->playerLockOnActive = true;
+			m_state->playerLockOnTarget = bossId;
 		}
 		else if (playerLockOnToggleRequested && canLockOn)
 		{
