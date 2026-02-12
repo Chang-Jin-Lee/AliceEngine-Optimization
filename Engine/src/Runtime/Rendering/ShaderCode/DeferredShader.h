@@ -1480,9 +1480,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     }
     shadowStrength = saturate(shadowStrength);
     shadowVis = saturate(lerp(1.0f, shadowVis, shadowStrength));
-    // A) Backface leakage guard: directional shadow only affects front-facing side.
-    float ndotlDir = saturate(dot(N, L));
-    shadowVis = lerp(1.0f, shadowVis, ndotlDir);
+
 
     // [Legacy Lighting]
     if (!usePbr)
@@ -1559,8 +1557,6 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
             shadedNdotL = toonEditable ? ToonStepEditable(ndotl, toonCuts, toonLevels, toonAlphas, toonStrength, toonBlur, toonRampIntensity) : ToonLevel(ndotl);
         }
         float selfShadowNdotL = ApplySelfShadowNdotL(shadedNdotL, toonSelfShadowStrength);
-        // B) Safety clamp: never let Toon self-shadow lighting exceed geometric NdotL.
-        selfShadowNdotL = min(selfShadowNdotL, ndotl);
         float3 lit = EvaluatePBRLight(N, V, L, albedoPBR, metalness, roughness, lightColorDir, selfShadowNdotL);
         directLighting += lit * shadowVis * ao;
     }
