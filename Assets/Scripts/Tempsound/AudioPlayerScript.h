@@ -34,7 +34,7 @@ namespace Alice
         ALICE_PROPERTY(std::string, pathAttack1, "Resource/Test/4_Resources/sound/SFX/Player/Attack1/Player_Attack_01.wav");
         ALICE_PROPERTY(std::string, pathAttack2, "Resource/Test/4_Resources/sound/SFX/Player/Attack2/Player_Attack_02.wav");
         ALICE_PROPERTY(std::string, pathAttack3, "Resource/Test/4_Resources/sound/SFX/Player/Attack3/Player_Attack_03.wav");
-        ALICE_PROPERTY(std::string, pathGuard, "Resource/Test/4_Resources/sound/SFX/Player/Guard/Player_Guard_01.mp3");
+        ALICE_PROPERTY(std::string, pathGuard, "Resource/Test/4_Resources/sound/SFX/Player/Gaurd/Player_Guard_01.mp3");
         ALICE_PROPERTY(std::string, pathParry, "Resource/Test/4_Resources/sound/SFX/Player/parry/Player_Parry_01.wav");
         
         // 광폭화 공격 경로 (광폭화 상태일 때 Attack1/2/3 대신 사용)
@@ -50,12 +50,12 @@ namespace Alice
         ALICE_PROPERTY(std::string, pathHitRoll, "Resource/Test/4_Resources/sound/SFX/Player/HitAndRoll/Player_Attacked_Rolling.mp3");
 
         // 플레이어 기타 상태별 경로
-        ALICE_PROPERTY(std::string, pathGuardBreakAlarm, "Resource/Test/4_Resources/sound/SFX/Player/preGuardBreak/Player_GuardBreak_Alarm_01.wav");
-        ALICE_PROPERTY(std::string, pathGuardBreak, "Resource/Test/4_Resources/sound/SFX/Player/GuardBreak/Player_GuardBreak_01.mp3");
+        ALICE_PROPERTY(std::string, pathGuardBreakAlarm, "Resource/Test/4_Resources/sound/SFX/Player/preGaurdBreak/Player_GuardBreak_Alarm_01.wav");
+        ALICE_PROPERTY(std::string, pathGuardBreak, "Resource/Test/4_Resources/sound/SFX/Player/GaurdBreak/Player_GuardBreak_01.mp3");
         ALICE_PROPERTY(std::string, pathEgoCombine, "Resource/Test/4_Resources/sound/SFX/Player/WeaponCombine/Player_Weapon_Gather_01.wav");
         ALICE_PROPERTY(std::string, pathHeal, "Resource/Test/4_Resources/sound/SFX/Player/heal/Player_Healing_01.wav");
         ALICE_PROPERTY(std::string, pathGroggyAttack, "Resource/Test/4_Resources/sound/SFX/Player/GroggyAttack/Player_GroggyAttack_01.mp3");
-        ALICE_PROPERTY(std::string, pathDeath, "Resource/Test/4_Resources/sound/SFX/Player/Dead/Player_Death_01.wav");
+        ALICE_PROPERTY(std::string, pathDeath, "Resource/Test/4_Resources/sound/SFX/Player/Dead/Player_Die_01.wav");
 
         /// 공격 상태 → OnPlayerAttackSfxRequest 델리게이트로 바인딩
         // Per-file volume controls (Inspector)

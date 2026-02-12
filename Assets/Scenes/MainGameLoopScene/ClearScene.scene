@@ -8,7 +8,30 @@
                 },
                 {
                     "enabled": true,
-                    "name": "ClearResultStatsScript"
+                    "name": "ClearResultStatsScript",
+                    "props": {
+                        "damagedRateWidgetName": "UI_DamageRate",
+                        "guardRateWidgetName": "UI_GuardText",
+                        "parryRateWidgetName": "UI_ParryText",
+                        "retryWidgetName": "UI_Perry",
+                        "timeWidgetName": "UI_Time",
+                        "totalWidgetName": "UI_Total",
+                        "weaponBreakWidgetName": "UI_WeaponBreak"
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "ClearSceneReturnInputScript",
+                    "props": {
+                        "allowEnterKey": true,
+                        "allowGamepadAButton": true,
+                        "allowMouseLeftClick": true,
+                        "allowSpaceKey": true,
+                        "gamepadPlayerIndex": 0,
+                        "inputCooldownSec": 0.11999999731779099,
+                        "inputEnableDelaySec": 5.0,
+                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/TitleScene.scene"
+                    }
                 }
             ],
             "Transform": {
@@ -93,7 +116,14 @@
             "Scripts": [
                 {
                     "enabled": true,
-                    "name": "AudioBGMScript"
+                    "name": "AudioBGMScript",
+                    "props": {
+                        "bgmPath": "Resource/Test/4_Resources/sound/SFX/BGM/BGM_Ending_01.mp3",
+                        "busEntityName": "AudioBus",
+                        "playOnStart": true,
+                        "useBus": true,
+                        "volume": 0.5
+                    }
                 },
                 {
                     "enabled": true,
