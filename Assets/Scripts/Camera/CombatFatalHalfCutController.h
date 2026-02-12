@@ -64,6 +64,7 @@ namespace Alice
             bool bOverrideImpactBlurRadius = false;
             bool bOverrideImpactBlurCenterX = false;
             bool bOverrideImpactBlurCenterY = false;
+            bool bOverrideColorGradingSaturation = false;
 
             float splitAmount = 0.0f;
             float splitAngleDeg = 12.0f;
@@ -86,6 +87,7 @@ namespace Alice
             float impactBlurRadius = 0.25f;
             float impactBlurCenterX = 0.5f;
             float impactBlurCenterY = 0.5f;
+            DirectX::XMFLOAT3 saturation{ 1.0f, 1.0f, 1.0f };
         };
 
         void ResolveSessionAndActors(bool logWarnings);
@@ -100,18 +102,26 @@ namespace Alice
 
         void SaveAndDisableCameraControls();
         void RestoreCameraControls();
+        void ApplyIdleFatalFov(float fatalElapsedSec);
+        void RestoreIdleFatalFovOverride();
 
-        void StartFatalSequence();
-        void UpdateHalfCut(float deltaTime);
+        void StartFatalSequence(float fatalElapsedSec);
+        void UpdateHalfCut(float deltaTime, float fatalElapsedSec);
         void UpdateBlendBack(float deltaTime);
         void FinishSequence();
         void AbortSequence();
 
         float GetCutTotalDurationSec() const;
+        float GetHalfCutDurationSec(float fatalElapsedAtSequenceStart) const;
+        float EstimateFatalElapsedSec() const;
         float EvaluateSplitAmount(float timeSec) const;
         float EvaluateFlash01(float timeSec) const;
         float EvaluateCutWeight01(float splitAmount, float flash01) const;
-        void ApplyCutPostProcess(float splitAmount, float flash01, float timeSec, float cutWeight01);
+        float EvaluateStabZoom01(float timeSec) const;
+        float EvaluateFatalFovZoom01(float fatalElapsedSec) const;
+        float EvaluateGrayscale01(float timeSec) const;
+        void ApplyCutPostProcess(float splitAmount, float flash01, float timeSec, float cutWeight01, float grayscale01);
+        void ApplyStandaloneGrayscale(float grayscale01);
 
     private:
         ALICE_PROPERTY(std::string, m_sessionEntityName, "SceneManager");
@@ -124,13 +134,13 @@ namespace Alice
         ALICE_PROPERTY(bool, m_autoCreateVolume, false);
         ALICE_PROPERTY(int, m_volumePriority, 2600);
 
-        ALICE_PROPERTY(float, m_peakAmount, -0.12f);
-        ALICE_PROPERTY(float, m_angleDeg, -40.38f);
-        ALICE_PROPERTY(float, m_lineOffset, -0.11f);
-        ALICE_PROPERTY(float, m_feather, 0.123f);
-        ALICE_PROPERTY(float, m_attackSec, 0.08f);
-        ALICE_PROPERTY(float, m_holdSec, 0.05f);
-        ALICE_PROPERTY(float, m_releaseSec, 0.20f);
+        ALICE_PROPERTY(float, m_peakAmount, 0.09f);
+        ALICE_PROPERTY(float, m_angleDeg, -46.17f);
+        ALICE_PROPERTY(float, m_lineOffset, 0.01f);
+        ALICE_PROPERTY(float, m_feather, 0.223f);
+        ALICE_PROPERTY(float, m_attackSec, 0.11f);
+        ALICE_PROPERTY(float, m_holdSec, 0.07f);
+        ALICE_PROPERTY(float, m_releaseSec, 0.58f);
         ALICE_PROPERTY(bool, m_useFatalProgressStart, false);
         ALICE_PROPERTY(float, m_startFatalProgress01, 0.52210528f);
         ALICE_PROPERTY(bool, m_useFatalElapsedStart, true);
@@ -140,35 +150,51 @@ namespace Alice
         ALICE_PROPERTY(bool, m_snapAfterRecover, false);
         ALICE_PROPERTY(float, m_blendBackDurationSec, 0.10f);
         ALICE_PROPERTY(float, m_cutZoomInDeg, 7.0f);
+        ALICE_PROPERTY(bool, m_enableStabZoom, false);
+        ALICE_PROPERTY(float, m_stabZoomStartSec, 0.60f);
+        ALICE_PROPERTY(float, m_stabZoomInSec, 0.28f);
+        ALICE_PROPERTY(float, m_stabZoomOutSec, 0.25f);
+        ALICE_PROPERTY(float, m_stabZoomInDeg, 17.0f);
+        ALICE_PROPERTY(bool, m_enableFatalTimelineFovZoom, true);
+        ALICE_PROPERTY(float, m_fatalFovZoomStartSec, 0.30f);
+        ALICE_PROPERTY(float, m_fatalFovZoomEndSec, 2.80f);
+        ALICE_PROPERTY(float, m_fatalFovZoomInSec, 0.38f);
+        ALICE_PROPERTY(float, m_fatalFovZoomOutSec, 0.30f);
+        ALICE_PROPERTY(float, m_fatalFovTargetDeg, 33.99f);
         ALICE_PROPERTY(float, m_retriggerCooldownSec, 0.25f);
 
         ALICE_PROPERTY(bool, m_splitFxEnabled, true);
-        ALICE_PROPERTY(float, m_splitFxIntensity, 5.5f);
-        ALICE_PROPERTY(float, m_splitFxWidth, 0.088f);
-        ALICE_PROPERTY(float, m_splitFxSpeed, 62.0f);
-        ALICE_PROPERTY(float, m_splitFxTimeScale, 1.15f);
+        ALICE_PROPERTY(float, m_splitFxIntensity, 12.0f);
+        ALICE_PROPERTY(float, m_splitFxWidth, 0.028f);
+        ALICE_PROPERTY(float, m_splitFxSpeed, 67.0f);
+        ALICE_PROPERTY(float, m_splitFxTimeScale, 1.02f);
         ALICE_PROPERTY(bool, m_splitOneSideDown, true);
-        ALICE_PROPERTY(DirectX::XMFLOAT3, m_splitFxColorA, DirectX::XMFLOAT3(2.8f, 1.2f, 0.45f));
-        ALICE_PROPERTY(DirectX::XMFLOAT3, m_splitFxColorB, DirectX::XMFLOAT3(0.10f, 1.05f, 0.95f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_splitFxColorA, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_splitFxColorB, DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f));
 
-        ALICE_PROPERTY(float, m_peakExposure, 2.99f);
-        ALICE_PROPERTY(float, m_peakBloomThreshold, 0.55f);
-        ALICE_PROPERTY(float, m_peakBloomKnee, 0.70f);
-        ALICE_PROPERTY(float, m_peakBloomIntensity, 3.05f);
-        ALICE_PROPERTY(float, m_peakBloomGaussianIntensity, 2.3f);
-        ALICE_PROPERTY(float, m_peakBloomRadius, 2.03f);
+        ALICE_PROPERTY(float, m_peakExposure, 2.08f);
+        ALICE_PROPERTY(float, m_peakBloomThreshold, 0.43f);
+        ALICE_PROPERTY(float, m_peakBloomKnee, 0.52f);
+        ALICE_PROPERTY(float, m_peakBloomIntensity, 2.10f);
+        ALICE_PROPERTY(float, m_peakBloomGaussianIntensity, 1.53f);
+        ALICE_PROPERTY(float, m_peakBloomRadius, 1.46f);
         ALICE_PROPERTY(bool, m_enableFlashTone, false);
+        ALICE_PROPERTY(bool, m_enableGrayscaleBeforeSplit, true);
+        ALICE_PROPERTY(float, m_grayscaleStartSec, 0.60f);
+        ALICE_PROPERTY(float, m_grayscaleEndSec, 2.87f);
+        ALICE_PROPERTY(float, m_grayscaleRestoreSec, 0.40f);
+        ALICE_PROPERTY(float, m_grayscaleSaturation, 0.10f);
 
         ALICE_PROPERTY(bool, m_useImpactBlurDuringCut, true);
-        ALICE_PROPERTY(float, m_peakImpactBlurIntensity, 2.2f);
-        ALICE_PROPERTY(float, m_impactBlurRadius, 0.32f);
-        ALICE_PROPERTY(float, m_impactBlurCenterX, 0.5f);
-        ALICE_PROPERTY(float, m_impactBlurCenterY, 0.5f);
+        ALICE_PROPERTY(float, m_peakImpactBlurIntensity, 2.11f);
+        ALICE_PROPERTY(float, m_impactBlurRadius, 0.21f);
+        ALICE_PROPERTY(float, m_impactBlurCenterX, 0.56f);
+        ALICE_PROPERTY(float, m_impactBlurCenterY, 0.52f);
 
         ALICE_PROPERTY(float, m_snapBehindDistance, 2.0f);
-        ALICE_PROPERTY(float, m_snapHeight, 1.35f);
+        ALICE_PROPERTY(float, m_snapHeight, 1.57f);
         ALICE_PROPERTY(float, m_snapSideOffset, 0.0f);
-        ALICE_PROPERTY(float, m_lookAtPlayerYOffset, 1.05f);
+        ALICE_PROPERTY(float, m_lookAtPlayerYOffset, 1.03f);
         ALICE_PROPERTY(float, m_lookAtBossYOffset, 1.2f);
 
         ALICE_PROPERTY(bool, m_disableFollowDuringSequence, true);
@@ -186,10 +212,14 @@ namespace Alice
         bool m_startedThisFatal = false;
         float m_runtimeSec = 0.0f;
         float m_lastSequenceStartSec = -1000.0f;
+        bool m_fatalBaseFovCaptured = false;
+        float m_fatalBaseFovDeg = 60.0f;
 
         Phase m_phase = Phase::Idle;
         float m_phaseTimerSec = 0.0f;
         bool m_snapApplied = false;
+        float m_fatalElapsedAtSequenceStart = 0.0f;
+        float m_fatalStartRuntimeSec = 0.0f;
 
         CameraPose m_preFatalPose{};
         CameraPose m_snapPose{};
@@ -200,6 +230,14 @@ namespace Alice
         bool m_savedLookAtEnabled = false;
         bool m_savedSpringArmEnabled = true;
         int m_savedFollowMode = 0;
+        bool m_idleFatalFovOverrideActive = false;
+        float m_savedFollowFovDamping = 6.0f;
+        float m_savedExploreFovDeg = 60.0f;
+        float m_savedCombatFovDeg = 65.0f;
+        float m_savedLockOnFovDeg = 55.0f;
+        float m_savedAimFovDeg = 45.0f;
+        float m_savedBossIntroFovDeg = 75.0f;
+        float m_savedDeathFovDeg = 50.0f;
 
         PpvBaseline m_ppvBaseline{};
     };

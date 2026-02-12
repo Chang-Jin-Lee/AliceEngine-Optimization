@@ -131,10 +131,15 @@ namespace Alice
         m_startedThisFatal = false;
         m_runtimeSec = 0.0f;
         m_lastSequenceStartSec = -1000.0f;
+        m_fatalBaseFovCaptured = false;
+        m_fatalBaseFovDeg = 60.0f;
         m_phase = Phase::Idle;
         m_phaseTimerSec = 0.0f;
         m_snapApplied = false;
+        m_fatalElapsedAtSequenceStart = 0.0f;
+        m_fatalStartRuntimeSec = 0.0f;
         m_controlsCaptured = false;
+        m_idleFatalFovOverrideActive = false;
         m_ppvBaseline = {};
 
         ResolveSessionAndActors(true);
@@ -157,13 +162,67 @@ namespace Alice
         const float dt = std::max(0.0f, deltaTime);
         m_runtimeSec += dt;
 
+        World* world = GetWorld();
         ResolveSessionAndActors(false);
         ResolveCameraEntity();
         EnsurePostProcessVolume();
 
         const bool fatalActive = (m_session && m_session->IsFatalActive());
+        if (fatalActive && !m_prevFatalActive)
+        {
+            const float estimatedElapsed = std::clamp(EstimateFatalElapsedSec(), 0.0f, 60.0f);
+            m_fatalStartRuntimeSec = std::max(0.0f, m_runtimeSec - estimatedElapsed);
+            m_ppvBaseline = {};
+            if (world && m_cameraEntity != InvalidEntityId)
+            {
+                if (const auto* cam = world->GetComponent<CameraComponent>(m_cameraEntity))
+                {
+                    m_fatalBaseFovCaptured = true;
+                    m_fatalBaseFovDeg = std::clamp(cam->GetFov(), 1.0f, 170.0f);
+                }
+            }
+        }
+        else if (!fatalActive && m_prevFatalActive)
+        {
+            m_fatalStartRuntimeSec = m_runtimeSec;
+        }
+
+        const float fatalElapsedSec = fatalActive
+            ? std::max(0.0f, m_runtimeSec - m_fatalStartRuntimeSec)
+            : 0.0f;
+        const float sequenceFatalElapsedSec = fatalActive
+            ? fatalElapsedSec
+            : (m_fatalElapsedAtSequenceStart + m_phaseTimerSec);
+
         if (!fatalActive)
+        {
             m_startedThisFatal = false;
+            RestoreIdleFatalFovOverride();
+            if (m_phase == Phase::Idle && m_ppvBaseline.valid)
+            {
+                RestorePostProcessBaseline();
+                m_ppvBaseline = {};
+            }
+            if (m_phase == Phase::Idle && m_fatalBaseFovCaptured && world && m_cameraEntity != InvalidEntityId)
+            {
+                if (auto* cam = world->GetComponent<CameraComponent>(m_cameraEntity))
+                    cam->SetFov(std::clamp(m_fatalBaseFovDeg, 1.0f, 170.0f));
+                m_fatalBaseFovCaptured = false;
+            }
+        }
+
+        if (m_phase == Phase::Idle && fatalActive && Get_m_enableGrayscaleBeforeSplit())
+        {
+            ApplyStandaloneGrayscale(EvaluateGrayscale01(fatalElapsedSec));
+        }
+        if (m_phase == Phase::Idle && fatalActive && Get_m_enableFatalTimelineFovZoom())
+        {
+            ApplyIdleFatalFov(fatalElapsedSec);
+        }
+        else if (m_phase != Phase::Idle || !fatalActive)
+        {
+            RestoreIdleFatalFovOverride();
+        }
 
         if (m_phase == Phase::Idle && fatalActive && !m_startedThisFatal)
         {
@@ -176,20 +235,7 @@ namespace Alice
             }
             if (triggerReady && Get_m_useFatalElapsedStart())
             {
-                const float currentProgress = Saturate(m_session ? m_session->GetFatalProgress01() : 0.0f);
-                const float remainSec = std::max(0.0f, m_session ? m_session->GetFatalRemainSec() : 0.0f);
-                float elapsedSec = 0.0f;
-                if (currentProgress >= 1.0f)
-                {
-                    elapsedSec = std::max(0.0f, Get_m_startFatalElapsedSec());
-                }
-                else if (currentProgress > 1e-5f)
-                {
-                    const float totalSec = remainSec / std::max(1.0f - currentProgress, 1e-5f);
-                    elapsedSec = totalSec * currentProgress;
-                }
-
-                triggerReady = (elapsedSec >= std::max(0.0f, Get_m_startFatalElapsedSec()));
+                triggerReady = (fatalElapsedSec >= std::max(0.0f, Get_m_startFatalElapsedSec()));
             }
 
             if (triggerReady)
@@ -197,7 +243,7 @@ namespace Alice
                 const float coolSec = std::max(0.0f, Get_m_retriggerCooldownSec());
                 if ((m_runtimeSec - m_lastSequenceStartSec) >= coolSec)
                 {
-                    StartFatalSequence();
+                    StartFatalSequence(fatalElapsedSec);
                     if (m_phase != Phase::Idle)
                         m_startedThisFatal = true;
                 }
@@ -205,7 +251,7 @@ namespace Alice
         }
 
         if (m_phase == Phase::HalfCut)
-            UpdateHalfCut(dt);
+            UpdateHalfCut(dt, sequenceFatalElapsedSec);
         else if (m_phase == Phase::BlendBack)
             UpdateBlendBack(dt);
 
@@ -381,6 +427,7 @@ namespace Alice
         m_ppvBaseline.bOverrideImpactBlurRadius = s.bOverride_ImpactBlurRadius;
         m_ppvBaseline.bOverrideImpactBlurCenterX = s.bOverride_ImpactBlurCenterX;
         m_ppvBaseline.bOverrideImpactBlurCenterY = s.bOverride_ImpactBlurCenterY;
+        m_ppvBaseline.bOverrideColorGradingSaturation = s.bOverride_ColorGradingSaturation;
 
         m_ppvBaseline.splitAmount = s.splitAmount;
         m_ppvBaseline.splitAngleDeg = s.splitAngleDeg;
@@ -402,6 +449,7 @@ namespace Alice
         m_ppvBaseline.impactBlurRadius = s.impactBlurRadius;
         m_ppvBaseline.impactBlurCenterX = s.impactBlurCenterX;
         m_ppvBaseline.impactBlurCenterY = s.impactBlurCenterY;
+        m_ppvBaseline.saturation = s.saturation;
     }
 
     void CombatFatalHalfCutController::RestorePostProcessBaseline()
@@ -438,6 +486,7 @@ namespace Alice
         s.bOverride_ImpactBlurRadius = m_ppvBaseline.bOverrideImpactBlurRadius;
         s.bOverride_ImpactBlurCenterX = m_ppvBaseline.bOverrideImpactBlurCenterX;
         s.bOverride_ImpactBlurCenterY = m_ppvBaseline.bOverrideImpactBlurCenterY;
+        s.bOverride_ColorGradingSaturation = m_ppvBaseline.bOverrideColorGradingSaturation;
 
         s.splitAmount = m_ppvBaseline.splitAmount;
         s.splitAngleDeg = m_ppvBaseline.splitAngleDeg;
@@ -459,6 +508,7 @@ namespace Alice
         s.impactBlurRadius = m_ppvBaseline.impactBlurRadius;
         s.impactBlurCenterX = m_ppvBaseline.impactBlurCenterX;
         s.impactBlurCenterY = m_ppvBaseline.impactBlurCenterY;
+        s.saturation = m_ppvBaseline.saturation;
     }
 
     bool CombatFatalHalfCutController::GetCurrentCameraPose(CameraPose& outPose) const
@@ -579,6 +629,8 @@ namespace Alice
         if (m_controlsCaptured)
             return;
 
+        RestoreIdleFatalFovOverride();
+
         World* world = GetWorld();
         if (!world || m_cameraEntity == InvalidEntityId)
             return;
@@ -611,6 +663,8 @@ namespace Alice
 
     void CombatFatalHalfCutController::RestoreCameraControls()
     {
+        RestoreIdleFatalFovOverride();
+
         if (!m_controlsCaptured)
             return;
 
@@ -650,7 +704,69 @@ namespace Alice
         m_controlsCaptured = false;
     }
 
-    void CombatFatalHalfCutController::StartFatalSequence()
+    void CombatFatalHalfCutController::ApplyIdleFatalFov(float fatalElapsedSec)
+    {
+        World* world = GetWorld();
+        if (!world || m_cameraEntity == InvalidEntityId)
+            return;
+
+        const float alpha = EvaluateFatalFovZoom01(fatalElapsedSec);
+        const float baseFov = std::clamp(m_fatalBaseFovDeg, 1.0f, 170.0f);
+        const float targetFov = std::clamp(Get_m_fatalFovTargetDeg(), 1.0f, 170.0f);
+        const float desiredFov = std::clamp(LerpUnclamped(baseFov, targetFov, alpha), 1.0f, 170.0f);
+
+        if (auto* follow = world->GetComponent<CameraFollowComponent>(m_cameraEntity); follow && follow->enabled)
+        {
+            if (!m_idleFatalFovOverrideActive)
+            {
+                m_savedFollowFovDamping = follow->fovDamping;
+                m_savedExploreFovDeg = follow->exploreFovDeg;
+                m_savedCombatFovDeg = follow->combatFovDeg;
+                m_savedLockOnFovDeg = follow->lockOnFovDeg;
+                m_savedAimFovDeg = follow->aimFovDeg;
+                m_savedBossIntroFovDeg = follow->bossIntroFovDeg;
+                m_savedDeathFovDeg = follow->deathFovDeg;
+                m_idleFatalFovOverrideActive = true;
+            }
+
+            follow->exploreFovDeg = desiredFov;
+            follow->combatFovDeg = desiredFov;
+            follow->lockOnFovDeg = desiredFov;
+            follow->aimFovDeg = desiredFov;
+            follow->bossIntroFovDeg = desiredFov;
+            follow->deathFovDeg = desiredFov;
+            follow->fovDamping = 1000.0f;
+            return;
+        }
+
+        if (auto* cam = world->GetComponent<CameraComponent>(m_cameraEntity))
+            cam->SetFov(desiredFov);
+    }
+
+    void CombatFatalHalfCutController::RestoreIdleFatalFovOverride()
+    {
+        if (!m_idleFatalFovOverrideActive)
+            return;
+
+        World* world = GetWorld();
+        if (world && m_cameraEntity != InvalidEntityId)
+        {
+            if (auto* follow = world->GetComponent<CameraFollowComponent>(m_cameraEntity))
+            {
+                follow->fovDamping = m_savedFollowFovDamping;
+                follow->exploreFovDeg = m_savedExploreFovDeg;
+                follow->combatFovDeg = m_savedCombatFovDeg;
+                follow->lockOnFovDeg = m_savedLockOnFovDeg;
+                follow->aimFovDeg = m_savedAimFovDeg;
+                follow->bossIntroFovDeg = m_savedBossIntroFovDeg;
+                follow->deathFovDeg = m_savedDeathFovDeg;
+            }
+        }
+
+        m_idleFatalFovOverrideActive = false;
+    }
+
+    void CombatFatalHalfCutController::StartFatalSequence(float fatalElapsedSec)
     {
         ResolveCameraEntity();
         if (m_cameraEntity == InvalidEntityId)
@@ -659,32 +775,40 @@ namespace Alice
         CameraPose current{};
         if (!GetCurrentCameraPose(current))
             return;
+        if (m_fatalBaseFovCaptured)
+            current.fovDeg = std::clamp(m_fatalBaseFovDeg, 1.0f, 170.0f);
 
         m_preFatalPose = current;
         m_snapPose = current;
         m_blendFromPose = current;
 
-        CapturePostProcessBaseline();
+        if (!m_ppvBaseline.valid)
+            CapturePostProcessBaseline();
         SaveAndDisableCameraControls();
 
         m_phase = Phase::HalfCut;
         m_phaseTimerSec = 0.0f;
         m_snapApplied = false;
+        m_fatalElapsedAtSequenceStart = std::max(0.0f, fatalElapsedSec);
         m_lastSequenceStartSec = m_runtimeSec;
 
         const float split = EvaluateSplitAmount(0.0f);
         const float flash = EvaluateFlash01(0.0f);
         const float cutWeight = EvaluateCutWeight01(split, flash);
-        ApplyCutPostProcess(split, flash, 0.0f, cutWeight);
+        const float grayscale = EvaluateGrayscale01(m_fatalElapsedAtSequenceStart);
+        ApplyCutPostProcess(split, flash, 0.0f, cutWeight, grayscale);
     }
 
-    void CombatFatalHalfCutController::UpdateHalfCut(float deltaTime)
+    void CombatFatalHalfCutController::UpdateHalfCut(float deltaTime, float fatalElapsedSec)
     {
         m_phaseTimerSec += std::max(0.0f, deltaTime);
 
         const float split = EvaluateSplitAmount(m_phaseTimerSec);
         const float flash = EvaluateFlash01(m_phaseTimerSec);
         const float cutWeight = EvaluateCutWeight01(split, flash);
+        const float stabZoom = EvaluateStabZoom01(m_phaseTimerSec);
+        const float fatalFovZoom = EvaluateFatalFovZoom01(fatalElapsedSec);
+        const float grayscale = EvaluateGrayscale01(fatalElapsedSec);
 
         if (Get_m_enableSnapMove() &&
             !Get_m_snapAfterRecover() &&
@@ -700,11 +824,22 @@ namespace Alice
         }
 
         CameraPose pose = m_snapApplied ? m_snapPose : m_preFatalPose;
-        pose.fovDeg = std::clamp(pose.fovDeg - std::max(0.0f, Get_m_cutZoomInDeg()) * cutWeight, 1.0f, 170.0f);
+        if (Get_m_enableFatalTimelineFovZoom())
+        {
+            const float baseFov = std::clamp(m_fatalBaseFovDeg, 1.0f, 170.0f);
+            const float targetFov = std::clamp(Get_m_fatalFovTargetDeg(), 1.0f, 170.0f);
+            pose.fovDeg = std::clamp(LerpUnclamped(baseFov, targetFov, fatalFovZoom), 1.0f, 170.0f);
+        }
+        else
+        {
+            const float splitZoomDeg = std::max(0.0f, Get_m_cutZoomInDeg()) * cutWeight;
+            const float stabZoomDeg = std::max(0.0f, Get_m_stabZoomInDeg()) * stabZoom;
+            pose.fovDeg = std::clamp(pose.fovDeg - splitZoomDeg - stabZoomDeg, 1.0f, 170.0f);
+        }
         ApplyCameraPose(pose);
-        ApplyCutPostProcess(split, flash, m_phaseTimerSec, cutWeight);
+        ApplyCutPostProcess(split, flash, m_phaseTimerSec, cutWeight, grayscale);
 
-        if (m_phaseTimerSec >= GetCutTotalDurationSec())
+        if (m_phaseTimerSec >= GetHalfCutDurationSec(m_fatalElapsedAtSequenceStart))
         {
             m_blendFromPose = pose;
             RestorePostProcessBaseline();
@@ -740,6 +875,8 @@ namespace Alice
 
     void CombatFatalHalfCutController::FinishSequence()
     {
+        RestoreIdleFatalFovOverride();
+
         if (Get_m_enableSnapMove() &&
             Get_m_snapAfterRecover() &&
             !m_snapApplied)
@@ -762,9 +899,22 @@ namespace Alice
 
     void CombatFatalHalfCutController::AbortSequence()
     {
+        RestoreIdleFatalFovOverride();
+
         m_phase = Phase::Idle;
         m_phaseTimerSec = 0.0f;
         m_snapApplied = false;
+
+        if (m_fatalBaseFovCaptured)
+        {
+            World* world = GetWorld();
+            if (world && m_cameraEntity != InvalidEntityId)
+            {
+                if (auto* cam = world->GetComponent<CameraComponent>(m_cameraEntity))
+                    cam->SetFov(std::clamp(m_fatalBaseFovDeg, 1.0f, 170.0f));
+            }
+            m_fatalBaseFovCaptured = false;
+        }
 
         RestorePostProcessBaseline();
         RestoreCameraControls();
@@ -775,6 +925,51 @@ namespace Alice
         return std::max(0.0f, Get_m_attackSec())
             + std::max(0.0f, Get_m_holdSec())
             + std::max(0.0f, Get_m_releaseSec());
+    }
+
+    float CombatFatalHalfCutController::GetHalfCutDurationSec(float fatalElapsedAtSequenceStart) const
+    {
+        const float splitEnd = GetCutTotalDurationSec();
+        float maxRemain = splitEnd;
+
+        if (Get_m_enableGrayscaleBeforeSplit())
+        {
+            const float grayStart = Get_m_grayscaleStartSec();
+            const float grayEnd = std::max(grayStart, Get_m_grayscaleEndSec());
+            const float grayRestore = std::max(0.0f, Get_m_grayscaleRestoreSec());
+            const float grayFinish = grayEnd + grayRestore;
+            const float remainToGrayFinish = grayFinish - std::max(0.0f, fatalElapsedAtSequenceStart);
+            maxRemain = std::max(maxRemain, std::max(0.0f, remainToGrayFinish));
+        }
+
+        if (Get_m_enableFatalTimelineFovZoom())
+        {
+            const float fovStart = Get_m_fatalFovZoomStartSec();
+            const float fovEnd = std::max(fovStart, Get_m_fatalFovZoomEndSec());
+            const float fovOut = std::max(0.0f, Get_m_fatalFovZoomOutSec());
+            const float fovFinish = fovEnd + fovOut;
+            const float remainToFovFinish = fovFinish - std::max(0.0f, fatalElapsedAtSequenceStart);
+            maxRemain = std::max(maxRemain, std::max(0.0f, remainToFovFinish));
+        }
+
+        return maxRemain;
+    }
+
+    float CombatFatalHalfCutController::EstimateFatalElapsedSec() const
+    {
+        if (!m_session)
+            return 0.0f;
+
+        const float progress = Saturate(m_session->GetFatalProgress01());
+        const float remainSec = std::max(0.0f, m_session->GetFatalRemainSec());
+
+        if (progress >= 1.0f)
+            return 0.0f;
+        if (progress <= 1e-5f)
+            return 0.0f;
+
+        const float totalSec = remainSec / std::max(1.0f - progress, 1e-5f);
+        return std::max(0.0f, totalSec * progress);
     }
 
     float CombatFatalHalfCutController::EvaluateSplitAmount(float timeSec) const
@@ -827,7 +1022,107 @@ namespace Alice
         return std::max(split01, Saturate(flash01));
     }
 
-    void CombatFatalHalfCutController::ApplyCutPostProcess(float splitAmount, float flash01, float timeSec, float cutWeight01)
+    float CombatFatalHalfCutController::EvaluateStabZoom01(float timeSec) const
+    {
+        if (!Get_m_enableStabZoom())
+            return 0.0f;
+
+        const float startSec = std::max(0.0f, Get_m_stabZoomStartSec());
+        const float inSec = std::max(0.0f, Get_m_stabZoomInSec());
+        const float outSec = std::max(0.0f, Get_m_stabZoomOutSec());
+        float local = std::max(0.0f, timeSec) - startSec;
+        if (local < 0.0f)
+            return 0.0f;
+
+        if (inSec > 1e-6f)
+        {
+            if (local < inSec)
+                return EaseOutCubic(local / inSec);
+            local -= inSec;
+        }
+
+        if (outSec <= 1e-6f)
+            return 1.0f;
+
+        if (local < outSec)
+            return 1.0f - EaseInCubic(local / outSec);
+
+        return 0.0f;
+    }
+
+    float CombatFatalHalfCutController::EvaluateFatalFovZoom01(float fatalElapsedSec) const
+    {
+        if (!Get_m_enableFatalTimelineFovZoom())
+            return 0.0f;
+
+        const float t = fatalElapsedSec;
+        const float startSec = Get_m_fatalFovZoomStartSec();
+        const float endSec = std::max(startSec, Get_m_fatalFovZoomEndSec());
+        const float inSec = std::max(0.0f, Get_m_fatalFovZoomInSec());
+        const float outSec = std::max(0.0f, Get_m_fatalFovZoomOutSec());
+
+        float up = 0.0f;
+        if (t < startSec)
+        {
+            up = 0.0f;
+        }
+        else if (inSec <= 1e-6f)
+        {
+            up = 1.0f;
+        }
+        else if (t < (startSec + inSec))
+        {
+            up = EaseOutCubic((t - startSec) / inSec);
+        }
+        else
+        {
+            up = 1.0f;
+        }
+
+        float down = 1.0f;
+        if (t < endSec)
+        {
+            down = 1.0f;
+        }
+        else if (outSec <= 1e-6f)
+        {
+            down = 0.0f;
+        }
+        else if (t < (endSec + outSec))
+        {
+            down = 1.0f - EaseInCubic((t - endSec) / outSec);
+        }
+        else
+        {
+            down = 0.0f;
+        }
+
+        return Saturate(std::min(up, down));
+    }
+
+    float CombatFatalHalfCutController::EvaluateGrayscale01(float timeSec) const
+    {
+        if (!Get_m_enableGrayscaleBeforeSplit())
+            return 0.0f;
+
+        const float t = timeSec;
+        const float grayStart = Get_m_grayscaleStartSec();
+        const float grayEnd = std::max(grayStart, Get_m_grayscaleEndSec());
+        const float grayRestore = std::max(0.0f, Get_m_grayscaleRestoreSec());
+
+        if (t < grayStart)
+            return 0.0f;
+
+        if (t <= grayEnd)
+            return 1.0f;
+
+        if (grayRestore <= 1e-6f)
+            return 0.0f;
+
+        return 1.0f - SmoothStep01((t - grayEnd) / grayRestore);
+    }
+
+    void CombatFatalHalfCutController::ApplyCutPostProcess(float splitAmount, float flash01, float timeSec, float cutWeight01, float grayscale01)
     {
         World* world = GetWorld();
         if (!world || !EnsurePostProcessVolume() || m_volumeEntity == InvalidEntityId)
@@ -922,6 +1217,61 @@ namespace Alice
             s.impactBlurRadius = std::max(0.001f, Get_m_impactBlurRadius());
             s.impactBlurCenterX = Saturate(Get_m_impactBlurCenterX());
             s.impactBlurCenterY = Saturate(Get_m_impactBlurCenterY());
+        }
+
+        const float gray01 = Saturate(grayscale01);
+        if (gray01 > 0.0f)
+        {
+            const float targetSat = Saturate(Get_m_grayscaleSaturation());
+            const DirectX::XMFLOAT3 baseSat = m_ppvBaseline.valid
+                ? m_ppvBaseline.saturation
+                : DirectX::XMFLOAT3{ 1.0f, 1.0f, 1.0f };
+            const DirectX::XMFLOAT3 graySat{ targetSat, targetSat, targetSat };
+
+            s.bOverride_ColorGradingSaturation = true;
+            s.saturation = LerpVec(baseSat, graySat, gray01);
+        }
+        else if (m_ppvBaseline.valid)
+        {
+            s.bOverride_ColorGradingSaturation = m_ppvBaseline.bOverrideColorGradingSaturation;
+            s.saturation = m_ppvBaseline.saturation;
+        }
+        else
+        {
+            s.bOverride_ColorGradingSaturation = false;
+            s.saturation = { 1.0f, 1.0f, 1.0f };
+        }
+    }
+
+    void CombatFatalHalfCutController::ApplyStandaloneGrayscale(float grayscale01)
+    {
+        const float gray01 = Saturate(grayscale01);
+        if (gray01 > 0.0f && !m_ppvBaseline.valid)
+            CapturePostProcessBaseline();
+
+        World* world = GetWorld();
+        if (!world || !EnsurePostProcessVolume() || m_volumeEntity == InvalidEntityId)
+            return;
+
+        auto* ppv = world->GetComponent<PostProcessVolumeComponent>(m_volumeEntity);
+        if (!ppv)
+            return;
+
+        auto& s = ppv->settings;
+        if (gray01 > 0.0f)
+        {
+            const float targetSat = Saturate(Get_m_grayscaleSaturation());
+            const DirectX::XMFLOAT3 baseSat = m_ppvBaseline.valid
+                ? m_ppvBaseline.saturation
+                : DirectX::XMFLOAT3{ 1.0f, 1.0f, 1.0f };
+            const DirectX::XMFLOAT3 graySat{ targetSat, targetSat, targetSat };
+            s.bOverride_ColorGradingSaturation = true;
+            s.saturation = LerpVec(baseSat, graySat, gray01);
+        }
+        else if (m_ppvBaseline.valid)
+        {
+            s.bOverride_ColorGradingSaturation = m_ppvBaseline.bOverrideColorGradingSaturation;
+            s.saturation = m_ppvBaseline.saturation;
         }
     }
 }
