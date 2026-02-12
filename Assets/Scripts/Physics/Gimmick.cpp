@@ -133,6 +133,20 @@ namespace Alice
         return m_phase != Phase::Normal;
     }
 
+    int Gimmick::ConsumeShardCombinePulseCount()
+    {
+        const int pulseCount = std::max(0, m_pendingShardCombinePulseCount);
+        m_pendingShardCombinePulseCount = 0;
+        return pulseCount;
+    }
+
+    bool Gimmick::ConsumeEyeCombinePulse()
+    {
+        const bool pending = m_pendingEyeCombinePulse;
+        m_pendingEyeCombinePulse = false;
+        return pending;
+    }
+
     void Gimmick::Start()
     {
         m_rng = std::mt19937(std::random_device{}());
@@ -148,6 +162,8 @@ namespace Alice
         m_warnedMissingPlayerEntity = false;
         m_warnedMissingParryShield = false;
         m_warnedMissingParryShieldVfx = false;
+        m_pendingShardCombinePulseCount = 0;
+        m_pendingEyeCombinePulse = false;
         RestoreParryShieldToPlayer(true);
 
         m_initialized = (m_weaponCombined != InvalidEntityId && m_eye != InvalidEntityId);
@@ -1510,6 +1526,7 @@ namespace Alice
 
         if (phase == Phase::AssembleShards)
         {
+            m_pendingShardCombinePulseCount = 0;
             m_nextAssembleIndex = 0;
             m_assembleTimer = 0.0f;
             m_assembleFinishTimer = 0.0f;
@@ -1528,6 +1545,8 @@ namespace Alice
 
         if (phase == Phase::AssembleEye)
         {
+            m_pendingShardCombinePulseCount = 0;
+            m_pendingEyeCombinePulse = false;
             m_eyeArrived = false;
             m_tendonTimer = 0.0f;
             m_tendonFading = false;
@@ -1736,6 +1755,7 @@ namespace Alice
                 shard.assembled = true;
                 shard.assembling = false;
                 shard.assembleStartDistance = 0.0f;
+                ++m_pendingShardCombinePulseCount;
                 if (m_bindTarget != InvalidEntityId)
                     world->SetParent(shard.id, m_bindTarget, false);
                 if (auto* tr = world->GetComponent<TransformComponent>(shard.id))
@@ -1774,6 +1794,7 @@ namespace Alice
                 if (arrived)
                 {
                     m_eyeArrived = true;
+                    m_pendingEyeCombinePulse = true;
                     if (m_bindTarget != InvalidEntityId)
                         world->SetParent(m_eye, m_bindTarget, false);
                     if (auto* eyeTr = world->GetComponent<TransformComponent>(m_eye))

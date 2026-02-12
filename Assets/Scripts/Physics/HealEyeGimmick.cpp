@@ -87,6 +87,10 @@ namespace Alice
         m_bobTime = 0.0f;
         m_spinYawDeg = 0.0f;
         m_loopRequested = false;
+        m_pendingShardCombinePulseCount = 0;
+        m_pendingEyeCombinePulse = false;
+        m_enterNextShardThresholdIndex = 0;
+        m_enterEyeCombineReached = false;
 
         m_currentWeaponAlpha = m_weaponDefaultAlpha;
         m_currentEyeAlpha = 0.0f;
@@ -128,9 +132,27 @@ namespace Alice
         }
 
         m_loopRequested = false;
+        m_pendingShardCombinePulseCount = 0;
+        m_pendingEyeCombinePulse = false;
+        m_enterNextShardThresholdIndex = 0;
+        m_enterEyeCombineReached = false;
         const float duration = ResolveFadeDuration(exitDurationSec, m_exitFadeRatio);
         StartTransition(m_currentWeaponAlpha, m_weaponDefaultAlpha, m_currentEyeAlpha, m_eyeIdleAlpha, duration);
         m_phase = Phase::Exiting;
+    }
+
+    int HealEyeGimmick::ConsumeShardCombinePulseCount()
+    {
+        const int pulseCount = std::max(0, m_pendingShardCombinePulseCount);
+        m_pendingShardCombinePulseCount = 0;
+        return pulseCount;
+    }
+
+    bool HealEyeGimmick::ConsumeEyeCombinePulse()
+    {
+        const bool pending = m_pendingEyeCombinePulse;
+        m_pendingEyeCombinePulse = false;
+        return pending;
     }
 
     void HealEyeGimmick::FindEntities()
@@ -189,6 +211,10 @@ namespace Alice
         m_transitionTimer = 0.0f;
         m_transitionDuration = 0.0f;
         m_loopRequested = false;
+        m_pendingShardCombinePulseCount = 0;
+        m_pendingEyeCombinePulse = false;
+        m_enterNextShardThresholdIndex = 0;
+        m_enterEyeCombineReached = false;
         m_eyeFloatAnchorValid = false;
         m_bobTime = 0.0f;
         m_eyeBaseRotationValid = false;
@@ -228,6 +254,24 @@ namespace Alice
         m_transitionTimer += dt;
         float t = Clamp(m_transitionTimer / m_transitionDuration, 0.0f, 1.0f);
         float smoothT = SmoothStep(t);
+        if (m_phase == Phase::Entering)
+        {
+            const std::size_t shardCount = m_shards.size();
+            while (m_enterNextShardThresholdIndex < shardCount)
+            {
+                const float threshold = static_cast<float>(m_enterNextShardThresholdIndex + 1)
+                    / static_cast<float>(shardCount + 1);
+                if (t < threshold)
+                    break;
+                ++m_pendingShardCombinePulseCount;
+                ++m_enterNextShardThresholdIndex;
+            }
+            if (!m_enterEyeCombineReached && t >= 1.0f)
+            {
+                m_pendingEyeCombinePulse = true;
+                m_enterEyeCombineReached = true;
+            }
+        }
         m_currentWeaponAlpha = Lerp(m_weaponAlphaFrom, m_weaponAlphaTo, smoothT);
         m_currentEyeAlpha = Lerp(m_eyeAlphaFrom, m_eyeAlphaTo, smoothT);
         SetMaterialAlpha(m_weaponCombined, m_currentWeaponAlpha);
