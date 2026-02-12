@@ -108,6 +108,19 @@
                         "targetWidgetName": "UI_Image",
                         "useNonUniformScale": true
                     }
+                },
+                {
+                    "enabled": true,
+                    "name": "ClearResultStatsScript",
+                    "props": {
+                        "damagedRateWidgetName": "UI_DamageRate",
+                        "guardRateWidgetName": "UI_GuardText",
+                        "parryRateWidgetName": "UI_ParryText",
+                        "retryWidgetName": "UI_Perry",
+                        "timeWidgetName": "UI_Time",
+                        "totalWidgetName": "UI_Total",
+                        "weaponBreakWidgetName": "UI_WeaponBreak"
+                    }
                 }
             ],
             "Transform": {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
 
 #include "Runtime/Scripting/IScript.h"
 #include "Runtime/Scripting/ScriptReflection.h"
@@ -15,8 +16,21 @@ namespace Alice
         ALICE_BODY(MainChangerScript);
 
     public:
+        struct ClearResultSnapshot
+        {
+            float timeSec = 0.0f;
+            std::uint64_t retryCount = 0;
+            std::uint64_t guardCount = 0;
+            std::uint64_t parryCount = 0;
+            std::uint64_t damagedCount = 0;
+            std::uint64_t breakCount = 0;
+        };
+
         void Start() override;
         void Update(float deltaTime) override;
+
+        static void SetClearResultSnapshot(const ClearResultSnapshot& snapshot);
+        static bool GetClearResultSnapshot(ClearResultSnapshot& outSnapshot);
 
         ALICE_PROPERTY(std::string, sessionEntityName, "SceneManager");
         ALICE_PROPERTY(std::string, playerEntityName, "Player(Tia)");
@@ -63,5 +77,8 @@ namespace Alice
         EntityId m_bossId{ InvalidEntityId };
         EntityId m_deathWidgetId{ InvalidEntityId };
         FadeInOutScript* m_fade{ nullptr };
+
+        static ClearResultSnapshot s_lastClearResult;
+        static bool s_hasLastClearResult;
     };
 }
