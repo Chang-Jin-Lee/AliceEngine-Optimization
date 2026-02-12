@@ -105,6 +105,7 @@ namespace Alice
 
         void DisableMainChangerIfNeeded(bool onStart);
         void RestoreOverriddenScripts();
+        void TriggerBossDeathUiIfAvailable();
 
         void StartSequence(bool forceBossDead);
         void UpdateSequence(float deltaTime);

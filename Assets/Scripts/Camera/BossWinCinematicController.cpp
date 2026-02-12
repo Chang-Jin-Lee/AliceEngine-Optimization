@@ -28,6 +28,7 @@
 #include "Runtime/Rendering/Components/RectLightComponent.h"
 #include "../Combat/C_CombatSessionComponent.h"
 #include "../TempUIContnets/MainChangerScript.h"
+#include "../TempUIContnets/PrintDarkQuardScript.h"
 
 namespace Alice
 {
@@ -824,6 +825,29 @@ namespace Alice
         m_scriptOverrides.clear();
     }
 
+    void BossWinCinematicController::TriggerBossDeathUiIfAvailable()
+    {
+        World* world = GetWorld();
+        if (!world)
+            return;
+
+        for (auto& [entityId, scripts] : world->GetAllScriptsInWorld())
+        {
+            (void)entityId;
+            for (auto& scriptComp : scripts)
+            {
+                if (scriptComp.scriptName != "PrintDarkQuardScript" || !scriptComp.instance)
+                    continue;
+
+                if (auto* dieOverlay = dynamic_cast<PrintDarkQuardScript*>(scriptComp.instance.get()))
+                {
+                    dieOverlay->TriggerBossDeathNow();
+                    return;
+                }
+            }
+        }
+    }
+
     void BossWinCinematicController::CaptureClearResultSnapshot()
     {
         World* world = GetWorld();
@@ -1067,6 +1091,7 @@ namespace Alice
         const bool willLoadScene = Get_m_enableSceneTransition() && hasScenePath;
 
         m_seq = {};
+        TriggerBossDeathUiIfAvailable();
         ApplyPostProcess(0.0f, Get_m_focusBlurRadius(), Get_m_focusBlurCenterX(), Get_m_focusBlurCenterY(), 0.0f);
         RestorePostProcessBaseline();
         SetGameplayCameraControl(true);

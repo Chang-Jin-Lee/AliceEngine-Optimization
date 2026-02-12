@@ -95,6 +95,7 @@ namespace Alice
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_fallbackFpsLocalScale, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
         ALICE_PROPERTY(float, m_fallbackFpsFovDeg, 62.0f);
         ALICE_PROPERTY(std::string, m_playerEntityName, "Player(Tia)");
+        ALICE_PROPERTY(std::string, m_playerCoreEntityName, "EGO_Core");
         ALICE_PROPERTY(std::string, m_playerWeaponEntityName, "EGO_Blade(combined)");
         ALICE_PROPERTY(std::string, m_bossEntityName, "Boss");
         ALICE_PROPERTY(std::string, m_bossHeadEntityName, "BossEffectPoint");
@@ -114,7 +115,9 @@ namespace Alice
         ALICE_PROPERTY(bool, m_holdFpsAfterCut, true);
         ALICE_PROPERTY(bool, m_restoreGameplayCameraWhenFinished, false);
         ALICE_PROPERTY(bool, m_hidePlayerOnCut, true);
+        ALICE_PROPERTY(bool, m_hidePlayerCoreOnCut, true);
         ALICE_PROPERTY(bool, m_hidePlayerWeaponOnCut, true);
+        ALICE_PROPERTY(bool, m_hidePlayerImmediatelyOnDeath, true);
         ALICE_PROPERTY(bool, m_restoreVisibilityOnStop, true);
         ALICE_PROPERTY(bool, m_disableCombatSessionDuringSequence, true);
         ALICE_PROPERTY(bool, m_disableBossCombatSessionDuringSequence, true);
@@ -153,6 +156,7 @@ namespace Alice
         EntityId m_fpsCameraEntity = InvalidEntityId;
         EntityId m_volumeEntity = InvalidEntityId;
         EntityId m_playerEntity = InvalidEntityId;
+        EntityId m_playerCoreEntity = InvalidEntityId;
         EntityId m_playerWeaponEntity = InvalidEntityId;
         EntityId m_bossEntity = InvalidEntityId;
         EntityId m_bossHeadEntity = InvalidEntityId;

@@ -18,6 +18,7 @@ namespace Alice
     public:
         void Start() override;
         void Update(float deltaTime) override;
+        void TriggerBossDeathNow();
 
         /// ??????????筌왖????뽯뻻????(KeyCode 揶? 0=Alpha0, 3=D, 26=Space ??
         ALICE_PROPERTY(int, m_triggerKey, 3);
@@ -61,6 +62,7 @@ namespace Alice
         float m_bossDeathCinematicWaitSec{ 0.0f };
         bool m_playerDeathLatched{ false };
         bool m_bossDeathLatched{ false };
+        bool m_forceBossDeathTriggerRequested{ false };
         EntityId m_dieTextEntityId{ InvalidEntityId };  // UI_DieText widget
         EntityId m_playerImageEntityId{ InvalidEntityId };
         EntityId m_bossImageEntityId{ InvalidEntityId };
