@@ -1,4 +1,5 @@
 #include "changeBackGroud.h"
+#include <algorithm>
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/ECS/World.h"
@@ -31,6 +32,20 @@ namespace Alice
             }
             return nullptr;
         }
+
+        EntityId FindWidgetEntityByName(World& world, const std::string& widgetName)
+        {
+            if (widgetName.empty())
+                return InvalidEntityId;
+
+            for (auto [id, widget] : world.GetComponents<UIWidgetComponent>())
+            {
+                const std::string name = widget.widgetName.empty() ? world.GetEntityName(id) : widget.widgetName;
+                if (name == widgetName)
+                    return id;
+            }
+            return InvalidEntityId;
+        }
     }
 
     // 이 스크립트를 리플렉션/팩토리 시스템에 등록합니다.
@@ -39,24 +54,23 @@ namespace Alice
     void PlayerGauge::Start()
     {
         World* w = GetWorld();
-        if (!w) return;
+        if (!w)
+            return;
+
+        TargetGauge = nullptr;
+        TargetImage = nullptr;
+        NormalImage = nullptr;
+        CooldownImage = nullptr;
+        NormalBaseAlpha = 1.0f;
+        CooldownBaseAlpha = 1.0f;
+        wasLowValue = false;
 
         TryResolveSession();
 
         // 게이지바 위젯 찾기
         if (!Get_gaugeWidgetName().empty())
         {
-            // UI 루트 찾기 (전체 검색)
-            EntityId gaugeEntity = InvalidEntityId;
-            for (auto [id, widget] : w->GetComponents<UIWidgetComponent>())
-            {
-                const std::string widgetName = widget.widgetName.empty() ? w->GetEntityName(id) : widget.widgetName;
-                if (widgetName == Get_gaugeWidgetName())
-                {
-                    gaugeEntity = id;
-                    break;
-                }
-            }
+            const EntityId gaugeEntity = FindWidgetEntityByName(*w, Get_gaugeWidgetName());
 
             if (gaugeEntity != InvalidEntityId)
             {
@@ -76,44 +90,74 @@ namespace Alice
             }
         }
 
-        // 이미지 컴포넌트 위젯 찾기
-        if (!Get_imageWidgetName().empty())
+        // 뜬눈 위젯명은 normalImageWidgetName 우선, 비어있으면 imageWidgetName 사용
+        std::string openEyeWidgetName = Get_normalImageWidgetName();
+        if (openEyeWidgetName.empty())
+            openEyeWidgetName = Get_imageWidgetName();
+
+        if (!openEyeWidgetName.empty())
         {
-            EntityId imageEntity = InvalidEntityId;
-            for (auto [id, widget] : w->GetComponents<UIWidgetComponent>())
-            {
-                const std::string widgetName = widget.widgetName.empty() ? w->GetEntityName(id) : widget.widgetName;
-                if (widgetName == Get_imageWidgetName())
-                {
-                    imageEntity = id;
-                    break;
-                }
-            }
+            const EntityId imageEntity = FindWidgetEntityByName(*w, openEyeWidgetName);
 
             if (imageEntity != InvalidEntityId)
             {
-                TargetImage = w->GetComponent<UIImageComponent>(imageEntity);
-                if (TargetImage)
+                NormalImage = w->GetComponent<UIImageComponent>(imageEntity);
+                if (NormalImage)
                 {
-                    ALICE_LOG_INFO("[PlayerGauge] Image widget found: %s", Get_imageWidgetName().c_str());
-                    // 초기 이미지 설정
+                    ALICE_LOG_INFO("[PlayerGauge] Open-eye image widget found: %s", openEyeWidgetName.c_str());
                     if (!Get_normalImagePath().empty())
-                    {
-                        TargetImage->texturePath = Get_normalImagePath();
-                    }
+                        NormalImage->texturePath = Get_normalImagePath();
+                    NormalBaseAlpha = std::clamp(NormalImage->color.w, 0.0f, 1.0f);
                 }
                 else
                 {
-                    ALICE_LOG_WARN("[PlayerGauge] Image widget found but UIImageComponent not found: %s", Get_imageWidgetName().c_str());
+                    ALICE_LOG_WARN("[PlayerGauge] Open-eye widget found but UIImageComponent not found: %s", openEyeWidgetName.c_str());
                 }
             }
             else
             {
-                ALICE_LOG_WARN("[PlayerGauge] Image widget not found: %s", Get_imageWidgetName().c_str());
+                ALICE_LOG_WARN("[PlayerGauge] Open-eye image widget not found: %s", openEyeWidgetName.c_str());
             }
         }
 
-        wasLowValue = false;
+        if (!Get_cooldownImageWidgetName().empty())
+        {
+            const EntityId imageEntity = FindWidgetEntityByName(*w, Get_cooldownImageWidgetName());
+            if (imageEntity != InvalidEntityId)
+            {
+                CooldownImage = w->GetComponent<UIImageComponent>(imageEntity);
+                if (CooldownImage)
+                {
+                    ALICE_LOG_INFO("[PlayerGauge] Closed-eye image widget found: %s", Get_cooldownImageWidgetName().c_str());
+                    if (!Get_lowValueImagePath().empty())
+                        CooldownImage->texturePath = Get_lowValueImagePath();
+                    CooldownBaseAlpha = std::clamp(CooldownImage->color.w, 0.0f, 1.0f);
+                }
+                else
+                {
+                    ALICE_LOG_WARN("[PlayerGauge] Closed-eye widget found but UIImageComponent not found: %s", Get_cooldownImageWidgetName().c_str());
+                }
+            }
+            else
+            {
+                ALICE_LOG_WARN("[PlayerGauge] Closed-eye image widget not found: %s", Get_cooldownImageWidgetName().c_str());
+            }
+        }
+
+        // 하위호환: 단일 이미지 fallback 타겟
+        TargetImage = NormalImage;
+        if (!TargetImage && !Get_imageWidgetName().empty())
+        {
+            const EntityId imageEntity = FindWidgetEntityByName(*w, Get_imageWidgetName());
+            if (imageEntity != InvalidEntityId)
+                TargetImage = w->GetComponent<UIImageComponent>(imageEntity);
+        }
+
+        if (NormalImage && CooldownImage)
+        {
+            NormalImage->color.w = NormalBaseAlpha;
+            CooldownImage->color.w = 0.0f;
+        }
     }
 
     void PlayerGauge::TryResolveSession()
@@ -130,25 +174,62 @@ namespace Alice
 
     void PlayerGauge::Update(float deltaTime)
     {
-        if (!TargetImage)
-            return;
-
         (void)deltaTime;
         TryResolveSession();
 
-        // 체력 퍼센트와 무관하게 광폭화 쿨다운 상태만으로 이미지 결정:
-        // - 쿨다운 중(cooldown > 0): 저체력 이미지
-        // - 준비됨/활성화/세션 미탐색: 일반 이미지
+        // 기본값(세션 미탐색): 준비됨 상태
+        float openEyeAlpha = 1.0f;
+        float closedEyeAlpha = 0.0f;
         bool isLowValue = false;
+
         if (TargetSession)
         {
-            const float rageCooldownRemaining = TargetSession->GetPlayerRageCooldownRemainingSec();
             const bool inGuardBreak = (TargetSession->GetPlayerState() == Combat::ActionState::GuardBreakWeak);
             const bool inWeak = TargetSession->IsPlayerWeakActive();
-            isLowValue = (rageCooldownRemaining > 0.0f) || inGuardBreak || inWeak;
+
+            // 강제 불가 상태(가드브레이크/weak): 항상 감은눈
+            if (inGuardBreak || inWeak)
+            {
+                openEyeAlpha = 0.0f;
+                closedEyeAlpha = 1.0f;
+                isLowValue = true;
+            }
+            else
+            {
+                const bool isRageActive = TargetSession->IsPlayerRageActive();
+                const float cooldownNormRemain =
+                    std::clamp(TargetSession->GetPlayerRageCooldownNormalized(), 0.0f, 1.0f);
+
+                // 준비됨 또는 광폭화 활성화: 항상 뜬눈
+                if (isRageActive || cooldownNormRemain <= 0.0f)
+                {
+                    openEyeAlpha = 1.0f;
+                    closedEyeAlpha = 0.0f;
+                    isLowValue = false;
+                }
+                else
+                {
+                    // 쿨다운 중: 비율에 따른 역보간
+                    const float progress = std::clamp(1.0f - cooldownNormRemain, 0.0f, 1.0f);
+                    openEyeAlpha = progress;
+                    closedEyeAlpha = 1.0f - progress;
+                    isLowValue = true;
+                }
+            }
         }
 
-        // 상태가 변경되었을 때만 이미지 업데이트
+        // 2개 위젯이 모두 있으면 알파 보간으로 처리
+        if (NormalImage && CooldownImage)
+        {
+            NormalImage->color.w = std::clamp(NormalBaseAlpha * openEyeAlpha, 0.0f, 1.0f);
+            CooldownImage->color.w = std::clamp(CooldownBaseAlpha * closedEyeAlpha, 0.0f, 1.0f);
+            return;
+        }
+
+        if (!TargetImage)
+            return;
+
+        // 단일 위젯 fallback: 텍스처 스왑(체력 조건 미사용)
         if (isLowValue != wasLowValue)
         {
             if (isLowValue)
