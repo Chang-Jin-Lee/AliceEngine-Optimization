@@ -1,6 +1,7 @@
 #include "BossWinCinematicController.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <unordered_set>
 
@@ -10,6 +11,7 @@
 #include "Runtime/ECS/World.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Gameplay/Combat/HealthComponent.h"
+#include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
 #include "Runtime/Rendering/Components/CameraComponent.h"
 #include "Runtime/Rendering/Components/CameraBlendComponent.h"
@@ -17,7 +19,17 @@
 #include "Runtime/Rendering/Components/CameraLookAtComponent.h"
 #include "Runtime/Rendering/Components/CameraSpringArmComponent.h"
 #include "Runtime/Rendering/Components/CameraShakeComponent.h"
+#include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
+#include "Runtime/Rendering/Components/ComputeEffectComponent.h"
+#include "Runtime/Rendering/Components/UnityVfxComponent.h"
+#include "Runtime/Rendering/Components/PointLightComponent.h"
+#include "Runtime/Rendering/Components/SpotLightComponent.h"
+#include "Runtime/Rendering/Components/RectLightComponent.h"
+#include "../Combat/C_CombatSessionComponent.h"
+#include "../TempUIContnets/FadeInOutScript.h"
+#include "../TempUIContnets/MainChangerScript.h"
+#include "../TempUIContnets/PrintDarkQuardScript.h"
 
 namespace Alice
 {
@@ -153,72 +165,103 @@ namespace Alice
 
             return InvalidEntityId;
         }
+
+        std::vector<std::string> SplitCsv(const std::string& csv)
+        {
+            std::vector<std::string> out;
+            std::string token;
+            token.reserve(csv.size());
+
+            auto Flush = [&]()
+            {
+                std::size_t begin = 0;
+                while (begin < token.size() && std::isspace(static_cast<unsigned char>(token[begin])) != 0)
+                    ++begin;
+
+                std::size_t end = token.size();
+                while (end > begin && std::isspace(static_cast<unsigned char>(token[end - 1])) != 0)
+                    --end;
+
+                if (end > begin)
+                    out.emplace_back(token.substr(begin, end - begin));
+
+                token.clear();
+            };
+
+            for (const char ch : csv)
+            {
+                if (ch == ',')
+                    Flush();
+                else
+                    token.push_back(ch);
+            }
+
+            Flush();
+            return out;
+        }
+
+        FadeInOutScript* FindFadeScript(World& world, const std::string& entityName)
+        {
+            if (entityName.empty())
+                return nullptr;
+
+            const GameObject go = world.FindGameObject(entityName);
+            if (!go.IsValid())
+                return nullptr;
+
+            auto* scripts = world.GetScripts(go.id());
+            if (!scripts)
+                return nullptr;
+
+            for (auto& sc : *scripts)
+            {
+                if (sc.scriptName == "FadeInOutScript" && sc.instance)
+                    return static_cast<FadeInOutScript*>(sc.instance.get());
+            }
+
+            return nullptr;
+        }
+
+        bool FetchWorldPosition(World* world, EntityId id, DirectX::XMFLOAT3& outPos)
+        {
+            if (!world || id == InvalidEntityId)
+                return false;
+
+            const auto* tr = world->GetComponent<TransformComponent>(id);
+            if (!tr || !tr->enabled)
+                return false;
+
+            if (tr->parent == InvalidEntityId)
+            {
+                outPos = tr->position;
+                return true;
+            }
+
+            DirectX::XMVECTOR s{};
+            DirectX::XMVECTOR q{};
+            DirectX::XMVECTOR t{};
+            const DirectX::XMMATRIX worldM = world->ComputeWorldMatrix(id);
+            if (DirectX::XMMatrixDecompose(&s, &q, &t, worldM))
+            {
+                DirectX::XMStoreFloat3(&outPos, t);
+                return true;
+            }
+
+            outPos = tr->position;
+            return true;
+        }
     }
 
     void BossWinCinematicController::Start()
     {
-        // Lock cinematic tuning to the validated scene values at runtime.
-        // Inspector-edited values are intentionally overridden for deterministic playback.
-        Set_m_autoCreatePostProcessVolume(true);
-        Set_m_autoStartOnBossDeath(true);
-        Set_m_bloomBoostIntensity(1.08f);
-        Set_m_bloomBoostKnee(0.48f);
-        Set_m_bloomBoostThreshold(0.85f);
-        Set_m_bossEffectPointName("BossEffectPoint");
-        Set_m_bossEntityName("Boss");
-        Set_m_bossFadeDurationSec(1.6f);
-        Set_m_bossFadeStartSec(0.18f);
-        Set_m_bossMinAlpha(0.0f);
-        Set_m_bossWeaponEntityName("BossWeapon");
-        Set_m_disableFollowDuringSequence(true);
-        Set_m_disableFollowInputDuringSequence(true);
-        Set_m_disableLookAtDuringSequence(true);
-        Set_m_disableMainChangerDuringSequence(true);
-        Set_m_disableMainChangerOnStart(true);
-        Set_m_disableSpringArmDuringSequence(false);
-        Set_m_emissiveBloomBoost(1.24f);
-        Set_m_enableBloomBoost(true);
-        Set_m_enableHotkeys(true);
-        Set_m_enableLogs(false);
-        Set_m_enableSceneTransition(true);
-        Set_m_eyeObjectName("W_EYE");
-        Set_m_fadeBossEnabled(true);
-        Set_m_focusBlurCenterX(0.5f);
-        Set_m_focusBlurCenterY(0.5f);
-        Set_m_focusBlurPeakIntensity(1.3f);
-        Set_m_focusBlurRadius(0.27f);
-        Set_m_focusDistance(3.66f);
-        Set_m_focusDurationSec(1.08f);
-        Set_m_focusFovDeg(36.96f);
-        Set_m_focusHeightOffset(0.71f);
-        Set_m_focusHoldSec(4.82f);
-        Set_m_focusSideOffset(0.22f);
-        Set_m_forceKillKey(7);
-        Set_m_mainCameraName("MainCamera");
-        Set_m_mainChangerScriptName("MainChangerScript");
-        Set_m_nextScenePath("Assets/Scenes/MainGameLoopScene/ClearScene.scene");
-        Set_m_playerEntityName("Player(Tia)");
-        Set_m_postProcessPriority(2950);
-        Set_m_postProcessVolumeName("BossWinCinematicVolume");
-        Set_m_previewKey(6);
-        Set_m_restoreBossIfNoSceneTransition(true);
-        Set_m_returnDurationSec(1.64f);
-        Set_m_sceneManagerEntityName("SceneManager");
-        Set_m_sceneTransitionDelaySec(0.55f);
-        Set_m_shakeAmplitude(0.08f);
-        Set_m_shakeBlurDurationSec(0.5f);
-        Set_m_shakeBlurPeakIntensity(1.65f);
-        Set_m_shakeDecay(1.74f);
-        Set_m_shakeDurationSec(0.3f);
-        Set_m_shakeFrequency(20.33f);
-        Set_m_showEyeDuringSequence(true);
-        Set_m_targetLookYOffset(0.76f);
-        Set_m_useSmoothBlend(true);
-        Set_m_waitBeforeShakeSec(0.77f);
-
         m_seq = {};
         m_pendingSceneLoad = false;
         m_pendingSceneLoadTimerSec = 0.0f;
+        m_pendingUseFade = false;
+        m_pendingFadeStarted = false;
+        m_pendingFadeLeadInSec = 0.0f;
+        m_pendingSceneDelayAfterFadeSec = 0.0f;
+        m_pendingFadeEntityName.clear();
         m_controlsOverridden = false;
         m_bossMaterials.clear();
         m_scriptOverrides.clear();
@@ -255,13 +298,37 @@ namespace Alice
         if (m_pendingSceneLoad)
         {
             m_pendingSceneLoadTimerSec += dt;
-            if (m_pendingSceneLoadTimerSec >= std::max(0.0f, Get_m_sceneTransitionDelaySec()))
+
+            if (m_pendingUseFade && !m_pendingFadeStarted
+                && m_pendingSceneLoadTimerSec >= std::max(0.0f, m_pendingFadeLeadInSec))
+            {
+                if (World* world = GetWorld())
+                {
+                    if (auto* fade = FindFadeScript(*world, m_pendingFadeEntityName))
+                    {
+                        fade->OnEnable();
+                        fade->StartFadeIn();
+                    }
+                }
+                m_pendingFadeStarted = true;
+            }
+
+            const float transitionDelaySec = m_pendingUseFade
+                ? (std::max(0.0f, m_pendingFadeLeadInSec) + std::max(0.0f, m_pendingSceneDelayAfterFadeSec))
+                : std::max(0.0f, m_pendingSceneDelayAfterFadeSec);
+
+            if (m_pendingSceneLoadTimerSec >= transitionDelaySec)
             {
                 const std::string nextScene = Get_m_nextScenePath();
                 if (!nextScene.empty() && Scenes())
                     Scenes()->LoadSceneFileRequest(nextScene.c_str());
 
                 m_pendingSceneLoad = false;
+                m_pendingUseFade = false;
+                m_pendingFadeStarted = false;
+                m_pendingFadeLeadInSec = 0.0f;
+                m_pendingSceneDelayAfterFadeSec = 0.0f;
+                m_pendingFadeEntityName.clear();
             }
             return;
         }
@@ -316,8 +383,10 @@ namespace Alice
         m_sceneManagerEntity = InvalidEntityId;
         m_playerEntity = InvalidEntityId;
         m_bossEntity = InvalidEntityId;
+        m_bossEffectPointEntity = InvalidEntityId;
         m_bossWeaponEntity = InvalidEntityId;
         m_eyeEntity = InvalidEntityId;
+        m_additionalBossEffectEntities.clear();
 
         if (!Get_m_sceneManagerEntityName().empty())
         {
@@ -353,6 +422,15 @@ namespace Alice
                 ALICE_LOG_WARN("[BossWinCinematicController] Boss weapon entity not found: %s", Get_m_bossWeaponEntityName().c_str());
         }
 
+        if (!Get_m_bossEffectPointName().empty())
+        {
+            const GameObject effectPointGo = world->FindGameObject(Get_m_bossEffectPointName());
+            if (effectPointGo.IsValid())
+                m_bossEffectPointEntity = effectPointGo.id();
+            else if (m_bossEntity != InvalidEntityId)
+                m_bossEffectPointEntity = FindDescendantByName(*world, m_bossEntity, Get_m_bossEffectPointName());
+        }
+
         if (!Get_m_eyeObjectName().empty())
         {
             const GameObject eyeGo = world->FindGameObject(Get_m_eyeObjectName());
@@ -360,6 +438,29 @@ namespace Alice
                 m_eyeEntity = eyeGo.id();
             else if (m_bossEntity != InvalidEntityId)
                 m_eyeEntity = FindDescendantByName(*world, m_bossEntity, Get_m_eyeObjectName());
+        }
+
+        for (const std::string& name : SplitCsv(Get_m_additionalBossEffectNamesCsv()))
+        {
+            EntityId id = InvalidEntityId;
+            const GameObject go = world->FindGameObject(name);
+            if (go.IsValid())
+            {
+                id = go.id();
+            }
+            else if (m_bossEntity != InvalidEntityId)
+            {
+                id = FindDescendantByName(*world, m_bossEntity, name);
+            }
+
+            if (id == InvalidEntityId)
+                continue;
+
+            if (std::find(m_additionalBossEffectEntities.begin(), m_additionalBossEffectEntities.end(), id)
+                == m_additionalBossEffectEntities.end())
+            {
+                m_additionalBossEffectEntities.push_back(id);
+            }
         }
 
         return (m_cameraEntity != InvalidEntityId && m_bossEntity != InvalidEntityId);
@@ -587,25 +688,21 @@ namespace Alice
             GameObject go = world->FindGameObject(Get_m_bossEffectPointName());
             if (go.IsValid())
             {
-                if (const auto* tr = world->GetComponent<TransformComponent>(go.id()))
-                    anchorPos = tr->position;
+                FetchWorldPosition(world, go.id(), anchorPos);
             }
             else
             {
                 const EntityId anchorId = FindDescendantByName(*world, m_bossEntity, Get_m_bossEffectPointName());
                 if (anchorId != InvalidEntityId)
                 {
-                    if (const auto* tr = world->GetComponent<TransformComponent>(anchorId))
-                        anchorPos = tr->position;
+                    FetchWorldPosition(world, anchorId, anchorPos);
                 }
             }
         }
 
         if (LengthSq(anchorPos) <= 1e-8f)
         {
-            if (const auto* bossTr = world->GetComponent<TransformComponent>(m_bossEntity))
-                anchorPos = bossTr->position;
-            else
+            if (!FetchWorldPosition(world, m_bossEntity, anchorPos))
                 return false;
         }
 
@@ -780,6 +877,108 @@ namespace Alice
         m_scriptOverrides.clear();
     }
 
+    void BossWinCinematicController::TriggerBossDeathUiIfAvailable()
+    {
+        World* world = GetWorld();
+        if (!world)
+            return;
+
+        for (auto& [entityId, scripts] : world->GetAllScriptsInWorld())
+        {
+            (void)entityId;
+            for (auto& scriptComp : scripts)
+            {
+                if (scriptComp.scriptName != "PrintDarkQuardScript" || !scriptComp.instance)
+                    continue;
+
+                if (auto* dieOverlay = dynamic_cast<PrintDarkQuardScript*>(scriptComp.instance.get()))
+                {
+                    dieOverlay->TriggerBossDeathNow();
+                    return;
+                }
+            }
+        }
+    }
+
+    void BossWinCinematicController::CaptureClearResultSnapshot()
+    {
+        World* world = GetWorld();
+        if (!world || m_sceneManagerEntity == InvalidEntityId)
+            return;
+
+        auto* scripts = world->GetScripts(m_sceneManagerEntity);
+        if (!scripts)
+            return;
+
+        for (auto& scriptComp : *scripts)
+        {
+            if (scriptComp.scriptName != "C_CombatSessionComponent" || !scriptComp.instance)
+                continue;
+
+            auto* session = dynamic_cast<C_CombatSessionComponent*>(scriptComp.instance.get());
+            if (!session)
+                continue;
+
+            MainChangerScript::ClearResultSnapshot snapshot{};
+            snapshot.timeSec = session->GetBossAttemptPlayTimeSec();
+            snapshot.retryCount = session->GetBossRetryCount();
+            snapshot.guardCount = session->GetBossAttemptGuardSuccessCount();
+            snapshot.parryCount = session->GetBossAttemptParrySuccessCount();
+            snapshot.damagedCount = session->GetBossAttemptPlayerHitCount();
+            snapshot.breakCount = session->GetBossAttemptPlayerGuardBreakCount();
+
+            MainChangerScript::SetClearResultSnapshot(snapshot);
+            session->ResetBossAttemptRecord();
+            return;
+        }
+    }
+
+    bool BossWinCinematicController::ShouldMainChangerHandleBossTransition() const
+    {
+        World* world = GetWorld();
+        if (!world || m_sceneManagerEntity == InvalidEntityId)
+            return false;
+
+        auto* scripts = world->GetScripts(m_sceneManagerEntity);
+        if (!scripts)
+            return false;
+
+        for (const auto& scriptComp : *scripts)
+        {
+            if (scriptComp.scriptName != Get_m_mainChangerScriptName() || !scriptComp.instance)
+                continue;
+
+            auto* mainChanger = dynamic_cast<MainChangerScript*>(scriptComp.instance.get());
+            if (!mainChanger)
+                continue;
+
+            return mainChanger->Get_triggerOnBossDeath();
+        }
+
+        return false;
+    }
+
+    bool BossWinCinematicController::IsBossFadePoseReady() const
+    {
+        World* world = GetWorld();
+        if (!world || m_bossEntity == InvalidEntityId)
+            return false;
+
+        if (const auto* skin = world->GetComponent<SkinnedAnimationComponent>(m_bossEntity))
+        {
+            if (!skin->playing)
+                return true;
+        }
+
+        if (const auto* adv = world->GetComponent<AdvancedAnimationComponent>(m_bossEntity))
+        {
+            if (!adv->playing)
+                return true;
+        }
+
+        return false;
+    }
+
     void BossWinCinematicController::StartSequence(bool forceBossDead)
     {
         if (!ResolveEntities(true) || !ResolveCameraEntity())
@@ -793,6 +992,11 @@ namespace Alice
 
         if (forceBossDead)
             ForceBossDead();
+
+        // MainChanger boss-death trigger is intentionally disabled during win cinematic,
+        // so capture clear-result stats here before scene transition.
+        if (!forceBossDead && IsBossDead() && !ShouldMainChangerHandleBossTransition())
+            CaptureClearResultSnapshot();
 
         if (!TryGetCameraPose(m_seq.startPose))
             return;
@@ -808,6 +1012,8 @@ namespace Alice
 
         RestoreBossMaterials();
         CollectBossMaterials();
+        if (forceBossDead || IsBossDead())
+            DisableBossEffectsRecursive();
         ApplyBossAlpha(1.0f);
 
         if (Get_m_showEyeDuringSequence() && m_eyeEntity != InvalidEntityId)
@@ -815,6 +1021,14 @@ namespace Alice
 
         m_pendingSceneLoad = false;
         m_pendingSceneLoadTimerSec = 0.0f;
+        m_pendingUseFade = false;
+        m_pendingFadeStarted = false;
+        m_pendingFadeLeadInSec = 0.0f;
+        m_pendingSceneDelayAfterFadeSec = 0.0f;
+        m_pendingFadeEntityName.clear();
+        m_bossFadeArmed = !Get_m_waitBossPoseBeforeFade();
+        m_bossFadeArmSec = std::max(0.0f, Get_m_bossFadeStartSec());
+        m_bossFadeComplete = !Get_m_fadeBossEnabled();
 
         m_seq.running = true;
         m_seq.phase = Phase::FocusIn;
@@ -868,7 +1082,9 @@ namespace Alice
             blur = Get_m_focusBlurPeakIntensity();
             bloomWeight = 1.0f;
 
-            if (m_seq.phaseTimerSec >= std::max(0.0f, Get_m_focusHoldSec()))
+            const bool holdElapsed = (m_seq.phaseTimerSec >= std::max(0.0f, Get_m_focusHoldSec()));
+            const bool fadeDoneOrUnused = (!Get_m_fadeBossEnabled() || m_bossFadeComplete);
+            if (holdElapsed && fadeDoneOrUnused)
                 AdvancePhase(Phase::Return);
             break;
         }
@@ -932,6 +1148,7 @@ namespace Alice
         const bool willLoadScene = Get_m_enableSceneTransition() && hasScenePath;
 
         m_seq = {};
+        TriggerBossDeathUiIfAvailable();
         ApplyPostProcess(0.0f, Get_m_focusBlurRadius(), Get_m_focusBlurCenterX(), Get_m_focusBlurCenterY(), 0.0f);
         RestorePostProcessBaseline();
         SetGameplayCameraControl(true);
@@ -941,11 +1158,85 @@ namespace Alice
 
         if (willLoadScene)
         {
+            bool useFade = false;
+            float fadeLeadInSec = 0.0f;
+            float sceneDelayAfterFadeSec = std::max(0.0f, Get_m_sceneTransitionDelaySec());
+            std::string fadeEntityName{};
+
+            World* world = GetWorld();
+            if (world && m_sceneManagerEntity != InvalidEntityId)
+            {
+                auto* scripts = world->GetScripts(m_sceneManagerEntity);
+                if (scripts)
+                {
+                    for (const auto& scriptComp : *scripts)
+                    {
+                        if (scriptComp.scriptName != Get_m_mainChangerScriptName() || !scriptComp.instance)
+                            continue;
+
+                        auto* mainChanger = dynamic_cast<MainChangerScript*>(scriptComp.instance.get());
+                        if (!mainChanger)
+                            continue;
+
+                        const std::string configuredFadeEntityName = mainChanger->Get_fadeEntityName();
+                        if (mainChanger->Get_useFadeOnDeath() && !configuredFadeEntityName.empty())
+                        {
+                            useFade = true;
+                            fadeEntityName = configuredFadeEntityName;
+                            fadeLeadInSec = std::max(0.0f, mainChanger->Get_deathEffectDelaySec());
+
+                            float delaySec = mainChanger->Get_delaySec();
+                            if (delaySec < 0.0f)
+                            {
+                                if (auto* fade = FindFadeScript(*world, configuredFadeEntityName))
+                                {
+                                    const float speed = std::max(0.0f, fade->Get_fadeSpeed());
+                                    if (speed > 0.0f)
+                                    {
+                                        const float startAlpha = std::clamp(fade->Get_startAlpha(), 0.0f, 1.0f);
+                                        delaySec = (1.0f - startAlpha) / speed;
+                                    }
+                                    else
+                                    {
+                                        delaySec = 0.0f;
+                                    }
+                                }
+                                else
+                                {
+                                    delaySec = 0.0f;
+                                }
+                            }
+                            sceneDelayAfterFadeSec = std::max(0.0f, delaySec);
+
+                            const float configuredTotalDelay = std::max(0.0f, Get_m_sceneTransitionDelaySec());
+                            if (configuredTotalDelay > 0.0f)
+                            {
+                                const float minDelayAfterFade = std::max(0.0f, configuredTotalDelay - fadeLeadInSec);
+                                sceneDelayAfterFadeSec = std::max(sceneDelayAfterFadeSec, minDelayAfterFade);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
             m_pendingSceneLoad = true;
             m_pendingSceneLoadTimerSec = 0.0f;
+            m_pendingUseFade = useFade;
+            m_pendingFadeStarted = false;
+            m_pendingFadeLeadInSec = useFade ? fadeLeadInSec : 0.0f;
+            m_pendingSceneDelayAfterFadeSec = useFade
+                ? sceneDelayAfterFadeSec
+                : std::max(0.0f, Get_m_sceneTransitionDelaySec());
+            m_pendingFadeEntityName = useFade ? fadeEntityName : std::string{};
         }
         else
         {
+            m_pendingUseFade = false;
+            m_pendingFadeStarted = false;
+            m_pendingFadeLeadInSec = 0.0f;
+            m_pendingSceneDelayAfterFadeSec = 0.0f;
+            m_pendingFadeEntityName.clear();
             RestoreOverriddenScripts();
         }
 
@@ -958,6 +1249,11 @@ namespace Alice
         m_seq = {};
         m_pendingSceneLoad = false;
         m_pendingSceneLoadTimerSec = 0.0f;
+        m_pendingUseFade = false;
+        m_pendingFadeStarted = false;
+        m_pendingFadeLeadInSec = 0.0f;
+        m_pendingSceneDelayAfterFadeSec = 0.0f;
+        m_pendingFadeEntityName.clear();
 
         RestorePostProcessBaseline();
         SetGameplayCameraControl(true);
@@ -970,14 +1266,42 @@ namespace Alice
     void BossWinCinematicController::UpdateBossFade()
     {
         if (!Get_m_fadeBossEnabled())
+        {
+            m_bossFadeComplete = true;
             return;
+        }
 
         if (m_bossMaterials.empty())
             return;
 
-        const float startSec = std::max(0.0f, Get_m_bossFadeStartSec());
+        const float configuredStartSec = std::max(0.0f, Get_m_bossFadeStartSec());
         const float fadeDuration = std::max(0.0f, Get_m_bossFadeDurationSec());
         const float minAlpha = Saturate(Get_m_bossMinAlpha());
+        float startSec = configuredStartSec;
+
+        if (Get_m_waitBossPoseBeforeFade())
+        {
+            if (!m_bossFadeArmed && m_seq.totalTimerSec >= configuredStartSec)
+            {
+                const bool poseReady = IsBossFadePoseReady();
+                const float timeoutSec = std::max(0.0f, Get_m_bossFadePoseWaitTimeoutSec());
+                const bool timeoutReached = (timeoutSec > 1e-4f && (m_seq.totalTimerSec - configuredStartSec) >= timeoutSec);
+                if (poseReady || timeoutReached)
+                {
+                    m_bossFadeArmed = true;
+                    m_bossFadeArmSec = m_seq.totalTimerSec;
+                }
+            }
+
+            if (!m_bossFadeArmed)
+            {
+                m_bossFadeComplete = false;
+                ApplyBossAlpha(1.0f);
+                return;
+            }
+
+            startSec = m_bossFadeArmSec;
+        }
 
         float alpha = 1.0f;
         if (m_seq.totalTimerSec >= startSec)
@@ -994,6 +1318,7 @@ namespace Alice
         }
 
         ApplyBossAlpha(alpha);
+        m_bossFadeComplete = (alpha <= (minAlpha + 1e-3f));
     }
 
     void BossWinCinematicController::ApplyBossAlpha(float alpha)
@@ -1026,6 +1351,61 @@ namespace Alice
                 }
                 world->MarkTransformDirty(state.entity);
             }
+        }
+    }
+
+    void BossWinCinematicController::DisableBossEffectsRecursive()
+    {
+        World* world = GetWorld();
+        if (!world || m_bossEntity == InvalidEntityId)
+            return;
+
+        std::unordered_set<EntityId> visited;
+        std::vector<EntityId> stack;
+        stack.push_back(m_bossEntity);
+        if (m_bossWeaponEntity != InvalidEntityId)
+            stack.push_back(m_bossWeaponEntity);
+        if (m_bossEffectPointEntity != InvalidEntityId)
+            stack.push_back(m_bossEffectPointEntity);
+        if (m_eyeEntity != InvalidEntityId)
+            stack.push_back(m_eyeEntity);
+        for (const EntityId id : m_additionalBossEffectEntities)
+        {
+            if (id != InvalidEntityId)
+                stack.push_back(id);
+        }
+
+        while (!stack.empty())
+        {
+            const EntityId current = stack.back();
+            stack.pop_back();
+            if (current == InvalidEntityId)
+                continue;
+            if (!visited.insert(current).second)
+                continue;
+
+            if (auto* vfx = world->GetComponent<UnityVfxComponent>(current))
+            {
+                vfx->enabled = false;
+                vfx->emitNewParticles = false;
+            }
+
+            if (auto* ce = world->GetComponent<ComputeEffectComponent>(current))
+            {
+                ce->enabled = false;
+                ce->emitNewParticles = false;
+            }
+
+            if (auto* pointLight = world->GetComponent<PointLightComponent>(current))
+                pointLight->enabled = false;
+            if (auto* spotLight = world->GetComponent<SpotLightComponent>(current))
+                spotLight->enabled = false;
+            if (auto* rectLight = world->GetComponent<RectLightComponent>(current))
+                rectLight->enabled = false;
+
+            const auto children = world->GetChildren(current);
+            for (const EntityId child : children)
+                stack.push_back(child);
         }
     }
 

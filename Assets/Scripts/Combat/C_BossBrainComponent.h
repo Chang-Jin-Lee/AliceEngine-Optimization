@@ -139,6 +139,8 @@ namespace Alice
         // 공격/패턴 튜닝
         ALICE_PROPERTY(bool, m_brainActivated, false);
         ALICE_PROPERTY(bool, m_enableF4ActivationToggle, true);
+        ALICE_PROPERTY(bool, m_enableDistanceActivation, false);
+        ALICE_PROPERTY(float, m_distanceActivationRange, 6.0f);
         ALICE_PROPERTY(float, m_attackCooldown, 1.0f);
         ALICE_PROPERTY(float, m_attackStateHoldSec, 0.45f);
         ALICE_PROPERTY(float, m_specialPatternHoldSec, 1.2f);

@@ -11,6 +11,7 @@
 #include "Runtime/ECS/World.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
+#include "Runtime/Gameplay/Combat/HealthComponent.h"
 #include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
 #include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
@@ -134,6 +135,15 @@ namespace Alice
         ResolveSoulTiming(false);
 
         const float idleAlpha = std::clamp(Get_alphaIdle(), 0.0f, 1.0f);
+        if (IsBossDeadNow())
+        {
+            m_appliedAlpha = idleAlpha;
+            m_alphaInitialized = true;
+            ApplyAlpha(m_appliedAlpha);
+            ResetHowlDust();
+            return;
+        }
+
         const float peakAlpha = std::clamp(Get_alphaPeak(), 0.0f, 1.0f);
         float targetAlpha = idleAlpha;
         float soulTimeSec = 0.0f;
@@ -644,6 +654,19 @@ namespace Alice
             durationSec /= speedAbs;
 
         return (durationSec > 0.0f) ? durationSec : 0.0f;
+    }
+
+    bool BossSoulAoETelegraphScript::IsBossDeadNow() const
+    {
+        const World* world = GetWorld();
+        if (!world || m_bossId == InvalidEntityId)
+            return false;
+
+        const auto* health = world->GetComponent<HealthComponent>(m_bossId);
+        if (!health)
+            return false;
+
+        return (!health->alive || health->currentHealth <= 0.0f);
     }
 
     bool BossSoulAoETelegraphScript::IsBoostPatternActive() const

@@ -10,6 +10,7 @@
 #include "Runtime/UI/UIWidgetComponent.h"
 #include "Runtime/UI/UICommon.h"
 #include "../Combat/C_CombatSessionComponent.h"
+#include "../Camera/CombatDeathFpsProduction.h"
 #include "FadeInOutScript.h"
 
 namespace Alice
@@ -82,6 +83,18 @@ namespace Alice
                 return false;
             return !health->alive || health->currentHealth <= 0.0f;
         }
+
+        bool IsDeathCinematicBlocking(World& world, EntityId ownerId)
+        {
+            if (ownerId == InvalidEntityId)
+                return false;
+
+            auto* deathCine = world.GetComponent<CombatDeathFpsProduction>(ownerId);
+            if (!deathCine)
+                return false;
+
+            return deathCine->IsUiBlockingActive();
+        }
     }
 
     void MainChangerScript::SetClearResultSnapshot(const ClearResultSnapshot& snapshot)
@@ -114,6 +127,7 @@ namespace Alice
         m_pendingDelay = 0.0f;
         m_pendingPath.clear();
         m_pendingStage = PendingStage::None;
+        m_pendingShowDeathWidget = false;
 
         World* world = GetWorld();
         if (world)
@@ -150,6 +164,19 @@ namespace Alice
             m_pendingTimer += std::max(0.0f, deltaTime);
             if (m_pendingTimer >= m_pendingDelay)
             {
+                if (m_pendingShowDeathWidget && m_deathWidgetId != InvalidEntityId)
+                {
+                    if (World* w = GetWorld())
+                    {
+                        if (IsDeathCinematicBlocking(*w, GetOwnerId()))
+                            return;
+
+                        if (auto* widget = w->GetComponent<UIWidgetComponent>(m_deathWidgetId))
+                            widget->visibility = AliceUI::UIVisibility::Visible;
+                    }
+                    m_pendingShowDeathWidget = false;
+                }
+
                 if (m_pendingStage == PendingStage::WaitForFade)
                 {
                     if (Get_useFadeOnDeath() && m_fade)
@@ -176,6 +203,7 @@ namespace Alice
                     ALICE_LOG_WARN("[MainChangerScript] SceneManager not available");
                     m_pending = false;
                     m_pendingStage = PendingStage::None;
+                    m_pendingShowDeathWidget = false;
                     return;
                 }
                 if (m_pendingPath.empty())
@@ -183,11 +211,13 @@ namespace Alice
                     ALICE_LOG_WARN("[MainChangerScript] Pending scene path is empty");
                     m_pending = false;
                     m_pendingStage = PendingStage::None;
+                    m_pendingShowDeathWidget = false;
                     return;
                 }
                 scenes->LoadSceneFileRequest(m_pendingPath.c_str());
                 m_pending = false;
                 m_pendingStage = PendingStage::None;
+                m_pendingShowDeathWidget = false;
             }
             return;
         }
@@ -267,11 +297,7 @@ namespace Alice
             const bool showDeath =
                 (playerTrigger && Get_showDeathOnPlayerDeath()) ||
                 (bossTrigger && Get_showDeathOnBossDeath());
-            if (showDeath && m_deathWidgetId != InvalidEntityId)
-            {
-                if (auto* widget = world->GetComponent<UIWidgetComponent>(m_deathWidgetId))
-                    widget->visibility = AliceUI::UIVisibility::Visible;
-            }
+            m_pendingShowDeathWidget = showDeath;
 
             if (path.empty())
                 path = Get_scenePath();
@@ -279,6 +305,12 @@ namespace Alice
             if (path.empty())
             {
                 ALICE_LOG_WARN("[MainChangerScript] Scene path is empty");
+                if (m_pendingShowDeathWidget && m_deathWidgetId != InvalidEntityId)
+                {
+                    if (auto* widget = world->GetComponent<UIWidgetComponent>(m_deathWidgetId))
+                        widget->visibility = AliceUI::UIVisibility::Visible;
+                }
+                m_pendingShowDeathWidget = false;
             }
             else
             {

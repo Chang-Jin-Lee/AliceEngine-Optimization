@@ -274,6 +274,13 @@ namespace Alice
         ALICE_PROPERTY(bool, m_chargeExecuteExtraPulseEnabled, true);
         ALICE_PROPERTY(float, m_chargeExecuteExtraPulseScale, 1.2f);
 
+        ALICE_PROPERTY(bool, m_gamepadRumbleEnabled, true);
+        ALICE_PROPERTY(int, m_gamepadRumblePlayerIndex, 0);
+        ALICE_PROPERTY(float, m_gamepadRumbleLeftMotor, 1.0f);
+        ALICE_PROPERTY(float, m_gamepadRumbleRightMotor, 1.0f);
+        ALICE_PROPERTY(float, m_gamepadRumbleChargeDurationSec, 0.1f);
+        ALICE_PROPERTY(float, m_gamepadRumblePulseDurationSec, 0.12f);
+
         ALICE_PROPERTY(bool, m_rollAssistEnabled, true);
         ALICE_PROPERTY(float, m_rollPositionDamping, 14.0f);
         ALICE_PROPERTY(float, m_rollRotationDamping, 18.0f);

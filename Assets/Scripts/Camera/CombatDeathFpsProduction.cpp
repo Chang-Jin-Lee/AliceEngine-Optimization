@@ -9,6 +9,7 @@
 #include "Runtime/ECS/World.h"
 #include "Runtime/Input/InputTypes.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
+#include "Runtime/Gameplay/Combat/HealthComponent.h"
 #include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
 #include "Runtime/Rendering/Components/CameraComponent.h"
 #include "Runtime/Rendering/Components/CameraBlendComponent.h"
@@ -17,6 +18,7 @@
 #include "Runtime/Rendering/Components/CameraSpringArmComponent.h"
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
 #include "Runtime/Rendering/Components/SkinnedAnimationComponent.h"
+#include "../Combat/C_CombatSessionComponent.h"
 
 namespace Alice
 {
@@ -164,6 +166,7 @@ namespace Alice
         ResolveActorEntities();
         EnsurePostProcessVolume();
         CapturePostProcessBaseline();
+        m_prevPlayerDead = IsPlayerDead();
     }
 
     void CombatDeathFpsProduction::OnDisable()
@@ -176,6 +179,22 @@ namespace Alice
         RestoreIfNeeded();
     }
 
+    bool CombatDeathFpsProduction::IsUiBlockingActive() const
+    {
+        if (m_running)
+            return true;
+
+        // Keep UI blocked during the immediate post-cut fall blend to avoid overlap.
+        if (m_cutDone && Get_m_enableFallBlend())
+        {
+            const float blockSec = std::max(0.0f, Get_m_fallBlendDurationSec());
+            if (m_afterCutElapsedSec < blockSec)
+                return true;
+        }
+
+        return false;
+    }
+
     void CombatDeathFpsProduction::Update(float deltaTime)
     {
         const float dt = std::max(0.0f, deltaTime);
@@ -185,6 +204,14 @@ namespace Alice
         ResolveActorEntities();
         EnsurePostProcessVolume();
         CapturePostProcessBaseline();
+
+        const bool playerDead = IsPlayerDead();
+        if (Get_m_autoStartOnPlayerDeath() && playerDead && !m_prevPlayerDead)
+        {
+            if (!m_running || Get_m_restartOnKey())
+                StartSequence();
+        }
+        m_prevPlayerDead = playerDead;
 
         if (Get_m_enableHotkey() && Get_m_triggerWithAlpha7())
         {
@@ -246,16 +273,49 @@ namespace Alice
         }
 
         const std::string& name = Get_m_fpsCameraName();
-        if (name.empty())
+        if (!name.empty())
+        {
+            const GameObject go = world->FindGameObject(name);
+            if (go.IsValid() && world->GetComponent<CameraComponent>(go.id()))
+            {
+                m_fpsCameraEntity = go.id();
+                return true;
+            }
+        }
+
+        if (!Get_m_autoCreateFallbackFpsCamera())
             return false;
 
-        const GameObject go = world->FindGameObject(name);
-        if (!go.IsValid())
-            return false;
-        if (!world->GetComponent<CameraComponent>(go.id()))
+        ResolveActorEntities();
+        if (m_playerEntity == InvalidEntityId)
             return false;
 
-        m_fpsCameraEntity = go.id();
+        const EntityId id = world->CreateEntity();
+        m_fpsCameraEntity = id;
+        world->SetEntityName(id, name.empty() ? "FPSCamera_Auto" : name);
+
+        auto& tr = world->AddComponent<TransformComponent>(id);
+        tr.enabled = true;
+        tr.visible = true;
+        tr.position = Get_m_fallbackFpsLocalOffset();
+        tr.rotation = Get_m_fallbackFpsLocalRotation();
+        tr.scale = Get_m_fallbackFpsLocalScale();
+
+        auto& cam = world->AddComponent<CameraComponent>(id);
+        cam.SetFov(std::clamp(Get_m_fallbackFpsFovDeg(), 1.0f, 170.0f));
+
+        if (ResolveOutputCamera())
+        {
+            if (const auto* outCam = world->GetComponent<CameraComponent>(m_outputCameraEntity))
+            {
+                cam.SetFov(outCam->GetFov());
+                cam.SetNear(outCam->GetNear());
+                cam.SetFar(outCam->GetFar());
+            }
+        }
+
+        world->SetParent(id, m_playerEntity, false);
+        world->MarkTransformDirty(id);
         return true;
     }
 
@@ -266,6 +326,7 @@ namespace Alice
             return false;
 
         m_playerEntity = InvalidEntityId;
+        m_playerCoreEntity = InvalidEntityId;
         m_playerWeaponEntity = InvalidEntityId;
         m_bossEntity = InvalidEntityId;
         m_bossHeadEntity = InvalidEntityId;
@@ -277,11 +338,22 @@ namespace Alice
                 m_playerEntity = go.id();
         }
 
+        if (!Get_m_playerCoreEntityName().empty())
+        {
+            const GameObject go = world->FindGameObject(Get_m_playerCoreEntityName());
+            if (go.IsValid())
+                m_playerCoreEntity = go.id();
+            else if (m_playerEntity != InvalidEntityId)
+                m_playerCoreEntity = FindDescendantByName(*world, m_playerEntity, Get_m_playerCoreEntityName());
+        }
+
         if (!Get_m_playerWeaponEntityName().empty())
         {
             const GameObject go = world->FindGameObject(Get_m_playerWeaponEntityName());
             if (go.IsValid())
                 m_playerWeaponEntity = go.id();
+            else if (m_playerEntity != InvalidEntityId)
+                m_playerWeaponEntity = FindDescendantByName(*world, m_playerEntity, Get_m_playerWeaponEntityName());
         }
 
         if (!Get_m_bossEntityName().empty())
@@ -301,6 +373,39 @@ namespace Alice
         }
 
         return true;
+    }
+
+    bool CombatDeathFpsProduction::IsPlayerDead()
+    {
+        World* world = GetWorld();
+        if (!world)
+            return false;
+
+        bool dead = false;
+
+        if (auto* scripts = world->GetScripts(GetOwnerId()))
+        {
+            for (auto& sc : *scripts)
+            {
+                if (sc.scriptName != "C_CombatSessionComponent" || !sc.instance)
+                    continue;
+
+                if (auto* session = dynamic_cast<C_CombatSessionComponent*>(sc.instance.get()))
+                {
+                    dead = dead || (session->GetPlayerState() == Combat::ActionState::Dead);
+                    break;
+                }
+            }
+        }
+
+        if (m_playerEntity != InvalidEntityId)
+        {
+            const auto* health = world->GetComponent<HealthComponent>(m_playerEntity);
+            if (health)
+                dead = dead || (!health->alive || health->currentHealth <= 0.0f);
+        }
+
+        return dead;
     }
 
     bool CombatDeathFpsProduction::EnsurePostProcessVolume()
@@ -416,6 +521,27 @@ namespace Alice
         SetGameplayCameraControl(false);
         DisableBlockingScriptsForSequence();
 
+        if (Get_m_hidePlayerImmediatelyOnDeath())
+        {
+            if (Get_m_hidePlayerOnCut() && m_playerEntity != InvalidEntityId)
+            {
+                SaveVisibilityRecursive(m_playerEntity);
+                SetVisibilityRecursive(m_playerEntity, false);
+            }
+
+            if (Get_m_hidePlayerCoreOnCut() && m_playerCoreEntity != InvalidEntityId)
+            {
+                SaveVisibilityRecursive(m_playerCoreEntity);
+                SetVisibilityRecursive(m_playerCoreEntity, false);
+            }
+
+            if (Get_m_hidePlayerWeaponOnCut() && m_playerWeaponEntity != InvalidEntityId)
+            {
+                SaveVisibilityRecursive(m_playerWeaponEntity);
+                SetVisibilityRecursive(m_playerWeaponEntity, false);
+            }
+        }
+
         m_running = true;
         m_cutDone = false;
         m_elapsedSec = 0.0f;
@@ -496,9 +622,15 @@ namespace Alice
                 SetVisibilityRecursive(m_playerWeaponEntity, false);
             }
 
+            if (Get_m_hidePlayerCoreOnCut() && m_playerCoreEntity != InvalidEntityId)
+            {
+                SaveVisibilityRecursive(m_playerCoreEntity);
+                SetVisibilityRecursive(m_playerCoreEntity, false);
+            }
+
             if (!m_bossChargeTriggered
                 && Get_m_triggerBossCharge()
-                && std::max(0.0f, Get_m_triggerBossChargeAfterCutSec()) <= 1e-4f)
+                && GetEffectiveBossChargeDelaySec() <= 1e-4f)
             {
                 TriggerBossCharge();
             }
@@ -512,7 +644,7 @@ namespace Alice
 
         if (!m_bossChargeTriggered
             && Get_m_triggerBossCharge()
-            && m_afterCutElapsedSec >= std::max(0.0f, Get_m_triggerBossChargeAfterCutSec()))
+            && m_afterCutElapsedSec >= GetEffectiveBossChargeDelaySec())
         {
             TriggerBossCharge();
         }
@@ -639,6 +771,43 @@ namespace Alice
         m_fallStartPose.scale = outTr->scale;
 
         m_fallEndPose = m_fallStartPose;
+        if (Get_m_approachBossDuringFall())
+        {
+            const EntityId lookTarget = (m_bossHeadEntity != InvalidEntityId) ? m_bossHeadEntity : m_bossEntity;
+            if (lookTarget != InvalidEntityId)
+            {
+                DirectX::XMFLOAT3 targetPos{};
+                DirectX::XMFLOAT3 targetRot{};
+                DirectX::XMFLOAT3 targetScale{};
+                if (FetchWorldTransform(world, lookTarget, targetPos, targetRot, targetScale))
+                {
+                    targetPos.y += Get_m_lookAtBossHeightOffset();
+
+                    DirectX::XMFLOAT3 fromTarget{
+                        m_fallStartPose.position.x - targetPos.x,
+                        m_fallStartPose.position.y - targetPos.y,
+                        m_fallStartPose.position.z - targetPos.z
+                    };
+
+                    const float lenSq = fromTarget.x * fromTarget.x
+                                      + fromTarget.y * fromTarget.y
+                                      + fromTarget.z * fromTarget.z;
+                    if (lenSq > 1e-6f)
+                    {
+                        const float len = std::sqrt(lenSq);
+                        const float desiredDist = std::max(0.1f, Get_m_targetBossDistanceAfterFall());
+                        if (len > desiredDist + 1e-3f)
+                        {
+                            const float invLen = 1.0f / len;
+                            m_fallEndPose.position.x = targetPos.x + fromTarget.x * invLen * desiredDist;
+                            m_fallEndPose.position.y = targetPos.y + fromTarget.y * invLen * desiredDist;
+                            m_fallEndPose.position.z = targetPos.z + fromTarget.z * invLen * desiredDist;
+                        }
+                    }
+                }
+            }
+        }
+
         const auto& offset = Get_m_fallOffsetWorld();
         m_fallEndPose.position.x += offset.x;
         m_fallEndPose.position.y += offset.y;
@@ -790,6 +959,18 @@ namespace Alice
         }
 
         m_bossChargeTriggered = true;
+    }
+
+    float CombatDeathFpsProduction::GetEffectiveBossChargeDelaySec() const
+    {
+        float delay = std::max(0.0f, Get_m_triggerBossChargeAfterCutSec());
+        if (delay > 1e-4f)
+            return delay;
+
+        if (Get_m_approachBossDuringFall() && Get_m_enableFallBlend())
+            return std::max(0.0f, Get_m_fallBlendDurationSec());
+
+        return delay;
     }
 
     void CombatDeathFpsProduction::SetGameplayCameraControl(bool enable)
