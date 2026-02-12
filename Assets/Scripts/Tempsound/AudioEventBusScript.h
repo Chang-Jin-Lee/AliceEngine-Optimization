@@ -20,11 +20,13 @@ namespace Alice
     // 보스: 공격 / 움직임 / 나머지 별도 델리게이트
     ALICE_DECLARE_DELEGATE_OneParam(FOnBossAttackSfxRequest, BossAttackState);
     ALICE_DECLARE_DELEGATE_TwoParams(FOnBossAttackSfxDelayedRequest, BossAttackState, float);
+    ALICE_DECLARE_DELEGATE(FOnBossAttackSfxCancelDelayedRequest);
     ALICE_DECLARE_DELEGATE_OneParam(FOnBossMovementSfxRequest, BossMovementState);
     ALICE_DECLARE_DELEGATE_OneParam(FOnBossOtherSfxRequest, BossOtherState);
 
     // 플레이어: 공격 / 움직임 / 나머지 별도 델리게이트
     ALICE_DECLARE_DELEGATE_OneParam(FOnPlayerAttackSfxRequest, PlayerAttackState);
+    ALICE_DECLARE_DELEGATE_TwoParams(FOnPlayerAttackSfxDelayedRequest, PlayerAttackState, float);
     ALICE_DECLARE_DELEGATE_OneParam(FOnPlayerAttackSfxOneShotRequest, PlayerAttackState);
     using FOnPlayerAttackSfxOneShotAtPositionRequest = Alice::Delegate<PlayerAttackState, const DirectX::XMFLOAT3&>;
     ALICE_DECLARE_DELEGATE_TwoParams(FOnPlayerMovementSfxRequest, PlayerMovementState, bool);
@@ -45,9 +47,11 @@ namespace Alice
 
         FOnBossAttackSfxRequest OnBossAttackSfxRequest;
         FOnBossAttackSfxDelayedRequest OnBossAttackSfxDelayedRequest;
+        FOnBossAttackSfxCancelDelayedRequest OnBossAttackSfxCancelDelayedRequest;
         FOnBossMovementSfxRequest OnBossMovementSfxRequest;
         FOnBossOtherSfxRequest OnBossOtherSfxRequest;
         FOnPlayerAttackSfxRequest OnPlayerAttackSfxRequest;
+        FOnPlayerAttackSfxDelayedRequest OnPlayerAttackSfxDelayedRequest;
         FOnPlayerAttackSfxOneShotRequest OnPlayerAttackSfxOneShotRequest;
         FOnPlayerAttackSfxOneShotAtPositionRequest OnPlayerAttackSfxOneShotAtPositionRequest;
         FOnPlayerMovementSfxRequest OnPlayerMovementSfxRequest;
@@ -60,9 +64,11 @@ namespace Alice
 
         void RequestBossAttackSfx(BossAttackState state);
         void RequestBossAttackSfxDelayed(BossAttackState state, float delaySeconds);
+        void RequestBossAttackSfxCancelDelayed();
         void RequestBossMovementSfx(BossMovementState state);
         void RequestBossOtherSfx(BossOtherState state);
         void RequestPlayerAttackSfx(PlayerAttackState state);
+        void RequestPlayerAttackSfxDelayed(PlayerAttackState state, float delaySeconds);
         void RequestPlayerAttackSfxOneShot(PlayerAttackState state);
         void RequestPlayerAttackSfxOneShotAtPosition(PlayerAttackState state, const DirectX::XMFLOAT3& position);
         void RequestPlayerMovementSfx(PlayerMovementState state, bool playStopSfx = true);
@@ -74,9 +80,11 @@ namespace Alice
         ALICE_FUNC(RequestPlayerSfx);
         ALICE_FUNC(RequestBossAttackSfx);
         ALICE_FUNC(RequestBossAttackSfxDelayed);
+        ALICE_FUNC(RequestBossAttackSfxCancelDelayed);
         ALICE_FUNC(RequestBossMovementSfx);
         ALICE_FUNC(RequestBossOtherSfx);
         ALICE_FUNC(RequestPlayerAttackSfx);
+        ALICE_FUNC(RequestPlayerAttackSfxDelayed);
         ALICE_FUNC(RequestPlayerAttackSfxOneShot);
         ALICE_FUNC(RequestPlayerAttackSfxOneShotAtPosition);
         ALICE_FUNC(RequestPlayerMovementSfx);

@@ -18,7 +18,7 @@
                 -0.20000000298023224
             ],
             "fillIntensity": 0.0,
-            "globalIBLIntensity": 0.5540000200271606,
+            "globalIBLIntensity": 1.0,
             "keyDirection": [
                 0.5,
                 -1.0,
@@ -43,7 +43,7 @@
         "port": 5425
     },
     "skybox": {
-        "choice": 1,
+        "choice": 4,
         "customDir": "",
         "customPrefix": "",
         "resolution": 0

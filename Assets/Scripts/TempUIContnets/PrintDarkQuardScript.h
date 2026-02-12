@@ -31,12 +31,15 @@ namespace Alice
         ALICE_PROPERTY(bool, triggerOnBossDeath, false);
         // Boss health entity name
         ALICE_PROPERTY(std::string, bossHealthEntityName, "");
-        // DieText widget name
+        // DieText widget name (optional)
         ALICE_PROPERTY(std::string, dieTextWidgetName, "UI_DieText");
         // Player death text (leave empty to keep current)
         ALICE_PROPERTY(std::string, playerDeathText, "");
         // Boss death text (leave empty to keep current)
         ALICE_PROPERTY(std::string, bossDeathText, "");
+        // Player/Boss death image widget names (optional)
+        ALICE_PROPERTY(std::string, playerDeathImageWidgetName, "");
+        ALICE_PROPERTY(std::string, bossDeathImageWidgetName, "");
 
     private:
         float m_elapsed{ 0.0f };
@@ -44,6 +47,9 @@ namespace Alice
         bool m_isShowing{ false };
         bool m_playerDeathTriggered{ false };
         bool m_bossDeathTriggered{ false };
-        EntityId m_dieTextEntityId{ InvalidEntityId };  // UI_DieText ?酉???(揶쏆늿??癰귣똻?????λ???
+        EntityId m_dieTextEntityId{ InvalidEntityId };  // UI_DieText widget
+        EntityId m_playerImageEntityId{ InvalidEntityId };
+        EntityId m_bossImageEntityId{ InvalidEntityId };
+        EntityId m_activeImageEntityId{ InvalidEntityId };
     };
 }

@@ -2,7 +2,7 @@
     "entities": [
         {
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Cube/Cube_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Cube_0.mat",
@@ -11,6 +11,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -147,10 +155,6 @@
                 "anchorMin": {
                     "x": 0.0,
                     "y": 0.0
-                },
-                "baseSize": {
-                    "x": 2000.0,
-                    "y": 1000.0
                 },
                 "pivot": {
                     "x": 0.5,
@@ -297,10 +301,6 @@
                     "x": 0.0,
                     "y": 0.0
                 },
-                "baseSize": {
-                    "x": 1600.0,
-                    "y": 900.0
-                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -400,10 +400,6 @@
                 "anchorMin": {
                     "x": 0.5,
                     "y": 0.5
-                },
-                "baseSize": {
-                    "x": 1600.0,
-                    "y": 900.0
                 },
                 "pivot": {
                     "x": 0.0,
@@ -506,10 +502,6 @@
                     "x": 0.0,
                     "y": 0.0
                 },
-                "baseSize": {
-                    "x": 1600.0,
-                    "y": 900.0
-                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -610,10 +602,6 @@
                 "anchorMin": {
                     "x": 0.0,
                     "y": 0.0
-                },
-                "baseSize": {
-                    "x": 1600.0,
-                    "y": 900.0
                 },
                 "pivot": {
                     "x": -0.5,
@@ -716,10 +704,6 @@
                     "x": 0.0,
                     "y": 0.0
                 },
-                "baseSize": {
-                    "x": 1600.0,
-                    "y": 900.0
-                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -770,7 +754,7 @@
                         "referenceWidth": 1600.0,
                         "roundToInt": true,
                         "scaleMode": 0,
-                        "targetWidgetName": "UI_4",
+                        "targetWidgetName": "Guard",
                         "useNonUniformScale": false
                     }
                 }
@@ -821,10 +805,6 @@
                     "x": 0.0,
                     "y": 0.0
                 },
-                "baseSize": {
-                    "x": 1600.0,
-                    "y": 900.0
-                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -852,11 +832,11 @@
                 "shaderName": "Default",
                 "space": "Screen",
                 "visibility": "Visible",
-                "widgetName": "UI_4"
+                "widgetName": "Guard"
             },
             "_parentGuid": "4048171097495047820",
             "guid": "12915727109964828365",
-            "name": "UI_4"
+            "name": "Guard"
         },
         {
             "Scripts": [
@@ -875,7 +855,7 @@
                         "referenceWidth": 1600.0,
                         "roundToInt": true,
                         "scaleMode": 0,
-                        "targetWidgetName": "UI_5",
+                        "targetWidgetName": "PerryRate",
                         "useNonUniformScale": false
                     }
                 }
@@ -926,10 +906,6 @@
                     "x": 0.0,
                     "y": 0.0
                 },
-                "baseSize": {
-                    "x": 1600.0,
-                    "y": 900.0
-                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -957,11 +933,11 @@
                 "shaderName": "Default",
                 "space": "Screen",
                 "visibility": "Visible",
-                "widgetName": "UI_5"
+                "widgetName": "PerryRate"
             },
             "_parentGuid": "4048171097495047820",
             "guid": "115902442274175678",
-            "name": "UI_5"
+            "name": "PerryRate"
         },
         {
             "Scripts": [
@@ -1031,10 +1007,6 @@
                     "x": 0.0,
                     "y": 0.0
                 },
-                "baseSize": {
-                    "x": 1600.0,
-                    "y": 900.0
-                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -1085,7 +1057,7 @@
                         "referenceWidth": 1600.0,
                         "roundToInt": true,
                         "scaleMode": 0,
-                        "targetWidgetName": "UI_7",
+                        "targetWidgetName": "Perry",
                         "useNonUniformScale": false
                     }
                 }
@@ -1136,10 +1108,6 @@
                     "x": 0.0,
                     "y": 0.0
                 },
-                "baseSize": {
-                    "x": 1600.0,
-                    "y": 900.0
-                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -1167,11 +1135,11 @@
                 "shaderName": "Default",
                 "space": "Screen",
                 "visibility": "Visible",
-                "widgetName": "UI_7"
+                "widgetName": "Perry"
             },
             "_parentGuid": "4048171097495047820",
             "guid": "11150723319223106367",
-            "name": "UI_7"
+            "name": "Perry"
         },
         {
             "Scripts": [
@@ -1240,10 +1208,6 @@
                 "anchorMin": {
                     "x": 0.0,
                     "y": 0.0
-                },
-                "baseSize": {
-                    "x": 1600.0,
-                    "y": 900.0
                 },
                 "pivot": {
                     "x": -0.5,
@@ -1346,10 +1310,6 @@
                     "x": 0.0,
                     "y": 0.0
                 },
-                "baseSize": {
-                    "x": 1600.0,
-                    "y": 900.0
-                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -1451,10 +1411,6 @@
                     "x": 0.0,
                     "y": 0.0
                 },
-                "baseSize": {
-                    "x": 1600.0,
-                    "y": 900.0
-                },
                 "pivot": {
                     "x": -0.5,
                     "y": 0.5
@@ -1487,6 +1443,566 @@
             "_parentGuid": "4048171097495047820",
             "guid": "9904518231872267654",
             "name": "UI_10"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIText": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "fontPath": "Resource/Test/4_Resources/font/heiroflight_fonts/Light_Regular/HeirofLightRegular.ttf",
+                "fontSize": 30.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "000000",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.44999998807907104,
+                    "y": 0.4000000059604645
+                },
+                "anchorMin": {
+                    "x": 0.44999998807907104,
+                    "y": 0.4000000059604645
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_GuardText"
+            },
+            "_parentGuid": "4048171097495047820",
+            "guid": "661611319051314755",
+            "name": "UI_GuardText"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIText": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "fontPath": "Resource/Test/4_Resources/font/heiroflight_fonts/Light_Regular/HeirofLightRegular.ttf",
+                "fontSize": 30.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "000000",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.44999998807907104,
+                    "y": 0.4699999988079071
+                },
+                "anchorMin": {
+                    "x": 0.44999998807907104,
+                    "y": 0.4699999988079071
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_ParryText"
+            },
+            "_parentGuid": "4048171097495047820",
+            "guid": "1990238302325468516",
+            "name": "UI_ParryRateText"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIText": {
+                "alignH": "Center",
+                "alignV": "Top",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "fontPath": "Resource/Test/4_Resources/font/heiroflight_fonts/Light_Regular/HeirofLightRegular.ttf",
+                "fontSize": 30.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "000000",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.44999998807907104,
+                    "y": 0.23999999463558197
+                },
+                "anchorMin": {
+                    "x": 0.44999998807907104,
+                    "y": 0.23999999463558197
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Perry"
+            },
+            "_parentGuid": "4048171097495047820",
+            "guid": "3453589105007105144",
+            "name": "UI_Perry"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIText": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "fontPath": "Resource/Test/4_Resources/font/heiroflight_fonts/Light_Regular/HeirofLightRegular.ttf",
+                "fontSize": 30.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "000000",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.44999998807907104,
+                    "y": 0.5299999713897705
+                },
+                "anchorMin": {
+                    "x": 0.44999998807907104,
+                    "y": 0.5299999713897705
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_DamageRate"
+            },
+            "_parentGuid": "4048171097495047820",
+            "guid": "16327940693093599063",
+            "name": "UI_DamageRate"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "fontPath": "Resource/Test/4_Resources/font/heiroflight_fonts/Light_Regular/HeirofLightRegular.ttf",
+                "fontSize": 30.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "000000",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.44999998807907104,
+                    "y": 0.1599999964237213
+                },
+                "anchorMin": {
+                    "x": 0.44999998807907104,
+                    "y": 0.1599999964237213
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Time"
+            },
+            "_parentGuid": "4048171097495047820",
+            "guid": "17270228892595760140",
+            "name": "UI_Time"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "fontPath": "Resource/Test/4_Resources/font/heiroflight_fonts/Light_Regular/HeirofLightRegular.ttf",
+                "fontSize": 30.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "000000",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.44999998807907104,
+                    "y": 0.6000000238418579
+                },
+                "anchorMin": {
+                    "x": 0.44999998807907104,
+                    "y": 0.6000000238418579
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_WeaponBreak"
+            },
+            "_parentGuid": "4048171097495047820",
+            "guid": "10939350594801268784",
+            "name": "UI_WeaponBreak"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "fontPath": "Resource/Test/4_Resources/font/heiroflight_fonts/Light_Regular/HeirofLightRegular.ttf",
+                "fontSize": 55.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "000000",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.41999998688697815,
+                    "y": 0.7799999713897705
+                },
+                "anchorMin": {
+                    "x": 0.41999998688697815,
+                    "y": 0.7799999713897705
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Total"
+            },
+            "_parentGuid": "4048171097495047820",
+            "guid": "3977705859117862918",
+            "name": "UI_Total"
         }
     ],
     "sceneName": "ClearScene",
