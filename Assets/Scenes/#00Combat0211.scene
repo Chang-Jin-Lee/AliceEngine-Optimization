@@ -9760,6 +9760,7 @@
                         "enableHeavyFadeOut": true,
                         "enablePreHitWorldSpark": true,
                         "enableSparkPointLightFlash": true,
+                        "enableSparkWorldPushOut": true,
                         "guardBreakRingOverlayPrefabPath": "Assets/Prefabs/(05)OrangeDoubleRing.prefab",
                         "guardOverlayPrefabPath": "Assets/Prefabs/FX_Guard_White_OneShot.prefab",
                         "guardRingOverlayPrefabPath": "Assets/Prefabs/(05)OrangeRing.prefab",
@@ -9808,6 +9809,9 @@
                         "sparkPointLightDurationSec": 0.5,
                         "sparkPointLightEntityName": "",
                         "sparkPointLightEndIntensity": 10.0,
+                        "sparkPointLightHeavyHitDurationSec": 1.0,
+                        "sparkPointLightHowlingDurationSec": 1.0,
+                        "sparkPointLightBossPivotYOffset": 0.5,
                         "sparkPointLightIntensity": 50.0,
                         "sparkPointLightOffset": {
                             "x": 0.0,
@@ -9815,6 +9819,9 @@
                             "z": 0.0
                         },
                         "sparkPointLightRange": 4.0,
+                        "sparkWorldPushProbeRadius": 0.07999999821186066,
+                        "sparkWorldPushStepDistance": 0.05000000074505806,
+                        "sparkWorldPushMaxDistance": 0.800000011920929,
                         "sessionEntityName": "SceneManager",
                         "shockBlastLifeTimeSec": 1.0,
                         "shockBlastPoolSize": 6,
