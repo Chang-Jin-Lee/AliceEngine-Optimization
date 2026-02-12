@@ -2416,6 +2416,7 @@ namespace Alice
 			&& bossBrain
 			&& (bossBrain->GetActivePattern() == C_BossBrainComponent::PatternType::Special);
 		const bool playerGuardBreakCameraActive = hasBossForLockOn && (m_state->playerGuardBreakLockOnSec > 0.0f);
+		const bool playerFatalForceLockOnActive = hasBossForLockOn && (m_state->fatal.active || fatalTriggered);
 		const bool forceLockOnZoomActive = bossPhaseHowlingActive || playerGuardBreakCameraActive;
 		float forcedZoomInRatio = 0.0f;
 		if (bossPhaseHowlingActive)
@@ -2449,6 +2450,12 @@ namespace Alice
 				camSpring->desiredDistance = defaultDistance;
 				camSpring->distance = defaultDistance;
 			}
+		}
+		else if (playerFatalForceLockOnActive)
+		{
+			// Keep lock-on fixed while fatal(front stab) sequence is active.
+			m_state->playerLockOnActive = true;
+			m_state->playerLockOnTarget = bossId;
 		}
 		else if (playerLockOnToggleRequested && canLockOn)
 		{

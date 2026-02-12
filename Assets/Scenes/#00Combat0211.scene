@@ -456,19 +456,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.08035130798816681,
-                    "y": 2.332568645477295,
-                    "z": 10.723212242126465
+                    "x": -0.07782826572656631,
+                    "y": 2.3376331329345703,
+                    "z": 10.734418869018555
                 },
                 "rotation": {
-                    "x": -0.1392853707075119,
-                    "y": 0.003454356687143445,
-                    "z": 0.01660795323550701
+                    "x": -0.13814163208007813,
+                    "y": 0.01600506901741028,
+                    "z": 0.01135734748095274
                 },
                 "scale": {
-                    "x": 0.009999998845160007,
-                    "y": 0.009999998845160007,
-                    "z": 0.009999996051192284
+                    "x": 0.009999996051192284,
+                    "y": 0.009999994188547134,
+                    "z": 0.009999995119869709
                 },
                 "visible": false
             },
@@ -551,17 +551,17 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.00227284524589777,
-                    "y": 1.5005481243133545,
-                    "z": 11.120966911315918
+                    "x": 0.0035479937214404345,
+                    "y": 1.5005805492401123,
+                    "z": 11.122281074523926
                 },
                 "rotation": {
-                    "x": -0.44123002886772156,
-                    "y": 0.1994248777627945,
-                    "z": 0.010989939793944359
+                    "x": -0.4291725754737854,
+                    "y": 0.20755013823509216,
+                    "z": 0.0076419576071202755
                 },
                 "scale": {
-                    "x": 0.010000000707805157,
+                    "x": 0.009999997913837433,
                     "y": 0.009999998845160007,
                     "z": 0.009999999776482582
                 },
@@ -646,19 +646,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.4429462254047394,
-                    "y": 1.723561406135559,
-                    "z": 10.708060264587402
+                    "x": -0.44466903805732727,
+                    "y": 1.7312805652618408,
+                    "z": 10.717069625854492
                 },
                 "rotation": {
-                    "x": 0.24660587310791016,
-                    "y": -1.8921722173690796,
-                    "z": 2.127800464630127
+                    "x": 0.2429007738828659,
+                    "y": -1.8864752054214478,
+                    "z": 2.1074161529541016
                 },
                 "scale": {
-                    "x": 0.009999996982514858,
-                    "y": 0.009999994188547134,
-                    "z": 0.009999992325901985
+                    "x": 0.00999999325722456,
+                    "y": 0.009999995119869709,
+                    "z": 0.009999995119869709
                 },
                 "visible": false
             },
@@ -741,19 +741,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.2988280653953552,
-                    "y": 1.718269944190979,
-                    "z": 10.703805923461914
+                    "x": 0.2962750196456909,
+                    "y": 1.72097647190094,
+                    "z": 10.703335762023926
                 },
                 "rotation": {
-                    "x": 0.053625546395778656,
-                    "y": 2.288742780685425,
-                    "z": -2.4894001483917236
+                    "x": 0.05781949311494827,
+                    "y": 2.308807134628296,
+                    "z": -2.4864695072174072
                 },
                 "scale": {
-                    "x": 0.009999999776482582,
-                    "y": 0.009999997913837433,
-                    "z": 0.010000001639127731
+                    "x": 0.009999997913837433,
+                    "y": 0.009999996051192284,
+                    "z": 0.009999999776482582
                 },
                 "visible": false
             },
@@ -836,18 +836,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.3412989377975464,
-                    "y": 0.6100655198097229,
-                    "z": 11.204521179199219
+                    "x": -0.3399447798728943,
+                    "y": 0.6103128790855408,
+                    "z": 11.194108963012695
                 },
                 "rotation": {
-                    "x": -0.4395918548107147,
-                    "y": 0.6905544400215149,
-                    "z": 2.8932790756225586
+                    "x": -0.4463179409503937,
+                    "y": 0.6856902241706848,
+                    "z": 2.9153780937194824
                 },
                 "scale": {
                     "x": 0.010000023990869522,
-                    "y": 0.01000002957880497,
+                    "y": 0.010000032372772694,
                     "z": 0.010000058449804783
                 },
                 "visible": false
@@ -931,19 +931,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.23046016693115234,
-                    "y": 0.6567245721817017,
-                    "z": 10.817434310913086
+                    "x": 0.2342044711112976,
+                    "y": 0.6549630165100098,
+                    "z": 10.818974494934082
                 },
                 "rotation": {
-                    "x": -0.08863195776939392,
-                    "y": 0.0653195008635521,
-                    "z": -2.9914231300354004
+                    "x": -0.05831744521856308,
+                    "y": 0.0670742318034172,
+                    "z": -2.987447738647461
                 },
                 "scale": {
-                    "x": 0.010000036098062992,
-                    "y": 0.010000028647482395,
-                    "z": 0.010000026784837246
+                    "x": 0.010000035166740417,
+                    "y": 0.010000026784837246,
+                    "z": 0.010000030510127544
                 },
                 "visible": false
             },
@@ -3619,6 +3619,8 @@
                             "z": 1.0
                         },
                         "m_fpsCameraName": "FPSCamera",
+                        "m_hidePlayerCoreOnCut": true,
+                        "m_hidePlayerImmediatelyOnDeath": true,
                         "m_hidePlayerOnCut": true,
                         "m_hidePlayerWeaponOnCut": true,
                         "m_holdFpsAfterCut": true,
@@ -3628,6 +3630,7 @@
                         "m_lookPitchOffsetDeg": -8.0,
                         "m_lookRotationDamping": 10.0,
                         "m_outputCameraName": "MainCamera",
+                        "m_playerCoreEntityName": "EGO_Core",
                         "m_playerEntityName": "Player(Tia)",
                         "m_playerWeaponEntityName": "EGO_Blade(combined)",
                         "m_postProcessPriority": 2800,
@@ -4578,6 +4581,7 @@
                     "enabled": true,
                     "name": "BossWinCinematicController",
                     "props": {
+                        "m_additionalBossEffectNamesCsv": "BossDeshEffect,Boss_AttackTrailVfx1,Boss_AttackTrailVfx2",
                         "m_autoCreatePostProcessVolume": true,
                         "m_autoStartOnBossDeath": true,
                         "m_bloomBoostIntensity": 1.0800000429153442,
@@ -4586,6 +4590,7 @@
                         "m_bossEffectPointName": "BossEffectPoint",
                         "m_bossEntityName": "Boss",
                         "m_bossFadeDurationSec": 4.266666889190674,
+                        "m_bossFadePoseWaitTimeoutSec": 4.0,
                         "m_bossFadeStartSec": 0.18000000715255737,
                         "m_bossMinAlpha": 0.0,
                         "m_bossWeaponEntityName": "BossWeapon",
@@ -4633,7 +4638,8 @@
                         "m_showEyeDuringSequence": true,
                         "m_targetLookYOffset": 0.7599999904632568,
                         "m_useSmoothBlend": true,
-                        "m_waitBeforeShakeSec": 0.7699999809265137
+                        "m_waitBeforeShakeSec": 0.7699999809265137,
+                        "m_waitBossPoseBeforeFade": true
                     }
                 }
             ],
@@ -7788,14 +7794,14 @@
                 "weaponDurabilityMax": 1000.0
             },
             "Material": {
-                "albedoTexturePath": "Resource/Textures/Tia_Animaition/Tia_Animaition_D_0.png",
+                "albedoTexturePath": "Resource/Textures/tia/tia_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Tia_Animaition_0.mat",
+                "assetPath": "Assets/Materials/tia_0.mat",
                 "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
+                    "x": 1.0,
+                    "y": 0.9373145699501038,
+                    "z": 0.8880308866500854
                 },
                 "emissiveBloom": 1.0,
                 "emissiveColor": {
@@ -7815,8 +7821,8 @@
                     "z": 0.0
                 },
                 "outlineWidth": 0.0,
-                "roughness": 0.5,
-                "shadingMode": -1,
+                "roughness": 1.0,
+                "shadingMode": 3,
                 "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
@@ -7830,7 +7836,7 @@
                 "toonPbrLevel3Alpha": 1.0,
                 "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
+                "toonSelfShadowStrength": 0.0,
                 "transparent": false
             },
             "Scripts": [
@@ -8575,8 +8581,8 @@
                     "loopB": true,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 1.8434216976165771,
-                    "timeB": 0.7767806649208069
+                    "timeA": 1.0847506523132324,
+                    "timeB": 0.018110796809196472
                 },
                 "enabled": true,
                 "ik": {
@@ -8790,7 +8796,7 @@
             },
             "Health": {
                 "alive": true,
-                "currentHealth": 1.0,
+                "currentHealth": 7000.0,
                 "dodgeActive": false,
                 "dodgeAvoidedThisFrame": false,
                 "groggy": 999.0,
@@ -8830,14 +8836,14 @@
                 "weaponDurabilityMax": 100.0
             },
             "Material": {
-                "albedoTexturePath": "Resource/Textures/Boss_Animaition/Boss_Animaition_D_0.png",
+                "albedoTexturePath": "Resource/Textures/Boss_Animaition_72eb8a8d/Boss_Animaition_72eb8a8d_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Boss_Animaition_0.mat",
+                "assetPath": "Assets/Materials/Boss_Animaition_72eb8a8d_0.mat",
                 "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
+                    "x": 0.200772225856781,
+                    "y": 0.19590862095355988,
+                    "z": 0.15038537979125977
                 },
                 "emissiveBloom": 1.0,
                 "emissiveColor": {
@@ -8845,8 +8851,8 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "emissiveIntensity": 1.3580000400543213,
-                "emissiveTexturePath": "Resource/Textures/Boss_Animaition/Boss_Animaition_E_1.png",
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -8857,22 +8863,22 @@
                     "z": 0.0
                 },
                 "outlineWidth": 0.0,
-                "roughness": 0.5,
-                "shadingMode": -1,
+                "roughness": 0.8349999785423279,
+                "shadingMode": 3,
                 "shadowStrength": 1.0,
                 "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut1": 0.7680000066757202,
                 "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrCut3": 0.3919999897480011,
+                "toonPbrLevel1": 0.10300000011920929,
+                "toonPbrLevel1Alpha": 0.0,
+                "toonPbrLevel2": 0.8809999823570251,
                 "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3": 0.6800000071525574,
                 "toonPbrLevel3Alpha": 1.0,
                 "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
+                "toonSelfShadowStrength": 0.0,
                 "transparent": false
             },
             "Scripts": [
@@ -9238,19 +9244,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.3502892851829529,
-                    "y": 1.081910490989685,
-                    "z": 10.88599681854248
+                    "x": -0.34778258204460144,
+                    "y": 1.0841866731643677,
+                    "z": 10.878440856933594
                 },
                 "rotation": {
-                    "x": -0.005799236707389355,
-                    "y": 1.3231394290924072,
-                    "z": -0.8691352009773254
+                    "x": -0.0017369696870446205,
+                    "y": 1.3360519409179688,
+                    "z": -0.8437515497207642
                 },
                 "scale": {
-                    "x": 1.4999990463256836,
-                    "y": 1.4999994039535522,
-                    "z": 1.4999985694885254
+                    "x": 1.499998927116394,
+                    "y": 1.499998927116394,
+                    "z": 1.4999988079071045
                 },
                 "visible": true
             },
@@ -52910,165 +52916,6 @@
             "name": "Spot Light"
         },
         {
-            "Material": {
-                "albedoTexturePath": "Resource/Textures/Blood/Blood_D_0.png",
-                "alpha": 0.5,
-                "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Blood_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "emissiveBloom": 1.0,
-                "emissiveColor": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "emissiveIntensity": 0.0,
-                "emissiveTexturePath": "",
-                "envDiffuseStrength": 1.0,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.8399999737739563,
-                "shadingMode": 7,
-                "shadowStrength": 1.0,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrLevel3Alpha": 1.0,
-                "toonPbrRampIntensity": 0.0,
-                "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Blood.fbxasset",
-                "meshAssetPath": "Blood"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": -7.016539573669434,
-                    "y": 0.0024102628231048584,
-                    "z": 5.293519496917725
-                },
-                "rotation": {
-                    "x": -0.0,
-                    "y": -0.6268773674964905,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "guid": "10636056651600580107",
-            "name": "B1"
-        },
-        {
-            "Material": {
-                "albedoTexturePath": "Resource/Textures/Blood/Blood_D_0.png",
-                "alpha": 0.5,
-                "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Blood_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "emissiveBloom": 1.0,
-                "emissiveColor": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "emissiveIntensity": 0.0,
-                "emissiveTexturePath": "",
-                "envDiffuseStrength": 1.0,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.18000000715255737,
-                "shadingMode": 7,
-                "shadowStrength": 1.0,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrLevel3Alpha": 1.0,
-                "toonPbrRampIntensity": 0.0,
-                "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Blood.fbxasset",
-                "meshAssetPath": "Blood"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 11.519304275512695,
-                    "y": 0.0017687827348709106,
-                    "z": -2.18449068069458
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.6545370817184448,
-                    "z": -0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "guid": "5136661194170036895"
-        },
-        {
             "Decal": {
                 "albedoTexturePath": "Resource/Test/4_Resources/background/Decal/Mold.png",
                 "color": {
@@ -53361,86 +53208,6 @@
             },
             "guid": "14507889185691181368",
             "name": "GameObject940"
-        },
-        {
-            "Material": {
-                "albedoTexturePath": "Resource/Textures/Blood_f851239b/Blood_f851239b_D_0.png",
-                "alpha": 0.5,
-                "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Blood_f851239b_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "emissiveBloom": 1.0,
-                "emissiveColor": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "emissiveIntensity": 0.0,
-                "emissiveTexturePath": "",
-                "envDiffuseStrength": 1.0,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.8759999871253967,
-                "shadingMode": 7,
-                "shadowStrength": 1.0,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrLevel3Alpha": 1.0,
-                "toonPbrRampIntensity": 0.0,
-                "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Blood_f851239b.fbxasset",
-                "meshAssetPath": "Blood_f851239b"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": -4.95802116394043,
-                    "y": 0.0010000000474974513,
-                    "z": 0.04257402941584587
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.27401667833328247,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": -0.800000011920929,
-                    "y": 1.0,
-                    "z": 0.5
-                },
-                "visible": true
-            },
-            "guid": "7425056624870842888",
-            "name": "B2"
         },
         {
             "Decal": {
@@ -53779,85 +53546,6 @@
             "name": "GameObject949"
         },
         {
-            "Material": {
-                "albedoTexturePath": "Resource/Textures/Blood_f851239b/Blood_f851239b_D_0.png",
-                "alpha": 0.35100001096725464,
-                "ambientOcclusion": 0.23999999463558197,
-                "assetPath": "Assets/Materials/Blood_f851239b_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "emissiveBloom": 1.0,
-                "emissiveColor": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "emissiveIntensity": 0.0,
-                "emissiveTexturePath": "",
-                "envDiffuseStrength": 1.0299999713897705,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.3709999918937683,
-                "shadingMode": 7,
-                "shadowStrength": 1.0,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrLevel3Alpha": 1.0,
-                "toonPbrRampIntensity": 0.0,
-                "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Blood_f851239b.fbxasset",
-                "meshAssetPath": "Blood_f851239b"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": -10.590937614440918,
-                    "y": 0.0010000000474974513,
-                    "z": 21.661970138549805
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": -0.44854962825775146,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 2.0999999046325684,
-                    "y": 1.0,
-                    "z": 2.0999999046325684
-                },
-                "visible": true
-            },
-            "guid": "15984180309094145858"
-        },
-        {
             "Decal": {
                 "albedoTexturePath": "Resource/Test/4_Resources/background/Decal/Mold.png",
                 "color": {
@@ -53898,164 +53586,6 @@
             },
             "guid": "6202407431015635165",
             "name": "GameObject952"
-        },
-        {
-            "Material": {
-                "albedoTexturePath": "Resource/Textures/Blood_f851239b/Blood_f851239b_D_0.png",
-                "alpha": 0.3499999940395355,
-                "ambientOcclusion": 0.5899999737739563,
-                "assetPath": "Assets/Materials/Blood_f851239b_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "emissiveBloom": 1.0,
-                "emissiveColor": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "emissiveIntensity": 0.0,
-                "emissiveTexturePath": "",
-                "envDiffuseStrength": 1.0,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.3869999945163727,
-                "shadingMode": 7,
-                "shadowStrength": 1.0,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrLevel3Alpha": 1.0,
-                "toonPbrRampIntensity": 0.0,
-                "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Blood_f851239b.fbxasset",
-                "meshAssetPath": "Blood_f851239b"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 10.811579704284668,
-                    "y": 0.0010000000474974513,
-                    "z": 9.090453147888184
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 2.3893556594848633,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 4.400000095367432,
-                    "y": 1.0,
-                    "z": 1.7999999523162842
-                },
-                "visible": true
-            },
-            "guid": "10057165722374016486"
-        },
-        {
-            "Material": {
-                "albedoTexturePath": "Resource/Textures/Blood_f851239b/Blood_f851239b_D_0.png",
-                "alpha": 0.4020000100135803,
-                "ambientOcclusion": 0.6200000047683716,
-                "assetPath": "Assets/Materials/Blood_f851239b_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "emissiveBloom": 1.0,
-                "emissiveColor": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "emissiveIntensity": 0.0,
-                "emissiveTexturePath": "",
-                "envDiffuseStrength": 1.0,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.35100001096725464,
-                "shadingMode": 7,
-                "shadowStrength": 1.0,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrLevel3Alpha": 1.0,
-                "toonPbrRampIntensity": 0.0,
-                "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Blood_f851239b.fbxasset",
-                "meshAssetPath": "Blood_f851239b"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 8.529516220092773,
-                    "y": 0.0010000000474974513,
-                    "z": 5.188783168792725
-                },
-                "rotation": {
-                    "x": -0.0,
-                    "y": -0.4178376793861389,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 0.6000000238418579,
-                    "y": 1.0,
-                    "z": 0.6000000238418579
-                },
-                "visible": true
-            },
-            "guid": "16936263433932018218"
         },
         {
             "Decal": {
