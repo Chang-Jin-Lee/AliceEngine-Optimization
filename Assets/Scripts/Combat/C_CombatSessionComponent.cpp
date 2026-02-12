@@ -2936,6 +2936,9 @@ namespace Alice
 			bossOut.flags.chargeLevel = bossIntent.chargeLevel;
 		}
 
+		// Disable kick-specific forced hitActive override.
+		// Keep hit timing fully driven by AttackDriver attack window.
+		/*
 		bool bossKickAttackActive = false;
 		if (bossOut.state == Combat::ActionState::Attack)
 		{
@@ -2955,6 +2958,7 @@ namespace Alice
 		}
 		if (bossKickAttackActive)
 			bossOut.flags.hitActive = true;
+		*/
 
 		if (bossPhaseHowlingActive)
 			bossOut.flags.hitActive = false;
