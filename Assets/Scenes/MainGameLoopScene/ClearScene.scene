@@ -8615,7 +8615,7 @@
                 "clipIndex": 2,
                 "playing": true,
                 "speed": 1.0,
-                "timeSec": 7.825441931307864
+                "timeSec": 24.999044139803004
             },
             "SkinnedMesh": {
                 "boneCount": 248,
@@ -8645,7 +8645,7 @@
         },
         {
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Boss_Weapon_3dae22b1/Boss_Weapon_3dae22b1_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Boss_Weapon_3dae22b1_0.mat",
@@ -8673,7 +8673,7 @@
                 },
                 "outlineWidth": 0.0,
                 "roughness": 0.5,
-                "shadingMode": -1,
+                "shadingMode": 7,
                 "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
