@@ -26,6 +26,12 @@ namespace Alice
         
         // 이미지 컴포넌트 위젯 이름
         ALICE_PROPERTY(std::string, imageWidgetName, "");
+        
+        // 뜬눈 이미지 컴포넌트 위젯 이름
+        ALICE_PROPERTY(std::string, normalImageWidgetName, "");
+
+        // 감은눈(쿨타임) 이미지 컴포넌트 위젯 이름
+        ALICE_PROPERTY(std::string, cooldownImageWidgetName, "");
 
         // 전투 세션 엔티티 이름 (광폭화 상태 조회용)
         ALICE_PROPERTY(std::string, sessionEntityName, "SceneManager");
@@ -46,8 +52,12 @@ namespace Alice
     private:
         // 런타임 캐시
         UIGaugeComponent* TargetGauge = nullptr;
-        UIImageComponent* TargetImage = nullptr;
+        UIImageComponent* TargetImage = nullptr;      // 단일 이미지 fallback
+        UIImageComponent* NormalImage = nullptr;      // 뜬눈
+        UIImageComponent* CooldownImage = nullptr;    // 감은눈
         C_CombatSessionComponent* TargetSession = nullptr;
+        float NormalBaseAlpha = 1.0f;
+        float CooldownBaseAlpha = 1.0f;
         
         // 이전 상태 추적 (불필요한 이미지 변경 방지)
         bool wasLowValue = false;

@@ -49721,10 +49721,13 @@
                     "enabled": true,
                     "name": "PlayerGauge",
                     "props": {
+                        "cooldownImageWidgetName": "UI_GaugeBackground2_Cooldown",
                         "gaugeWidgetName": "UI_Gauge4",
                         "imageWidgetName": "UI_GaugeBackground2",
                         "lowValueImagePath": "Resource/Test/4_Resources/UI/StateBar/Egoweapon_Destroyed.png",
+                        "normalImageWidgetName": "UI_GaugeBackground2",
                         "normalImagePath": "Resource/Test/4_Resources/UI/StateBar/Egoweapon_Gauge_OUT.png",
+                        "sessionEntityName": "SceneManager",
                         "triggerThreshold": 0.30000001192092896
                     }
                 },
@@ -49826,6 +49829,107 @@
             "_parentGuid": "15692019774589272268",
             "guid": "10885739094265527295",
             "name": "UI_GaugeBackground2"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 397.5,
+                        "baseSizeY": 46.66999816894531,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_GaugeBackground2_Cooldown",
+                        "useNonUniformScale": false
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "Resource/Test/4_Resources/UI/StateBar/Egoweapon_Destroyed.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 4.0
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 4.0
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 398.0,
+                    "y": 47.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_GaugeBackground2_Cooldown"
+            },
+            "_parentGuid": "15692019774589272268",
+            "guid": "18094730211234567890",
+            "name": "UI_GaugeBackground2_Cooldown"
         },
         {
             "Scripts": [
