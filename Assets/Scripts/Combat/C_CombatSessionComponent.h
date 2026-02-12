@@ -40,6 +40,7 @@ namespace Alice
         std::uint64_t GetBossAttemptPlayerGuardBreakCount() const;
         float GetBossAttemptPlayTimeSec() const;
         std::uint64_t GetBossRetryCount() const;
+        void ResetBossAttemptRecord();
         bool IsPlayerRageActive() const;
         float GetPlayerRageRemainingSec() const;
         float GetPlayerRageCooldownRemainingSec() const;

@@ -160,6 +160,8 @@ namespace Alice
         if (m_totalText)
             m_totalText->text = FormatWithComma(static_cast<std::int64_t>(std::llround(totalScore)));
 
+        // Clear consumed snapshot so next clear scene entry starts from fresh defaults.
+        MainChangerScript::ResetClearResultSnapshot();
         m_applied = true;
     }
 }

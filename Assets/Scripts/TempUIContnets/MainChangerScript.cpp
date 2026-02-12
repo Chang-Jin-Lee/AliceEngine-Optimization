@@ -99,6 +99,12 @@ namespace Alice
         return true;
     }
 
+    void MainChangerScript::ResetClearResultSnapshot()
+    {
+        s_lastClearResult = {};
+        s_hasLastClearResult = false;
+    }
+
     void MainChangerScript::Start()
     {
         m_prevPlayerDead = false;
@@ -253,6 +259,7 @@ namespace Alice
                     snapshot.parryCount = session->GetBossAttemptParrySuccessCount();
                     snapshot.damagedCount = session->GetBossAttemptPlayerHitCount();
                     snapshot.breakCount = session->GetBossAttemptPlayerGuardBreakCount();
+                    session->ResetBossAttemptRecord();
                 }
                 SetClearResultSnapshot(snapshot);
             }

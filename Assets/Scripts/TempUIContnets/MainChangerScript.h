@@ -31,6 +31,7 @@ namespace Alice
 
         static void SetClearResultSnapshot(const ClearResultSnapshot& snapshot);
         static bool GetClearResultSnapshot(ClearResultSnapshot& outSnapshot);
+        static void ResetClearResultSnapshot();
 
         ALICE_PROPERTY(std::string, sessionEntityName, "SceneManager");
         ALICE_PROPERTY(std::string, playerEntityName, "Player(Tia)");

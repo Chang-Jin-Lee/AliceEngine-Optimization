@@ -1080,6 +1080,24 @@ namespace Alice
 		return g_bossRetryCount;
 	}
 
+	void C_CombatSessionComponent::ResetBossAttemptRecord()
+	{
+		g_bossRetryCount = 0;
+
+		if (!m_state)
+			return;
+
+		m_state->attackSuccessCount = 0;
+		m_state->guardSuccessCount = 0;
+		m_state->parrySuccessCount = 0;
+		m_state->playerHitCount = 0;
+		m_state->playerGuardBreakCount = 0;
+		m_state->playTimeSec = 0.0f;
+		m_state->encounterRecordingActive = false;
+		m_state->encounterRecordingFinished = false;
+		m_state->summaryLogged = false;
+	}
+
 	bool C_CombatSessionComponent::IsPlayerRageActive() const
 	{
 		return m_state ? m_state->playerRageActive : false;
