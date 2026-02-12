@@ -37,7 +37,7 @@ namespace Alice
         ALICE_PROPERTY(std::string, pathAttack1, "Resource/Test/4_Resources/sound/SFX/Boss/Attack1/Boss_Attack_01.mp3");
         ALICE_PROPERTY(std::string, pathAttack2, "Resource/Test/4_Resources/sound/SFX/Boss/Attack2/Boss_Attack_02.wav");
         ALICE_PROPERTY(std::string, pathAttack3, "Resource/Test/4_Resources/sound/SFX/Boss/Attack3/Boss_Attack_03.wav");
-        ALICE_PROPERTY(std::string, pathAttackABC, "Resource/Test/4_Resources/sound/SFX/Boss/AttackABC/Boss_Attack_ABC.wav");
+        ALICE_PROPERTY(std::string, pathAttackABC, "Resource/Test/4_Resources/sound/SFX/Boss/Attack3/Boss_Attack_03.wav");
         ALICE_PROPERTY(std::string, pathSoulSwordCharge, "Resource/Test/4_Resources/sound/SFX/Boss/SoulAttackcharge/Boss_SoulAttack_Charging_01.mp3");
         ALICE_PROPERTY(std::string, pathSoulSwordAttack, "Resource/Test/4_Resources/sound/SFX/Boss/SoulAttack/Boss_SoulAttack_Attack_01.wav");
         ALICE_PROPERTY(std::string, pathSideAttack, "Resource/Test/4_Resources/sound/SFX/Boss/sideAttack/Boss_Attack_Side_01.mp3");
@@ -70,7 +70,7 @@ namespace Alice
 
         // 보스 기타 상태별 경로
         ALICE_PROPERTY(std::string, pathGroggyEnter, "Resource/Test/4_Resources/sound/SFX/Boss/EnterGroggy/Boss_Groggy_Alarm_01.wav");
-        ALICE_PROPERTY(std::string, pathRoar, "Resource/Test/4_Resources/sound/SFX/Boss/Howling/Boss_Roaring_01.mp3");
+        ALICE_PROPERTY(std::string, pathRoar, "Resource/Test/4_Resources/sound/SFX/Boss/Hawling/Boss_Roaring_01.mp3");
         ALICE_PROPERTY(std::string, pathHit, "Resource/Test/4_Resources/sound/SFX/Boss/BossHit/Boss_Hit_01.wav");
         ALICE_PROPERTY(std::string, pathDeath, "Resource/Test/4_Resources/sound/SFX/Boss/Dead/Boss_Die_01.mp3");
 

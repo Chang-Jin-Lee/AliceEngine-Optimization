@@ -104,6 +104,17 @@
             "Scripts": [
                 {
                     "enabled": true,
+                    "name": "AudioBGMScript",
+                    "props": {
+                        "bgmPath": "Resource/Test/4_Resources/sound/SFX/BGM/BGM_GameOver_01.mp3",
+                        "busEntityName": "AudioBus",
+                        "playOnStart": true,
+                        "useBus": true,
+                        "volume": 0.5
+                    }
+                },
+                {
+                    "enabled": true,
                     "name": "LoadingScript",
                     "props": {
                         "autoStart": true,
