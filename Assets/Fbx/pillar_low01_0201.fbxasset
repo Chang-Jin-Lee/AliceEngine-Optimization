@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/pillar_low01_0201_0.mat"
+    ],
+    "mesh": "pillar_low01_0201",
+    "source_fbx": "Resource/fbx/pillar_low01_0201.fbx"
+}

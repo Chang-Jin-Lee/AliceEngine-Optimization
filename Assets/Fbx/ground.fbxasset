@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/ground_0.mat"
+    ],
+    "mesh": "ground",
+    "source_fbx": "Resource/fbx/ground.fbx"
+}
