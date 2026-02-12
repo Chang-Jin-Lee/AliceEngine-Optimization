@@ -322,6 +322,7 @@ namespace Alice
                 }
             }
             m_sparkPointLightRemainingSec = 0.0f;
+            m_sparkPointLightFlashDurationSec = 0.0f;
         }
 
         UpdatePathCacheAndPools();
@@ -489,6 +490,7 @@ namespace Alice
         m_playerSparkGate = AttackOrdinalGate{};
         m_bossSparkGate = AttackOrdinalGate{};
         m_sparkPointLightRemainingSec = 0.0f;
+        m_sparkPointLightFlashDurationSec = 0.0f;
         if (World* world = GetWorld(); world && m_sparkPointLightId != InvalidEntityId)
         {
             if (auto* pointLight = world->GetComponent<PointLightComponent>(m_sparkPointLightId))
@@ -510,6 +512,7 @@ namespace Alice
         m_sparkPointLightId = InvalidEntityId;
         m_sparkPointLightOwned = false;
         m_sparkPointLightRemainingSec = 0.0f;
+        m_sparkPointLightFlashDurationSec = 0.0f;
 
         for (int slot = 0; slot < SlotCount; ++slot)
             ClearSlot(slot);
@@ -531,6 +534,7 @@ namespace Alice
             m_sparkPointLightId = InvalidEntityId;
             m_sparkPointLightOwned = false;
             m_sparkPointLightRemainingSec = 0.0f;
+            m_sparkPointLightFlashDurationSec = 0.0f;
             return;
         }
 
@@ -1322,6 +1326,7 @@ namespace Alice
             m_sparkPointLightId = InvalidEntityId;
             m_sparkPointLightOwned = false;
             m_sparkPointLightRemainingSec = 0.0f;
+            m_sparkPointLightFlashDurationSec = 0.0f;
         }
 
         const std::string configuredName = Get_sparkPointLightEntityName();
@@ -1387,7 +1392,8 @@ namespace Alice
         tr->position = Add(spawnPos, Get_sparkPointLightOffset());
         world->MarkTransformDirty(lightId);
 
-        m_sparkPointLightRemainingSec = (std::max)(0.0f, Get_sparkPointLightDurationSec());
+        m_sparkPointLightFlashDurationSec = (std::max)(0.0f, Get_sparkPointLightDurationSec());
+        m_sparkPointLightRemainingSec = m_sparkPointLightFlashDurationSec;
         if (m_sparkPointLightRemainingSec <= 0.0f)
             pointLight->enabled = false;
     }
@@ -1407,25 +1413,41 @@ namespace Alice
             m_sparkPointLightId = InvalidEntityId;
             m_sparkPointLightOwned = false;
             m_sparkPointLightRemainingSec = 0.0f;
+            m_sparkPointLightFlashDurationSec = 0.0f;
             return;
         }
 
         if (!Get_enableSparkPointLightFlash())
         {
             pointLight->enabled = false;
+            pointLight->intensity = 0.0f;
             m_sparkPointLightRemainingSec = 0.0f;
+            m_sparkPointLightFlashDurationSec = 0.0f;
             return;
         }
 
         if (m_sparkPointLightRemainingSec <= 0.0f)
         {
+            pointLight->intensity = 0.0f;
             pointLight->enabled = false;
             return;
         }
 
-        m_sparkPointLightRemainingSec = (std::max)(0.0f, m_sparkPointLightRemainingSec - (std::max)(0.0f, deltaTime));
+        const float safeDelta = (std::max)(0.0f, deltaTime);
+        m_sparkPointLightRemainingSec = (std::max)(0.0f, m_sparkPointLightRemainingSec - safeDelta);
+
+        const float startIntensity = (std::max)(0.0f, Get_sparkPointLightIntensity());
+        const float rawEndIntensity = (std::max)(0.0f, Get_sparkPointLightEndIntensity());
+        const float endIntensity = (std::min)(startIntensity, rawEndIntensity);
+        const float duration = (std::max)(0.0001f, m_sparkPointLightFlashDurationSec);
+        const float normalizedRemain = (std::max)(0.0f, (std::min)(1.0f, m_sparkPointLightRemainingSec / duration));
+        pointLight->intensity = endIntensity + (startIntensity - endIntensity) * normalizedRemain;
+
         if (m_sparkPointLightRemainingSec <= 0.0f)
+        {
+            pointLight->intensity = 0.0f;
             pointLight->enabled = false;
+        }
     }
 
     bool CombatVfxBridgeScript::ProcessSlashFromTraceSignals(bool allowSpawn)
