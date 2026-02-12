@@ -202,11 +202,7 @@ namespace Alice
             markerUiTransform->sortOrder = 0;
         }
 
-        if (auto* markerTransform = world->GetComponent<TransformComponent>(m_markerId))
-        {
-            const float s = std::max(0.0001f, Get_markerWorldScale());
-            markerTransform->scale = { s, s, s };
-        }
+        ApplyMarkerWorldScale(-1.0f);
 
         if (m_markerImage)
         {
@@ -233,6 +229,7 @@ namespace Alice
 
         DirectX::XMFLOAT3 worldPos = bossTransform->position;
         worldPos.y += Get_markerYOffset();
+        float distanceToCamera = -1.0f;
 
         if (const auto* cameraTransform = world->GetComponent<TransformComponent>(m_cameraId))
         {
@@ -240,6 +237,7 @@ namespace Alice
             DirectX::XMVECTOR cameraV = DirectX::XMLoadFloat3(&cameraTransform->position);
             DirectX::XMVECTOR toCamera = DirectX::XMVectorSubtract(cameraV, markerV);
             const float lenSq = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(toCamera));
+            distanceToCamera = DirectX::XMVectorGetX(DirectX::XMVector3Length(toCamera));
             if (lenSq > 1e-6f)
             {
                 const float towardCameraOffset = std::max(0.0f, Get_markerTowardCameraOffset());
@@ -250,6 +248,46 @@ namespace Alice
         }
 
         world->SetLocalPosition(m_markerId, worldPos);
+        ApplyMarkerWorldScale(distanceToCamera);
+    }
+
+    void BossLockOnMarkerScript::ApplyMarkerWorldScale(float distanceToCamera)
+    {
+        World* world = GetWorld();
+        if (!world || m_markerId == InvalidEntityId)
+            return;
+
+        auto* markerTransform = world->GetComponent<TransformComponent>(m_markerId);
+        if (!markerTransform)
+            return;
+
+        const float baseScale = std::max(0.0001f, Get_markerWorldScale());
+        float scaleMultiplier = 1.0f;
+
+        if (Get_enableDistanceScale() && distanceToCamera >= 0.0f)
+        {
+            const float nearDistance = std::max(0.01f, Get_distanceScaleNearDistance());
+            const float farDistance = std::max(nearDistance + 0.01f, Get_distanceScaleFarDistance());
+            const float nearMultiplier = std::max(0.05f, Get_distanceScaleNearMultiplier());
+            const float farMultiplier = std::max(nearMultiplier, Get_distanceScaleFarMultiplier());
+
+            if (distanceToCamera <= nearDistance)
+            {
+                scaleMultiplier = nearMultiplier;
+            }
+            else if (distanceToCamera >= farDistance)
+            {
+                scaleMultiplier = farMultiplier;
+            }
+            else
+            {
+                const float t = (distanceToCamera - nearDistance) / (farDistance - nearDistance);
+                scaleMultiplier = nearMultiplier + (farMultiplier - nearMultiplier) * std::clamp(t, 0.0f, 1.0f);
+            }
+        }
+
+        const float scaled = baseScale * scaleMultiplier;
+        markerTransform->scale = { scaled, scaled, scaled };
     }
 
     void BossLockOnMarkerScript::SetMarkerVisible(bool visible)
