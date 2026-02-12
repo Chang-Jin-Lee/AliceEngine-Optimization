@@ -24,6 +24,8 @@ namespace Alice
         void Start() override;
         void Update(float deltaTime) override;
         bool IsLoopActive() const;
+        int ConsumeShardCombinePulseCount();
+        bool ConsumeEyeCombinePulse();
 
         ALICE_PROPERTY(std::string, m_weaponCombinedName, "Weapon(combined)");
         ALICE_PROPERTY(std::string, m_coreName, "W_Core");
@@ -142,6 +144,8 @@ namespace Alice
         size_t m_nextAssembleIndex = 0;
 
         bool m_pendingBreakImpulse = false;
+        int m_pendingShardCombinePulseCount = 0;
+        bool m_pendingEyeCombinePulse = false;
         bool m_eyeArrived = false;
         float m_tendonTimer = 0.0f;
         bool m_tendonFading = false;

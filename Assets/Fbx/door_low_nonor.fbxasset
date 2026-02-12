@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/door_low_nonor_0.mat"
+    ],
+    "mesh": "door_low_nonor",
+    "source_fbx": "Resource/fbx/door_low_nonor.fbx"
+}

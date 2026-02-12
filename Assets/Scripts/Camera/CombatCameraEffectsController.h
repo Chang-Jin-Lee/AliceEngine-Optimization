@@ -123,6 +123,7 @@ namespace Alice
         void ApplyOutputs(float deltaTime, const PulseAccumulation& pulseAccumulation);
         void ApplyImpactBlur(float intensity, float radius, float centerX, float centerY);
         void ApplyShake(const PulseConfig& config);
+        void TriggerGamepadRumble(float durationSec);
 
         void TriggerPulse(PulseKind kind, const PulseConfig& config, const DirectX::XMFLOAT3* hitPosWS);
         DirectX::XMFLOAT2 ResolvePulseCenter(const DirectX::XMFLOAT3* hitPosWS) const;
@@ -298,6 +299,7 @@ namespace Alice
         Combat::ActionState m_prevBossState = Combat::ActionState::Idle;
 
         bool m_prevChargeActive = false;
+        int m_prevChargeLevel = 0;
         float m_chargeZoomDeg = 0.0f;
         float m_chargeCurrentMaxZoomDeg = 0.0f;
 

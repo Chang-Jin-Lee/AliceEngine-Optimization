@@ -1,479 +1,310 @@
 {
-  "entities": [
-    {
-      "Scripts": [
+    "entities": [
         {
-          "enabled": true,
-          "name": "FadeInOutScript",
-          "props": {
-            "fadeSpeed": 0.699999988079071,
-            "isFadeIn": false,
-            "rootWidgetName": "UI_Fade",
-            "startAlpha": 1.0,
-            "targetWidgetName": "UI_Fade"
-          }
-        }
-      ],
-      "Transform": {
-        "enabled": true,
-        "position": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "scale": {
-          "x": 1.0,
-          "y": 1.0,
-          "z": 1.0
-        },
-        "visible": true
-      },
-      "UIImage": {
-        "color": {
-          "w": 0.0,
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "preserveAspect": false,
-        "texturePath": "",
-        "uvRect": {
-          "w": 1.0,
-          "x": 0.0,
-          "y": 0.0,
-          "z": 1.0
-        }
-      },
-      "UITransform": {
-        "alignH": "Center",
-        "alignV": "Center",
-        "anchorMax": {
-          "x": 0.5,
-          "y": 0.5
-        },
-        "anchorMin": {
-          "x": 0.5,
-          "y": 0.5
-        },
-        "pivot": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "position": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "rotationRad": 0.0,
-        "scale": {
-          "x": 1.0,
-          "y": 1.0
-        },
-        "size": {
-          "x": 1600.0,
-          "y": 900.0
-        },
-        "sortOrder": 6,
-        "useAlignment": false
-      },
-      "UIWidget": {
-        "billboard": false,
-        "interactable": true,
-        "raycastTarget": true,
-        "shaderName": "Default",
-        "space": "Screen",
-        "visibility": "Visible",
-        "widgetName": "UI_Fade"
-      },
-      "guid": "13289844923809440641",
-      "name": "UI_Fade"
-    },
-    {
-      "Material": {
-        "albedoTexturePath": "",
-        "alpha": 1.0,
-        "ambientOcclusion": 1.0,
-        "assetPath": "Assets/Materials/Cube_0.mat",
-        "color": {
-          "x": 0.699999988079071,
-          "y": 0.699999988079071,
-          "z": 0.699999988079071
-        },
-        "envDiffuseStrength": 1.0,
-        "envSpecularStrength": 1.0,
-        "metalness": 0.0,
-        "normalStrength": 1.0,
-        "outlineColor": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "outlineWidth": 0.0,
-        "roughness": 0.5,
-        "shadingMode": -1,
-        "shadowStrength": 1.0,
-        "toonPbrBlur": false,
-        "toonPbrCut1": 0.20000000298023224,
-        "toonPbrCut2": 0.5,
-        "toonPbrCut3": 0.949999988079071,
-        "toonPbrLevel1": 0.10000000149011612,
-        "toonPbrLevel1Alpha": 1.0,
-        "toonPbrLevel2": 0.4000000059604645,
-        "toonPbrLevel2Alpha": 1.0,
-        "toonPbrLevel3": 0.699999988079071,
-        "toonPbrLevel3Alpha": 1.0,
-        "toonPbrRampIntensity": 0.0,
-        "toonPbrStrength": 1.0,
-        "toonSelfShadowStrength": 1.0,
-        "transparent": false
-      },
-      "SkinnedAnimation": {
-        "clipIndex": 0,
-        "playing": true,
-        "speed": 1.0,
-        "timeSec": 0.0
-      },
-      "SkinnedMesh": {
-        "boneCount": 1,
-        "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
-        "meshAssetPath": "Cube"
-      },
-      "Transform": {
-        "enabled": true,
-        "position": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "scale": {
-          "x": 1.0,
-          "y": 1.0,
-          "z": 1.0
-        },
-        "visible": true
-      },
-      "guid": "18073902517154987577",
-      "name": "Cube"
-    },
-    {
-      "Scripts": [
-        {
-          "enabled": true,
-          "name": "SceneChangekPressScript",
-          "props": {
-            "changeKey": 20,
-            "targetScenePath": "Assets/Scenes/#00Combat0211.scene"
-          }
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "FadeInOutScript",
+                    "props": {
+                        "fadeSpeed": 0.699999988079071,
+                        "isFadeIn": false,
+                        "rootWidgetName": "UI_Fade",
+                        "startAlpha": 1.0,
+                        "targetWidgetName": "UI_Fade"
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "",
+                        "useNonUniformScale": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
+                "sortOrder": 6,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Fade"
+            },
+            "guid": "13289844923809440641",
+            "name": "UI_Fade"
         },
         {
-          "enabled": true,
-          "name": "VisibleMouseScript",
-          "props": {}
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Cube/Cube_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Cube_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Cube.fbxasset",
+                "meshAssetPath": "Cube"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "18073902517154987577",
+            "name": "Cube"
         },
         {
-          "enabled": true,
-          "name": "OnResizeScript",
-          "props": {
-            "applyInitialSize": false,
-            "forceScaleOne": true,
-            "initialSizeX": 0.0,
-            "initialSizeY": 0.0,
-            "maxScale": 10.0,
-            "minScale": 0.10000000149011612,
-            "overrideHeight": 0.0,
-            "overrideWidth": 0.0,
-            "referenceHeight": 900.0,
-            "referenceWidth": 1600.0,
-            "roundToInt": true,
-            "scaleMode": 0,
-            "targetWidgetName": "UI_Image",
-            "useCurrentAsReference": false,
-            "useNonUniformScale": true
-          }
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "LoadingScript",
+                    "props": {
+                        "autoStart": true,
+                        "delaySec": 5.0,
+                        "enableFadeOut": true,
+                        "fadeEntityName": "UI_Fade",
+                        "fadeInOnStart": true,
+                        "fadeOutDelaySec": 2.0,
+                        "targetScenePath": "Assets/Scenes/#00Combat0211.scene"
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 1200.0,
+                        "baseSizeY": 675.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_Loading_image",
+                        "useNonUniformScale": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 1200.0,
+                    "y": 675.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Loading_image"
+            },
+            "guid": "14603078868386504603",
+            "name": "UI_Loading_image"
         }
-      ],
-      "Transform": {
-        "enabled": true,
-        "position": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "scale": {
-          "x": 1.0,
-          "y": 1.0,
-          "z": 1.0
-        },
-        "visible": true
-      },
-      "UIImage": {
-        "color": {
-          "w": 1.0,
-          "x": 0.13127410411834717,
-          "y": 0.13127410411834717,
-          "z": 0.13127410411834717
-        },
-        "preserveAspect": false,
-        "texturePath": "",
-        "uvRect": {
-          "w": 1.0,
-          "x": 0.0,
-          "y": 0.0,
-          "z": 1.0
-        }
-      },
-      "UITransform": {
-        "alignH": "Center",
-        "alignV": "Center",
-        "anchorMax": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "anchorMin": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "pivot": {
-          "x": -0.5,
-          "y": 0.5
-        },
-        "position": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "rotationRad": 0.0,
-        "scale": {
-          "x": 1.0,
-          "y": 1.0
-        },
-        "size": {
-          "x": 2000.0,
-          "y": 1000.0
-        },
-        "sortOrder": 0,
-        "useAlignment": false
-      },
-      "UIWidget": {
-        "billboard": false,
-        "interactable": true,
-        "raycastTarget": true,
-        "shaderName": "Default",
-        "space": "Screen",
-        "visibility": "Visible",
-        "widgetName": "UI_Image"
-      },
-      "guid": "16426190787046547510",
-      "name": "UI_Image"
-    },
-    {
-      "Transform": {
-        "enabled": true,
-        "position": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": -0.0
-        },
-        "scale": {
-          "x": 1.0,
-          "y": 1.0,
-          "z": 1.0
-        },
-        "visible": true
-      },
-      "UIText": {
-        "alignH": "Left",
-        "alignV": "Top",
-        "color": {
-          "w": 1.0,
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
-        "fontSize": 60.0,
-        "lineSpacing": 0.0,
-        "maxWidth": 0.0,
-        "text": "You Die",
-        "wrap": false
-      },
-      "UITransform": {
-        "alignH": "Center",
-        "alignV": "Center",
-        "anchorMax": {
-          "x": 0.5,
-          "y": 0.5
-        },
-        "anchorMin": {
-          "x": -0.20000000298023224,
-          "y": 0.5
-        },
-        "pivot": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "position": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "rotationRad": 0.0,
-        "scale": {
-          "x": 1.0,
-          "y": 1.0
-        },
-        "size": {
-          "x": 109.4000015258789,
-          "y": 80.19999694824219
-        },
-        "sortOrder": 2,
-        "useAlignment": false
-      },
-      "UIWidget": {
-        "billboard": false,
-        "interactable": true,
-        "raycastTarget": true,
-        "shaderName": "Default",
-        "space": "Screen",
-        "visibility": "Visible",
-        "widgetName": "UI_Text"
-      },
-      "guid": "4571602271963953200",
-      "name": "UI_Text"
-    },
-    {
-      "Scripts": [
-        {
-          "enabled": true,
-          "name": "LoadingScript",
-          "props": {
-            "autoStart": true,
-            "delaySec": 5.0,
-            "enableFadeOut": true,
-            "fadeEntityName": "UI_Fade",
-            "fadeInOnStart": true,
-            "fadeOutDelaySec": 2.0,
-            "targetScenePath": "Assets/Scenes/#00Combat0211.scene"
-          }
-        },
-        {
-          "enabled": true,
-          "name": "OnResizeScript",
-          "props": {
-            "applyInitialSize": false,
-            "forceScaleOne": true,
-            "initialSizeX": 0.0,
-            "initialSizeY": 0.0,
-            "maxScale": 10.0,
-            "minScale": 0.10000000149011612,
-            "overrideHeight": 0.0,
-            "overrideWidth": 0.0,
-            "referenceHeight": 900.0,
-            "referenceWidth": 1600.0,
-            "roundToInt": true,
-            "scaleMode": 0,
-            "targetWidgetName": "UI_Loading_image",
-            "useCurrentAsReference": false,
-            "useNonUniformScale": true
-          }
-        }
-      ],
-      "Transform": {
-        "enabled": true,
-        "position": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "scale": {
-          "x": 1.0,
-          "y": 1.0,
-          "z": 1.0
-        },
-        "visible": true
-      },
-      "UIImage": {
-        "color": {
-          "w": 1.0,
-          "x": 1.0,
-          "y": 1.0,
-          "z": 1.0
-        },
-        "preserveAspect": false,
-        "texturePath": "",
-        "uvRect": {
-          "w": 1.0,
-          "x": 0.0,
-          "y": 0.0,
-          "z": 1.0
-        }
-      },
-      "UITransform": {
-        "alignH": "Center",
-        "alignV": "Center",
-        "anchorMax": {
-          "x": 0.125,
-          "y": 0.125
-        },
-        "anchorMin": {
-          "x": 0.125,
-          "y": 0.125
-        },
-        "pivot": {
-          "x": -0.5,
-          "y": 0.5
-        },
-        "position": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "rotationRad": 0.0,
-        "scale": {
-          "x": 1.0,
-          "y": 1.0
-        },
-        "size": {
-          "x": 1200.0,
-          "y": 675.0
-        },
-        "sortOrder": 0,
-        "useAlignment": false
-      },
-      "UIWidget": {
-        "billboard": false,
-        "interactable": true,
-        "raycastTarget": true,
-        "shaderName": "Default",
-        "space": "Screen",
-        "visibility": "Visible",
-        "widgetName": "UI_Loading_image"
-      },
-      "guid": "14603078868386504603",
-      "name": "UI_Loading_image"
-    }
-  ],
-  "sceneName": "DeathScene",
-  "version": 1
+    ],
+    "sceneName": "DeathScene",
+    "version": 1
 }

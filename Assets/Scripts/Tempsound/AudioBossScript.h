@@ -33,15 +33,15 @@ namespace Alice
         ALICE_PROPERTY(std::string, targetEntityName, ""); // 3D 사운드 위치를 가져올 대상 엔티티 이름 (비어있으면 스크립트가 붙은 엔티티 사용)
 
         // 보스 공격 상태별 경로 (ImGui Inspector에서 설정 가능)
-        ALICE_PROPERTY(std::string, pathAttackAlarm, "Resource/Test/4_Resources/sound/SFX/보스/공격 전조 알림/Boss_Attack_Alarm_01.mp3");
-        ALICE_PROPERTY(std::string, pathAttack1, "Resource/Test/4_Resources/sound/SFX/보스/공격 1/Boss_Attack_01.mp3");
-        ALICE_PROPERTY(std::string, pathAttack2, "Resource/Test/4_Resources/sound/SFX/보스/공격 2/Boss_Attack_02.wav");
-        ALICE_PROPERTY(std::string, pathAttack3, "Resource/Test/4_Resources/sound/SFX/보스/공격 3/Boss_Attack_03.wav");
-        ALICE_PROPERTY(std::string, pathAttackABC, "Resource/Test/4_Resources/sound/SFX/보스/공격 ABC/Boss_Attack_ABC.wav");
-        ALICE_PROPERTY(std::string, pathSoulSwordCharge, "Resource/Test/4_Resources/sound/SFX/보스/영혼대검 차지/Boss_SoulAttack_Charging_01.mp3");
-        ALICE_PROPERTY(std::string, pathSoulSwordAttack, "Resource/Test/4_Resources/sound/SFX/보스/영혼대검 공격/Boss_SoulAttack_Attack_01.wav");
-        ALICE_PROPERTY(std::string, pathSideAttack, "Resource/Test/4_Resources/sound/SFX/보스/옆, 견제 공격/Boss_Attack_Side_01.mp3");
-        ALICE_PROPERTY(std::string, pathDashAttack, "Resource/Test/4_Resources/sound/SFX/보스/대쉬공격/Boss_DashAttack_01.mp3");
+        ALICE_PROPERTY(std::string, pathAttackAlarm, "Resource/Test/4_Resources/sound/SFX/Boss/preAttackAlarm/Boss_Attack_Alarm_01.mp3");
+        ALICE_PROPERTY(std::string, pathAttack1, "Resource/Test/4_Resources/sound/SFX/Boss/Attack1/Boss_Attack_01.mp3");
+        ALICE_PROPERTY(std::string, pathAttack2, "Resource/Test/4_Resources/sound/SFX/Boss/Attack2/Boss_Attack_02.wav");
+        ALICE_PROPERTY(std::string, pathAttack3, "Resource/Test/4_Resources/sound/SFX/Boss/Attack3/Boss_Attack_03.wav");
+        ALICE_PROPERTY(std::string, pathAttackABC, "Resource/Test/4_Resources/sound/SFX/Boss/AttackABC/Boss_Attack_ABC.wav");
+        ALICE_PROPERTY(std::string, pathSoulSwordCharge, "Resource/Test/4_Resources/sound/SFX/Boss/SoulAttackcharge/Boss_SoulAttack_Charging_01.mp3");
+        ALICE_PROPERTY(std::string, pathSoulSwordAttack, "Resource/Test/4_Resources/sound/SFX/Boss/SoulAttack/Boss_SoulAttack_Attack_01.wav");
+        ALICE_PROPERTY(std::string, pathSideAttack, "Resource/Test/4_Resources/sound/SFX/Boss/sideAttack/Boss_Attack_Side_01.mp3");
+        ALICE_PROPERTY(std::string, pathDashAttack, "Resource/Test/4_Resources/sound/SFX/Boss/DashAttack/Boss_DashAttack_01.mp3");
 
         // 보스 공격 상태별 딜레이 시간 (초 단위, ImGui Inspector에서 설정 가능)
         // delaySeconds가 0 이하로 전달되면 이 값이 사용됨
@@ -65,14 +65,14 @@ namespace Alice
         ALICE_PROPERTY(float, attackCDelayABCSec, 0.0f);
 
         // 보스 움직임 상태별 경로
-        ALICE_PROPERTY(std::string, pathWalk, "Resource/Test/4_Resources/sound/SFX/보스/걷기/Boss_Footstep_01.mp3");
-        ALICE_PROPERTY(std::string, pathRotate, "Resource/Test/4_Resources/sound/SFX/보스/몸 돌리기/Boss_Rotate_01.wav");
+        ALICE_PROPERTY(std::string, pathWalk, "Resource/Test/4_Resources/sound/SFX/Boss/FootStep/Boss_Footstep_01.mp3");
+        ALICE_PROPERTY(std::string, pathRotate, "Resource/Test/4_Resources/sound/SFX/Boss/turnBody/Boss_Rotate_01.wav");
 
         // 보스 기타 상태별 경로
-        ALICE_PROPERTY(std::string, pathGroggyEnter, "Resource/Test/4_Resources/sound/SFX/보스/그로기 진입/Boss_Groggy_Alarm_01.wav");
-        ALICE_PROPERTY(std::string, pathRoar, "Resource/Test/4_Resources/sound/SFX/보스/포효/Boss_Roaring_01.mp3");
-        ALICE_PROPERTY(std::string, pathHit, "Resource/Test/4_Resources/sound/SFX/보스/피격/Boss_Hit_01.wav");
-        ALICE_PROPERTY(std::string, pathDeath, "Resource/Sound/SFX/보스/사망/Boss_Death_01.wav");
+        ALICE_PROPERTY(std::string, pathGroggyEnter, "Resource/Test/4_Resources/sound/SFX/Boss/EnterGroggy/Boss_Groggy_Alarm_01.wav");
+        ALICE_PROPERTY(std::string, pathRoar, "Resource/Test/4_Resources/sound/SFX/Boss/Howling/Boss_Roaring_01.mp3");
+        ALICE_PROPERTY(std::string, pathHit, "Resource/Test/4_Resources/sound/SFX/Boss/BossHit/Boss_Hit_01.wav");
+        ALICE_PROPERTY(std::string, pathDeath, "Resource/Test/4_Resources/sound/SFX/Boss/Dead/Boss_Die_01.mp3");
 
         // 보스 공격 상태별 볼륨 (인스펙터에서 설정 가능, 기본값 1.0f, 1.0f 이상도 허용)
         ALICE_PROPERTY(float, volumeAttackAlarm, 1.0f);
@@ -115,6 +115,7 @@ namespace Alice
         void PlaySfx3();
         void PlaySfx4();
         void PlaySfx5();
+        void CancelDelayedAttackSfx();
 
         // 특정 공격 상태의 볼륨 조절 (0.0f ~ 1.0f)
         void SetAttackStateVolume(BossAttackState state, float volume);
@@ -133,6 +134,7 @@ namespace Alice
         ALICE_FUNC(PlaySfx3);
         ALICE_FUNC(PlaySfx4);
         ALICE_FUNC(PlaySfx5);
+        ALICE_FUNC(CancelDelayedAttackSfx);
         ALICE_FUNC(SetAttackStateVolume);
         ALICE_FUNC(SetMovementStateVolume);
         ALICE_FUNC(SetOtherStateVolume);

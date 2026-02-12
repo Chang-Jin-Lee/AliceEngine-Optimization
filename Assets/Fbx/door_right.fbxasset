@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/door_right_0.mat"
+    ],
+    "mesh": "door_right",
+    "source_fbx": "Resource/fbx/door_right.fbx"
+}

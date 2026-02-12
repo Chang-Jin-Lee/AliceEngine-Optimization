@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/Box(texture)_0.mat"
+    ],
+    "mesh": "Box(texture)",
+    "source_fbx": "Resource/Test/4_Resources/background/Box/Box(texture).fbx"
+}
