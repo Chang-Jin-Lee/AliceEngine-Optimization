@@ -31,6 +31,11 @@ namespace Alice
         ALICE_PROPERTY(float, markerSizeY, 220.0f);
         ALICE_PROPERTY(float, markerWorldScale, 0.01f);
         ALICE_PROPERTY(float, markerTowardCameraOffset, 0.35f);
+        ALICE_PROPERTY(bool, enableDistanceScale, true);
+        ALICE_PROPERTY(float, distanceScaleNearDistance, 2.0f);
+        ALICE_PROPERTY(float, distanceScaleFarDistance, 8.0f);
+        ALICE_PROPERTY(float, distanceScaleNearMultiplier, 0.45f);
+        ALICE_PROPERTY(float, distanceScaleFarMultiplier, 1.0f);
 
         ALICE_PROPERTY(std::string, lockOnTexturePath, "Resource/Test/4_Resources/UI/LockOn/LockON.png");
         ALICE_PROPERTY(std::string, groggyTexturePath, "Resource/Test/4_Resources/UI/LockOn/Groggy.png");
@@ -41,6 +46,7 @@ namespace Alice
         void ResolveCamera();
         void EnsureMarkerEntity();
         void EnsureMarkerAttachment();
+        void ApplyMarkerWorldScale(float distanceToCamera);
         void SetMarkerVisible(bool visible);
         void SetMarkerTexture(const std::string& path);
 
