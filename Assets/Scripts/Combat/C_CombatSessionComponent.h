@@ -47,6 +47,8 @@ namespace Alice
         bool IsPlayerWeakActive() const;
         // TODO: HUD/UI gauge binding should use this normalized cooldown value (0..1).
         float GetPlayerRageCooldownNormalized() const;
+        bool IsPlayerLockOnActive() const;
+        EntityId GetPlayerLockOnTarget() const;
         bool IsFatalActive() const;
         float GetFatalProgress01() const;
         float GetFatalRemainSec() const;
