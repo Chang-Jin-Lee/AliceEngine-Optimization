@@ -101,6 +101,7 @@ namespace Alice
         m_bossDeathCinematicWaitSec = 0.0f;
         m_playerDeathLatched = false;
         m_bossDeathLatched = false;
+        m_forceBossDeathTriggerRequested = false;
         m_dieTextEntityId = InvalidEntityId;
         m_playerImageEntityId = InvalidEntityId;
         m_bossImageEntityId = InvalidEntityId;
@@ -155,6 +156,12 @@ namespace Alice
         }
     }
 
+    void PrintDarkQuardScript::TriggerBossDeathNow()
+    {
+        m_forceBossDeathTriggerRequested = true;
+        m_bossDeathLatched = true;
+    }
+
     void PrintDarkQuardScript::Update(float deltaTime)
     {
         m_scriptElapsed += (deltaTime > 0.0f ? deltaTime : 0.0f);
@@ -176,7 +183,14 @@ namespace Alice
             bool shouldTrigger = false;
             TriggerType triggerType = TriggerType::None;
             World* w = GetWorld();
-            if (Get_triggerOnDeath() && !m_playerDeathTriggered && w)
+            if (m_forceBossDeathTriggerRequested)
+            {
+                shouldTrigger = true;
+                triggerType = TriggerType::BossDeath;
+                m_forceBossDeathTriggerRequested = false;
+            }
+
+            if (!shouldTrigger && Get_triggerOnDeath() && !m_playerDeathTriggered && w)
             {
                 bool playerDeadThisFrame = false;
                 bool playerDeadBySession = false;

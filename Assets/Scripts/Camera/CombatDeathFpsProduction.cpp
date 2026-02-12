@@ -326,6 +326,7 @@ namespace Alice
             return false;
 
         m_playerEntity = InvalidEntityId;
+        m_playerCoreEntity = InvalidEntityId;
         m_playerWeaponEntity = InvalidEntityId;
         m_bossEntity = InvalidEntityId;
         m_bossHeadEntity = InvalidEntityId;
@@ -337,11 +338,22 @@ namespace Alice
                 m_playerEntity = go.id();
         }
 
+        if (!Get_m_playerCoreEntityName().empty())
+        {
+            const GameObject go = world->FindGameObject(Get_m_playerCoreEntityName());
+            if (go.IsValid())
+                m_playerCoreEntity = go.id();
+            else if (m_playerEntity != InvalidEntityId)
+                m_playerCoreEntity = FindDescendantByName(*world, m_playerEntity, Get_m_playerCoreEntityName());
+        }
+
         if (!Get_m_playerWeaponEntityName().empty())
         {
             const GameObject go = world->FindGameObject(Get_m_playerWeaponEntityName());
             if (go.IsValid())
                 m_playerWeaponEntity = go.id();
+            else if (m_playerEntity != InvalidEntityId)
+                m_playerWeaponEntity = FindDescendantByName(*world, m_playerEntity, Get_m_playerWeaponEntityName());
         }
 
         if (!Get_m_bossEntityName().empty())
@@ -509,6 +521,27 @@ namespace Alice
         SetGameplayCameraControl(false);
         DisableBlockingScriptsForSequence();
 
+        if (Get_m_hidePlayerImmediatelyOnDeath())
+        {
+            if (Get_m_hidePlayerOnCut() && m_playerEntity != InvalidEntityId)
+            {
+                SaveVisibilityRecursive(m_playerEntity);
+                SetVisibilityRecursive(m_playerEntity, false);
+            }
+
+            if (Get_m_hidePlayerCoreOnCut() && m_playerCoreEntity != InvalidEntityId)
+            {
+                SaveVisibilityRecursive(m_playerCoreEntity);
+                SetVisibilityRecursive(m_playerCoreEntity, false);
+            }
+
+            if (Get_m_hidePlayerWeaponOnCut() && m_playerWeaponEntity != InvalidEntityId)
+            {
+                SaveVisibilityRecursive(m_playerWeaponEntity);
+                SetVisibilityRecursive(m_playerWeaponEntity, false);
+            }
+        }
+
         m_running = true;
         m_cutDone = false;
         m_elapsedSec = 0.0f;
@@ -587,6 +620,12 @@ namespace Alice
             {
                 SaveVisibilityRecursive(m_playerWeaponEntity);
                 SetVisibilityRecursive(m_playerWeaponEntity, false);
+            }
+
+            if (Get_m_hidePlayerCoreOnCut() && m_playerCoreEntity != InvalidEntityId)
+            {
+                SaveVisibilityRecursive(m_playerCoreEntity);
+                SetVisibilityRecursive(m_playerCoreEntity, false);
             }
 
             if (!m_bossChargeTriggered
