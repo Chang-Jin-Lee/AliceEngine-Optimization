@@ -118,6 +118,15 @@ namespace Alice
                 ALICE_LOG_WARN("[ChangeScreeenScript] Setting button widget not found: %s", settingButtonName.c_str());
             }
         }
+        const std::string settingBoardName = Get_m_settingBoardName();
+        if (!settingBoardName.empty())
+        {
+            m_settingBoardEntityId = FindRootWidgetByName(*w, settingBoardName);
+            if (m_settingBoardEntityId == InvalidEntityId)
+            {
+                ALICE_LOG_WARN("[ChangeScreeenScript] Setting board widget not found: %s", settingBoardName.c_str());
+            }
+        }
 
         // 초기 상태 설정: 두 UI 모두 숨김
         SetUIVisibility(m_ui1EntityId, AliceUI::UIVisibility::Collapsed);
@@ -138,6 +147,20 @@ namespace Alice
         // UI_Setting 버튼 클릭 감지
         if (m_settingButton)
         {
+            if (m_settingBoardEntityId != InvalidEntityId)
+            {
+                if (auto* boardWidget = w->GetComponent<UIWidgetComponent>(m_settingBoardEntityId))
+                {
+                    const bool boardVisible = (boardWidget->visibility == AliceUI::UIVisibility::Visible);
+                    if (!boardVisible && m_isUIOpened)
+                    {
+                        m_isUIOpened = false;
+                        SetUIVisibility(m_ui1EntityId, AliceUI::UIVisibility::Collapsed);
+                        SetUIVisibility(m_ui2EntityId, AliceUI::UIVisibility::Collapsed);
+                    }
+                }
+            }
+
             const bool settingButtonClicked = m_settingButton->ConsumeClick();
             if (settingButtonClicked && !m_settingButtonClickedPrev)
             {
