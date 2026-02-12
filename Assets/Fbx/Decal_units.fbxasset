@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/Decal_units_0.mat"
+    ],
+    "mesh": "Decal_units",
+    "source_fbx": "Resource/fbx/Decal_units.fbx"
+}

@@ -1,0 +1,9 @@
+{
+    "materials": [
+        "Assets/Materials/pillar_combined_0.mat",
+        "Assets/Materials/pillar_combined_1.mat",
+        "Assets/Materials/pillar_combined_2.mat"
+    ],
+    "mesh": "pillar_combined",
+    "source_fbx": "Resource/Test/4_Resources/background/pillar/pillar_combined.fbx"
+}

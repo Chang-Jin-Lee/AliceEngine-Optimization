@@ -159,6 +159,33 @@ namespace Alice
 			XMStoreFloat4(&outRot, r);
 			return true;
 		}
+
+		struct ContactCandidate
+		{
+			bool valid = false;
+			float sweepFraction = 1.0f;
+			DirectX::XMFLOAT3 hitPosWS{ 0.0f, 0.0f, 0.0f };
+		};
+
+		void ResetFirstContactRuntime(WeaponTraceComponent& trace)
+		{
+			trace.firstContactResolvedForAttack = false;
+			trace.firstContactWasHurtbox = false;
+			trace.worldImpactEventPosWS = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		}
+
+		void UpdateEarliestContactCandidate(ContactCandidate& candidate,
+			float sweepFraction,
+			const DirectX::XMFLOAT3& hitPosWS)
+		{
+			const float clampedFraction = std::clamp(sweepFraction, 0.0f, 1.0f);
+			if (candidate.valid && clampedFraction >= candidate.sweepFraction)
+				return;
+
+			candidate.valid = true;
+			candidate.sweepFraction = clampedFraction;
+			candidate.hitPosWS = hitPosWS;
+		}
 	}
 
 	void WeaponTraceSystem::Update(World& world, float dtSec, std::vector<CombatHitEvent>* outHits)
@@ -185,6 +212,7 @@ namespace Alice
 				trace.hitVictims.clear();
 				trace.activeElapsedSec = 0.0f;
 				trace.activeWindowDurationSec = 0.0f;
+				ResetFirstContactRuntime(trace);
 				continue;
 			}
 
@@ -208,6 +236,7 @@ namespace Alice
 			if (trace.lastAttackInstanceId != trace.attackInstanceId)
 			{
 				trace.hitVictims.clear();
+				ResetFirstContactRuntime(trace);
 				trace.lastAttackInstanceId = trace.attackInstanceId;
 			}
 
@@ -267,10 +296,17 @@ namespace Alice
 			filter.queryMask = queryLayerBits;
 			filter.hitTriggers = true;
 
+			SceneQueryFilter worldFilter{};
+			worldFilter.layerMask = CombatPhysicsLayers::WorldBit;
+			worldFilter.queryMask = 0xFFFFFFFFu;
+			worldFilter.hitTriggers = false;
+
             std::vector<SweepHit> hits;
             hits.reserve(32);
             std::vector<OverlapHit> overlaps;
             overlaps.reserve(32);
+			ContactCandidate firstHurtContact{};
+			ContactCandidate firstWorldContact{};
 
 			const uint32_t steps = std::max(1u, trace.subSteps);
 			const DirectX::XMVECTOR prevBasisPosV = XMLoadFloat3(&trace.prevBasisPos);
@@ -353,6 +389,12 @@ namespace Alice
                         if (hurt->teamId == trace.teamId)
                             return;
 
+						if (!trace.firstContactResolvedForAttack)
+						{
+							const float candidateSweepFraction = hasSweepFraction ? sweepFraction : t1;
+							UpdateEarliestContactCandidate(firstHurtContact, candidateSweepFraction, hitPosWS);
+						}
+
 							const std::uint64_t victimGuid = (hurt->ownerGuid != 0)
 								? hurt->ownerGuid
 								: static_cast<std::uint64_t>(hitEntity);
@@ -416,6 +458,28 @@ namespace Alice
                         }
                     };
 
+					auto ProcessWorldHit = [&](void* userData,
+						const DirectX::XMFLOAT3& hitPosWS,
+						bool hasSweepFraction,
+						float sweepFraction)
+					{
+						if (trace.firstContactResolvedForAttack || !userData)
+							return;
+
+						EntityId hitEntity = world.ExtractEntityIdFromUserData(userData);
+						if (hitEntity == InvalidEntityId)
+							return;
+
+						if (hitEntity == owner || hitEntity == basis || hitEntity == eid)
+							return;
+
+						if (world.GetComponent<HurtboxComponent>(hitEntity))
+							return;
+
+						const float candidateSweepFraction = hasSweepFraction ? sweepFraction : t1;
+						UpdateEarliestContactCandidate(firstWorldContact, candidateSweepFraction, hitPosWS);
+					};
+
                     const DirectX::XMFLOAT3 delta{ endCenter.x - startCenter.x, endCenter.y - startCenter.y, endCenter.z - startCenter.z };
                     const float dist = std::sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
                     if (dist < 0.0001f)
@@ -449,6 +513,39 @@ namespace Alice
                                 ProcessHit(overlaps[h].userData, hitPosWS, hitNormalWS,
                                     static_cast<uint32_t>(i), false, 0.0f);
                         }
+
+						if (!trace.firstContactResolvedForAttack)
+						{
+							overlaps.clear();
+							uint32_t worldHitCount = 0;
+							if (shape.type == WeaponTraceShapeType::Sphere)
+							{
+								const Vec3 center(endCenter.x, endCenter.y, endCenter.z);
+								worldHitCount = physics->OverlapSphereQ(center, shape.radius, overlaps, worldFilter, 64);
+							}
+							else if (shape.type == WeaponTraceShapeType::Capsule)
+							{
+								const Vec3 center(endCenter.x, endCenter.y, endCenter.z);
+								const Quat rot(endRot.x, endRot.y, endRot.z, endRot.w);
+								worldHitCount = physics->OverlapCapsuleQ(center, rot, shape.radius, shape.capsuleHalfHeight, overlaps, worldFilter, 64, true);
+							}
+							else if (shape.type == WeaponTraceShapeType::Box)
+							{
+								const Vec3 center(endCenter.x, endCenter.y, endCenter.z);
+								const Quat rot(endRot.x, endRot.y, endRot.z, endRot.w);
+								const Vec3 halfExtents(shape.boxHalfExtents.x, shape.boxHalfExtents.y, shape.boxHalfExtents.z);
+								worldHitCount = physics->OverlapBoxQ(center, rot, halfExtents, overlaps, worldFilter, 64);
+							}
+
+							if (worldHitCount > 0)
+							{
+								for (uint32_t h = 0; h < worldHitCount && h < overlaps.size(); ++h)
+								{
+									ProcessWorldHit(overlaps[h].userData, endCenter, false, 0.0f);
+								}
+							}
+						}
+
                         continue;
                     }
 
@@ -473,22 +570,70 @@ namespace Alice
                         hitCount = physics->SweepBoxAllQ(origin, rot, halfExtents, dir, dist, hits, filter);
                     }
 
-                    if (hitCount == 0)
-                        continue;
-
                     const float stepScale = 1.0f / static_cast<float>(steps);
-                    for (uint32_t h = 0; h < hitCount && h < hits.size(); ++h)
-                    {
-                        const auto& hit = hits[h];
-                        const float localFraction = (dist > 0.0f) ? (hit.distance / dist) : 0.0f;
-                        const float sweepFraction = t0 + (std::clamp(localFraction, 0.0f, 1.0f) * stepScale);
-                        ProcessHit(hit.userData,
-                            DirectX::XMFLOAT3(hit.position.x, hit.position.y, hit.position.z),
-                            DirectX::XMFLOAT3(hit.normal.x, hit.normal.y, hit.normal.z),
-                            static_cast<uint32_t>(i), true, sweepFraction);
-                    }
+					if (hitCount > 0)
+					{
+						for (uint32_t h = 0; h < hitCount && h < hits.size(); ++h)
+						{
+							const auto& hit = hits[h];
+							const float localFraction = (dist > 0.0f) ? (hit.distance / dist) : 0.0f;
+							const float sweepFraction = t0 + (std::clamp(localFraction, 0.0f, 1.0f) * stepScale);
+							ProcessHit(hit.userData,
+								DirectX::XMFLOAT3(hit.position.x, hit.position.y, hit.position.z),
+								DirectX::XMFLOAT3(hit.normal.x, hit.normal.y, hit.normal.z),
+								static_cast<uint32_t>(i), true, sweepFraction);
+						}
+					}
+
+					if (!trace.firstContactResolvedForAttack)
+					{
+						hits.clear();
+						uint32_t worldHitCount = 0;
+						if (shape.type == WeaponTraceShapeType::Sphere)
+						{
+							worldHitCount = physics->SweepSphereAllQ(origin, shape.radius, dir, dist, hits, worldFilter);
+						}
+						else if (shape.type == WeaponTraceShapeType::Capsule)
+						{
+							const Quat rot(startRot.x, startRot.y, startRot.z, startRot.w);
+							worldHitCount = physics->SweepCapsuleAllQ(origin, rot, shape.radius, shape.capsuleHalfHeight, dir, dist, hits, worldFilter, 64, true);
+						}
+						else if (shape.type == WeaponTraceShapeType::Box)
+						{
+							const Quat rot(startRot.x, startRot.y, startRot.z, startRot.w);
+							const Vec3 halfExtents(shape.boxHalfExtents.x, shape.boxHalfExtents.y, shape.boxHalfExtents.z);
+							worldHitCount = physics->SweepBoxAllQ(origin, rot, halfExtents, dir, dist, hits, worldFilter);
+						}
+
+						if (worldHitCount > 0)
+						{
+							for (uint32_t h = 0; h < worldHitCount && h < hits.size(); ++h)
+							{
+								const auto& hit = hits[h];
+								const float localFraction = (dist > 0.0f) ? (hit.distance / dist) : 0.0f;
+								const float sweepFraction = t0 + (std::clamp(localFraction, 0.0f, 1.0f) * stepScale);
+								ProcessWorldHit(hit.userData,
+									DirectX::XMFLOAT3(hit.position.x, hit.position.y, hit.position.z),
+									true, sweepFraction);
+							}
+						}
+					}
                 }
             }
+
+			if (!trace.firstContactResolvedForAttack && (firstHurtContact.valid || firstWorldContact.valid))
+			{
+				const bool hurtWins = firstHurtContact.valid
+					&& (!firstWorldContact.valid || firstHurtContact.sweepFraction <= firstWorldContact.sweepFraction);
+
+				trace.firstContactResolvedForAttack = true;
+				trace.firstContactWasHurtbox = hurtWins;
+				if (!hurtWins && firstWorldContact.valid)
+				{
+					trace.worldImpactEventPosWS = firstWorldContact.hitPosWS;
+					++trace.worldImpactEventSequence;
+				}
+			}
 
 			trace.prevBasisPos = currBasisPos;
 			trace.prevBasisRot = currBasisRot;

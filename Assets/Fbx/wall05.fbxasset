@@ -1,0 +1,10 @@
+{
+    "materials": [
+        "Assets/Materials/wall05_0.mat",
+        "Assets/Materials/wall05_1.mat",
+        "Assets/Materials/wall05_2.mat",
+        "Assets/Materials/wall05_3.mat"
+    ],
+    "mesh": "wall05",
+    "source_fbx": "Resource/fbx/wall05.fbx"
+}

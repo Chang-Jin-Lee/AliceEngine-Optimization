@@ -1,8 +1,6 @@
 {
     "materials": [
-        "Assets/Materials/Boss_Animaition_0.mat",
-        "Assets/Materials/Boss_Animaition_1.mat",
-        "Assets/Materials/Boss_Animaition_2.mat"
+        "Assets/Materials/Boss_Animaition_0.mat"
     ],
     "mesh": "Boss_Animaition",
     "source_fbx": "Resource/Test/4_Resources/charecter/Boss_Animaition.fbx"
