@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstdint>
+#include <vector>
 
 #include "AudioSoundState.h"
 #include "Runtime/Scripting/IScript.h"
@@ -115,7 +116,17 @@ namespace Alice
         ALICE_FUNC(PlaySfx5);
 
     private:
+        struct DelayedSoundRequest
+        {
+            PlayerAttackState state;
+            float remainingDelay;
+            std::wstring key;  // 미리 로드된 사운드 키
+            float volume;
+            float pitch;
+        };
+
         void PlayAttackState(PlayerAttackState state);
+        void PlayAttackStateDelayed(PlayerAttackState state, float delaySeconds);
         void PlayMovementState(PlayerMovementState state);
         void PlayOtherState(PlayerOtherState state);
         std::string GetPathForAttackState(PlayerAttackState state) const;
@@ -135,5 +146,8 @@ namespace Alice
         std::wstring m_loopInstanceId;
         bool m_loopPlaying = false;
         int m_footstepIndex = 0;
+        
+        // C++ deltaTime 기반 딜레이 큐
+        std::vector<DelayedSoundRequest> m_delayedSoundQueue;
     };
 }

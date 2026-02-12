@@ -12,6 +12,25 @@
                         "startAlpha": 1.0,
                         "targetWidgetName": "UI_Fade"
                     }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "",
+                        "useNonUniformScale": true
+                    }
                 }
             ],
             "Transform": {
@@ -53,16 +72,16 @@
                 "alignH": "Center",
                 "alignV": "Center",
                 "anchorMax": {
-                    "x": 0.5,
-                    "y": 0.5
-                },
-                "anchorMin": {
-                    "x": 0.5,
-                    "y": 0.5
-                },
-                "pivot": {
                     "x": 0.0,
                     "y": 0.0
+                },
+                "anchorMin": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "pivot": {
+                    "x": -0.5,
+                    "y": 0.5
                 },
                 "position": {
                     "x": 0.0,
@@ -110,7 +129,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Image",
-                        "useNonUniformScale": false
+                        "useNonUniformScale": true
                     }
                 }
             ],
@@ -153,16 +172,16 @@
                 "alignH": "Center",
                 "alignV": "Center",
                 "anchorMax": {
-                    "x": 0.5,
-                    "y": 0.5
-                },
-                "anchorMin": {
-                    "x": 0.5,
-                    "y": 0.5
-                },
-                "pivot": {
                     "x": 0.0,
                     "y": 0.0
+                },
+                "anchorMin": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "pivot": {
+                    "x": -0.5,
+                    "y": 0.5
                 },
                 "position": {
                     "x": 0.0,
@@ -223,7 +242,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Loading_image",
-                        "useNonUniformScale": false
+                        "useNonUniformScale": true
                     }
                 }
             ],
