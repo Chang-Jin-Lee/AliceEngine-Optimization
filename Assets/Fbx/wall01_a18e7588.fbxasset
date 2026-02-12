@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/wall01_a18e7588_0.mat"
+    ],
+    "mesh": "wall01_a18e7588",
+    "source_fbx": "Assets/Fbx/wall01.fbx"
+}

@@ -1,0 +1,8 @@
+{
+    "materials": [
+        "Assets/Materials/doorblock_0.mat",
+        "Assets/Materials/doorblock_1.mat"
+    ],
+    "mesh": "doorblock",
+    "source_fbx": "Resource/fbx/doorblock.fbx"
+}

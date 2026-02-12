@@ -1,0 +1,12 @@
+{
+    "materials": [
+        "Assets/Materials/Anis_0.mat",
+        "Assets/Materials/Anis_1.mat",
+        "Assets/Materials/Anis_2.mat",
+        "Assets/Materials/Anis_3.mat",
+        "Assets/Materials/Anis_4.mat",
+        "Assets/Materials/Anis_5.mat"
+    ],
+    "mesh": "Anis",
+    "source_fbx": "Resource/fbx/Anis.fbx"
+}

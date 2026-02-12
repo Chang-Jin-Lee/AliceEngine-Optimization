@@ -1,0 +1,8 @@
+{
+    "materials": [
+        "Assets/Materials/colum_0.mat",
+        "Assets/Materials/colum_1.mat"
+    ],
+    "mesh": "colum",
+    "source_fbx": "Resource/fbx/colum.fbx"
+}

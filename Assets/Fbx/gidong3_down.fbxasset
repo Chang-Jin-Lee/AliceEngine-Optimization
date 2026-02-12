@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/gidong3_down_0.mat"
+    ],
+    "mesh": "gidong3_down",
+    "source_fbx": "Resource/fbx/gidong3_down.fbx"
+}

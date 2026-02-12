@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/box_e64bec5a_0.mat"
+    ],
+    "mesh": "box_e64bec5a",
+    "source_fbx": "Resource/Test/4_Resources/background/0209scene/box.fbx"
+}

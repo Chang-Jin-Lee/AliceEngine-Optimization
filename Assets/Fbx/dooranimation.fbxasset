@@ -20,5 +20,5 @@
         "Assets/Materials/dooranimation_17.mat"
     ],
     "mesh": "dooranimation",
-    "source_fbx": "Resource/Test/4_Resources/background/door/dooranimation.fbx"
+    "source_fbx": "Resource/fbx/dooranimation.fbx"
 }

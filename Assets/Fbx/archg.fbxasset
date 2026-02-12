@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/archg_0.mat"
+    ],
+    "mesh": "archg",
+    "source_fbx": "Resource/fbx/archg.fbx"
+}
