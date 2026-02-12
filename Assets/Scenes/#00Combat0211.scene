@@ -3556,7 +3556,7 @@
                     "enabled": true,
                     "name": "BossUiActivationGateScript",
                     "props": {
-                        "additionalWidgetNamesCsv": "UI_BossHP_Gauge,UI_BossGroggy_Gauge,UI_BossWindow,UI_BossBrain,UI_BossState_Idle,UI_BossState_Move,UI_BossState_Attack,UI_BossState_Guard,UI_BossState_Dodge,UI_BossState_Groggy",
+                        "additionalWidgetNamesCsv": "UI_BossHP_Gauge,UI_BossGroggy_Gauge",
                         "bossBrainScriptName": "C_BossBrainComponent",
                         "bossEntityName": "Boss",
                         "hideOnStart": true,
