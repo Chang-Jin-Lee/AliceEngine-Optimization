@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <chrono>
 #include <thread>
+#include <atomic>
 #include <cctype>
 #include <cstdio>
 #include <limits>
@@ -1005,17 +1006,8 @@ namespace Alice
 
 	bool Engine::Impl::InitializeValidateGameDataIfNeeded()
 	{
-		if (m_editorMode) return true;
-
-		if (!m_resourceManager.ValidateGameData())
-		{
-			MessageBoxW(nullptr,
-				L"Critical Error: Game Data is corrupted or missing.\nPlease reinstall the game.",
-				L"Integrity Check Failed",
-				MB_OK | MB_ICONERROR);
-			ALICE_LOG_ERRORF("[Engine] Initialize FAILED: Data integrity check failed.");
-			return false;
-		}
+		// 게임 모드 무결성 검증은 로딩 UI 단계(InitializePreloadAndLoadingScreen)에서 수행합니다.
+		// 이유: 사용자에게 로딩바/상태 텍스트로 실패 원인을 명확히 보여주기 위함.
 		return true;
 	}
 
@@ -1293,6 +1285,100 @@ namespace Alice
 
 		ALICE_LOG_INFO("[Loading] InitializePreloadAndLoadingScreen begin.");
 
+		// 로딩바를 가능한 한 빠르게 먼저 보여줘서 "초기 멈춤 느낌"을 줄입니다.
+		World earlyLoadingWorld;
+		EntityId earlyStatusId = InvalidEntityId;
+		EntityId earlyGaugeId = InvalidEntityId;
+		auto RenderEarlyLoading = [&](float progress, const char* status) -> bool
+		{
+			if (!m_renderDevice || !m_renderDevice->GetBackBufferRTV())
+				return true;
+			if (earlyStatusId == InvalidEntityId || earlyGaugeId == InvalidEntityId)
+				return true;
+
+			MSG msg{};
+			while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+			{
+				if (msg.message == WM_QUIT)
+				{
+					m_initCanceled = true;
+					return false;
+				}
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+
+			if (auto* statusText = earlyLoadingWorld.GetComponent<UITextComponent>(earlyStatusId))
+				statusText->text = status ? status : "쉐이더 컴파일중.";
+			if (auto* gauge = earlyLoadingWorld.GetComponent<UIGaugeComponent>(earlyGaugeId))
+				gauge->value = std::clamp(progress, 0.0f, 1.0f);
+
+			m_inputSystem.Update(0.0f);
+			m_aliceUIRenderer.Update(earlyLoadingWorld, m_inputSystem, m_camera,
+				static_cast<float>(m_width), static_cast<float>(m_height), 0.0f);
+
+			float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			m_renderDevice->BeginFrame(clearColor);
+			m_aliceUIRenderer.RenderScreen(earlyLoadingWorld, m_camera,
+				m_renderDevice->GetBackBufferRTV(),
+				static_cast<float>(m_width), static_cast<float>(m_height));
+			m_renderDevice->EndFrame();
+			return true;
+		};
+
+		if (m_renderDevice && m_renderDevice->GetBackBufferRTV())
+		{
+			auto CreateEarlyScreenWidget = [&](const char* name, float anchorX, float anchorY,
+				const DirectX::XMFLOAT2& size, int sortOrder)
+			{
+				EntityId e = earlyLoadingWorld.CreateEntity();
+				earlyLoadingWorld.SetEntityName(e, name);
+
+				auto& widget = earlyLoadingWorld.AddComponent<UIWidgetComponent>(e);
+				widget.widgetName = name;
+				widget.space = AliceUI::UISpace::Screen;
+
+				auto& t = earlyLoadingWorld.AddComponent<UITransformComponent>(e);
+				t.anchorMin = DirectX::XMFLOAT2(anchorX, anchorY);
+				t.anchorMax = DirectX::XMFLOAT2(anchorX, anchorY);
+				t.position = DirectX::XMFLOAT2(0.0f, 0.0f);
+				t.size = size;
+				t.useAlignment = true;
+				t.alignH = AliceUI::UIAlignH::Center;
+				t.alignV = AliceUI::UIAlignV::Center;
+				t.sortOrder = sortOrder;
+
+				earlyLoadingWorld.AddComponent<TransformComponent>(e);
+				return e;
+			};
+
+			earlyStatusId = CreateEarlyScreenWidget("Early_Loading_Status", 0.5f, 0.75f,
+				DirectX::XMFLOAT2(640.0f, 40.0f), 1);
+			{
+				auto& statusText = earlyLoadingWorld.AddComponent<UITextComponent>(earlyStatusId);
+				statusText.fontPath = "Resource/Fonts/NotoSansKR-Regular.ttf";
+				statusText.fontSize = 24.0f;
+				statusText.alignH = AliceUI::UIAlignH::Center;
+				statusText.alignV = AliceUI::UIAlignV::Center;
+				statusText.text = "쉐이더 컴파일중.";
+			}
+
+			earlyGaugeId = CreateEarlyScreenWidget("Early_Loading_Bar", 0.5f, 0.80f,
+				DirectX::XMFLOAT2(560.0f, 20.0f), 1);
+			{
+				auto& gauge = earlyLoadingWorld.AddComponent<UIGaugeComponent>(earlyGaugeId);
+				gauge.normalized = true;
+				gauge.value = 0.0f;
+				gauge.displayedValue = 0.0f;
+				gauge.smoothing = 0.15f;
+				gauge.fillColor = DirectX::XMFLOAT4(0.2f, 0.9f, 0.2f, 1.0f);
+				gauge.backgroundColor = DirectX::XMFLOAT4(0.1f, 0.1f, 0.1f, 0.85f);
+			}
+
+			if (!RenderEarlyLoading(0.0f, "쉐이더 컴파일중."))
+				return false;
+		}
+
 		// 1) Preload.json 로드
 		std::string preloadText;
 		bool hasPreload = m_resourceManager.LoadText("Assets/Startup/Preload.json", preloadText);
@@ -1317,19 +1403,25 @@ namespace Alice
 		std::vector<std::string> filtered;
 		filtered.reserve(rawList.size());
 		std::unordered_set<std::string> seen;
+		std::size_t filteredProcessed = 0;
 		for (const auto& entry : rawList)
 		{
 			std::string normalized = NormalizeLogicalPathRuntime(entry);
 			if (normalized.empty())
+			{
+				++filteredProcessed;
 				continue;
+			}
 			if (HasParentTraversalRuntime(normalized))
 			{
 				ALICE_LOG_WARN("Preload: skipped path with '..' : %s", normalized.c_str());
+				++filteredProcessed;
 				continue;
 			}
 			if (!IsAllowedLogicalPathRuntime(normalized))
 			{
 				ALICE_LOG_WARN("Preload: invalid path (must be Assets/Resource/Cooked): %s", normalized.c_str());
+				++filteredProcessed;
 				continue;
 			}
 
@@ -1338,11 +1430,20 @@ namespace Alice
 				c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
 			if (seen.insert(key).second)
 				filtered.push_back(normalized);
+
+			++filteredProcessed;
+			if (earlyGaugeId != InvalidEntityId && ((filteredProcessed % 16) == 0 || filteredProcessed == rawList.size()))
+			{
+				const float ratio = rawList.empty() ? 1.0f : static_cast<float>(filteredProcessed) / static_cast<float>(rawList.size());
+				if (!RenderEarlyLoading(0.02f + ratio * 0.10f, "로딩 데이터 준비중."))
+					return false;
+			}
 		}
 
 		// 3) 존재 확인
 		std::vector<std::string> preloadList;
 		preloadList.reserve(filtered.size());
+		std::size_t existsProcessed = 0;
 		for (const auto& path : filtered)
 		{
 			const std::filesystem::path resolved = m_resourceManager.Resolve(path);
@@ -1355,6 +1456,14 @@ namespace Alice
 			{
 				ALICE_LOG_WARN("Preload: missing file (skipped): %s (resolved: %s)",
 					path.c_str(), resolved.string().c_str());
+			}
+
+			++existsProcessed;
+			if (earlyGaugeId != InvalidEntityId && ((existsProcessed % 16) == 0 || existsProcessed == filtered.size()))
+			{
+				const float ratio = filtered.empty() ? 1.0f : static_cast<float>(existsProcessed) / static_cast<float>(filtered.size());
+				if (!RenderEarlyLoading(0.12f + ratio * 0.10f, "로딩 파일 확인중."))
+					return false;
 			}
 		}
 
@@ -1376,6 +1485,11 @@ namespace Alice
 		if (!m_renderDevice || !m_renderDevice->GetBackBufferRTV())
 		{
 			ALICE_LOG_WARN("[Loading] Render device not ready. Running preload without UI.");
+			if (!m_resourceManager.ValidateGameData())
+			{
+				ALICE_LOG_ERRORF("[Loading] Chunk integrity validation failed before preload (no loading UI path).");
+				return false;
+			}
 			InitializeAudio();
 			if (!InitializeRenderSystems()) return false;
 			if (!InitializeComputeEffectSystem()) return false;
@@ -1646,6 +1760,66 @@ namespace Alice
 		if (!RenderFrame(CalcDelta(), true))
 		{
 			ALICE_LOG_WARN("[Loading] Initial frame render failed.");
+			return false;
+		}
+
+		// 게임 데이터 무결성(청크) 검증: 프리로드 시작 직전에 가장 먼저 확인합니다.
+		if (auto* statusText = loadingWorld.GetComponent<UITextComponent>(statusId))
+			statusText->text = "청크 검증중.";
+
+		std::atomic<bool> integrityDone{ false };
+		std::atomic<bool> integrityOk{ false };
+		std::thread integrityThread([&]()
+		{
+			integrityOk.store(m_resourceManager.ValidateGameData(), std::memory_order_relaxed);
+			integrityDone.store(true, std::memory_order_release);
+		});
+
+		while (!integrityDone.load(std::memory_order_acquire))
+		{
+			targetProgress = (std::max)(targetProgress, 0.02f);
+			if (!RenderFrame(CalcDelta(), true))
+			{
+				if (integrityThread.joinable())
+					integrityThread.join();
+				return false;
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(8));
+		}
+		if (integrityThread.joinable())
+			integrityThread.join();
+
+		if (!integrityOk.load(std::memory_order_relaxed))
+		{
+			if (auto* gauge = loadingWorld.GetComponent<UIGaugeComponent>(gaugeId))
+			{
+				gauge->fillColor = DirectX::XMFLOAT4(0.92f, 0.18f, 0.18f, 1.0f);
+				gauge->backgroundColor = DirectX::XMFLOAT4(0.20f, 0.08f, 0.08f, 0.95f);
+				gauge->value = 1.0f;
+			}
+			if (auto* statusText = loadingWorld.GetComponent<UITextComponent>(statusId))
+				statusText->text = "쉐이더 컴파일중...";
+			if (auto* hintText = loadingWorld.GetComponent<UITextComponent>(hintId))
+				hintText->text = "Chunk폴더를 임의로 바꾸셨습니다. 게임을 실행할 수 없습니다.";
+			if (auto* gaugeFx = loadingWorld.GetComponent<UIEffectComponent>(gaugeId))
+				gaugeFx->glowEnabled = false;
+
+			// 에러 문구와 빨간 로딩바를 확실히 표시합니다.
+			if (!RenderFrame(CalcDelta(), false))
+				return false;
+
+			while (true)
+			{
+				if (!RenderFrame(CalcDelta(), false))
+					return false;
+
+				if (m_inputSystem.IsMouseButtonPressed(0))
+					break;
+
+				std::this_thread::sleep_for(std::chrono::milliseconds(8));
+			}
+
+			ALICE_LOG_ERRORF("[Loading] Chunk integrity validation failed.");
 			return false;
 		}
 		if (!AdvanceTo(0.02f, 0.15f))
