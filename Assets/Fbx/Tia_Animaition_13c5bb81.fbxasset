@@ -1,0 +1,8 @@
+{
+    "materials": [
+        "Assets/Materials/Tia_Animaition_13c5bb81_0.mat",
+        "Assets/Materials/Tia_Animaition_13c5bb81_1.mat"
+    ],
+    "mesh": "Tia_Animaition_13c5bb81",
+    "source_fbx": "Resource/Test/4_Resources/charecter/Animaition/02.07/Tia_Animaition.fbx"
+}

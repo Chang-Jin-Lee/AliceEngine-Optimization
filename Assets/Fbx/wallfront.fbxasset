@@ -1,0 +1,10 @@
+{
+    "materials": [
+        "Assets/Materials/Wallfront_0.mat",
+        "Assets/Materials/Wallfront_1.mat",
+        "Assets/Materials/Wallfront_2.mat",
+        "Assets/Materials/Wallfront_3.mat"
+    ],
+    "mesh": "Wallfront",
+    "source_fbx": "Resource/Test/4_Resources/background/0211scene/Wallfront.fbx"
+}
