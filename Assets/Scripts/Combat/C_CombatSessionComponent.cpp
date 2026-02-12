@@ -1094,6 +1094,11 @@ namespace Alice
 		return m_state ? std::max(0.0f, m_state->playerRageCooldownRemainingSec) : 0.0f;
 	}
 
+	bool C_CombatSessionComponent::IsPlayerWeakActive() const
+	{
+		return m_state ? (m_state->player.weakRemainingSec > 0.0f) : false;
+	}
+
 	float C_CombatSessionComponent::GetPlayerRageCooldownNormalized() const
 	{
 		const float cooldownSec = std::max(0.0f, m_rageCooldownSec);
@@ -2480,7 +2485,8 @@ namespace Alice
 				zoomRightMotor = 0.24f; // weaker than mid.
 				zoomDurationSec = 0.30f;
 			}
-			EmitHapticPulse(zoomLeftMotor, zoomRightMotor, zoomDurationSec, GamepadVibrationBlend::Max, zoomHapticKey, 0.06f);
+			// X(zoomToggle) 입력 시 카메라 줌 진동 비활성화 요청에 따라 주석 처리.
+			// EmitHapticPulse(zoomLeftMotor, zoomRightMotor, zoomDurationSec, GamepadVibrationBlend::Max, zoomHapticKey, 0.06f);
 		}
 
 		if (m_state->playerLockOnActive)
@@ -6789,6 +6795,16 @@ namespace Alice
 				{
 					EmitHapticPulse(0.33f, 0.45f, guardBreakPushDurationForHaptic,
 						GamepadVibrationBlend::Add, HapticCooldownKey::GuardBreakVictimSustain, 0.0f);
+				}
+
+				// GuardBreak 진입 시 광폭화 즉시 종료 + 쿨다운 시작.
+				if (m_state->playerRageActive)
+				{
+					const float rageCooldownSec = std::max(0.0f, m_rageCooldownSec);
+					m_state->playerRageActive = false;
+					m_state->playerRageRemainingSec = 0.0f;
+					m_state->playerRageCooldownRemainingSec =
+						std::max(m_state->playerRageCooldownRemainingSec, rageCooldownSec);
 				}
 			}
 			if (wasGuardBreak && hit.attackerOwner == playerId && hit.victimOwner == bossId)

@@ -15,6 +15,8 @@
 namespace Alice
 {
     REGISTER_SCRIPT(MainChangerScript);
+    MainChangerScript::ClearResultSnapshot MainChangerScript::s_lastClearResult{};
+    bool MainChangerScript::s_hasLastClearResult = false;
 
     namespace
     {
@@ -80,6 +82,21 @@ namespace Alice
                 return false;
             return !health->alive || health->currentHealth <= 0.0f;
         }
+    }
+
+    void MainChangerScript::SetClearResultSnapshot(const ClearResultSnapshot& snapshot)
+    {
+        s_lastClearResult = snapshot;
+        s_hasLastClearResult = true;
+    }
+
+    bool MainChangerScript::GetClearResultSnapshot(ClearResultSnapshot& outSnapshot)
+    {
+        if (!s_hasLastClearResult)
+            return false;
+
+        outSnapshot = s_lastClearResult;
+        return true;
     }
 
     void MainChangerScript::Start()
@@ -225,6 +242,21 @@ namespace Alice
 
         if (trigger)
         {
+            if (bossTrigger)
+            {
+                ClearResultSnapshot snapshot{};
+                if (session)
+                {
+                    snapshot.timeSec = session->GetBossAttemptPlayTimeSec();
+                    snapshot.retryCount = session->GetBossRetryCount();
+                    snapshot.guardCount = session->GetBossAttemptGuardSuccessCount();
+                    snapshot.parryCount = session->GetBossAttemptParrySuccessCount();
+                    snapshot.damagedCount = session->GetBossAttemptPlayerHitCount();
+                    snapshot.breakCount = session->GetBossAttemptPlayerGuardBreakCount();
+                }
+                SetClearResultSnapshot(snapshot);
+            }
+
             const bool showDeath =
                 (playerTrigger && Get_showDeathOnPlayerDeath()) ||
                 (bossTrigger && Get_showDeathOnBossDeath());

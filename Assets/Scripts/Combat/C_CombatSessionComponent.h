@@ -43,6 +43,7 @@ namespace Alice
         bool IsPlayerRageActive() const;
         float GetPlayerRageRemainingSec() const;
         float GetPlayerRageCooldownRemainingSec() const;
+        bool IsPlayerWeakActive() const;
         // TODO: HUD/UI gauge binding should use this normalized cooldown value (0..1).
         float GetPlayerRageCooldownNormalized() const;
         bool IsFatalActive() const;

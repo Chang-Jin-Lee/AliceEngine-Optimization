@@ -2,11 +2,37 @@
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/ECS/World.h"
+#include "Runtime/ECS/GameObject.h"
 #include "Runtime/UI/UIWidgetComponent.h"
 #include "Runtime/UI/BindWidget.h"
+#include "../Combat/C_CombatSessionComponent.h"
 
 namespace Alice
 {
+    namespace
+    {
+        C_CombatSessionComponent* FindSession(World& world, const std::string& name)
+        {
+            if (name.empty())
+                return nullptr;
+
+            GameObject go = world.FindGameObject(name);
+            if (!go.IsValid())
+                return nullptr;
+
+            auto* scripts = world.GetScripts(go.id());
+            if (!scripts)
+                return nullptr;
+
+            for (auto& sc : *scripts)
+            {
+                if (sc.scriptName == "C_CombatSessionComponent" && sc.instance)
+                    return static_cast<C_CombatSessionComponent*>(sc.instance.get());
+            }
+            return nullptr;
+        }
+    }
+
     // 이 스크립트를 리플렉션/팩토리 시스템에 등록합니다.
     REGISTER_SCRIPT(PlayerGauge);
 
@@ -14,6 +40,8 @@ namespace Alice
     {
         World* w = GetWorld();
         if (!w) return;
+
+        TryResolveSession();
 
         // 게이지바 위젯 찾기
         if (!Get_gaugeWidgetName().empty())
@@ -88,15 +116,37 @@ namespace Alice
         wasLowValue = false;
     }
 
-    void PlayerGauge::Update(float deltaTime)
+    void PlayerGauge::TryResolveSession()
     {
-        if (!TargetGauge || !TargetImage)
+        if (TargetSession)
             return;
 
-        // 정규화된 게이지 값 가져오기
-        const float normalizedValue = GetNormalizedGaugeValue();
-        const float threshold = Get_triggerThreshold();
-        const bool isLowValue = normalizedValue <= threshold;
+        World* w = GetWorld();
+        if (!w)
+            return;
+
+        TargetSession = FindSession(*w, Get_sessionEntityName());
+    }
+
+    void PlayerGauge::Update(float deltaTime)
+    {
+        if (!TargetImage)
+            return;
+
+        (void)deltaTime;
+        TryResolveSession();
+
+        // 체력 퍼센트와 무관하게 광폭화 쿨다운 상태만으로 이미지 결정:
+        // - 쿨다운 중(cooldown > 0): 저체력 이미지
+        // - 준비됨/활성화/세션 미탐색: 일반 이미지
+        bool isLowValue = false;
+        if (TargetSession)
+        {
+            const float rageCooldownRemaining = TargetSession->GetPlayerRageCooldownRemainingSec();
+            const bool inGuardBreak = (TargetSession->GetPlayerState() == Combat::ActionState::GuardBreakWeak);
+            const bool inWeak = TargetSession->IsPlayerWeakActive();
+            isLowValue = (rageCooldownRemaining > 0.0f) || inGuardBreak || inWeak;
+        }
 
         // 상태가 변경되었을 때만 이미지 업데이트
         if (isLowValue != wasLowValue)
@@ -107,8 +157,8 @@ namespace Alice
                 if (!Get_lowValueImagePath().empty())
                 {
                     TargetImage->texturePath = Get_lowValueImagePath();
-                    ALICE_LOG_INFO("[PlayerGauge] Gauge value (%.2f) <= threshold (%.2f), switching to low value image: %s",
-                        normalizedValue, threshold, Get_lowValueImagePath().c_str());
+                    ALICE_LOG_INFO("[PlayerGauge] Rage cooldown active. Switching to cooldown image: %s",
+                        Get_lowValueImagePath().c_str());
                 }
             }
             else
@@ -117,33 +167,11 @@ namespace Alice
                 if (!Get_normalImagePath().empty())
                 {
                     TargetImage->texturePath = Get_normalImagePath();
-                    ALICE_LOG_INFO("[PlayerGauge] Gauge value (%.2f) > threshold (%.2f), switching to normal image: %s",
-                        normalizedValue, threshold, Get_normalImagePath().c_str());
+                    ALICE_LOG_INFO("[PlayerGauge] Rage cooldown ready/active(or no session). Switching to normal image: %s",
+                        Get_normalImagePath().c_str());
                 }
             }
             wasLowValue = isLowValue;
-        }
-    }
-
-    float PlayerGauge::GetNormalizedGaugeValue() const
-    {
-        if (!TargetGauge)
-            return 1.0f;
-
-        if (TargetGauge->normalized)
-        {
-            // 이미 정규화된 값 (0~1 범위)
-            return std::clamp(TargetGauge->value, 0.0f, 1.0f);
-        }
-        else
-        {
-            // 정규화되지 않은 값이면 계산
-            const float range = TargetGauge->maxValue - TargetGauge->minValue;
-            if (range <= 0.0001f)
-                return 1.0f;
-            
-            const float normalized = (TargetGauge->value - TargetGauge->minValue) / range;
-            return std::clamp(normalized, 0.0f, 1.0f);
         }
     }
 
