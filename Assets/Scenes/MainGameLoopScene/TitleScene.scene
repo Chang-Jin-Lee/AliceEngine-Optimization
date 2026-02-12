@@ -17,9 +17,9 @@
                     "enabled": true,
                     "name": "UISoundScript",
                     "props": {
-                        "clickSoundPath": "Resource/Test/4_Resources/sound/SFX/그외 SFX/buttonClick.mp3",
+                        "clickSoundPath": "Resource/Test/4_Resources/sound/SFX/Normalize Sample/SFX_UI_Select.mp3",
                         "cooldownSec": 0.07999999821186066,
-                        "hoverSoundPath": "Resource/Test/4_Resources/sound/SFX/그외 SFX/buttonHover.mp3",
+                        "hoverSoundPath": "Resource/Test/4_Resources/sound/SFX/Normalize Sample/SFX_UI_Move.mp3",
                         "pitchRandomEnabled": true,
                         "pitchRandomMax": 1.0499999523162842,
                         "pitchRandomMin": 0.949999988079071,
@@ -182,7 +182,7 @@
                         "uiSoundEntityName": "SoundObject",
                         "underImageHoverPath": "Resource/Test/4_Resources/UI/TitleResorce/Title_New Game_ON.png",
                         "underImageNormalPath": "Resource/Test/4_Resources/UI/TitleResorce/Title_New Game_OFF.png",
-                        "useFadeOnClick": true
+                        "useFadeOnClick": false
                     }
                 },
                 {

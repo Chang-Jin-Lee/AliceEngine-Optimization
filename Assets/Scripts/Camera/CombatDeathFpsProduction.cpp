@@ -540,6 +540,7 @@ namespace Alice
                 SaveVisibilityRecursive(m_playerWeaponEntity);
                 SetVisibilityRecursive(m_playerWeaponEntity, false);
             }
+            if (auto go = GetWorld()->FindGameObject("TiaRibbon"); go.IsValid()) { SaveVisibilityRecursive(go.id()); SetVisibilityRecursive(go.id(), false); }
         }
 
         m_running = true;

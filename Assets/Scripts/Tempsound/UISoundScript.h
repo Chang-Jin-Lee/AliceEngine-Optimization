@@ -24,8 +24,8 @@ namespace Alice
         void PlayClick();
         void PlayHover();
 
-        ALICE_PROPERTY(std::string, clickSoundPath, "Resource/Test/4_Resources/sound/SFX/그외 SFX/buttonClick.mp3");
-        ALICE_PROPERTY(std::string, hoverSoundPath, "Resource/Test/4_Resources/sound/SFX/그외 SFX/buttonHover.mp3");
+        ALICE_PROPERTY(std::string, clickSoundPath, "Resource/Test/4_Resources/sound/SFX/Normalize Sample/SFX_UI_Select.mp3");
+        ALICE_PROPERTY(std::string, hoverSoundPath, "Resource/Test/4_Resources/sound/SFX/Normalize Sample/SFX_UI_Move.mp3");
         ALICE_PROPERTY(float, volume, 1.0f);
         ALICE_PROPERTY(float, cooldownSec, 0.08f);
         ALICE_PROPERTY(bool, pitchRandomEnabled, true);
