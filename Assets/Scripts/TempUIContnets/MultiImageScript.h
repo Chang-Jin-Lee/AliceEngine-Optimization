@@ -17,6 +17,7 @@ namespace Alice
     public:
         void Start() override;
         void Update(float deltaTime) override;
+        void SetIndex(int index);
 
         ALICE_PROPERTY(std::string, imageWidgetName, "");
         ALICE_PROPERTY(std::string, imagePaths, "");
@@ -24,6 +25,8 @@ namespace Alice
         ALICE_PROPERTY(int, startIndex, 0);
         ALICE_PROPERTY(bool, loop, true);
         ALICE_PROPERTY(bool, playOnStart, true);
+
+        ALICE_FUNC(SetIndex);
 
     private:
         void ResolveTarget();
