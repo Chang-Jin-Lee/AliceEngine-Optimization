@@ -7553,7 +7553,7 @@
             "CharacterController": {
                 "applyGravity": true,
                 "climbingMode": "Constrained",
-                "contactOffset": 0.0005000000237487257,
+                "contactOffset": 0.029999999329447746,
                 "density": 10.0,
                 "desiredVelocity": {
                     "x": 0.0,
@@ -7571,7 +7571,7 @@
                 "nonWalkableMode": "PreventClimbingAndForceSliding",
                 "radius": 0.23000000417232513,
                 "slopeLimitRadians": 0.7853981852531433,
-                "stepOffset": 0.0035000001080334187,
+                "stepOffset": 0.10000000149011612,
                 "teleport": false,
                 "verticalVelocity": 0.0
             },
@@ -8595,7 +8595,7 @@
             "CharacterController": {
                 "applyGravity": true,
                 "climbingMode": "Constrained",
-                "contactOffset": 0.0010000000474974513,
+                "contactOffset": 0.029999999329447746,
                 "density": 10.0,
                 "desiredVelocity": {
                     "x": 0.0,
@@ -8613,7 +8613,7 @@
                 "nonWalkableMode": "PreventClimbingAndForceSliding",
                 "radius": 0.6589999794960022,
                 "slopeLimitRadians": 0.7853981852531433,
-                "stepOffset": 0.0010000000474974513,
+                "stepOffset": 0.10000000149011612,
                 "teleport": false,
                 "verticalVelocity": 0.0
             },
