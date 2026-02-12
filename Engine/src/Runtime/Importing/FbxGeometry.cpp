@@ -232,6 +232,136 @@ bool FbxGeometryBuilder::Build(ID3D11Device* device, const aiScene* scene)
         }
     });
 
+    // [3.25] Assimp 탄젠트가 비어있는 메시에 대해 최소 폴백 생성
+    {
+        const auto Dot = [](const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT3& b) -> float {
+            return a.x * b.x + a.y * b.y + a.z * b.z;
+        };
+        const auto Cross = [](const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT3& b) -> DirectX::XMFLOAT3 {
+            return {
+                a.y * b.z - a.z * b.y,
+                a.z * b.x - a.x * b.z,
+                a.x * b.y - a.y * b.x
+            };
+        };
+        const auto AddTo = [](DirectX::XMFLOAT3& dst, const DirectX::XMFLOAT3& v) {
+            dst.x += v.x; dst.y += v.y; dst.z += v.z;
+        };
+        const auto Sub = [](const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT3& b) -> DirectX::XMFLOAT3 {
+            return { a.x - b.x, a.y - b.y, a.z - b.z };
+        };
+        const auto Mul = [](const DirectX::XMFLOAT3& v, float s) -> DirectX::XMFLOAT3 {
+            return { v.x * s, v.y * s, v.z * s };
+        };
+        const auto LengthSq = [](const DirectX::XMFLOAT3& v) -> float {
+            return v.x * v.x + v.y * v.y + v.z * v.z;
+        };
+        const auto Normalize = [&](const DirectX::XMFLOAT3& v) -> DirectX::XMFLOAT3 {
+            const float lsq = LengthSq(v);
+            if (lsq <= 1e-12f)
+                return { 0.0f, 0.0f, 0.0f };
+            const float invLen = 1.0f / std::sqrt(lsq);
+            return { v.x * invLen, v.y * invLen, v.z * invLen };
+        };
+        constexpr float kEps = 1e-8f;
+
+        for (const Entry& e : tasks)
+        {
+            const aiMesh* mesh = e.m;
+            if (mesh->HasTangentsAndBitangents())
+                continue;
+
+            std::vector<DirectX::XMFLOAT3> tanAccum(mesh->mNumVertices, { 0.0f, 0.0f, 0.0f });
+            std::vector<DirectX::XMFLOAT3> bitanAccum(mesh->mNumVertices, { 0.0f, 0.0f, 0.0f });
+
+            for (unsigned f = 0; f < mesh->mNumFaces; ++f)
+            {
+                const aiFace& face = mesh->mFaces[f];
+                if (face.mNumIndices < 3)
+                    continue;
+
+                const unsigned i0 = face.mIndices[0];
+                const unsigned i1 = face.mIndices[1];
+                const unsigned i2 = face.mIndices[2];
+                if (i0 >= mesh->mNumVertices || i1 >= mesh->mNumVertices || i2 >= mesh->mNumVertices)
+                    continue;
+
+                const VertexSkinnedTBN& v0 = m_->bindVertices[e.vOff + i0];
+                const VertexSkinnedTBN& v1 = m_->bindVertices[e.vOff + i1];
+                const VertexSkinnedTBN& v2 = m_->bindVertices[e.vOff + i2];
+
+                const DirectX::XMFLOAT3 p0 = v0.pos;
+                const DirectX::XMFLOAT3 p1 = v1.pos;
+                const DirectX::XMFLOAT3 p2 = v2.pos;
+
+                const DirectX::XMFLOAT2 w0 = v0.uv;
+                const DirectX::XMFLOAT2 w1 = v1.uv;
+                const DirectX::XMFLOAT2 w2 = v2.uv;
+
+                const DirectX::XMFLOAT3 e1v = Sub(p1, p0);
+                const DirectX::XMFLOAT3 e2v = Sub(p2, p0);
+
+                const float du1 = w1.x - w0.x;
+                const float dv1 = w1.y - w0.y;
+                const float du2 = w2.x - w0.x;
+                const float dv2 = w2.y - w0.y;
+
+                const float det = du1 * dv2 - dv1 * du2;
+                if (std::fabs(det) <= kEps)
+                    continue;
+
+                const float invDet = 1.0f / det;
+                const DirectX::XMFLOAT3 faceT = Mul(
+                    Sub(Mul(e1v, dv2), Mul(e2v, dv1)),
+                    invDet);
+                const DirectX::XMFLOAT3 faceB = Mul(
+                    Sub(Mul(e2v, du1), Mul(e1v, du2)),
+                    invDet);
+
+                AddTo(tanAccum[i0], faceT); AddTo(tanAccum[i1], faceT); AddTo(tanAccum[i2], faceT);
+                AddTo(bitanAccum[i0], faceB); AddTo(bitanAccum[i1], faceB); AddTo(bitanAccum[i2], faceB);
+            }
+
+            for (unsigned i = 0; i < mesh->mNumVertices; ++i)
+            {
+                auto& d = m_->bindVertices[e.vOff + i];
+
+                DirectX::XMFLOAT3 N = Normalize(d.n);
+                if (LengthSq(N) <= kEps)
+                    N = { 0.0f, 1.0f, 0.0f };
+
+                DirectX::XMFLOAT3 T = tanAccum[i];
+                if (LengthSq(T) <= kEps)
+                {
+                    const DirectX::XMFLOAT3 up = (std::fabs(N.y) < 0.999f)
+                        ? DirectX::XMFLOAT3{ 0.0f, 1.0f, 0.0f }
+                        : DirectX::XMFLOAT3{ 1.0f, 0.0f, 0.0f };
+                    T = Cross(up, N);
+                }
+
+                T = Sub(T, Mul(N, Dot(T, N)));
+                T = Normalize(T);
+                if (LengthSq(T) <= kEps)
+                    T = { 1.0f, 0.0f, 0.0f };
+
+                DirectX::XMFLOAT3 B = bitanAccum[i];
+                if (LengthSq(B) <= kEps)
+                    B = Cross(N, T);
+                B = Sub(B, Mul(N, Dot(B, N)));
+                B = Sub(B, Mul(T, Dot(B, T)));
+                B = Normalize(B);
+                if (LengthSq(B) <= kEps)
+                    B = Normalize(Cross(N, T));
+
+                if (Dot(Cross(N, T), B) < 0.0f)
+                    B = Mul(B, -1.0f);
+
+                d.t = T;
+                d.b = B;
+            }
+        }
+    }
+
     // [3.5] 스무스 노멀 계산 (아웃라인 끊김 방지)
     // 위치가 같은 버텍스들의 노멀을 평균내어 스무스 노멀 생성
     {
