@@ -1,0 +1,182 @@
+{
+    "entities": [
+        {
+            "Camera": {
+                "FOV": 60.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
+                "aspectOverride": 0.0,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -10.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "9100000000000000001",
+            "name": "MainCamera"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "VisibleMouseScript",
+                    "props": {}
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_GuideImage",
+                        "useNonUniformScale": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "GuideImageSequenceScript",
+                    "props": {
+                        "allowEnterKey": true,
+                        "allowEscapeKey": true,
+                        "allowGamepadAButton": true,
+                        "allowMouseLeftClick": true,
+                        "allowSpaceKey": true,
+                        "gamepadPlayerIndex": 0,
+                        "imagePaths": "Resource/Test/4_Resources/UI/TutorialRule/1.png; Resource/Test/4_Resources/UI/TutorialRule/2.png; Resource/Test/4_Resources/UI/TutorialRule/3.png; Resource/Test/4_Resources/UI/TutorialRule/4.png",
+                        "imageWidgetName": "UI_GuideImage",
+                        "inputCooldownSec": 0.11999999731779099,
+                        "startIndex": 0,
+                        "targetScenePath": "Assets/Scenes/#00Combat0211.scene"
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "9100000000000000002",
+            "name": "GuideController"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "Resource/Test/4_Resources/UI/TutorialRule/1.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 1600.0,
+                    "y": 900.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_GuideImage"
+            },
+            "guid": "9100000000000000003",
+            "name": "UI_GuideImage"
+        }
+    ],
+    "sceneName": "GuideScene",
+    "version": 1
+}
