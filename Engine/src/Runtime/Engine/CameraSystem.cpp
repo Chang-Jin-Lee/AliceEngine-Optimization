@@ -150,18 +150,86 @@ namespace Alice
             return camId;
         }
 
+        static DirectX::XMMATRIX BuildLocalMatrix(const TransformComponent& tr)
+        {
+            using namespace DirectX;
+            const XMMATRIX S = XMMatrixScaling(tr.scale.x, tr.scale.y, tr.scale.z);
+            const XMMATRIX R = XMMatrixRotationRollPitchYaw(tr.rotation.x, tr.rotation.y, tr.rotation.z);
+            const XMMATRIX T = XMMatrixTranslation(tr.position.x, tr.position.y, tr.position.z);
+            return S * R * T;
+        }
+
+        // World 캐시 dirty 여부와 무관하게, 부모 체인을 직접 순회해 즉시 월드행렬을 계산합니다.
+        static DirectX::XMMATRIX ComputeWorldMatrixDirect(World& world, EntityId id)
+        {
+            using namespace DirectX;
+            XMMATRIX worldM = XMMatrixIdentity();
+            EntityId current = id;
+
+            int guard = 0;
+            while (current != InvalidEntityId && guard++ < 1024)
+            {
+                auto* tr = world.GetComponent<TransformComponent>(current);
+                if (!tr || !tr->enabled)
+                    break;
+
+                worldM = worldM * BuildLocalMatrix(*tr);
+                current = tr->parent;
+            }
+
+            return worldM;
+        }
+
+        // 카메라 엔티티의 월드 트랜스폼을 가져옵니다.
+        // 부모가 없으면 기존 로컬값을 그대로 사용해 비용을 줄입니다.
+        static bool FetchCameraWorldTransform(World& world, EntityId id,
+                                              DirectX::XMFLOAT3& outPos,
+                                              DirectX::XMFLOAT3& outRot,
+                                              DirectX::XMFLOAT3& outScale)
+        {
+            auto* tr = world.GetComponent<TransformComponent>(id);
+            if (!tr || !tr->enabled)
+                return false;
+
+            if (tr->parent == InvalidEntityId)
+            {
+                outPos = tr->position;
+                outRot = tr->rotation;
+                outScale = tr->scale;
+                return true;
+            }
+
+            DirectX::XMMATRIX worldM = ComputeWorldMatrixDirect(world, id);
+            DirectX::XMVECTOR s, q, t;
+            if (DirectX::XMMatrixDecompose(&s, &q, &t, worldM))
+            {
+                DirectX::XMStoreFloat3(&outPos, t);
+                DirectX::XMStoreFloat3(&outScale, s);
+                DirectX::XMFLOAT4 quat{};
+                DirectX::XMStoreFloat4(&quat, q);
+                outRot = QuaternionToEuler(quat);
+                return true;
+            }
+
+            // 분해 실패 시 기존 로컬값으로 안전 폴백
+            outPos = tr->position;
+            outRot = tr->rotation;
+            outScale = tr->scale;
+            return true;
+        }
+
         // 타겟 카메라의 속성을 안전하게 가져오는 함수
         static bool FetchTargetCameraInfo(World& world, EntityId id,
                                           DirectX::XMFLOAT3& outPos, DirectX::XMFLOAT3& outRot,
                                           float& outFov, float& outNear, float& outFar)
         {
             if (id == InvalidEntityId) return false;
-            auto* tr = world.GetComponent<TransformComponent>(id);
             auto* cam = world.GetComponent<CameraComponent>(id);
-            if (!tr || !cam || !tr->enabled) return false;
+            if (!cam) return false;
 
-            outPos = tr->position;
-            outRot = tr->rotation; // Euler Radian
+            DirectX::XMFLOAT3 worldScale{};
+            if (!FetchCameraWorldTransform(world, id, outPos, outRot, worldScale))
+                return false;
             
             // CameraComponent 내부 객체에서 정보 가져옴
             const Camera& c = cam->GetCamera();
@@ -208,21 +276,24 @@ namespace Alice
 
         for (auto [id, camComp] : world.GetComponents<CameraComponent>())
         {
-            auto* tc = world.GetComponent<TransformComponent>(id);
-            if (!tc || !tc->enabled) continue;
+            DirectX::XMFLOAT3 worldPos{};
+            DirectX::XMFLOAT3 worldRot{};
+            DirectX::XMFLOAT3 worldScale{};
+            if (!FetchCameraWorldTransform(world, id, worldPos, worldRot, worldScale))
+                continue;
 
             // TransformComponent는 오일러 회전을 가짐 (내부적으로 Euler 저장)
             // Camera 객체에 동기화
             Camera& camera = camComp.GetCamera();
-            camera.SetPosition(tc->position);
+            camera.SetPosition(worldPos);
             
             // Transform의 오일러 회전을 쿼터니언으로 변환해서 카메라에 전달
-            DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(tc->rotation.x, tc->rotation.y, tc->rotation.z);
+            DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(worldRot.x, worldRot.y, worldRot.z);
             DirectX::XMFLOAT4 quat;
             DirectX::XMStoreFloat4(&quat, q);
             camera.SetRotation(quat);
 
-            camera.SetScale(tc->scale);
+            camera.SetScale(worldScale);
         }
 
         const EntityId outputId = FindPrimaryCamera(world);
