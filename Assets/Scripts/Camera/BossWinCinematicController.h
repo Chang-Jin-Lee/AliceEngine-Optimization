@@ -210,6 +210,11 @@ namespace Alice
         bool m_prevBossDead = false;
         bool m_pendingSceneLoad = false;
         float m_pendingSceneLoadTimerSec = 0.0f;
+        bool m_pendingUseFade = false;
+        bool m_pendingFadeStarted = false;
+        float m_pendingFadeLeadInSec = 0.0f;
+        float m_pendingSceneDelayAfterFadeSec = 0.0f;
+        std::string m_pendingFadeEntityName{};
         bool m_bossFadeArmed = false;
         bool m_bossFadeComplete = false;
         float m_bossFadeArmSec = 0.0f;
