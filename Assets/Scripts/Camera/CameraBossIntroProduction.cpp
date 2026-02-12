@@ -20,17 +20,45 @@ namespace Alice
 {
     REGISTER_SCRIPT(CameraBossIntroProduction);
 
+    void CameraBossIntroProduction::Start()
+    {
+        m_autoStartInitialized = false;
+        m_autoStartPending = false;
+        m_autoStartElapsedSec = 0.0f;
+    }
+
     void CameraBossIntroProduction::Update(float deltaTime)
     {
+        InitializeAutoStartOnce();
+
         auto go = gameObject();
-        auto* input = Input();
-        if (!go.IsValid() || !input)
+        if (!go.IsValid())
             return;
 
-        if (Get_m_enableHotkey() && input->GetKeyDown(KeyCode::Alpha9))
+        if (m_autoStartPending && !m_sequenceRunning)
         {
-            if (!m_sequenceRunning || Get_m_restartOnKey())
+            m_autoStartElapsedSec += std::max(0.0f, deltaTime);
+            if (m_autoStartElapsedSec >= std::max(0.0f, Get_m_autoStartDelaySec()))
+            {
+                const bool wasRunning = m_sequenceRunning;
                 StartSequence();
+                if (!wasRunning && m_sequenceRunning)
+                    m_autoStartPending = false;
+            }
+        }
+
+        if (Get_m_enableHotkey())
+        {
+            if (auto* input = Input())
+            {
+                if (input->GetKeyDown(KeyCode::Alpha9))
+                {
+                    if (!m_sequenceRunning || Get_m_restartOnKey())
+                        StartSequence();
+                    if (m_sequenceRunning)
+                        m_autoStartPending = false;
+                }
+            }
         }
 
         if (!m_sequenceRunning)
@@ -48,6 +76,16 @@ namespace Alice
     void CameraBossIntroProduction::OnDestroy()
     {
         RestoreIfNeeded();
+    }
+
+    void CameraBossIntroProduction::InitializeAutoStartOnce()
+    {
+        if (m_autoStartInitialized)
+            return;
+
+        m_autoStartPending = Get_m_autoStartOnBegin();
+        m_autoStartElapsedSec = 0.0f;
+        m_autoStartInitialized = true;
     }
 
     void CameraBossIntroProduction::StartSequence()

@@ -15,11 +15,14 @@ namespace Alice
         ALICE_BODY(CameraBossIntroProduction);
 
     public:
+        void Start() override;
         void Update(float deltaTime) override;
         void OnDisable() override;
         void OnDestroy() override;
 
     private:
+        void InitializeAutoStartOnce();
+
         struct Pose
         {
             DirectX::XMFLOAT3 position{};
@@ -88,6 +91,8 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_outputCameraName, "MainCamera");
         ALICE_PROPERTY(std::string, m_playerName, "Player(Tia)");
         ALICE_PROPERTY(std::string, m_bossName, "Boss");
+        ALICE_PROPERTY(bool, m_autoStartOnBegin, false);
+        ALICE_PROPERTY(float, m_autoStartDelaySec, 0.0f);
 
         ALICE_PROPERTY(bool, m_enableHotkey, true);
         ALICE_PROPERTY(bool, m_restartOnKey, true);
@@ -124,6 +129,9 @@ namespace Alice
         BlendState m_blend{};
         Phase m_phase = Phase::None;
         bool m_sequenceRunning = false;
+        bool m_autoStartInitialized = false;
+        bool m_autoStartPending = false;
+        float m_autoStartElapsedSec = 0.0f;
         bool m_controlsOverridden = false;
 
         Pose m_phase1StartPose{};

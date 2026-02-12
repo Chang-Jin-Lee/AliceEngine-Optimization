@@ -77,6 +77,7 @@ namespace Alice
         EntityId m_playerId{ InvalidEntityId };
         EntityId m_bossId{ InvalidEntityId };
         EntityId m_deathWidgetId{ InvalidEntityId };
+        bool m_pendingShowDeathWidget{ false };
         FadeInOutScript* m_fade{ nullptr };
 
         static ClearResultSnapshot s_lastClearResult;
