@@ -103,6 +103,7 @@ namespace Alice
         m_groggyRecovering = false;
         m_groggyRecoverTimer = 0.0f;
         m_groggyRecoverDurationSec = 0.0f;
+        m_postGroggyIdleHoldTimer = 0.0f;
         m_prevGroggyHold = false;
     }
 
@@ -118,6 +119,20 @@ namespace Alice
         Combat::BossOutput out{};
         const float dt = std::max(0.0f, deltaTime);
         const bool groggyHold = signals.groggyHold;
+        if (m_postGroggyIdleHoldTimer > 0.0f)
+            m_postGroggyIdleHoldTimer = std::max(0.0f, m_postGroggyIdleHoldTimer - dt);
+        const float groggyRecoverIdleHoldSec = std::max(0.0f, m_groggyRecoverIdleHoldSec);
+        auto EnterIdleFromGroggy = [&]()
+        {
+            m_state = Combat::ActionState::Idle;
+            m_stateTimer = 0.0f;
+            m_groggyTimer = 0.0f;
+            m_groggyDurationSec = 0.0f;
+            m_groggyRecovering = false;
+            m_groggyRecoverTimer = 0.0f;
+            m_groggyRecoverDurationSec = 0.0f;
+            m_postGroggyIdleHoldTimer = groggyRecoverIdleHoldSec;
+        };
 
         bool isDead = signals.dead;
         if (!isDead)
@@ -135,6 +150,7 @@ namespace Alice
             m_groggyRecovering = false;
             m_groggyRecoverTimer = 0.0f;
             m_groggyRecoverDurationSec = 0.0f;
+            m_postGroggyIdleHoldTimer = 0.0f;
             m_prevGroggyHold = false;
         }
 
@@ -147,6 +163,7 @@ namespace Alice
             m_groggyRecovering = false;
             m_groggyRecoverTimer = 0.0f;
             m_groggyRecoverDurationSec = 0.0f;
+            m_postGroggyIdleHoldTimer = 0.0f;
             m_groggyDurationSec = sensors.groggyDuration;
             if (m_groggyDurationSec <= 0.0f)
                 m_groggyDurationSec = 1.0f;
@@ -174,13 +191,7 @@ namespace Alice
             }
             else
             {
-                m_state = Combat::ActionState::Idle;
-                m_stateTimer = 0.0f;
-                m_groggyTimer = 0.0f;
-                m_groggyDurationSec = 0.0f;
-                m_groggyRecovering = false;
-                m_groggyRecoverTimer = 0.0f;
-                m_groggyRecoverDurationSec = 0.0f;
+                EnterIdleFromGroggy();
             }
         }
 
@@ -205,13 +216,7 @@ namespace Alice
                 if (m_groggyRecoverDurationSec <= 0.0f
                     || m_groggyRecoverTimer >= m_groggyRecoverDurationSec)
                 {
-                    m_state = Combat::ActionState::Idle;
-                    m_stateTimer = 0.0f;
-                    m_groggyTimer = 0.0f;
-                    m_groggyDurationSec = 0.0f;
-                    m_groggyRecovering = false;
-                    m_groggyRecoverTimer = 0.0f;
-                    m_groggyRecoverDurationSec = 0.0f;
+                    EnterIdleFromGroggy();
                 }
             }
             else
@@ -231,17 +236,16 @@ namespace Alice
                     }
                     else
                     {
-                        m_state = Combat::ActionState::Idle;
-                        m_stateTimer = 0.0f;
-                        m_groggyTimer = 0.0f;
-                        m_groggyDurationSec = 0.0f;
+                        EnterIdleFromGroggy();
                     }
                 }
             }
         }
 
+        const bool postGroggyIdleHoldActive = (m_postGroggyIdleHoldTimer > 0.0f);
+
         Combat::BossIntent intent{};
-        if (!isDead && m_state != Combat::ActionState::Groggy)
+        if (!isDead && m_state != Combat::ActionState::Groggy && !postGroggyIdleHoldActive)
         {
             if (brain)
                 intent = brain->Think(dt, targetId);
@@ -270,7 +274,7 @@ namespace Alice
         const bool hitReactActive = (m_hitReactTimer > 0.0f);
 
         Combat::ActionState nextState = m_state;
-        if (!isDead && m_state != Combat::ActionState::Groggy)
+        if (!isDead && m_state != Combat::ActionState::Groggy && !postGroggyIdleHoldActive)
         {
             if (brain)
             {
@@ -308,6 +312,10 @@ namespace Alice
                 else
                     nextState = Combat::ActionState::Idle;
             }
+        }
+        else if (postGroggyIdleHoldActive && !isDead && m_state != Combat::ActionState::Groggy)
+        {
+            nextState = Combat::ActionState::Idle;
         }
 
         if (nextState != m_state)

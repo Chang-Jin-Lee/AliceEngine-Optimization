@@ -123,6 +123,7 @@ namespace Alice
         void ApplyOutputs(float deltaTime, const PulseAccumulation& pulseAccumulation);
         void ApplyImpactBlur(float intensity, float radius, float centerX, float centerY);
         void ApplyShake(const PulseConfig& config);
+        void TriggerGamepadRumble(float durationSec);
 
         void TriggerPulse(PulseKind kind, const PulseConfig& config, const DirectX::XMFLOAT3* hitPosWS);
         DirectX::XMFLOAT2 ResolvePulseCenter(const DirectX::XMFLOAT3* hitPosWS) const;
@@ -151,6 +152,12 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_bossEntityName, "Boss");
         ALICE_PROPERTY(std::string, m_cameraName, "MainCamera");
         ALICE_PROPERTY(bool, m_enableLogs, false);
+        ALICE_PROPERTY(bool, m_gamepadRumbleEnabled, true);
+        ALICE_PROPERTY(int, m_gamepadRumblePlayerIndex, 0);
+        ALICE_PROPERTY(float, m_gamepadRumbleLeftMotor, 1.0f);
+        ALICE_PROPERTY(float, m_gamepadRumbleRightMotor, 1.0f);
+        ALICE_PROPERTY(float, m_gamepadRumblePulseDurationSec, 0.12f);
+        ALICE_PROPERTY(float, m_gamepadRumbleChargeDurationSec, 0.10f);
 
         ALICE_PROPERTY(std::string, m_postProcessVolumeName, "CombatCameraImpactVolume");
         ALICE_PROPERTY(bool, m_autoCreatePostProcessVolume, true);
@@ -297,6 +304,7 @@ namespace Alice
         Combat::ActionState m_prevBossState = Combat::ActionState::Idle;
 
         bool m_prevChargeActive = false;
+        int m_prevChargeLevel = 0;
         float m_chargeZoomDeg = 0.0f;
         float m_chargeCurrentMaxZoomDeg = 0.0f;
 

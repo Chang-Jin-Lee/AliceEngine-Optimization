@@ -1,6 +1,6 @@
 #pragma once
 /*
-키보드/마우스 입력을 읽어서 Combat::Intent(이동·공격·가드·회피 등)로 변환.
+키보드/마우스 + 게임패드 입력을 읽어서 Combat::Intent(이동·공격·가드·회피 등)로 변환.
 플레이어가 조작하는 캐릭터 엔티티 (플레이어 엔티티).
 */
 #include "Runtime/Scripting/IScript.h"
@@ -35,6 +35,9 @@ namespace Alice
         ALICE_PROPERTY(int, m_keyRage, static_cast<int>(KeyCode::Q));
         ALICE_PROPERTY(bool, m_useMouseAttack, true);
         ALICE_PROPERTY(bool, m_useMouseLockOn, true);
+        ALICE_PROPERTY(bool, m_useGamepadInput, true);
+        ALICE_PROPERTY(int, m_gamepadPlayerIndex, 0);
+        ALICE_PROPERTY(float, m_gamepadMoveDeadzone, 0.15f);
         ALICE_PROPERTY(int, m_mouseAttackButton, static_cast<int>(MouseCode::Left));
         ALICE_PROPERTY(int, m_mouseGuardButton, static_cast<int>(MouseCode::Right));
         ALICE_PROPERTY(int, m_mouseLockOnButton, static_cast<int>(MouseCode::Middle));

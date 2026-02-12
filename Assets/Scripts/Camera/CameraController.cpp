@@ -15,6 +15,7 @@
 #include <sstream>
 #include <cctype>
 #include <algorithm>
+#include <cmath>
 #include <DirectXMath.h>
 
 namespace Alice
@@ -225,11 +226,40 @@ namespace Alice
         if (!follow->enabled || !follow->enableInput) return;
         if (follow->lockOnActive && !follow->allowManualOrbitInLockOn) return;
 
+        const float mouseFlip = follow->invertMouse ? -1.0f : 1.0f;
+        bool orbitUpdated = false;
+
         if (input->GetMouseButton(MouseCode::Left))
         {
-            const float mouseFlip = follow->invertMouse ? -1.0f : 1.0f;
             follow->yawDeg   += mouseFlip * input->GetMouseDeltaX() * follow->sensitivity;
             follow->pitchDeg += mouseFlip * input->GetMouseDeltaY() * follow->sensitivity;
+            orbitUpdated = true;
+        }
+
+        if (Get_m_enableGamepadLook())
+        {
+            // Camera orbit from right stick while preserving existing mouse orbit.
+            const int playerIndex = std::clamp(Get_m_gamepadPlayerIndex(), 0, 3);
+            if (input->GetGamepadConnected(playerIndex))
+            {
+                float rightX = input->GetGamepadRightStickX(playerIndex);
+                float rightY = input->GetGamepadRightStickY(playerIndex);
+                const float deadzone = std::clamp(Get_m_gamepadLookDeadzone(), 0.0f, 0.99f);
+                if (std::abs(rightX) < deadzone) rightX = 0.0f;
+                if (std::abs(rightY) < deadzone) rightY = 0.0f;
+                if (rightX != 0.0f || rightY != 0.0f)
+                {
+                    const float dt = std::max(0.0f, input->GetGameDeltaTime());
+                    const float speed = std::max(0.0f, Get_m_gamepadLookSpeedDegPerSec());
+                    follow->yawDeg += mouseFlip * rightX * speed * dt;
+                    follow->pitchDeg -= mouseFlip * rightY * speed * dt;
+                    orbitUpdated = true;
+                }
+            }
+        }
+
+        if (orbitUpdated)
+        {
             follow->pitchDeg = std::clamp(follow->pitchDeg, follow->pitchMinDeg, follow->pitchMaxDeg);
         }
     }

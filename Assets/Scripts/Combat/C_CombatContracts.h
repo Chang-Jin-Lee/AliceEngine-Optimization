@@ -69,6 +69,7 @@ namespace Alice::Combat
         bool guardHeld = false;
         bool dodgePressed = false;
         bool lockOnToggle = false;
+        bool zoomToggle = false;
         bool lightAttackPressed = false;
         bool heavyAttackPressed = false;
         bool attackHeld = false;

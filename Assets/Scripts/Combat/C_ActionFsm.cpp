@@ -79,11 +79,19 @@ namespace Alice::Combat
             && !groggyEvent
             && m_state != ActionState::Groggy;
 
-        if (gotHit)
+        auto CanCurrentStateBeInterrupted = [&](ActionState state) -> bool
         {
-            if (sensors.canBeHitstunned)
-                Enter(ActionState::Hitstun);
-        }
+            return (state != ActionState::Dodge)
+                && (state != ActionState::Dead)
+                && (state != ActionState::Groggy)
+                && (state != ActionState::GuardBreakWeak)
+                && (state != ActionState::Interaction);
+        };
+        const bool hitstunAllowed = sensors.canBeHitstunned
+            && CanCurrentStateBeInterrupted(m_state)
+            && !(m_state == ActionState::Attack && !sensors.attackCancelable);
+        if (gotHit && hitstunAllowed)
+            Enter(ActionState::Hitstun);
 
         float guardEnterDurationSec = std::max(0.0f, sensors.guardEnterDurationSec);
         if (guardEnterDurationSec <= 0.0f)
