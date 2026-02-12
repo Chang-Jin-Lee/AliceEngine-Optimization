@@ -178,7 +178,7 @@
                         "sceneChangeDelaySec": -2.0,
                         "showButtonImageOnHoverOnly": true,
                         "showUnderImageOnHoverOnly": false,
-                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/StartScene.scene",
+                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/GuideScene.scene",
                         "uiSoundEntityName": "SoundObject",
                         "underImageHoverPath": "Resource/Test/4_Resources/UI/TitleResorce/Title_New Game_ON.png",
                         "underImageNormalPath": "Resource/Test/4_Resources/UI/TitleResorce/Title_New Game_OFF.png",
@@ -337,6 +337,14 @@
         },
         {
             "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "QuitGameButtonScript",
+                    "props": {
+                        "buttonWidgetName": "UI_Quit",
+                        "rootWidgetName": "UI_Title"
+                    }
+                },
                 {
                     "enabled": true,
                     "name": "OptionScript",
