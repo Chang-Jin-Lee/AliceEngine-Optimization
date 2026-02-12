@@ -46,6 +46,7 @@ namespace Alice
         m_currentMovement = PlayerMovementState::None;
         m_currentOther = PlayerOtherState::None;
         m_footstepIndex = 0;
+        m_delayedSoundQueue.clear();
 
         //
         PreloadSound(Get_pathGuard());
@@ -57,6 +58,7 @@ namespace Alice
             {
                 bus->OnPlayerSfxRequest.BindObject(this, &AudioPlayerScript::PlaySfxPath);
                 bus->OnPlayerAttackSfxRequest.BindObject(this, &AudioPlayerScript::SetAttackState);
+                bus->OnPlayerAttackSfxDelayedRequest.BindObject(this, &AudioPlayerScript::PlayAttackStateDelayed);
                 bus->OnPlayerAttackSfxOneShotRequest.BindObject(this, &AudioPlayerScript::PlayAttackOneShot);
                 bus->OnPlayerAttackSfxOneShotAtPositionRequest.BindObject(this, &AudioPlayerScript::PlayAttackOneShotAtPosition);
                 bus->OnPlayerMovementSfxRequest.BindObject(this, &AudioPlayerScript::SetMovementState);
@@ -69,35 +71,93 @@ namespace Alice
         }
     }
 
-    void AudioPlayerScript::Update(float)
+    void AudioPlayerScript::Update(float deltaTime)
     {
-        if (!Get_is3D() || !m_loopPlaying)
-            return;
-
-        auto* audio = Audio();
-        if (!audio)
-            return;
-
-        DirectX::XMFLOAT3 pos{ 0.0f, 0.0f, 0.0f };
-        if (!Get_targetEntityName().empty())
+        // 기존 3D 사운드 업데이트
+        if (Get_is3D() && m_loopPlaying)
         {
-            GameObject targetGo = GetWorld()->FindGameObject(Get_targetEntityName());
-            if (targetGo.IsValid())
+            auto* audio = Audio();
+            if (audio)
             {
-                if (auto* tr = GetWorld()->GetComponent<TransformComponent>(targetGo.id()))
-                    pos = tr->position;
+                DirectX::XMFLOAT3 pos{ 0.0f, 0.0f, 0.0f };
+                if (!Get_targetEntityName().empty())
+                {
+                    GameObject targetGo = GetWorld()->FindGameObject(Get_targetEntityName());
+                    if (targetGo.IsValid())
+                    {
+                        if (auto* tr = GetWorld()->GetComponent<TransformComponent>(targetGo.id()))
+                            pos = tr->position;
+                    }
+                }
+                else
+                {
+                    if (auto* tr = GetTransform())
+                        pos = tr->position;
+                }
+
+                float volume = Get_volume();
+                if (m_currentMovement != PlayerMovementState::None)
+                    volume *= GetMovementStateVolume(m_currentMovement);
+                audio->Update3D(m_loopInstanceId, pos, volume, Get_minDistance(), Get_maxDistance());
             }
         }
-        else
+        
+        // 딜레이된 사운드 처리 (C++ deltaTime 기반)
+        if (!m_delayedSoundQueue.empty())
         {
-            if (auto* tr = GetTransform())
-                pos = tr->position;
+            auto* audio = Audio();
+            if (!audio)
+            {
+                // Audio가 없으면 큐를 비움
+                m_delayedSoundQueue.clear();
+                return;
+            }
+            
+            for (auto it = m_delayedSoundQueue.begin(); it != m_delayedSoundQueue.end();)
+            {
+                it->remainingDelay -= deltaTime;
+                
+                if (it->remainingDelay <= 0.0f)
+                {
+                    // 딜레이 시간이 지났으므로 재생
+                    ALICE_LOG_INFO("[AudioPlayer] Delayed sound ready: state=%d, key=%ls, is3D=%d", 
+                        static_cast<int>(it->state), it->key.c_str(), Get_is3D() ? 1 : 0);
+                    
+                    // 3D/2D 분기 처리
+                    if (Get_is3D())
+                    {
+                        DirectX::XMFLOAT3 pos{ 0.0f, 0.0f, 0.0f };
+                        if (!Get_targetEntityName().empty())
+                        {
+                            GameObject targetGo = GetWorld()->FindGameObject(Get_targetEntityName());
+                            if (targetGo.IsValid())
+                            {
+                                if (auto* tr = GetWorld()->GetComponent<TransformComponent>(targetGo.id()))
+                                    pos = tr->position;
+                            }
+                        }
+                        else
+                        {
+                            if (auto* tr = GetTransform())
+                                pos = tr->position;
+                        }
+                        const float volume = it->volume * GetAttackStateVolume(it->state);
+                        audio->Play3D(L"", it->key, pos, volume, it->pitch, false);
+                    }
+                    else
+                    {
+                        const float volume = it->volume * GetAttackStateVolume(it->state);
+                        audio->PlaySFX(it->key, volume, it->pitch, false);
+                    }
+                    
+                    it = m_delayedSoundQueue.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
         }
-
-        float volume = Get_volume();
-        if (m_currentMovement != PlayerMovementState::None)
-            volume *= GetMovementStateVolume(m_currentMovement);
-        audio->Update3D(m_loopInstanceId, pos, volume, Get_minDistance(), Get_maxDistance());
     }
 
     void AudioPlayerScript::SetAttackState(PlayerAttackState state)
@@ -111,6 +171,67 @@ namespace Alice
     void AudioPlayerScript::PlayAttackOneShot(PlayerAttackState state)
     {
         PlayAttackState(state);
+    }
+
+    void AudioPlayerScript::PlayAttackStateDelayed(PlayerAttackState state, float delaySeconds)
+    {
+        ALICE_LOG_INFO("[AudioPlayer] PlayAttackStateDelayed: state=%d, delay=%.2f", static_cast<int>(state), delaySeconds);
+        
+        if (state == PlayerAttackState::None)
+        {
+            ALICE_LOG_WARN("[AudioPlayer] PlayAttackStateDelayed: state is None");
+            return;
+        }
+        
+        // 딜레이가 0 이하면 즉시 재생
+        if (delaySeconds <= 0.0f)
+        {
+            PlayAttackState(state);
+            return;
+        }
+        
+        // 사운드 경로 가져오기 (광폭화 상태 확인 포함)
+        std::string path = GetPathForAttackState(state);
+        if (path.empty())
+        {
+            ALICE_LOG_WARN("[AudioPlayer] PlayAttackStateDelayed: path is empty for state=%d", static_cast<int>(state));
+            return;
+        }
+        
+        const std::string resolvedPath = TempSound::ResolveTempSoundPath(path, "Player");
+        ALICE_LOG_INFO("[AudioPlayer] PlayAttackStateDelayed: resolvedPath=%s, delay=%.2f", resolvedPath.c_str(), delaySeconds);
+        
+        auto* audio = Audio();
+        auto* resources = Resources();
+        if (!audio || !resources)
+        {
+            ALICE_LOG_WARN("[AudioPlayer] PlayAttackStateDelayed: Audio() or Resources() is null");
+            return;
+        }
+        
+        // 사운드 미리 로드
+        const std::filesystem::path logicalPath = std::filesystem::u8path(resolvedPath);
+        std::wstring key = WStringFromUtf8(resolvedPath);
+        if (!audio->LoadAuto(*resources, key, logicalPath, Sound::Type::SFX))
+        {
+            ALICE_LOG_WARN("[AudioPlayer] PlayAttackStateDelayed: Load failed: %s", resolvedPath.c_str());
+            return;
+        }
+        
+        // 딜레이 큐에 추가 (C++ deltaTime 기반)
+        const float volume = Get_volume();
+        const float pitch = Get_pitch();
+        
+        DelayedSoundRequest request;
+        request.state = state;
+        request.remainingDelay = delaySeconds;
+        request.key = key;
+        request.volume = volume;
+        request.pitch = pitch;
+        
+        m_delayedSoundQueue.push_back(request);
+        ALICE_LOG_INFO("[AudioPlayer] PlayAttackStateDelayed: Added to queue, queue size=%zu, remainingDelay=%.2f", 
+            m_delayedSoundQueue.size(), delaySeconds);
     }
 
     void AudioPlayerScript::PlayAttackOneShotAtPosition(PlayerAttackState state, const DirectX::XMFLOAT3& position)

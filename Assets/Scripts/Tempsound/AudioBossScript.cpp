@@ -114,6 +114,7 @@ namespace Alice
                 bus->OnBossSfxRequest.BindObject(this, &AudioBossScript::PlaySfxPath);
                 bus->OnBossAttackSfxRequest.BindObject(this, &AudioBossScript::PlayAttackState);
                 bus->OnBossAttackSfxDelayedRequest.BindObject(this, &AudioBossScript::PlayAttackStateDelayed);
+                bus->OnBossAttackSfxCancelDelayedRequest.BindObject(this, &AudioBossScript::CancelDelayedAttackSfx);
                 bus->OnBossMovementSfxRequest.BindObject(this, &AudioBossScript::PlayMovementState);
                 bus->OnBossOtherSfxRequest.BindObject(this, &AudioBossScript::PlayOtherState);
             }
@@ -712,5 +713,14 @@ namespace Alice
     void AudioBossScript::PlaySfx3() { PlaySfxPath(GetPathForAttackState(BossAttackState::Attack3)); }
     void AudioBossScript::PlaySfx4() { PlaySfxPath(GetPathForOtherState(BossOtherState::Roar)); }
     void AudioBossScript::PlaySfx5() { PlaySfxPath(GetPathForOtherState(BossOtherState::Hit)); }
+
+    void AudioBossScript::CancelDelayedAttackSfx()
+    {
+        if (!m_delayedSoundQueue.empty())
+        {
+            m_delayedSoundQueue.clear();
+            ALICE_LOG_INFO("[AudioBoss] CancelDelayedAttackSfx: cleared delayed attack queue");
+        }
+    }
 }
 
