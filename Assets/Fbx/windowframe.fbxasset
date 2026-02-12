@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/windowframe_0.mat"
+    ],
+    "mesh": "windowframe",
+    "source_fbx": "Resource/fbx/windowframe.fbx"
+}

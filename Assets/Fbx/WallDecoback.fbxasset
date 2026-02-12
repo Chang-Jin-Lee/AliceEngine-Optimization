@@ -1,0 +1,9 @@
+{
+    "materials": [
+        "Assets/Materials/WallDecoback_0.mat",
+        "Assets/Materials/WallDecoback_1.mat",
+        "Assets/Materials/WallDecoback_2.mat"
+    ],
+    "mesh": "WallDecoback",
+    "source_fbx": "Resource/Test/4_Resources/background/0211scene/WallDecoback.fbx"
+}

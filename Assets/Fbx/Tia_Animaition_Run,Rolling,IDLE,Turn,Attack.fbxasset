@@ -1,0 +1,8 @@
+{
+    "materials": [
+        "Assets/Materials/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack_0.mat",
+        "Assets/Materials/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack_1.mat"
+    ],
+    "mesh": "Tia_Animaition_Run,Rolling,IDLE,Turn,Attack",
+    "source_fbx": "Resource/Test/4_Resources/charecter/Animaition/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack.fbx"
+}

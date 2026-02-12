@@ -3,5 +3,5 @@
         "Assets/Materials/door_left_0.mat"
     ],
     "mesh": "door_left",
-    "source_fbx": "../../EGOSIS/Resource/Test/4_Resources/background/door/door_left.fbx"
+    "source_fbx": "Resource/fbx/door_left.fbx"
 }

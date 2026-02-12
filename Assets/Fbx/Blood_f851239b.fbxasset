@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/Blood_f851239b_0.mat"
+    ],
+    "mesh": "Blood_f851239b",
+    "source_fbx": "../../Decal/Blood.fbx"
+}
