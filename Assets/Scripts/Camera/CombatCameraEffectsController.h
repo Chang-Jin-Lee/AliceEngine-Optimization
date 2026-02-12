@@ -154,7 +154,7 @@ namespace Alice
         ALICE_PROPERTY(bool, m_suspendFovWhenFatalActive, true);
 
         ALICE_PROPERTY(std::string, m_postProcessVolumeName, "CombatCameraImpactVolume");
-        ALICE_PROPERTY(bool, m_autoCreatePostProcessVolume, true);
+        ALICE_PROPERTY(bool, m_autoCreatePostProcessVolume, false);
         ALICE_PROPERTY(int, m_postProcessPriority, 2400);
         ALICE_PROPERTY(float, m_maxBlurIntensity, 3.0f);
         ALICE_PROPERTY(float, m_defaultBlurRadius, 0.25f);
