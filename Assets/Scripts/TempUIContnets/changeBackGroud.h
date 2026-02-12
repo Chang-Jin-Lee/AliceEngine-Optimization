@@ -45,6 +45,9 @@ namespace Alice
         // 쿨다운 중일 때 사용할 이미지 경로
         ALICE_PROPERTY(std::string, lowValueImagePath, "");
 
+        // 무기 파괴(공격 불가)로 간주할 게이지 임계값(0~1)
+        ALICE_PROPERTY(float, weaponBreakThreshold, 0.001f);
+
         // --- 함수 리플렉션 예시 ---
         void ExampleFunction();
         ALICE_FUNC(ExampleFunction);
@@ -61,7 +64,9 @@ namespace Alice
         
         // 이전 상태 추적 (불필요한 이미지 변경 방지)
         bool wasLowValue = false;
+        bool ImageBlendInitialized = false;
         
         void TryResolveSession();
+        void TryResolveImages();
     };
 }

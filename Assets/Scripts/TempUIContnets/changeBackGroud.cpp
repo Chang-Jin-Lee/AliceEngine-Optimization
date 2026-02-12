@@ -64,6 +64,7 @@ namespace Alice
         NormalBaseAlpha = 1.0f;
         CooldownBaseAlpha = 1.0f;
         wasLowValue = false;
+        ImageBlendInitialized = false;
 
         TryResolveSession();
 
@@ -90,74 +91,7 @@ namespace Alice
             }
         }
 
-        // 뜬눈 위젯명은 normalImageWidgetName 우선, 비어있으면 imageWidgetName 사용
-        std::string openEyeWidgetName = Get_normalImageWidgetName();
-        if (openEyeWidgetName.empty())
-            openEyeWidgetName = Get_imageWidgetName();
-
-        if (!openEyeWidgetName.empty())
-        {
-            const EntityId imageEntity = FindWidgetEntityByName(*w, openEyeWidgetName);
-
-            if (imageEntity != InvalidEntityId)
-            {
-                NormalImage = w->GetComponent<UIImageComponent>(imageEntity);
-                if (NormalImage)
-                {
-                    ALICE_LOG_INFO("[PlayerGauge] Open-eye image widget found: %s", openEyeWidgetName.c_str());
-                    if (!Get_normalImagePath().empty())
-                        NormalImage->texturePath = Get_normalImagePath();
-                    NormalBaseAlpha = std::clamp(NormalImage->color.w, 0.0f, 1.0f);
-                }
-                else
-                {
-                    ALICE_LOG_WARN("[PlayerGauge] Open-eye widget found but UIImageComponent not found: %s", openEyeWidgetName.c_str());
-                }
-            }
-            else
-            {
-                ALICE_LOG_WARN("[PlayerGauge] Open-eye image widget not found: %s", openEyeWidgetName.c_str());
-            }
-        }
-
-        if (!Get_cooldownImageWidgetName().empty())
-        {
-            const EntityId imageEntity = FindWidgetEntityByName(*w, Get_cooldownImageWidgetName());
-            if (imageEntity != InvalidEntityId)
-            {
-                CooldownImage = w->GetComponent<UIImageComponent>(imageEntity);
-                if (CooldownImage)
-                {
-                    ALICE_LOG_INFO("[PlayerGauge] Closed-eye image widget found: %s", Get_cooldownImageWidgetName().c_str());
-                    if (!Get_lowValueImagePath().empty())
-                        CooldownImage->texturePath = Get_lowValueImagePath();
-                    CooldownBaseAlpha = std::clamp(CooldownImage->color.w, 0.0f, 1.0f);
-                }
-                else
-                {
-                    ALICE_LOG_WARN("[PlayerGauge] Closed-eye widget found but UIImageComponent not found: %s", Get_cooldownImageWidgetName().c_str());
-                }
-            }
-            else
-            {
-                ALICE_LOG_WARN("[PlayerGauge] Closed-eye image widget not found: %s", Get_cooldownImageWidgetName().c_str());
-            }
-        }
-
-        // 하위호환: 단일 이미지 fallback 타겟
-        TargetImage = NormalImage;
-        if (!TargetImage && !Get_imageWidgetName().empty())
-        {
-            const EntityId imageEntity = FindWidgetEntityByName(*w, Get_imageWidgetName());
-            if (imageEntity != InvalidEntityId)
-                TargetImage = w->GetComponent<UIImageComponent>(imageEntity);
-        }
-
-        if (NormalImage && CooldownImage)
-        {
-            NormalImage->color.w = NormalBaseAlpha;
-            CooldownImage->color.w = 0.0f;
-        }
+        TryResolveImages();
     }
 
     void PlayerGauge::TryResolveSession()
@@ -172,10 +106,82 @@ namespace Alice
         TargetSession = FindSession(*w, Get_sessionEntityName());
     }
 
+    void PlayerGauge::TryResolveImages()
+    {
+        World* w = GetWorld();
+        if (!w)
+            return;
+
+        std::string openEyeWidgetName = Get_normalImageWidgetName();
+        if (openEyeWidgetName.empty())
+            openEyeWidgetName = Get_imageWidgetName();
+
+        std::string closedEyeWidgetName = Get_cooldownImageWidgetName();
+        if (closedEyeWidgetName.empty() && !openEyeWidgetName.empty())
+            closedEyeWidgetName = openEyeWidgetName + "_Cooldown";
+        if (closedEyeWidgetName.empty() && !Get_imageWidgetName().empty())
+            closedEyeWidgetName = Get_imageWidgetName() + "_Cooldown";
+
+        if (!NormalImage && !openEyeWidgetName.empty())
+        {
+            const EntityId imageEntity = FindWidgetEntityByName(*w, openEyeWidgetName);
+            if (imageEntity != InvalidEntityId)
+            {
+                NormalImage = w->GetComponent<UIImageComponent>(imageEntity);
+                if (NormalImage)
+                {
+                    if (!Get_normalImagePath().empty())
+                        NormalImage->texturePath = Get_normalImagePath();
+                    NormalBaseAlpha = std::clamp(NormalImage->color.w, 0.0f, 1.0f);
+                    if (NormalBaseAlpha <= 0.0f)
+                        NormalBaseAlpha = 1.0f;
+                    ALICE_LOG_INFO("[PlayerGauge] Open-eye image resolved: %s", openEyeWidgetName.c_str());
+                }
+            }
+        }
+
+        if (!CooldownImage && !closedEyeWidgetName.empty())
+        {
+            const EntityId imageEntity = FindWidgetEntityByName(*w, closedEyeWidgetName);
+            if (imageEntity != InvalidEntityId)
+            {
+                CooldownImage = w->GetComponent<UIImageComponent>(imageEntity);
+                if (CooldownImage)
+                {
+                    if (!Get_lowValueImagePath().empty())
+                        CooldownImage->texturePath = Get_lowValueImagePath();
+                    CooldownBaseAlpha = std::clamp(CooldownImage->color.w, 0.0f, 1.0f);
+                    if (CooldownBaseAlpha <= 0.0f)
+                        CooldownBaseAlpha = 1.0f;
+                    ALICE_LOG_INFO("[PlayerGauge] Closed-eye image resolved: %s", closedEyeWidgetName.c_str());
+                }
+            }
+        }
+
+        if (!TargetImage)
+        {
+            TargetImage = NormalImage;
+            if (!TargetImage && !Get_imageWidgetName().empty())
+            {
+                const EntityId imageEntity = FindWidgetEntityByName(*w, Get_imageWidgetName());
+                if (imageEntity != InvalidEntityId)
+                    TargetImage = w->GetComponent<UIImageComponent>(imageEntity);
+            }
+        }
+
+        if (!ImageBlendInitialized && NormalImage && CooldownImage)
+        {
+            NormalImage->color.w = NormalBaseAlpha;
+            CooldownImage->color.w = 0.0f;
+            ImageBlendInitialized = true;
+        }
+    }
+
     void PlayerGauge::Update(float deltaTime)
     {
         (void)deltaTime;
         TryResolveSession();
+        TryResolveImages();
 
         // 기본값(세션 미탐색): 준비됨 상태
         float openEyeAlpha = 1.0f;
@@ -186,11 +192,25 @@ namespace Alice
         {
             const bool inGuardBreak = (TargetSession->GetPlayerState() == Combat::ActionState::GuardBreakWeak);
             const bool inWeak = TargetSession->IsPlayerWeakActive();
+            bool inWeaponBreak = false;
 
-            // 강제 불가 상태(가드브레이크/weak): 항상 감은눈
-            if (inGuardBreak || inWeak)
+            if (TargetGauge)
             {
-                openEyeAlpha = 0.0f;
+                float gauge01 = std::clamp(TargetGauge->value, 0.0f, 1.0f);
+                if (!TargetGauge->normalized)
+                {
+                    const float range = TargetGauge->maxValue - TargetGauge->minValue;
+                    if (range > 1e-6f)
+                        gauge01 = std::clamp((TargetGauge->value - TargetGauge->minValue) / range, 0.0f, 1.0f);
+                }
+                const float breakThreshold = std::clamp(Get_weaponBreakThreshold(), 0.0f, 1.0f);
+                inWeaponBreak = (gauge01 <= breakThreshold);
+            }
+
+            // 강제 불가 상태(가드브레이크/weak/무기파괴): 감은눈을 완전히 덮음
+            if (inGuardBreak || inWeak || inWeaponBreak)
+            {
+                openEyeAlpha = 1.0f;
                 closedEyeAlpha = 1.0f;
                 isLowValue = true;
             }
@@ -209,10 +229,9 @@ namespace Alice
                 }
                 else
                 {
-                    // 쿨다운 중: 비율에 따른 역보간
-                    const float progress = std::clamp(1.0f - cooldownNormRemain, 0.0f, 1.0f);
-                    openEyeAlpha = progress;
-                    closedEyeAlpha = 1.0f - progress;
+                    // 쿨다운 중: 뜬눈은 항상 1.0, 감은눈만 1.0 -> 0.2로 감소
+                    openEyeAlpha = 1.0f;
+                    closedEyeAlpha = 0.2f + (0.8f * cooldownNormRemain);
                     isLowValue = true;
                 }
             }
