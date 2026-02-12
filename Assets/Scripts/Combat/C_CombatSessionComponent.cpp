@@ -83,12 +83,24 @@ namespace Alice
 			GuardSuccess,
 			PlayerHit,
 			PlayerAttackHit,
+			PlayerHeavyAttackHit,
 			FatalDamage,
+			FatalEnter,
+			FatalSustain,
 			HowlingStart,
 			GuardBreakVictim,
 			GuardBreakAttacker,
+			GuardBreakVictimSustain,
+			GuardBreakAttackerSustain,
+			HowlingSustain,
 			LockOnOn,
+			ZoomNear,
+			ZoomMid,
+			ZoomFar,
 			HealLoopTick,
+			HealShardCombine,
+			HealEyeCombine,
+			BossGroggyTrigger,
 			BossGroggyEnter,
 			RageOn,
 			RageOff,
@@ -107,6 +119,54 @@ namespace Alice
 
 		constexpr float kHealLoopHapticIntervalSec = 0.12f;
 		constexpr float kDodgeHapticStepIntervalSec = 0.06f;
+
+		constexpr float ResolveHapticMinDurationSec(HapticCooldownKey key)
+		{
+			switch (key)
+			{
+			case HapticCooldownKey::DodgeSequencePulseA:
+			case HapticCooldownKey::DodgeSequencePulseB:
+			case HapticCooldownKey::DodgeSequencePulseC:
+			case HapticCooldownKey::HealShardCombine:
+				return 0.0f; // Keep dodge pulses as tuned.
+			case HapticCooldownKey::FatalSustain:
+				return 0.0f;
+			case HapticCooldownKey::GuardBreakVictimSustain:
+			case HapticCooldownKey::GuardBreakAttackerSustain:
+			case HapticCooldownKey::HowlingSustain:
+				return 0.0f; // Keep sustain duration aligned with pushback time.
+			case HapticCooldownKey::LockOnOn:
+				return 0.3f;
+			case HapticCooldownKey::ZoomMid:
+			case HapticCooldownKey::ZoomFar:
+				return 0.3f;
+			case HapticCooldownKey::ZoomNear:
+				return 0.45f; // Far -> near zoom-in transition should feel strongest.
+			case HapticCooldownKey::PlayerHeavyAttackHit:
+				return 1.0f; // Strong attacks should feel heavy.
+			case HapticCooldownKey::FatalEnter:
+			case HapticCooldownKey::FatalDamage:
+				return 0.5f;
+			case HapticCooldownKey::BossGroggyEnter:
+				return 0.5f;
+			default:
+				return 0.5f;
+			}
+		}
+
+		void ApplyPlayerChargedHeavySuperArmor(Combat::Sensors& sensors,
+			Combat::ActionState state,
+			bool playerLastAttackHeavy,
+			int playerLastAttackChargeLevel)
+		{
+			// Charged heavy (level 1+) should keep super armor across the full attack state.
+			const bool chargedHeavyAttackActive =
+				(state == Combat::ActionState::Attack)
+				&& playerLastAttackHeavy
+				&& (playerLastAttackChargeLevel >= 1);
+			if (chargedHeavyAttackActive)
+				sensors.attackCancelable = false;
+		}
 	}
 	struct C_CombatSessionComponent::SessionState
 	{
@@ -295,8 +355,10 @@ namespace Alice
 			DirectX::XMFLOAT3 bossTargetPos{ 0.0f, 0.0f, 0.0f };
 			bool hasTarget = false;
 			bool damageApplied = false;
+			bool damageHapticStarted = false;
 			float damageAmount = 0.0f;
 			bool groggySfxPlayed = false;
+			bool sustainHapticStarted = false;
 		};
 		FatalState fatal{};
 
@@ -1200,7 +1262,7 @@ namespace Alice
 				if (!input || !input->GetGamepadConnected(hapticsPlayerIndex))
 					return false;
 
-				const float duration = std::max(0.0f, durationSec);
+				const float duration = std::max(std::max(0.0f, durationSec), ResolveHapticMinDurationSec(cooldownKey));
 				if (duration <= 0.0f)
 					return false;
 
@@ -1352,6 +1414,7 @@ namespace Alice
 		C_BossBrainComponent* bossBrain = nullptr;
 		C_BossCombatSessionComponent* bossSession = nullptr;
 		HealEyeGimmick* healGimmick = nullptr;
+		Gimmick* weaponGimmick = nullptr;
 		if (auto* script = FindScriptOnEntity(world, bossId, "C_BossBrainComponent"))
 		{
 			if (auto* brain = dynamic_cast<C_BossBrainComponent*>(script))
@@ -1466,11 +1529,7 @@ namespace Alice
 				}
 			}
 		}
-
-		const bool playerGuardReleased = playerIntent.guardReleased;
-
-		bool blockPlayerActions = false;
-		if (m_blockPlayerActionsDuringGimmick && !m_gimmickEntityName.empty())
+		if (!m_gimmickEntityName.empty())
 		{
 			const EntityId gimmickId = ResolveEntityByName(m_gimmickEntityName);
 			if (gimmickId != InvalidEntityId)
@@ -1478,10 +1537,16 @@ namespace Alice
 				if (auto* script = FindScriptOnEntity(world, gimmickId, "Gimmick"))
 				{
 					if (auto* gimmick = dynamic_cast<Gimmick*>(script))
-						blockPlayerActions = gimmick->IsLoopActive();
+						weaponGimmick = gimmick;
 				}
 			}
 		}
+
+		const bool playerGuardReleased = playerIntent.guardReleased;
+
+		bool blockPlayerActions = false;
+		if (m_blockPlayerActionsDuringGimmick && weaponGimmick)
+			blockPlayerActions = weaponGimmick->IsLoopActive();
 
 		float playerHpMissing = 0.0f;
 		float playerWeaponCurrent = 0.0f;
@@ -2148,12 +2213,15 @@ namespace Alice
 				{
 					fatalTriggered = true;
 					forceFatalAttack = true;
+					EmitHapticPulse(0.52f, 0.68f, 0.50f, GamepadVibrationBlend::Max, HapticCooldownKey::FatalEnter, 0.12f);
 					m_state->bossGroggyFatalConsumed = true;
 					m_state->fatal.active = true;
 					m_state->fatal.timerSec = 0.0f;
 					m_state->fatal.hasTarget = true;
 					m_state->fatal.damageApplied = false;
+					m_state->fatal.damageHapticStarted = false;
 					m_state->fatal.damageAmount = 0.0f;
+					m_state->fatal.sustainHapticStarted = false;
 					m_state->fatal.bossStartPos = bossTr->position;
 
 					// 그로기 어택 사운드 재생
@@ -2360,7 +2428,7 @@ namespace Alice
 			{
 				m_state->playerLockOnActive = true;
 				m_state->playerLockOnTarget = bossId;
-				EmitHapticPulse(0.08f, 0.30f, 0.04f, GamepadVibrationBlend::Max, HapticCooldownKey::LockOnOn, 0.12f);
+				EmitHapticPulse(0.08f, 0.30f, 0.30f, GamepadVibrationBlend::Max, HapticCooldownKey::LockOnOn, 0.12f);
 			}
 		}
 
@@ -2393,6 +2461,26 @@ namespace Alice
 
 			camSpring->desiredDistance = targetDistance;
 			camSpring->distance = targetDistance;
+
+			HapticCooldownKey zoomHapticKey = HapticCooldownKey::ZoomNear;
+			float zoomLeftMotor = 0.14f;
+			float zoomRightMotor = 0.44f;
+			float zoomDurationSec = 0.45f; // near zoom-in (far -> near) should be strongest/longest.
+			if (nextStep == 1)
+			{
+				zoomHapticKey = HapticCooldownKey::ZoomMid;
+				zoomLeftMotor = 0.08f;
+				zoomRightMotor = 0.30f; // lock-on level
+				zoomDurationSec = 0.30f;
+			}
+			else if (nextStep == 2)
+			{
+				zoomHapticKey = HapticCooldownKey::ZoomFar;
+				zoomLeftMotor = 0.06f;
+				zoomRightMotor = 0.24f; // weaker than mid.
+				zoomDurationSec = 0.30f;
+			}
+			EmitHapticPulse(zoomLeftMotor, zoomRightMotor, zoomDurationSec, GamepadVibrationBlend::Max, zoomHapticKey, 0.06f);
 		}
 
 		if (m_state->playerLockOnActive)
@@ -2441,17 +2529,11 @@ namespace Alice
 		float healExitDurationSec = 0.0f;
 		Combat::Sensors sPlayer = m_state->player.BuildSensors(world, bossId, deltaTime);
 		Combat::Sensors sBoss = m_state->boss.BuildSensors(world, playerId, deltaTime);
-		auto ApplyPlayerChargedHeavySuperArmor = [&](Combat::Sensors& sensors, Combat::ActionState state)
-			{
-				// Charged heavy (level 1+) should keep super armor across the full attack state.
-				const bool chargedHeavyAttackActive =
-					(state == Combat::ActionState::Attack)
-					&& m_state->playerLastAttackHeavy
-					&& (m_state->playerLastAttackChargeLevel >= 1);
-				if (chargedHeavyAttackActive)
-					sensors.attackCancelable = false;
-			};
-		ApplyPlayerChargedHeavySuperArmor(sPlayer, m_state->player.state);
+		ApplyPlayerChargedHeavySuperArmor(
+			sPlayer,
+			m_state->player.state,
+			m_state->playerLastAttackHeavy,
+			m_state->playerLastAttackChargeLevel);
 		sPlayer.hitstunDurationSec = m_state->playerHitstunDurationSec;
 		sBoss.hitstunDurationSec = m_state->bossHitstunDurationSec;
 		sPlayer.interactAvailable = playerCanInteract;
@@ -2844,8 +2926,6 @@ namespace Alice
 			bossOut.flags.hitActive = false;
 		if (bossBrain && bossBrain->ConsumePhase2HowlingStarted())
 		{
-			EmitHapticPulse(0.88f, 1.00f, 0.42f, GamepadVibrationBlend::Max, HapticCooldownKey::HowlingStart, 0.50f);
-
 			float basePushSpeed = 3.0f;
 			if (auto* trace = world.GetComponent<WeaponTraceComponent>(bossId))
 				basePushSpeed = std::max(0.0f, trace->guardBreakPushbackSpeed);
@@ -2870,6 +2950,11 @@ namespace Alice
 			const float pushDuration = (howlingDurationSec > 0.0f)
 				? howlingDurationSec
 				: std::max(0.0f, m_phaseHowlingPushbackDurationSec);
+			EmitHapticPulse(0.78f, 0.92f, 0.50f, GamepadVibrationBlend::Max, HapticCooldownKey::HowlingStart, 0.50f);
+			if (pushDuration > 0.0f)
+			{
+				EmitHapticPulse(0.30f, 0.42f, pushDuration, GamepadVibrationBlend::Add, HapticCooldownKey::HowlingSustain, 0.0f);
+			}
 			if (pushSpeed > 0.0f && pushDuration > 0.0f)
 			{
 				std::vector<Combat::Command> phase2Commands;
@@ -3933,6 +4018,35 @@ namespace Alice
 				healGimmick->BeginHealLoop();
 			if (enteredHealExit || cancelledHeal)
 				healGimmick->EndHeal(healExitDurationSec);
+
+			if (extraCombatHapticsEnabled)
+			{
+				const int shardPulseCount = healGimmick->ConsumeShardCombinePulseCount();
+				for (int pulse = 0; pulse < shardPulseCount; ++pulse)
+				{
+					// Match dodge-level pulse for each shard combine step.
+					EmitHapticPulse(0.25f, 0.30f, 0.15f, GamepadVibrationBlend::Max, HapticCooldownKey::HealShardCombine, 0.0f);
+				}
+				if (healGimmick->ConsumeEyeCombinePulse())
+				{
+					// Final eye combine should feel like a light attack hit.
+					EmitHapticPulse(0.48f, 0.72f, 0.25f, GamepadVibrationBlend::Max, HapticCooldownKey::HealEyeCombine, 0.03f);
+				}
+			}
+		}
+		if (extraCombatHapticsEnabled && weaponGimmick)
+		{
+			const int shardPulseCount = weaponGimmick->ConsumeShardCombinePulseCount();
+			for (int pulse = 0; pulse < shardPulseCount; ++pulse)
+			{
+				// Guard-break shard combines should match dodge-level pulse.
+				EmitHapticPulse(0.25f, 0.30f, 0.15f, GamepadVibrationBlend::Max, HapticCooldownKey::HealShardCombine, 0.0f);
+			}
+			if (weaponGimmick->ConsumeEyeCombinePulse())
+			{
+				// Guard-break eye combine should match heal eye combine impact.
+				EmitHapticPulse(0.48f, 0.72f, 0.25f, GamepadVibrationBlend::Max, HapticCooldownKey::HealEyeCombine, 0.03f);
+			}
 		}
 		auto ApplyFixedHealTick = [&](float requestedAmount)
 			{
@@ -4020,10 +4134,7 @@ namespace Alice
 			&& outBoss.state == Combat::ActionState::Groggy);
 		if (bossEnteredGroggy)
 		{
-			if (extraCombatHapticsEnabled)
-			{
-				EmitHapticPulse(0.50f, 0.70f, 0.14f, GamepadVibrationBlend::Max, HapticCooldownKey::BossGroggyEnter, 0.20f);
-			}
+			EmitHapticPulse(0.50f, 0.70f, 0.50f, GamepadVibrationBlend::Max, HapticCooldownKey::BossGroggyEnter, 0.20f);
 			if (bossBrain)
 				bossBrain->ForceCompleteIntent();
 			m_state->bossGroggyFatalConsumed = false;
@@ -4495,12 +4606,37 @@ namespace Alice
 				FaceTarget(*bossTr, playerTr->position);
 				FaceTarget(*playerTr, bossTr->position);
 
+				if (!m_state->fatal.damageApplied && !m_state->fatal.sustainHapticStarted)
+				{
+					const float sustainStartSec = 0.50f; // After the entry pulse.
+					if (m_state->fatal.timerSec >= sustainStartSec)
+					{
+						const float sustainSec = std::max(0.0f, damageApplySec - m_state->fatal.timerSec);
+						if (sustainSec > 0.0f)
+						{
+							EmitHapticPulse(0.18f, 0.28f, sustainSec, GamepadVibrationBlend::Add, HapticCooldownKey::FatalSustain, 0.0f);
+						}
+						m_state->fatal.sustainHapticStarted = true;
+					}
+				}
+
+				if (!m_state->fatal.damageHapticStarted
+					&& m_state->fatal.damageAmount > 0.0f)
+				{
+					const float damageHapticLeadSec = 0.50f;
+					const float damageHapticStartSec = std::max(0.0f, damageApplySec - damageHapticLeadSec);
+					if (m_state->fatal.timerSec >= damageHapticStartSec)
+					{
+						// Start earlier so the strongest part lands around actual damage timing.
+						EmitHapticPulse(1.00f, 1.00f, 0.50f, GamepadVibrationBlend::Max, HapticCooldownKey::FatalDamage, 0.40f);
+						m_state->fatal.damageHapticStarted = true;
+					}
+				}
+
 				if (!m_state->fatal.damageApplied
 					&& m_state->fatal.damageAmount > 0.0f
 					&& m_state->fatal.timerSec >= damageApplySec)
 				{
-					EmitHapticPulse(1.00f, 1.00f, 0.42f, GamepadVibrationBlend::Max, HapticCooldownKey::FatalDamage, 0.40f);
-
 					std::vector<Combat::Command> fatalCmds;
 					fatalCmds.push_back({ Combat::CommandType::ApplyDamage,
 						Combat::CmdApplyDamage{ bossId, m_state->fatal.damageAmount } });
@@ -6099,7 +6235,7 @@ namespace Alice
 				if (!input || !input->GetGamepadConnected(hapticsPlayerIndex))
 					return false;
 
-				const float duration = std::max(0.0f, durationSec);
+				const float duration = std::max(std::max(0.0f, durationSec), ResolveHapticMinDurationSec(cooldownKey));
 				if (duration <= 0.0f)
 					return false;
 
@@ -6220,7 +6356,11 @@ namespace Alice
 
 		Combat::Sensors resolvePlayerSensors = m_state->player.BuildSensors(world, bossId, deltaTime);
 		Combat::Sensors resolveBossSensors = m_state->boss.BuildSensors(world, playerId, deltaTime);
-		ApplyPlayerChargedHeavySuperArmor(resolvePlayerSensors, m_state->player.state);
+		ApplyPlayerChargedHeavySuperArmor(
+			resolvePlayerSensors,
+			m_state->player.state,
+			m_state->playerLastAttackHeavy,
+			m_state->playerLastAttackChargeLevel);
 
 		{
 			auto RecomputeTargetInFront = [&](EntityId selfId,
@@ -6600,29 +6740,63 @@ namespace Alice
 			const bool wasGuarded = (resolveResult == Combat::ResolveResult::Guard);
 			const bool wasGuardBreak = (resolveResult == Combat::ResolveResult::GuardBreak);
 			const bool wasHit = (resolveResult == Combat::ResolveResult::Hit);
+			float guardBreakPushDurationForHaptic = 0.0f;
+			if (wasGuardBreak)
+			{
+				float guardBreakAnimDurationForHaptic = 0.0f;
+				const AnimConfig guardBreakCfg = BuildAnimConfig(hit.victimOwner, playerId, bossId);
+				if (!guardBreakCfg.guardBreakClip.empty())
+					guardBreakAnimDurationForHaptic = GetClipDurationSecByName(registry, world, hit.victimOwner, guardBreakCfg.guardBreakClip);
+				guardBreakPushDurationForHaptic = std::max(
+					std::max(0.0f, hit.guardBreakPushbackDuration),
+					std::max(
+						std::max(0.0f, m_guardBreakPushbackDurationSec),
+						std::max(std::max(0.0f, hit.guardBreakWeakSec), std::max(0.0f, guardBreakAnimDurationForHaptic))));
+			}
 			if (parrySuccess && hit.victimOwner == playerId)
 			{
-				EmitHapticPulse(0.58f, 0.95f, 0.14f, GamepadVibrationBlend::Max, HapticCooldownKey::ParrySuccess, 0.08f);
+				EmitHapticPulse(0.87f, 1.00f, 0.16f, GamepadVibrationBlend::Max, HapticCooldownKey::ParrySuccess, 0.08f);
 			}
 			if (wasGuarded && hit.victimOwner == playerId)
 			{
-				EmitHapticPulse(0.38f, 0.62f, 0.11f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardSuccess, 0.06f);
+				EmitHapticPulse(0.57f, 0.93f, 0.13f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardSuccess, 0.06f);
 			}
 			if (wasHit && hit.victimOwner == playerId)
 			{
 				EmitHapticPulse(0.88f, 1.00f, 0.22f, GamepadVibrationBlend::Max, HapticCooldownKey::PlayerHit, 0.12f);
 			}
-			if (wasHit && hit.attackerOwner == playerId && hit.victimOwner == bossId)
+			if ((wasHit || wasGuardBreak) && hit.attackerOwner == playerId && hit.victimOwner == bossId)
 			{
-				EmitHapticPulse(0.22f, 0.34f, 0.06f, GamepadVibrationBlend::Max, HapticCooldownKey::PlayerAttackHit, 0.04f);
+				const bool heavyAttackHit =
+					(playerAttackProfile == PlayerAttackProfile::Heavy1)
+					|| (playerAttackProfile == PlayerAttackProfile::Heavy2)
+					|| (playerAttackProfile == PlayerAttackProfile::Heavy3);
+				if (heavyAttackHit)
+				{
+					EmitHapticPulse(1.00f, 1.00f, 0.12f, GamepadVibrationBlend::Max, HapticCooldownKey::PlayerHeavyAttackHit, 0.02f);
+				}
+				else
+				{
+					EmitHapticPulse(0.48f, 0.72f, 0.08f, GamepadVibrationBlend::Max, HapticCooldownKey::PlayerAttackHit, 0.03f);
+				}
 			}
 			if (wasGuardBreak && hit.victimOwner == playerId)
 			{
-				EmitHapticPulse(0.85f, 1.00f, 0.38f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardBreakVictim, 0.40f);
+				EmitHapticPulse(0.78f, 0.95f, 0.50f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardBreakVictim, 0.40f);
+				if (guardBreakPushDurationForHaptic > 0.0f)
+				{
+					EmitHapticPulse(0.33f, 0.45f, guardBreakPushDurationForHaptic,
+						GamepadVibrationBlend::Add, HapticCooldownKey::GuardBreakVictimSustain, 0.0f);
+				}
 			}
 			if (wasGuardBreak && hit.attackerOwner == playerId && hit.victimOwner == bossId)
 			{
-				EmitHapticPulse(0.60f, 0.80f, 0.20f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardBreakAttacker, 0.12f);
+				EmitHapticPulse(0.52f, 0.68f, 0.50f, GamepadVibrationBlend::Max, HapticCooldownKey::GuardBreakAttacker, 0.12f);
+				if (guardBreakPushDurationForHaptic > 0.0f)
+				{
+					EmitHapticPulse(0.24f, 0.34f, guardBreakPushDurationForHaptic,
+						GamepadVibrationBlend::Add, HapticCooldownKey::GuardBreakAttackerSustain, 0.0f);
+				}
 			}
 			const bool recordAttempt = m_state->encounterRecordingActive;
 
@@ -6942,6 +7116,7 @@ namespace Alice
 							{
 								hc->groggy = hc->groggyMax;
 								bossGroggyTriggered = true;
+								EmitHapticPulse(0.36f, 0.56f, 0.10f, GamepadVibrationBlend::Max, HapticCooldownKey::BossGroggyTrigger, 0.08f);
 
 								std::vector<Combat::Command> groggyImmediate;
 								groggyImmediate.push_back({ Combat::CommandType::ForceCancelAttack, Combat::CmdForceCancelAttack{ bossId } });

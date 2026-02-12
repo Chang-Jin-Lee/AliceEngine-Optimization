@@ -22,6 +22,8 @@ namespace Alice
         void BeginHeal(float enterDurationSec);
         void BeginHealLoop();
         void EndHeal(float exitDurationSec);
+        int ConsumeShardCombinePulseCount();
+        bool ConsumeEyeCombinePulse();
 
         ALICE_PROPERTY(std::string, m_weaponCombinedName, "EGO_Blade(combined)");
         ALICE_PROPERTY(std::string, m_eyeName, "Heal_EYE");
@@ -71,6 +73,10 @@ namespace Alice
         float m_currentWeaponAlpha = 1.0f;
         float m_currentEyeAlpha = 0.0f;
         float m_weaponDefaultAlpha = 1.0f;
+        int m_pendingShardCombinePulseCount = 0;
+        bool m_pendingEyeCombinePulse = false;
+        std::size_t m_enterNextShardThresholdIndex = 0;
+        bool m_enterEyeCombineReached = false;
 
         DirectX::XMFLOAT3 m_eyeFloatAnchor{ 0.0f, 0.0f, 0.0f };
         DirectX::XMFLOAT3 m_eyeBaseRotation{ 0.0f, 0.0f, 0.0f };
