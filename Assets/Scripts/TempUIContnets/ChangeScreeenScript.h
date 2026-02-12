@@ -23,6 +23,7 @@ namespace Alice
         // --- UI 토글 기능 속성 ---
         ALICE_PROPERTY(std::string, m_rootWidgetName, "");
         ALICE_PROPERTY(std::string, m_settingButtonName, "UI_Setting");
+        ALICE_PROPERTY(std::string, m_settingBoardName, "UI_SettingBoard");
         ALICE_PROPERTY(std::string, m_button1Name, "");
         ALICE_PROPERTY(std::string, m_button2Name, "");
         ALICE_PROPERTY(std::string, m_ui1Name, "");
@@ -38,6 +39,7 @@ namespace Alice
         UIButtonComponent* m_settingButton = nullptr;
         UIButtonComponent* m_button1 = nullptr;
         UIButtonComponent* m_button2 = nullptr;
+        EntityId m_settingBoardEntityId = InvalidEntityId;
         EntityId m_ui1EntityId = InvalidEntityId;
         EntityId m_ui2EntityId = InvalidEntityId;
         bool m_settingButtonClickedPrev = false;

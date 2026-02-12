@@ -277,7 +277,7 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 0.8980392217636108,
+                    "w": 1.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
@@ -434,7 +434,7 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 1.0,
+                    "w": 0.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
@@ -591,7 +591,7 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 1.0,
+                    "w": 0.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
@@ -1151,7 +1151,7 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 1.0,
+                    "w": 0.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
@@ -1492,7 +1492,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1787.0,
+                    "x": 1786.0,
                     "y": 900.0
                 },
                 "sortOrder": 6,
@@ -1593,7 +1593,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1034.0,
+                    "x": 1033.0,
                     "y": 660.0
                 },
                 "sortOrder": 0,
@@ -1605,7 +1605,7 @@
                 "raycastTarget": true,
                 "shaderName": "Default",
                 "space": "Screen",
-                "visibility": "Visible",
+                "visibility": "Collapsed",
                 "widgetName": "UI_Center"
             },
             "_parentGuid": "13030736224394965954",
@@ -1750,7 +1750,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -1907,7 +1907,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -2064,7 +2064,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -2221,7 +2221,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -2378,7 +2378,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -2535,7 +2535,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -2692,7 +2692,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -2849,7 +2849,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -3006,7 +3006,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -3163,7 +3163,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -3320,7 +3320,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -3477,7 +3477,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -3634,7 +3634,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -3810,7 +3810,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -4068,7 +4068,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1787.0,
+                    "x": 1786.0,
                     "y": 900.0
                 },
                 "sortOrder": 0,
@@ -4336,8 +4336,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1600.0,
-                    "y": 900.0
+                    "x": 1599.0,
+                    "y": 899.0
                 },
                 "sortOrder": 6,
                 "useAlignment": false
@@ -4436,7 +4436,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1096.0,
+                    "x": 1095.0,
                     "y": 662.0
                 },
                 "sortOrder": 8,
@@ -4707,7 +4707,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_ChangeButtonC",
-                        "useNonUniformScale": false
+                        "useNonUniformScale": true
                     }
                 }
             ],
@@ -4973,21 +4973,21 @@
                     "z": 0.4000000059604645
                 },
                 "enabled": true,
-                "hoveredTexture": "",
+                "hoveredTexture": "Resource/Test/4_Resources/UI/ControlWindow/Clicker_Left_ON.png",
                 "hoveredTint": {
                     "w": 1.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
                 },
-                "normalTexture": "",
+                "normalTexture": "Resource/Test/4_Resources/UI/ControlWindow/Clicker_Left_OFF.png",
                 "normalTint": {
                     "w": 1.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
                 },
-                "pressedTexture": "",
+                "pressedTexture": "Resource/Test/4_Resources/UI/ControlWindow/Clicker_Left_ON.png",
                 "pressedTint": {
                     "w": 1.0,
                     "x": 0.8500000238418579,
@@ -4999,9 +4999,9 @@
             "UIImage": {
                 "color": {
                     "w": 1.0,
-                    "x": 0.011896058917045593,
-                    "y": 0.0780363529920578,
-                    "z": 0.44015443325042725
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
                 },
                 "preserveAspect": false,
                 "texturePath": "",
@@ -5106,21 +5106,21 @@
                     "z": 0.4000000059604645
                 },
                 "enabled": true,
-                "hoveredTexture": "",
+                "hoveredTexture": "Resource/Test/4_Resources/UI/ControlWindow/Clicker_Right_ON.png",
                 "hoveredTint": {
                     "w": 1.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
                 },
-                "normalTexture": "",
+                "normalTexture": "Resource/Test/4_Resources/UI/ControlWindow/Clicker_Right_OFF.png",
                 "normalTint": {
                     "w": 1.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
                 },
-                "pressedTexture": "",
+                "pressedTexture": "Resource/Test/4_Resources/UI/ControlWindow/Clicker_Right_ON.png",
                 "pressedTint": {
                     "w": 1.0,
                     "x": 0.8500000238418579,
@@ -5133,8 +5133,8 @@
                 "color": {
                     "w": 1.0,
                     "x": 1.0,
-                    "y": 0.0,
-                    "z": 0.0
+                    "y": 1.0,
+                    "z": 1.0
                 },
                 "preserveAspect": false,
                 "texturePath": "",
@@ -5199,6 +5199,8 @@
                         "m_button2Name": "UI_ButtonR",
                         "m_exampleValue": 1.0,
                         "m_rootWidgetName": "UI_SettingBoard",
+                        "m_settingBoardName": "UI_SettingBoard",
+                        "m_settingButtonName": "UI_Setting",
                         "m_ui1Name": "UI_Center",
                         "m_ui2Name": "UI_ConsoleWindow"
                     }
