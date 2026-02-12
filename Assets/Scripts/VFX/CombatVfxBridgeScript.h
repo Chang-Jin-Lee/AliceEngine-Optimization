@@ -80,6 +80,8 @@ namespace Alice
         ALICE_PROPERTY(float, sparkPointLightDurationSec, 0.3f);
         ALICE_PROPERTY(float, sparkPointLightEndIntensity, 10.0f);
         ALICE_PROPERTY(float, sparkPointLightHeavyHitDurationSec, 1.0f);
+        ALICE_PROPERTY(float, sparkPointLightParryDurationSec, 0.5f);
+        ALICE_PROPERTY(float, sparkPointLightGuardBreakDurationSec, 0.5f);
         ALICE_PROPERTY(float, sparkPointLightHowlingDurationSec, 1.0f);
         ALICE_PROPERTY(float, sparkPointLightBossPivotYOffset, 0.5f);
         ALICE_PROPERTY(DirectX::XMFLOAT3, sparkPointLightOffset, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
@@ -193,13 +195,13 @@ namespace Alice
         void TriggerSparkPointLightFlash(const DirectX::XMFLOAT3& spawnPos,
                                          float durationOverrideSec = -1.0f,
                                          float startIntensityOverride = -1.0f,
-                                         float endIntensityOverride = -1.0f);
+                                         float endIntensityOverride = -1.0f,
+                                         const DirectX::XMFLOAT3* colorOverride = nullptr);
         EntityId EnsureSparkPointLightEntity();
         bool IsWorldBlockedAtPosition(const DirectX::XMFLOAT3& pos, float probeRadius);
         DirectX::XMFLOAT3 ResolveWorldSafePosition(const DirectX::XMFLOAT3& desiredPos,
                                                    const DirectX::XMFLOAT3& preferredDir);
         bool TryGetBossPivotLightPosition(DirectX::XMFLOAT3& outPos);
-        bool IsBossHowlingActive();
         void UpdateAttackOrdinalFromDriver(EntityId actorId, AttackOrdinalGate& gate);
         void CollectPlayerTraceEntities(std::vector<EntityId>& out) const;
         void CollectTraceEntitiesForActor(EntityId actorId,
@@ -223,7 +225,9 @@ namespace Alice
         void SpawnHitOverlayAtPosition(const DirectX::XMFLOAT3& spawnPos,
                                        OverlaySpawnKind kind,
                                        int attackSlotIndex,
-                                       bool applyRageTint);
+                                       bool applyRageTint,
+                                       float pointLightDurationOverrideSec = -1.0f,
+                                       float pointLightStartIntensityOverride = -1.0f);
         EntityId ResolveShockWaveEntity(bool logWarnings);
         EntityId ResolveGuardShockPointEntity(bool logWarnings);
         EntityId ResolveBossEffectPointEntity(bool logWarnings);
@@ -350,7 +354,6 @@ namespace Alice
         int m_lastAttackSlotIndex = -1;
         bool m_prevSlashWindowActive = false;
         bool m_prevBossGroggy = false;
-        bool m_prevBossHowling = false;
 
         bool m_prevPlayerHitActive = false;
         bool m_prevIsLightAttack = false;
