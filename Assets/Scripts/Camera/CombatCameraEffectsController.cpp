@@ -763,17 +763,33 @@ namespace Alice
         if (!camera)
             return;
 
-        const float observedFov = camera->GetFov();
-        const float baseFov = std::clamp(observedFov - m_lastAppliedFovOffsetDeg, 1.0f, 170.0f);
-
         const float maxCharge = std::max(m_chargeCurrentMaxZoomDeg, 0.001f);
         const float chargeNorm = Saturate(m_chargeZoomDeg / maxCharge);
         const float chargeWeight = EvaluateChargeEnvelope01(chargeNorm);
 
-        const float chargeFovOffsetDeg = -m_chargeZoomDeg * chargeWeight;
-        const float totalFovOffsetDeg = pulseAccumulation.fovOffsetDeg + chargeFovOffsetDeg;
-        camera->SetFov(std::clamp(baseFov + totalFovOffsetDeg, 1.0f, 170.0f));
-        m_lastAppliedFovOffsetDeg = totalFovOffsetDeg;
+        const bool suspendFov = Get_m_suspendFovWhenFatalActive()
+            && m_session
+            && m_session->IsFatalActive();
+
+        if (suspendFov)
+        {
+            if (std::abs(m_lastAppliedFovOffsetDeg) > 1e-6f)
+            {
+                const float restoredFov = std::clamp(camera->GetFov() - m_lastAppliedFovOffsetDeg, 1.0f, 170.0f);
+                camera->SetFov(restoredFov);
+            }
+            m_lastAppliedFovOffsetDeg = 0.0f;
+        }
+        else
+        {
+            const float observedFov = camera->GetFov();
+            const float baseFov = std::clamp(observedFov - m_lastAppliedFovOffsetDeg, 1.0f, 170.0f);
+
+            const float chargeFovOffsetDeg = -m_chargeZoomDeg * chargeWeight;
+            const float totalFovOffsetDeg = pulseAccumulation.fovOffsetDeg + chargeFovOffsetDeg;
+            camera->SetFov(std::clamp(baseFov + totalFovOffsetDeg, 1.0f, 170.0f));
+            m_lastAppliedFovOffsetDeg = totalFovOffsetDeg;
+        }
 
         const float chargeBlurIntensity = std::max(0.0f, Get_m_chargeBlurIntensity()) * chargeNorm * chargeWeight;
         const float chargeBlurRadius = std::max(0.001f, Get_m_chargeBlurRadius());

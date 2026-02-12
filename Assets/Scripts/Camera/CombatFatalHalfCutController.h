@@ -64,6 +64,7 @@ namespace Alice
             bool bOverrideImpactBlurRadius = false;
             bool bOverrideImpactBlurCenterX = false;
             bool bOverrideImpactBlurCenterY = false;
+            bool bOverrideColorGradingSaturation = false;
 
             float splitAmount = 0.0f;
             float splitAngleDeg = 12.0f;
@@ -86,6 +87,7 @@ namespace Alice
             float impactBlurRadius = 0.25f;
             float impactBlurCenterX = 0.5f;
             float impactBlurCenterY = 0.5f;
+            DirectX::XMFLOAT3 saturation{ 1.0f, 1.0f, 1.0f };
         };
 
         void ResolveSessionAndActors(bool logWarnings);
@@ -100,18 +102,26 @@ namespace Alice
 
         void SaveAndDisableCameraControls();
         void RestoreCameraControls();
+        void ApplyIdleFatalFov(float fatalElapsedSec);
+        void RestoreIdleFatalFovOverride();
 
-        void StartFatalSequence();
-        void UpdateHalfCut(float deltaTime);
+        void StartFatalSequence(float fatalElapsedSec);
+        void UpdateHalfCut(float deltaTime, float fatalElapsedSec);
         void UpdateBlendBack(float deltaTime);
         void FinishSequence();
         void AbortSequence();
 
         float GetCutTotalDurationSec() const;
+        float GetHalfCutDurationSec(float fatalElapsedAtSequenceStart) const;
+        float EstimateFatalElapsedSec() const;
         float EvaluateSplitAmount(float timeSec) const;
         float EvaluateFlash01(float timeSec) const;
         float EvaluateCutWeight01(float splitAmount, float flash01) const;
-        void ApplyCutPostProcess(float splitAmount, float flash01, float timeSec, float cutWeight01);
+        float EvaluateStabZoom01(float timeSec) const;
+        float EvaluateFatalFovZoom01(float fatalElapsedSec) const;
+        float EvaluateGrayscale01(float timeSec) const;
+        void ApplyCutPostProcess(float splitAmount, float flash01, float timeSec, float cutWeight01, float grayscale01);
+        void ApplyStandaloneGrayscale(float grayscale01);
 
     private:
         ALICE_PROPERTY(std::string, m_sessionEntityName, "SceneManager");
@@ -140,6 +150,17 @@ namespace Alice
         ALICE_PROPERTY(bool, m_snapAfterRecover, false);
         ALICE_PROPERTY(float, m_blendBackDurationSec, 0.10f);
         ALICE_PROPERTY(float, m_cutZoomInDeg, 7.0f);
+        ALICE_PROPERTY(bool, m_enableStabZoom, true);
+        ALICE_PROPERTY(float, m_stabZoomStartSec, 0.12f);
+        ALICE_PROPERTY(float, m_stabZoomInSec, 0.06f);
+        ALICE_PROPERTY(float, m_stabZoomOutSec, 0.25f);
+        ALICE_PROPERTY(float, m_stabZoomInDeg, 17.0f);
+        ALICE_PROPERTY(bool, m_enableFatalTimelineFovZoom, true);
+        ALICE_PROPERTY(float, m_fatalFovZoomStartSec, 0.0f);
+        ALICE_PROPERTY(float, m_fatalFovZoomEndSec, 3.0f);
+        ALICE_PROPERTY(float, m_fatalFovZoomInSec, 0.15f);
+        ALICE_PROPERTY(float, m_fatalFovZoomOutSec, 0.20f);
+        ALICE_PROPERTY(float, m_fatalFovTargetDeg, 47.0f);
         ALICE_PROPERTY(float, m_retriggerCooldownSec, 0.25f);
 
         ALICE_PROPERTY(bool, m_splitFxEnabled, true);
@@ -158,6 +179,11 @@ namespace Alice
         ALICE_PROPERTY(float, m_peakBloomGaussianIntensity, 2.3f);
         ALICE_PROPERTY(float, m_peakBloomRadius, 2.03f);
         ALICE_PROPERTY(bool, m_enableFlashTone, false);
+        ALICE_PROPERTY(bool, m_enableGrayscaleBeforeSplit, true);
+        ALICE_PROPERTY(float, m_grayscaleStartSec, 0.0f);
+        ALICE_PROPERTY(float, m_grayscaleEndSec, 3.0f);
+        ALICE_PROPERTY(float, m_grayscaleRestoreSec, 0.30f);
+        ALICE_PROPERTY(float, m_grayscaleSaturation, 0.0f);
 
         ALICE_PROPERTY(bool, m_useImpactBlurDuringCut, true);
         ALICE_PROPERTY(float, m_peakImpactBlurIntensity, 2.2f);
@@ -186,10 +212,14 @@ namespace Alice
         bool m_startedThisFatal = false;
         float m_runtimeSec = 0.0f;
         float m_lastSequenceStartSec = -1000.0f;
+        bool m_fatalBaseFovCaptured = false;
+        float m_fatalBaseFovDeg = 60.0f;
 
         Phase m_phase = Phase::Idle;
         float m_phaseTimerSec = 0.0f;
         bool m_snapApplied = false;
+        float m_fatalElapsedAtSequenceStart = 0.0f;
+        float m_fatalStartRuntimeSec = 0.0f;
 
         CameraPose m_preFatalPose{};
         CameraPose m_snapPose{};
@@ -200,6 +230,14 @@ namespace Alice
         bool m_savedLookAtEnabled = false;
         bool m_savedSpringArmEnabled = true;
         int m_savedFollowMode = 0;
+        bool m_idleFatalFovOverrideActive = false;
+        float m_savedFollowFovDamping = 6.0f;
+        float m_savedExploreFovDeg = 60.0f;
+        float m_savedCombatFovDeg = 65.0f;
+        float m_savedLockOnFovDeg = 55.0f;
+        float m_savedAimFovDeg = 45.0f;
+        float m_savedBossIntroFovDeg = 75.0f;
+        float m_savedDeathFovDeg = 50.0f;
 
         PpvBaseline m_ppvBaseline{};
     };
