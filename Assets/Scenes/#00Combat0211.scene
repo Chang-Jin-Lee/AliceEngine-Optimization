@@ -76,18 +76,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -9.308777809143066,
-                    "y": 1.1714457273483276,
-                    "z": -17.8748722076416
+                    "x": -8.437715530395508,
+                    "y": 1.171445608139038,
+                    "z": -15.581013679504395
                 },
                 "rotation": {
-                    "x": -0.059331439435482025,
-                    "y": 3.0598607063293457,
-                    "z": -0.012200340628623962
+                    "x": -0.05933142453432083,
+                    "y": 2.8091368675231934,
+                    "z": -0.012200227938592434
                 },
                 "scale": {
                     "x": 1.0,
-                    "y": 0.9999996423721313,
+                    "y": 0.9999995827674866,
                     "z": 0.9999997019767761
                 },
                 "visible": false
@@ -171,17 +171,17 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -9.309820175170898,
-                    "y": 0.9291791319847107,
-                    "z": -17.887340545654297
+                    "x": -8.43563175201416,
+                    "y": 0.9291789531707764,
+                    "z": -15.593350410461426
                 },
                 "rotation": {
-                    "x": -0.03126056119799614,
-                    "y": -3.084476947784424,
-                    "z": 0.0013553205644711852
+                    "x": -0.03126056492328644,
+                    "y": 2.947984457015991,
+                    "z": 0.001355325453914702
                 },
                 "scale": {
-                    "x": 1.0,
+                    "x": 0.9999999403953552,
                     "y": 0.9999993443489075,
                     "z": 0.9999994039535522
                 },
@@ -266,13 +266,13 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -9.171253204345703,
-                    "y": 0.25011691451072693,
-                    "z": -17.807329177856445
+                    "x": -8.321249961853027,
+                    "y": 0.2501167356967926,
+                    "z": -15.481461524963379
                 },
                 "rotation": {
                     "x": 0.09473259001970291,
-                    "y": -1.8416589498519897,
+                    "y": -2.0923826694488525,
                     "z": 2.878237724304199
                 },
                 "scale": {
@@ -361,17 +361,17 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -9.429587364196777,
-                    "y": 0.2505241930484772,
-                    "z": -17.93315315246582
+                    "x": -8.540288925170898,
+                    "y": 0.25052401423454285,
+                    "z": -15.667447090148926
                 },
                 "rotation": {
-                    "x": 0.028315557166934013,
-                    "y": 1.7039200067520142,
+                    "x": 0.02831561677157879,
+                    "y": 1.4531960487365723,
                     "z": -2.7297098636627197
                 },
                 "scale": {
-                    "x": 0.999999463558197,
+                    "x": 0.9999994039535522,
                     "y": 0.9999993443489075,
                     "z": 0.9999997615814209
                 },
@@ -456,19 +456,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.07891052961349487,
-                    "y": 2.3337838649749756,
-                    "z": 10.725656509399414
+                    "x": -0.07654134184122086,
+                    "y": 2.3381271362304688,
+                    "z": 10.73526382446289
                 },
                 "rotation": {
-                    "x": -0.1399594098329544,
-                    "y": 0.004677803721278906,
-                    "z": 0.015071344561874866
+                    "x": -0.13920241594314575,
+                    "y": 0.015085766091942787,
+                    "z": 0.010558598674833775
                 },
                 "scale": {
-                    "x": 0.009999997913837433,
-                    "y": 0.009999994188547134,
-                    "z": 0.00999999325722456
+                    "x": 0.009999996982514858,
+                    "y": 0.009999996982514858,
+                    "z": 0.009999992325901985
                 },
                 "visible": false
             },
@@ -551,18 +551,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.002517365152016282,
-                    "y": 1.5005524158477783,
-                    "z": 11.121258735656738
+                    "x": 0.00360116851516068,
+                    "y": 1.5005829334259033,
+                    "z": 11.122386932373047
                 },
                 "rotation": {
-                    "x": -0.4384210705757141,
-                    "y": 0.20072534680366516,
-                    "z": 0.00939328782260418
+                    "x": -0.4279825687408447,
+                    "y": 0.20752884447574615,
+                    "z": 0.006397836375981569
                 },
                 "scale": {
-                    "x": 0.009999997913837433,
-                    "y": 0.009999996982514858,
+                    "x": 0.009999998845160007,
+                    "y": 0.009999998845160007,
                     "z": 0.009999997913837433
                 },
                 "visible": false
@@ -646,19 +646,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.44288840889930725,
-                    "y": 1.7256557941436768,
-                    "z": 10.709720611572266
+                    "x": -0.44425350427627563,
+                    "y": 1.7323460578918457,
+                    "z": 10.717399597167969
                 },
                 "rotation": {
-                    "x": 0.2423284947872162,
-                    "y": -1.8891797065734863,
-                    "z": 2.127580165863037
+                    "x": 0.23837623000144958,
+                    "y": -1.8838618993759155,
+                    "z": 2.1111254692077637
                 },
                 "scale": {
                     "x": 0.009999994188547134,
-                    "y": 0.009999997913837433,
-                    "z": 0.009999996982514858
+                    "y": 0.009999996051192284,
+                    "z": 0.009999992325901985
                 },
                 "visible": false
             },
@@ -741,19 +741,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.2989283502101898,
-                    "y": 1.7188042402267456,
-                    "z": 10.703660011291504
+                    "x": 0.2967143654823303,
+                    "y": 1.7212462425231934,
+                    "z": 10.703426361083984
                 },
                 "rotation": {
-                    "x": 0.05411418154835701,
-                    "y": 2.292963981628418,
-                    "z": -2.490891695022583
+                    "x": 0.05828646570444107,
+                    "y": 2.3103458881378174,
+                    "z": -2.488884449005127
                 },
                 "scale": {
-                    "x": 0.009999997913837433,
+                    "x": 0.009999999776482582,
                     "y": 0.009999998845160007,
-                    "z": 0.01000000350177288
+                    "z": 0.009999999776482582
                 },
                 "visible": false
             },
@@ -836,19 +836,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.34075969457626343,
-                    "y": 0.6099873781204224,
-                    "z": 11.201812744140625
+                    "x": -0.33950337767601013,
+                    "y": 0.6101942658424377,
+                    "z": 11.192682266235352
                 },
                 "rotation": {
-                    "x": -0.4431251585483551,
-                    "y": 0.6896015405654907,
-                    "z": 2.899412155151367
+                    "x": -0.4496401250362396,
+                    "y": 0.6854384541511536,
+                    "z": 2.9187545776367188
                 },
                 "scale": {
-                    "x": 0.010000020265579224,
-                    "y": 0.010000031441450119,
-                    "z": 0.010000056587159634
+                    "x": 0.010000023059546947,
+                    "y": 0.010000035166740417,
+                    "z": 0.010000054724514484
                 },
                 "visible": false
             },
@@ -931,18 +931,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.23247823119163513,
-                    "y": 0.6565663814544678,
-                    "z": 10.817708969116211
+                    "x": 0.23519878089427948,
+                    "y": 0.6549863219261169,
+                    "z": 10.819223403930664
                 },
                 "rotation": {
-                    "x": -0.08105688542127609,
-                    "y": 0.06581132858991623,
-                    "z": -2.9884350299835205
+                    "x": -0.0552954338490963,
+                    "y": 0.06737536936998367,
+                    "z": -2.9860012531280518
                 },
                 "scale": {
-                    "x": 0.010000033304095268,
-                    "y": 0.010000022128224373,
+                    "x": 0.010000030510127544,
+                    "y": 0.010000024922192097,
                     "z": 0.010000025853514671
                 },
                 "visible": false
@@ -3623,7 +3623,7 @@
                 "maxDistance": 8.079999923706055,
                 "minDistance": 0.0,
                 "mode": 0,
-                "pitchDeg": 54.00135803222656,
+                "pitchDeg": -4.543227672576904,
                 "pitchMaxDeg": 80.0,
                 "pitchMinDeg": -45.0,
                 "positionDamping": 8.0,
@@ -3632,7 +3632,7 @@
                 "shoulderOffset": 0.0,
                 "shoulderSide": 1.0,
                 "targetName": "Player(Tia)",
-                "yawDeg": -5.366328239440918
+                "yawDeg": -19.731746673583984
             },
             "CameraInput": {
                 "blendTimeKey3": 0.6000000238418579,
@@ -3943,14 +3943,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -9.19416332244873,
-                    "y": 2.8090622425079346,
-                    "z": -18.99493408203125
+                    "x": -7.772213459014893,
+                    "y": 1.0342624187469482,
+                    "z": -17.408714294433594
                 },
                 "rotation": {
-                    "x": 0.9425015449523926,
-                    "y": -0.09366010129451752,
-                    "z": -2.2351741790771484e-08
+                    "x": -0.07929428666830063,
+                    "y": -0.34438395500183105,
+                    "z": 0.0
                 },
                 "scale": {
                     "x": 1.0,
@@ -5501,19 +5501,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -9.284974098205566,
-                    "y": 1.0828381776809692,
-                    "z": -18.450185775756836
+                    "x": -8.271919250488281,
+                    "y": 1.0828380584716797,
+                    "z": -16.13243293762207
                 },
                 "rotation": {
-                    "x": 0.6770187020301819,
-                    "y": -2.015688180923462,
-                    "z": 0.6360158324241638
+                    "x": 0.6770186424255371,
+                    "y": -2.266411542892456,
+                    "z": 0.6360160708427429
                 },
                 "scale": {
                     "x": 0.9999998211860657,
-                    "y": 0.9999996423721313,
-                    "z": 1.0
+                    "y": 0.9999998211860657,
+                    "z": 1.000000238418579
                 },
                 "visible": true
             },
@@ -7359,17 +7359,17 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -9.312767028808594,
-                    "y": 0.9007565975189209,
-                    "z": -17.938169479370117
+                    "x": -8.42587661743164,
+                    "y": 0.9007564187049866,
+                    "z": -15.643320083618164
                 },
                 "rotation": {
-                    "x": -0.03126056119799614,
-                    "y": -3.084476947784424,
-                    "z": 0.0013553205644711852
+                    "x": -0.03126056492328644,
+                    "y": 2.947984457015991,
+                    "z": 0.001355325453914702
                 },
                 "scale": {
-                    "x": 1.0,
+                    "x": 0.9999999403953552,
                     "y": 0.9999993443489075,
                     "z": 0.9999994039535522
                 },
@@ -7573,7 +7573,7 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.0035000001080334187,
                 "teleport": false,
-                "verticalVelocity": 0.0
+                "verticalVelocity": -0.34194424748420715
             },
             "Health": {
                 "alive": true,
@@ -7847,13 +7847,13 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -9.304014205932617,
-                    "y": 0.0010010004043579102,
-                    "z": -17.825454711914063
+                    "x": -8.445362091064453,
+                    "y": 0.001000821590423584,
+                    "z": -15.531959533691406
                 },
                 "rotation": {
                     "x": -0.0,
-                    "y": 3.0479326248168945,
+                    "y": 2.797208786010742,
                     "z": 0.0
                 },
                 "scale": {
@@ -8136,19 +8136,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -9.284974098205566,
-                    "y": 1.0828381776809692,
-                    "z": -18.450185775756836
+                    "x": -8.271919250488281,
+                    "y": 1.0828380584716797,
+                    "z": -16.13243293762207
                 },
                 "rotation": {
-                    "x": 0.6770187020301819,
-                    "y": -2.015688180923462,
-                    "z": 0.6360158324241638
+                    "x": 0.6770186424255371,
+                    "y": -2.266411542892456,
+                    "z": 0.6360160708427429
                 },
                 "scale": {
                     "x": 0.9999998211860657,
-                    "y": 0.9999996423721313,
-                    "z": 1.0
+                    "y": 0.9999998211860657,
+                    "z": 1.000000238418579
                 },
                 "visible": true
             },
@@ -8404,8 +8404,8 @@
                     "loopB": true,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.2508573830127716,
-                    "timeB": 0.584210216999054
+                    "timeA": 0.9325764775276184,
+                    "timeB": 1.2992777824401855
                 },
                 "enabled": true,
                 "ik": {
@@ -8615,7 +8615,7 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.0010000000474974513,
                 "teleport": false,
-                "verticalVelocity": 0.0
+                "verticalVelocity": -0.34194424748420715
             },
             "Health": {
                 "alive": true,
@@ -8801,7 +8801,7 @@
                 "timeSec": 0.0
             },
             "SkinnedMesh": {
-                "boneCount": 58,
+                "boneCount": 65,
                 "instanceAssetPath": "Assets/Fbx/Boss_Animaition.fbxasset",
                 "meshAssetPath": "Boss_Animaition"
             },
@@ -8964,8 +8964,8 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 2.794315889786958e-09,
-                    "y": 0.0009999275207519531,
+                    "x": 1.750951383883148e-08,
+                    "y": 0.0009998083114624023,
                     "z": 11.130000114440918
                 },
                 "rotation": {
@@ -9065,19 +9065,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.3516727685928345,
-                    "y": 1.0832164287567139,
-                    "z": 10.886252403259277
+                    "x": -0.34999650716781616,
+                    "y": 1.0853326320648193,
+                    "z": 10.880279541015625
                 },
                 "rotation": {
-                    "x": -0.0020471527241170406,
-                    "y": 1.326897144317627,
-                    "z": -0.8681581020355225
+                    "x": 0.002058775629848242,
+                    "y": 1.3382034301757813,
+                    "z": -0.8474749326705933
                 },
                 "scale": {
-                    "x": 1.4999994039535522,
+                    "x": 1.4999991655349731,
                     "y": 1.4999990463256836,
-                    "z": 1.4999995231628418
+                    "z": 1.499998688697815
                 },
                 "visible": true
             },
@@ -9458,19 +9458,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -9.152234077453613,
-                    "y": 0.668027400970459,
-                    "z": -17.981550216674805
+                    "x": -8.259599685668945,
+                    "y": 0.6680272221565247,
+                    "z": -15.645516395568848
                 },
                 "rotation": {
-                    "x": -1.1973896026611328,
-                    "y": -1.434285283088684,
-                    "z": 3.113909959793091
+                    "x": -1.1973901987075806,
+                    "y": -1.6850087642669678,
+                    "z": 3.1139094829559326
                 },
                 "scale": {
-                    "x": 0.9999998211860657,
+                    "x": 0.9999998807907104,
                     "y": 0.9999997019767761,
-                    "z": 0.9999998807907104
+                    "z": 0.9999999403953552
                 },
                 "visible": true
             },
@@ -9553,18 +9553,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -9.476619720458984,
-                    "y": 0.6647251844406128,
-                    "z": -17.85396385192871
+                    "x": -8.605497360229492,
+                    "y": 0.6647250056266785,
+                    "z": -15.602401733398438
                 },
                 "rotation": {
-                    "x": -1.5296125411987305,
-                    "y": 1.4514237642288208,
-                    "z": -2.0387845039367676
+                    "x": -1.529613971710205,
+                    "y": 1.2006996870040894,
+                    "z": -2.0387847423553467
                 },
                 "scale": {
                     "x": 1.0000001192092896,
-                    "y": 0.9999993443489075,
+                    "y": 0.9999994039535522,
                     "z": 0.9999995827674866
                 },
                 "visible": true
@@ -9895,7 +9895,7 @@
                         "delaySideAttack": 0.0,
                         "delaySoulSwordAttack": 0.0,
                         "delaySoulSwordCharge": 0.0,
-                        "is3D": true,
+                        "is3D": false,
                         "loop": false,
                         "maxDistance": 50.0,
                         "minDistance": 1.0,
@@ -48401,8 +48401,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 15.0,
-                    "y": 15.0
+                    "x": 10.0,
+                    "y": 10.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -48555,8 +48555,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 587.0,
-                    "y": 22.0
+                    "x": 386.0,
+                    "y": 14.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -48711,8 +48711,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 581.0,
-                    "y": 22.0
+                    "x": 382.0,
+                    "y": 14.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -48812,8 +48812,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 610.0,
-                    "y": 44.0
+                    "x": 401.0,
+                    "y": 29.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -48928,8 +48928,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 605.0,
-                    "y": 71.0
+                    "x": 398.0,
+                    "y": 47.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49029,8 +49029,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 605.0,
-                    "y": 71.0
+                    "x": 398.0,
+                    "y": 47.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49130,8 +49130,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 15.0,
-                    "y": 15.0
+                    "x": 10.0,
+                    "y": 10.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49282,8 +49282,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1828.0,
-                    "y": 22.0
+                    "x": 1202.0,
+                    "y": 14.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49436,8 +49436,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1828.0,
-                    "y": 22.0
+                    "x": 1202.0,
+                    "y": 14.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49537,8 +49537,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1833.0,
-                    "y": 27.0
+                    "x": 1205.0,
+                    "y": 18.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49638,8 +49638,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1833.0,
-                    "y": 27.0
+                    "x": 1205.0,
+                    "y": 18.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49739,8 +49739,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 3440.0,
-                    "y": 1369.0
+                    "x": 1849.0,
+                    "y": 900.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49763,17 +49763,17 @@
                     "enabled": true,
                     "name": "PrintDarkQuardScript",
                     "props": {
-                        "bossDeathImageWidgetName": "",
+                        "bossDeathImageWidgetName": "UI_EnemyDeath",
                         "bossDeathText": "",
-                        "bossHealthEntityName": "",
+                        "bossHealthEntityName": "Boss",
                         "dieTextWidgetName": "UI_DieText",
-                        "healthEntityName": "",
+                        "healthEntityName": "Player(Tia)",
                         "m_totalCycle": 3.200000047683716,
                         "m_triggerKey": 3,
-                        "playerDeathImageWidgetName": "",
+                        "playerDeathImageWidgetName": "UI_PlayerDeath",
                         "playerDeathText": "",
-                        "triggerOnBossDeath": false,
-                        "triggerOnDeath": false
+                        "triggerOnBossDeath": true,
+                        "triggerOnDeath": true
                     }
                 },
                 {
@@ -49792,7 +49792,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Die",
-                        "useNonUniformScale": false
+                        "useNonUniformScale": true
                     }
                 }
             ],
@@ -49863,8 +49863,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 2434.0,
-                    "y": 761.0
+                    "x": 1600.0,
+                    "y": 500.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49881,86 +49881,6 @@
             "_parentGuid": "8067992724437108823",
             "guid": "8904883877652021523",
             "name": "UI_Die"
-        },
-        {
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": -0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "UIText": {
-                "alignH": "Left",
-                "alignV": "Top",
-                "color": {
-                    "w": 0.0,
-                    "x": 0.24324321746826172,
-                    "y": 0.0009391644853167236,
-                    "z": 0.0009391644853167236
-                },
-                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
-                "fontSize": 120.0,
-                "lineSpacing": 0.0,
-                "maxWidth": 0.0,
-                "text": "Text",
-                "wrap": false
-            },
-            "UITransform": {
-                "alignH": "Center",
-                "alignV": "Center",
-                "anchorMax": {
-                    "x": 0.5,
-                    "y": 0.5
-                },
-                "anchorMin": {
-                    "x": 0.5,
-                    "y": 0.5
-                },
-                "pivot": {
-                    "x": 0.5,
-                    "y": 0.5
-                },
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "rotationRad": 0.0,
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0
-                },
-                "size": {
-                    "x": 200.0,
-                    "y": 80.0
-                },
-                "sortOrder": 0,
-                "useAlignment": false
-            },
-            "UIWidget": {
-                "billboard": false,
-                "interactable": true,
-                "raycastTarget": true,
-                "shaderName": "Default",
-                "space": "Screen",
-                "visibility": "Collapsed",
-                "widgetName": "UI_DieText"
-            },
-            "_parentGuid": "8067992724437108823",
-            "guid": "6817700141886351624",
-            "name": "UI_DieText"
         },
         {
             "Scripts": [
@@ -50005,7 +49925,7 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 1.0,
+                    "w": 0.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
@@ -50031,8 +49951,8 @@
                     "y": 0.5
                 },
                 "pivot": {
-                    "x": -0.5,
-                    "y": 0.5
+                    "x": 0.0,
+                    "y": 0.0
                 },
                 "position": {
                     "x": 0.0,
@@ -50044,8 +49964,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 2434.0,
-                    "y": 1369.0
+                    "x": 0.0,
+                    "y": 0.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -50091,7 +50011,7 @@
                         "roundToInt": true,
                         "scaleMode": 0,
                         "targetWidgetName": "UI_Fade",
-                        "useNonUniformScale": false
+                        "useNonUniformScale": true
                     }
                 }
             ],
@@ -50155,8 +50075,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 2434.0,
-                    "y": 1369.0
+                    "x": 1600.0,
+                    "y": 900.0
                 },
                 "sortOrder": 6,
                 "useAlignment": false
@@ -50202,11 +50122,11 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontPath": "Resource/Test/4_Resources/font/heiroflight_fonts/Light_Regular/HeirofLightRegular.ttf",
                 "fontSize": 30.0,
                 "lineSpacing": 0.0,
                 "maxWidth": 0.0,
-                "text": "NoName",
+                "text": "황혼의 심판자",
                 "wrap": false
             },
             "UITransform": {
@@ -50307,7 +50227,7 @@
                 "timeSec": 3.7079999446868896
             },
             "SkinnedMesh": {
-                "boneCount": 3,
+                "boneCount": 1,
                 "instanceAssetPath": "Assets/Fbx/door_animation.fbxasset",
                 "meshAssetPath": "door_animation"
             },
@@ -54794,6 +54714,422 @@
             "_parentGuid": "5920284910544232243",
             "guid": "5383360049718792188",
             "name": "Combo_slash_fx_04_03_NoParticle"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 565.0,
+                        "baseSizeY": 82.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_PlayerDeath",
+                        "useNonUniformScale": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 565.0,
+                        "baseSizeY": 82.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_PlayerDeath",
+                        "useNonUniformScale": false
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 0.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "Resource/Test/4_Resources/UI/Die_Clear/DISCARDED.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 565.0,
+                    "y": 82.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_PlayerDeath"
+            },
+            "_parentGuid": "14959943320510111691",
+            "guid": "9481716170265076424",
+            "name": "UI_PlayerDeath"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 890.0,
+                        "baseSizeY": 107.5,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_EnemyDeath",
+                        "useNonUniformScale": false
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 0.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "Resource/Test/4_Resources/UI/Die_Clear/Per_aspera_ad_astra.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "anchorMin": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 890.0,
+                    "y": 108.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_EnemyDeath"
+            },
+            "_parentGuid": "14959943320510111691",
+            "guid": "4251663018651195096",
+            "name": "UI_EnemyDeath"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 0.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 15.699999809265137,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 10.0,
+                    "y": 10.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Image"
+            },
+            "guid": "14959943320510111691",
+            "name": "UI_Result"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": false
+            },
+            "_parentGuid": "8917386486070800600",
+            "guid": "13924212998573708676",
+            "name": "__CombatVfxPool_114"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.800000011920929,
+                    "z": 0.44999998807907104
+                },
+                "enabled": false,
+                "intensity": 0.0,
+                "range": 4.0
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "4220989599490323253",
+            "name": "__CombatSparkPointLight"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": false
+            },
+            "_parentGuid": "8917386486070800600",
+            "guid": "2886815702245507848",
+            "name": "__CombatVfxPool_993"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.800000011920929,
+                    "z": 0.44999998807907104
+                },
+                "enabled": false,
+                "intensity": 0.0,
+                "range": 4.0
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "5143035893650672588",
+            "name": "__CombatSparkPointLight"
         }
     ],
     "sceneName": "#00Combat0211",

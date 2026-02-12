@@ -176,7 +176,7 @@
                     "z": 1.0
                 },
                 "preserveAspect": false,
-                "texturePath": "Resource/Image/UI_Tilte.png",
+                "texturePath": "Resource/Test/4_Resources/UI/TutorialRule/Gard_Parrying.png",
                 "uvRect": {
                     "w": 1.0,
                     "x": 0.0,
@@ -222,7 +222,7 @@
                 "shaderName": "Default",
                 "space": "Screen",
                 "visibility": "Visible",
-                "widgetName": "UI_Image"
+                "widgetName": "UI_Title"
             },
             "guid": "10878570460809830864",
             "name": "UI_Title"
@@ -255,7 +255,7 @@
                     "z": 0.09803921729326248
                 },
                 "preserveAspect": false,
-                "texturePath": "",
+                "texturePath": "Resource/Test/4_Resources/UI/TutorialRule/Weapon_Gauge.png",
                 "uvRect": {
                     "w": 1.0,
                     "x": 0.0,
@@ -393,12 +393,14 @@
                     "enabled": true,
                     "name": "PrintDarkQuardScript",
                     "props": {
+                        "bossDeathImageWidgetName": "",
                         "bossDeathText": "",
                         "bossHealthEntityName": "",
                         "dieTextWidgetName": "UI_DieText",
                         "healthEntityName": "",
                         "m_totalCycle": 3.200000047683716,
                         "m_triggerKey": 3,
+                        "playerDeathImageWidgetName": "",
                         "playerDeathText": "",
                         "triggerOnBossDeath": false,
                         "triggerOnDeath": false
@@ -712,6 +714,99 @@
             },
             "guid": "11129808002406255221",
             "name": "SoundObject"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "MultiImageScript",
+                    "props": {
+                        "imagePaths": "Resource/Test/4_Resources/UI/TutorialRule/Gard_Parrying.png; Resource/Test/4_Resources/UI/TutorialRule/Hill.png; Resource/Test/4_Resources/UI/TutorialRule/Last_Standing.png; Resource/Test/4_Resources/UI/TutorialRule/Rampage.png; Resource/Test/4_Resources/UI/TutorialRule/Weapon_Gauge.png",
+                        "imageWidgetName": "UI_Image",
+                        "intervalSeconds": 0.5400000214576721,
+                        "loop": true,
+                        "playOnStart": true,
+                        "startIndex": 0
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.8999999761581421,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -138.1999969482422,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": -3.5999999046325684
+                },
+                "size": {
+                    "x": 200.0,
+                    "y": -163.6999969482422
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Image"
+            },
+            "guid": "9461023344096872680",
+            "name": "UI_Image"
         }
     ],
     "sceneName": "tmpStartScene",

@@ -277,7 +277,7 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 0.8980392217636108,
+                    "w": 1.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
@@ -1459,7 +1459,7 @@
                     "z": 1.0
                 },
                 "preserveAspect": false,
-                "texturePath": "Resource/Test/4_Resources/UI/ControllScreen/Ctrl_Background.png",
+                "texturePath": "Resource/Test/4_Resources/UI/ControlWindow/Ctrl_Background.png",
                 "uvRect": {
                     "w": 1.0,
                     "x": 0.0,
@@ -1492,7 +1492,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1787.0,
+                    "x": 1786.0,
                     "y": 900.0
                 },
                 "sortOrder": 6,
@@ -1528,8 +1528,8 @@
                         "referenceWidth": 1600.0,
                         "roundToInt": true,
                         "scaleMode": 0,
-                        "targetWidgetName": "",
-                        "useNonUniformScale": false
+                        "targetWidgetName": "UI_Center",
+                        "useNonUniformScale": true
                     }
                 }
             ],
@@ -1593,7 +1593,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1034.0,
+                    "x": 1033.0,
                     "y": 660.0
                 },
                 "sortOrder": 0,
@@ -1750,7 +1750,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -1907,7 +1907,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -2064,7 +2064,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -2221,7 +2221,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -2378,7 +2378,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -2535,7 +2535,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -2692,7 +2692,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -2849,7 +2849,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -3006,7 +3006,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -3163,7 +3163,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -3320,7 +3320,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -3477,7 +3477,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -3634,7 +3634,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -3810,7 +3810,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1008.0,
+                    "x": 1007.0,
                     "y": 39.0
                 },
                 "sortOrder": 7,
@@ -3885,7 +3885,7 @@
                 "rotation": {
                     "x": 0.0,
                     "y": 0.0,
-                    "z": 0.0
+                    "z": -0.0
                 },
                 "scale": {
                     "x": 1.0,
@@ -3946,11 +3946,11 @@
                 "alignH": "Center",
                 "alignV": "Center",
                 "anchorMax": {
-                    "x": 0.3499999940395355,
+                    "x": 0.33000001311302185,
                     "y": 0.41999998688697815
                 },
                 "anchorMin": {
-                    "x": 0.3499999940395355,
+                    "x": 0.33000001311302185,
                     "y": 0.41999998688697815
                 },
                 "pivot": {
@@ -4068,7 +4068,7 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1787.0,
+                    "x": 1786.0,
                     "y": 900.0
                 },
                 "sortOrder": 0,
@@ -4336,8 +4336,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1600.0,
-                    "y": 900.0
+                    "x": 1599.0,
+                    "y": 899.0
                 },
                 "sortOrder": 6,
                 "useAlignment": false
@@ -4353,6 +4353,936 @@
             },
             "guid": "13289844923809440641",
             "name": "UI_Fade"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 1095.8299560546875,
+                        "baseSizeY": 661.6699829101563,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_ConsoleWindow",
+                        "useNonUniformScale": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "Resource/Test/4_Resources/UI/ControlWindow/Ctrl_XBox.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": -0.15700000524520874,
+                    "y": 0.05000000074505806
+                },
+                "anchorMin": {
+                    "x": -0.15700000524520874,
+                    "y": 0.05000000074505806
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 1095.0,
+                    "y": 662.0
+                },
+                "sortOrder": 8,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_ConsoleWindow"
+            },
+            "_parentGuid": "13030736224394965954",
+            "guid": "2278552264021271479",
+            "name": "UI_ConsoleWindow"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 613.3300170898438,
+                        "baseSizeY": 38.33000183105469,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_ChooseTextC",
+                        "useNonUniformScale": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "Resource/Test/4_Resources/UI/ControlWindow/Keybord_Mouse.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": -0.15000000596046448,
+                    "y": -0.5649999976158142
+                },
+                "anchorMin": {
+                    "x": -0.15000000596046448,
+                    "y": -0.5649999976158142
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 613.0,
+                    "y": 38.0
+                },
+                "sortOrder": 11,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_ChooseTextC"
+            },
+            "_parentGuid": "10386590440388032321",
+            "guid": "11772786867383874719",
+            "name": "UI_ChooseTextK"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 324.1700134277344,
+                        "baseSizeY": 39.58000183105469,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_ChangeButtonK",
+                        "useNonUniformScale": false
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIButton": {
+                "disabledTexture": "",
+                "disabledTint": {
+                    "w": 1.0,
+                    "x": 0.4000000059604645,
+                    "y": 0.4000000059604645,
+                    "z": 0.4000000059604645
+                },
+                "enabled": true,
+                "hoveredTexture": "Resource/Test/4_Resources/UI/ControlWindow/OK_Keybord_ON.png",
+                "hoveredTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "normalTexture": "Resource/Test/4_Resources/UI/ControlWindow/OK_Keybord_OFF.png",
+                "normalTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "pressedTexture": "Resource/Test/4_Resources/UI/ControlWindow/OK_Keybord_ON.png",
+                "pressedTint": {
+                    "w": 1.0,
+                    "x": 0.8500000238418579,
+                    "y": 0.8500000238418579,
+                    "z": 0.8500000238418579
+                },
+                "state": "Normal"
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.6000000238418579,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.6000000238418579,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 324.0,
+                    "y": 40.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_ChangeButtonK"
+            },
+            "_parentGuid": "10386590440388032321",
+            "guid": "15480847264587245897",
+            "name": "UI_ChangeButtonK"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 324.1700134277344,
+                        "baseSizeY": 39.58000183105469,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_ChangeButtonC",
+                        "useNonUniformScale": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIButton": {
+                "disabledTexture": "",
+                "disabledTint": {
+                    "w": 1.0,
+                    "x": 0.4000000059604645,
+                    "y": 0.4000000059604645,
+                    "z": 0.4000000059604645
+                },
+                "enabled": true,
+                "hoveredTexture": "Resource/Test/4_Resources/UI/ControlWindow/OK_XBox_ON.png",
+                "hoveredTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "normalTexture": "Resource/Test/4_Resources/UI/ControlWindow/OK_XBox_OFF.png",
+                "normalTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "pressedTexture": "Resource/Test/4_Resources/UI/ControlWindow/OK_XBox_ON.png",
+                "pressedTint": {
+                    "w": 1.0,
+                    "x": 0.8500000238418579,
+                    "y": 0.8500000238418579,
+                    "z": 0.8500000238418579
+                },
+                "state": "Normal"
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5649999976158142,
+                    "y": 0.4970000088214874
+                },
+                "anchorMin": {
+                    "x": 0.5649999976158142,
+                    "y": 0.4970000088214874
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 324.0,
+                    "y": 40.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_ChangeButtonC"
+            },
+            "_parentGuid": "2278552264021271479",
+            "guid": "6713438754622924219",
+            "name": "UI_ChangeButtonC"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 613.3300170898438,
+                        "baseSizeY": 38.33000183105469,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_ChooseTextC",
+                        "useNonUniformScale": true
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "Resource/Test/4_Resources/UI/ControlWindow/Controller.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": -0.15000000596046448,
+                    "y": -0.5649999976158142
+                },
+                "anchorMin": {
+                    "x": -0.15000000596046448,
+                    "y": -0.5649999976158142
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 613.3300170898438,
+                    "y": 38.33000183105469
+                },
+                "sortOrder": 7,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_ChooseTextC"
+            },
+            "_parentGuid": "2278552264021271479",
+            "guid": "5249073119908056959",
+            "name": "UI_ChooseTextC"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 30.0,
+                        "baseSizeY": 30.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_ButtonL",
+                        "useNonUniformScale": false
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIButton": {
+                "disabledTexture": "",
+                "disabledTint": {
+                    "w": 1.0,
+                    "x": 0.4000000059604645,
+                    "y": 0.4000000059604645,
+                    "z": 0.4000000059604645
+                },
+                "enabled": true,
+                "hoveredTexture": "Resource/Test/4_Resources/UI/ControlWindow/Clicker_Left_ON.png",
+                "hoveredTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "normalTexture": "Resource/Test/4_Resources/UI/ControlWindow/Clicker_Left_OFF.png",
+                "normalTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "pressedTexture": "Resource/Test/4_Resources/UI/ControlWindow/Clicker_Left_ON.png",
+                "pressedTint": {
+                    "w": 1.0,
+                    "x": 0.8500000238418579,
+                    "y": 0.8500000238418579,
+                    "z": 0.8500000238418579
+                },
+                "state": "Normal"
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": -0.30000001192092896,
+                    "y": -0.36500000953674316
+                },
+                "anchorMin": {
+                    "x": -0.30000001192092896,
+                    "y": -0.36500000953674316
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 30.0,
+                    "y": 30.0
+                },
+                "sortOrder": 17,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_ButtonL"
+            },
+            "_parentGuid": "13030736224394965954",
+            "guid": "14517771997674875366",
+            "name": "UI_ButtonL"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 30.0,
+                        "baseSizeY": 30.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_ButtonR",
+                        "useNonUniformScale": false
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIButton": {
+                "disabledTexture": "",
+                "disabledTint": {
+                    "w": 1.0,
+                    "x": 0.4000000059604645,
+                    "y": 0.4000000059604645,
+                    "z": 0.4000000059604645
+                },
+                "enabled": true,
+                "hoveredTexture": "Resource/Test/4_Resources/UI/ControlWindow/Clicker_Right_ON.png",
+                "hoveredTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "normalTexture": "Resource/Test/4_Resources/UI/ControlWindow/Clicker_Right_OFF.png",
+                "normalTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "pressedTexture": "Resource/Test/4_Resources/UI/ControlWindow/Clicker_Right_ON.png",
+                "pressedTint": {
+                    "w": 1.0,
+                    "x": 0.8500000238418579,
+                    "y": 0.8500000238418579,
+                    "z": 0.8500000238418579
+                },
+                "state": "Normal"
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": -0.18000000715255737,
+                    "y": -0.36500000953674316
+                },
+                "anchorMin": {
+                    "x": -0.18000000715255737,
+                    "y": -0.36500000953674316
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 30.0,
+                    "y": 30.0
+                },
+                "sortOrder": 17,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_ButtonR"
+            },
+            "_parentGuid": "13030736224394965954",
+            "guid": "10662992162094960999",
+            "name": "UI_ButtonR"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "ChangeScreeenScript",
+                    "props": {
+                        "m_button1Name": "UI_ButtonL",
+                        "m_button2Name": "UI_ButtonR",
+                        "m_exampleValue": 1.0,
+                        "m_rootWidgetName": "UI_SettingBoard",
+                        "m_settingBoardName": "UI_SettingBoard",
+                        "m_settingButtonName": "UI_Setting",
+                        "m_ui1Name": "UI_Center",
+                        "m_ui2Name": "UI_ConsoleWindow"
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 0.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 200.0,
+                    "y": 80.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_Image"
+            },
+            "guid": "10277666206745423217",
+            "name": "UI_ChangeOption"
         }
     ],
     "sceneName": "TitleScene",
