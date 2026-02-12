@@ -145,9 +145,9 @@ namespace Alice
         ALICE_PROPERTY(float, m_weaponHealOnHitHeavy2, 100.0f);
         ALICE_PROPERTY(float, m_weaponHealOnHitHeavy3, 150.0f);
         ALICE_PROPERTY(float, m_weaponHealOnHitExecution, 500.0f);
-        ALICE_PROPERTY(float, m_healInitialAmount, 100.0f);
+        ALICE_PROPERTY(float, m_healInitialAmount, 200.0f);
         ALICE_PROPERTY(float, m_healHoldTickIntervalSec, 0.5f);
-        ALICE_PROPERTY(float, m_healHoldTickAmount, 50.0f);
+        ALICE_PROPERTY(float, m_healHoldTickAmount, 100.0f);
         // Player rage trail (red) on weapon target.
         ALICE_PROPERTY(bool, m_enablePlayerRageTrailVfx, true);
         ALICE_PROPERTY(std::string, m_playerRageTrailTargetName, "W_Target");

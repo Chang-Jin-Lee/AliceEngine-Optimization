@@ -4069,20 +4069,22 @@ namespace Alice
 				playerHealth->weaponDurability = std::max(healWeaponFloor, playerHealth->weaponDurability - exchange);
 				playerHealth->currentHealth = std::min(healHpCap, playerHealth->currentHealth + exchange);
 			};
+		const bool canProcessHealNow = playerCanHeal && (playerHealth != nullptr);
 		if (enteredHealLoop)
 		{
 			m_state->playerHealLoopSec = 0.0f;
 			m_state->playerHealNextTickSec = std::max(0.01f, m_healHoldTickIntervalSec);
-			ApplyFixedHealTick(m_healInitialAmount);
+			if (canProcessHealNow)
+				ApplyFixedHealTick(m_healInitialAmount);
 			m_state->hapticHealPulseTimerSec = 0.0f;
 		}
-		if (!playerHealLoop)
+		if (!playerHealLoop || !canProcessHealNow)
 		{
 			m_state->playerHealLoopSec = 0.0f;
 			m_state->playerHealNextTickSec = 0.0f;
 			m_state->hapticHealPulseTimerSec = 0.0f;
 		}
-		else if (playerLogicDt > 0.0f && playerHealth)
+		else if (playerLogicDt > 0.0f)
 		{
 			m_state->playerHealLoopSec += playerLogicDt;
 			const float interval = std::max(0.01f, m_healHoldTickIntervalSec);
@@ -4092,7 +4094,7 @@ namespace Alice
 				m_state->playerHealNextTickSec += interval;
 			}
 		}
-		if (playerHealLoop && playerLogicDt > 0.0f)
+		if (playerHealLoop && canProcessHealNow && playerLogicDt > 0.0f)
 		{
 			m_state->hapticHealPulseTimerSec -= playerLogicDt;
 			while (m_state->hapticHealPulseTimerSec <= 0.0f)
