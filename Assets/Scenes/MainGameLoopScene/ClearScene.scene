@@ -4,10 +4,6 @@
             "Scripts": [
                 {
                     "enabled": true,
-                    "name": "SceneChangekPressScript"
-                },
-                {
-                    "enabled": true,
                     "name": "OnResizeScript"
                 },
                 {

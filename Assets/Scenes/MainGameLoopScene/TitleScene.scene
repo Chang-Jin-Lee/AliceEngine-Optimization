@@ -182,7 +182,7 @@
                         "uiSoundEntityName": "SoundObject",
                         "underImageHoverPath": "Resource/Test/4_Resources/UI/TitleResorce/Title_New Game_ON.png",
                         "underImageNormalPath": "Resource/Test/4_Resources/UI/TitleResorce/Title_New Game_OFF.png",
-                        "useFadeOnClick": true
+                        "useFadeOnClick": false
                     }
                 },
                 {
