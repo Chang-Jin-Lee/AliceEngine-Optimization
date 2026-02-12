@@ -205,6 +205,7 @@ namespace Alice
 			float dashTimer = 0.0f;
 			float dashForwardSec = 0.0f;
 			float dashReverseSec = 0.0f;
+			float dashReverseStartSec = 0.0f;
 			std::string dashClipName{};
 			bool parryOverrideActive = false;
 			bool parryHardCutPending = false;
@@ -1579,6 +1580,7 @@ namespace Alice
 		const bool playerCanInteract = m_playerInteractionEnabled && !blockPlayerActions;
 		const auto* skinnedRegistry = SkinnedRegistry();
 		constexpr float kPlayerGuardExitReverseSpeedScale = 2.5f;
+		constexpr float kDashReverseStartEpsilonSec = 0.016f;
 		auto IsPlayerGuardExitMoveLocked = [&]() -> bool
 			{
 				return (m_state->playerGuardExitLockSec > 0.0f)
@@ -5362,6 +5364,7 @@ namespace Alice
 					animState.dashTimer = 0.0f;
 					animState.dashForwardSec = 0.0f;
 					animState.dashReverseSec = 0.0f;
+					animState.dashReverseStartSec = 0.0f;
 					animState.dashClipName.clear();
 				}
 				else
@@ -5369,6 +5372,7 @@ namespace Alice
 					float dashDuration = GetClipDurationSecByName(registry, world, entityId, clipName);
 					if (dashDuration <= 0.0f)
 						dashDuration = 0.5f;
+					const float dashReverseStartMaxSec = std::max(0.0f, dashDuration - kDashReverseStartEpsilonSec);
 					if (!animState.dashActive || animState.dashClipName != clipName || prev != curr)
 					{
 						animState.dashActive = true;
@@ -5376,6 +5380,7 @@ namespace Alice
 						animState.dashTimer = 0.0f;
 						animState.dashForwardSec = dashDuration;
 						animState.dashReverseSec = dashDuration;
+						animState.dashReverseStartSec = dashReverseStartMaxSec;
 						animState.dashClipName = clipName;
 						dashPhaseChanged = true;
 					}
@@ -5386,6 +5391,10 @@ namespace Alice
 						{
 							animState.dashReverse = true;
 							animState.dashTimer = 0.0f;
+							float reverseStartSec = animState.dashForwardSec;
+							if (animState.overrideActive && animState.overrideClip == clipName)
+								reverseStartSec = std::max(anim->base.timeA, anim->base.timeB);
+							animState.dashReverseStartSec = std::clamp(reverseStartSec, 0.0f, dashReverseStartMaxSec);
 							dashPhaseChanged = true;
 						}
 						else if (animState.dashReverse && animState.dashTimer >= animState.dashReverseSec)
@@ -5394,11 +5403,13 @@ namespace Alice
 							{
 								animState.dashReverse = false;
 								animState.dashTimer = 0.0f;
+								animState.dashReverseStartSec = dashReverseStartMaxSec;
 								dashPhaseChanged = true;
 							}
 							else
 							{
 								animState.dashActive = false;
+								animState.dashReverseStartSec = 0.0f;
 							}
 						}
 					}
@@ -5579,7 +5590,7 @@ namespace Alice
 				else if (isDashClip && animState.dashActive && animState.dashReverse)
 				{
 					wantsReverse = true;
-					reverseStartTime = std::max(0.0f, animState.dashForwardSec);
+					reverseStartTime = std::max(0.0f, animState.dashReverseStartSec);
 				}
 				if (wantsReverse && overrideSpeed > 0.0f)
 					overrideSpeed = -overrideSpeed;
@@ -5612,6 +5623,8 @@ namespace Alice
 				const bool bossChargeBlendHardCut = (entityId == bossId)
 					&& (chargeActiveNow || bossChargePatternActive || bossChargeAttackClip);
 				if (bossChargeBlendHardCut)
+					blendSec = 0.0f;
+				if (isDashClip)
 					blendSec = 0.0f;
 				const bool playerGuardEnterToLoopTransition = isPlayerEntity
 					&& !cfg.guardEnterClip.empty()

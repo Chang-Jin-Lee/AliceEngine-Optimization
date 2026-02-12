@@ -9805,8 +9805,9 @@
                             "y": 0.800000011920929,
                             "z": 0.44999998807907107
                         },
-                        "sparkPointLightDurationSec": 0.10000000149011612,
+                        "sparkPointLightDurationSec": 0.5,
                         "sparkPointLightEntityName": "",
+                        "sparkPointLightEndIntensity": 10.0,
                         "sparkPointLightIntensity": 50.0,
                         "sparkPointLightOffset": {
                             "x": 0.0,

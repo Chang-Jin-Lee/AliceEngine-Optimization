@@ -78,6 +78,7 @@ namespace Alice
         ALICE_PROPERTY(bool, enableSparkPointLightFlash, false);
         ALICE_PROPERTY(std::string, sparkPointLightEntityName, "");
         ALICE_PROPERTY(float, sparkPointLightDurationSec, 0.3f);
+        ALICE_PROPERTY(float, sparkPointLightEndIntensity, 10.0f);
         ALICE_PROPERTY(DirectX::XMFLOAT3, sparkPointLightOffset, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
         ALICE_PROPERTY(DirectX::XMFLOAT3, sparkPointLightColor, DirectX::XMFLOAT3(1.0f, 0.8f, 0.45f));
         ALICE_PROPERTY(float, sparkPointLightIntensity, 8.0f);
@@ -327,6 +328,7 @@ namespace Alice
         EntityId m_sparkPointLightId = InvalidEntityId;
         bool m_sparkPointLightOwned = false;
         float m_sparkPointLightRemainingSec = 0.0f;
+        float m_sparkPointLightFlashDurationSec = 0.0f;
         std::uint32_t m_prevAttackTraceMask = 0u;
         int m_lastAttackSlotIndex = -1;
         bool m_prevSlashWindowActive = false;
