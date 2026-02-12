@@ -157,20 +157,35 @@ namespace Alice
             {
             case Combat::ActionState::Attack:
                 {
-                    // 보스가 그로기 상태인지 확인
-					// 일반 공격 사운드 재생
-					if (chargeActive && chargeLevel > 0)
-						bus->RequestPlayerAttackSfx(PlayerAttackState::HeavyAttack);
-					else
-					{
-						switch (attackComboIndex)
-						{
-						case 1: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
-						case 2: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack2); break;
-						case 3: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack3); break;
-						default: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
-						}
-					}
+                    if (chargeActive && chargeLevel > 0)
+                    {
+                        bus->RequestPlayerAttackSfx(PlayerAttackState::HeavyAttack);
+                    }
+                    else
+                    {
+                        // 레이지 상태 확인
+                        const bool rageActive = session->IsPlayerRageActive();
+                        
+                        if (rageActive)
+                        {
+                            // 레이지 상태: BoostAttackC처럼 한번에 모든 사운드 예약
+                            // attackComboIndex에 관계없이 모든 공격 사운드를 시간차로 재생
+                            bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1);
+                            bus->RequestPlayerAttackSfxDelayed(PlayerAttackState::Attack2, 0.5f);
+                            bus->RequestPlayerAttackSfxDelayed(PlayerAttackState::Attack3, 1.0f);
+                        }
+                        else
+                        {
+                            // 일반 상태: 기존대로 콤보 인덱스에 따라 재생
+                            switch (attackComboIndex)
+                            {
+                            case 1: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
+                            case 2: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack2); break;
+                            case 3: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack3); break;
+                            default: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
+                            }
+                        }
+                    }
                 }
                 if (Get_combo2ExtraEnabled() && attackComboIndex == 3 && !(chargeActive && chargeLevel > 0))
                 {
@@ -282,7 +297,7 @@ namespace Alice
                         break;
                     case C_BossBrainComponent::PatternType::AttackA:
                         // AttackA: 바로 1번 재생
-                        bus->RequestBossAttackSfxDelayed(BossAttackState::Attack1, 0.2f);
+                        bus->RequestBossAttackSfxDelayed(BossAttackState::Attack1, 0.5f);
                         break;
                     case C_BossBrainComponent::PatternType::BoostAttackA:
                         bus->RequestBossAttackSfx(BossAttackState::Attack1);
@@ -290,25 +305,24 @@ namespace Alice
                     case C_BossBrainComponent::PatternType::AttackB:
                         {
                             // AttackB: Attack1 사운드 즉시 + 1초 후 Attack2 사운드
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, 0.2f);
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, 0.4f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, 0.8f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, 2.0f);
                         }
                         break;
                     case C_BossBrainComponent::PatternType::BoostAttackB:
                         {
-                            // BoostAttackB: 기본 BC의 1.5배속 타이밍.
-                            constexpr float kBoostDelay = 1.0f / 1.5f;
-                            bus->RequestBossAttackSfx(BossAttackState::Attack1);
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, kBoostDelay);
+;
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack1, 0.533f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, 1.334f);
                         }
                         break;
                     case C_BossBrainComponent::PatternType::AttackC:
                         {
                             // AttackC: Attack1 사운드 즉시 + 1초 후 Attack2 사운드 + Attack2 실행 후 1초 뒤 Attack3 사운드
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack1, 0.2f);
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, 0.8f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack1, 0.8f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, 1.8f);
                             // Attack2가 1초 후 실행되므로, Attack3는 2초 후 실행 (1초 + 1초)
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, 1.6f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, 2.7f);
                             // AttackABC 사운드도 재생
                             bus->RequestBossAttackSfx(BossAttackState::AttackABC);
                         }
@@ -316,11 +330,9 @@ namespace Alice
                     case C_BossBrainComponent::PatternType::BoostAttackC:
                         {
                             // BoostAttackC: 기본 ABC의 1.5배속 타이밍.
-                            constexpr float kBoostDelayAB = 1.0f / 1.5f;
-                            constexpr float kBoostDelayAC = 2.0f / 1.5f;
-                            bus->RequestBossAttackSfx(BossAttackState::Attack1);
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, kBoostDelayAB);
-                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, kBoostDelayAC);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack1, 0.53f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack2, 1.2f);
+                            bus->RequestBossAttackSfxDelayed(BossAttackState::Attack3, 1.8f);
                             bus->RequestBossAttackSfx(BossAttackState::AttackABC);
                         }
                         break;
@@ -537,6 +549,7 @@ namespace Alice
             ALICE_LOG_INFO("[SoundBridge] GroggyEntered: prev=%u cur=%u", m_prevBossState, rawBossState);
             // 그로기 진입 시 즉시 사운드 요청 (OnCombatStateEntered가 호출되지 않거나 늦게 호출되는 경우 대비)
             bus->RequestBossOtherSfx(BossOtherState::GroggyEnter);
+            bus->RequestBossAttackSfxCancelDelayed();
             // 그로기 진입 후 0.15초 동안 Hit SFX 억제
             m_suppressBossHitSfxTimer = 0.15f;
         }
@@ -606,11 +619,37 @@ namespace Alice
         if (currentBossPattern >= 0)
             m_prevBossPattern = currentBossPattern;
         
+        // 플레이어 공격 콤보 인덱스 변경 감지 (같은 Attack 상태에서 콤보가 변경될 때)
+        const bool attackState = (playerState == Combat::ActionState::Attack);
+        const bool comboChanged = (playerFlags.attackComboIndex != m_prevComboIndex);
+        const bool rageActive = session->IsPlayerRageActive();
+        
+        if (attackState && comboChanged && !(playerFlags.chargeActive && playerFlags.chargeLevel > 0))
+        {
+            if (rageActive)
+            {
+                // 레이지 상태: 같은 Attack 상태에서 콤보가 변경되면 모든 사운드를 다시 예약
+                // (첫 번째 공격 이후 두 번째, 세 번째 공격을 위해)
+                bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1);
+                bus->RequestPlayerAttackSfxDelayed(PlayerAttackState::Attack2, 0.5f);
+                bus->RequestPlayerAttackSfxDelayed(PlayerAttackState::Attack3, 1.0f);
+            }
+            else
+            {
+                // 일반 상태: 기존대로 콤보 인덱스 변경 시 추가 사운드 재생
+                switch (playerFlags.attackComboIndex)
+                {
+                case 1: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack1); break;
+                case 2: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack2); break;
+                case 3: bus->RequestPlayerAttackSfx(PlayerAttackState::Attack3); break;
+                default: break;
+                }
+            }
+        }
+
         // Combo2 Extra 처리
         if (Get_combo2ExtraEnabled())
         {
-            const bool attackState = (playerState == Combat::ActionState::Attack);
-            const bool comboChanged = (playerFlags.attackComboIndex != m_prevComboIndex);
           const bool combo2Now = attackState
                 && playerFlags.attackComboIndex == 3
                 && !(playerFlags.chargeActive && playerFlags.chargeLevel > 0);

@@ -8,6 +8,8 @@
 
 namespace Alice
 {
+    class C_CombatSessionComponent;
+
     // 게이지바 수치에 따라 배경 이미지를 변경하는 스크립트
     class PlayerGauge : public IScript
     {
@@ -25,14 +27,26 @@ namespace Alice
         // 이미지 컴포넌트 위젯 이름
         ALICE_PROPERTY(std::string, imageWidgetName, "");
         
-        // 트리거가 될 수치 (정규화된 값, 기본값 0.3)
+        // 뜬눈 이미지 컴포넌트 위젯 이름
+        ALICE_PROPERTY(std::string, normalImageWidgetName, "");
+
+        // 감은눈(쿨타임) 이미지 컴포넌트 위젯 이름
+        ALICE_PROPERTY(std::string, cooldownImageWidgetName, "");
+
+        // 전투 세션 엔티티 이름 (광폭화 상태 조회용)
+        ALICE_PROPERTY(std::string, sessionEntityName, "SceneManager");
+        
+        // 레거시 값(현재 로직에서 미사용)
         ALICE_PROPERTY(float, triggerThreshold, 0.3f);
         
         // 평소 이미지 경로
         ALICE_PROPERTY(std::string, normalImagePath, "");
         
-        // 바뀔 이미지 경로 (게이지바가 threshold 이하일 때)
+        // 쿨다운 중일 때 사용할 이미지 경로
         ALICE_PROPERTY(std::string, lowValueImagePath, "");
+
+        // 무기 파괴(공격 불가)로 간주할 게이지 임계값(0~1)
+        ALICE_PROPERTY(float, weaponBreakThreshold, 0.001f);
 
         // --- 함수 리플렉션 예시 ---
         void ExampleFunction();
@@ -41,12 +55,18 @@ namespace Alice
     private:
         // 런타임 캐시
         UIGaugeComponent* TargetGauge = nullptr;
-        UIImageComponent* TargetImage = nullptr;
+        UIImageComponent* TargetImage = nullptr;      // 단일 이미지 fallback
+        UIImageComponent* NormalImage = nullptr;      // 뜬눈
+        UIImageComponent* CooldownImage = nullptr;    // 감은눈
+        C_CombatSessionComponent* TargetSession = nullptr;
+        float NormalBaseAlpha = 1.0f;
+        float CooldownBaseAlpha = 1.0f;
         
         // 이전 상태 추적 (불필요한 이미지 변경 방지)
         bool wasLowValue = false;
+        bool ImageBlendInitialized = false;
         
-        // 정규화된 게이지 값 계산
-        float GetNormalizedGaugeValue() const;
+        void TryResolveSession();
+        void TryResolveImages();
     };
 }

@@ -1,0 +1,9 @@
+{
+    "materials": [
+        "Assets/Materials/walldoorframe_0.mat",
+        "Assets/Materials/walldoorframe_1.mat",
+        "Assets/Materials/walldoorframe_2.mat"
+    ],
+    "mesh": "walldoorframe",
+    "source_fbx": "Resource/fbx/walldoorframe.fbx"
+}

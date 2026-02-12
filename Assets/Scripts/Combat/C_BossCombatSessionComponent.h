@@ -33,6 +33,7 @@ namespace Alice
 
         ALICE_PROPERTY(bool, m_hitReactUseFullClipDuration, true);
         ALICE_PROPERTY(float, m_hitReactDurationSec, 0.25f);
+        ALICE_PROPERTY(float, m_groggyRecoverIdleHoldSec, 1.0f);
 
     private:
         void Reset();
@@ -45,6 +46,7 @@ namespace Alice
         bool m_groggyRecovering = false;
         float m_groggyRecoverTimer = 0.0f;
         float m_groggyRecoverDurationSec = 0.0f;
+        float m_postGroggyIdleHoldTimer = 0.0f;
         bool m_prevGroggyHold = false;
     };
 }

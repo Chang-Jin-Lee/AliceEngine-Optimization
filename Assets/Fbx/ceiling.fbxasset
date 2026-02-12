@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/Ceiling_0.mat"
+    ],
+    "mesh": "Ceiling",
+    "source_fbx": "Resource/Test/4_Resources/background/0211scene/Ceiling.fbx"
+}

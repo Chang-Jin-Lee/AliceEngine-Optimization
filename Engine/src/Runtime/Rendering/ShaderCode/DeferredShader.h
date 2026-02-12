@@ -1481,6 +1481,7 @@ float4 main(PS_INPUT_QUAD pIn) : SV_Target
     shadowStrength = saturate(shadowStrength);
     shadowVis = saturate(lerp(1.0f, shadowVis, shadowStrength));
 
+
     // [Legacy Lighting]
     if (!usePbr)
     {

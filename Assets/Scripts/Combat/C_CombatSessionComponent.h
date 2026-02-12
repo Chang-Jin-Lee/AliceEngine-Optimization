@@ -33,9 +33,18 @@ namespace Alice
         Combat::ActionFlags GetPlayerFlags() const;
         Combat::ActionFlags GetBossFlags() const;
         std::uint64_t GetPlayerParrySuccessCount() const;
+        std::uint64_t GetBossAttemptAttackSuccessCount() const;
+        std::uint64_t GetBossAttemptGuardSuccessCount() const;
+        std::uint64_t GetBossAttemptParrySuccessCount() const;
+        std::uint64_t GetBossAttemptPlayerHitCount() const;
+        std::uint64_t GetBossAttemptPlayerGuardBreakCount() const;
+        float GetBossAttemptPlayTimeSec() const;
+        std::uint64_t GetBossRetryCount() const;
+        void ResetBossAttemptRecord();
         bool IsPlayerRageActive() const;
         float GetPlayerRageRemainingSec() const;
         float GetPlayerRageCooldownRemainingSec() const;
+        bool IsPlayerWeakActive() const;
         // TODO: HUD/UI gauge binding should use this normalized cooldown value (0..1).
         float GetPlayerRageCooldownNormalized() const;
         bool IsFatalActive() const;
@@ -80,13 +89,20 @@ namespace Alice
         ALICE_PROPERTY(float, m_phaseHowlingPushbackDurationSec, 1.0f);
         ALICE_PROPERTY(bool, m_phaseHowlingForceGuard, true);
         ALICE_PROPERTY(bool, m_phaseHowlingLockInput, true);
+        ALICE_PROPERTY(float, m_phaseHowlingZoomInRatio, 1.0f);
+        ALICE_PROPERTY(float, m_guardBreakZoomInRatio, 0.5f);
+        ALICE_PROPERTY(bool, m_enableCombatHaptics, true);
+        ALICE_PROPERTY(bool, m_disableLegacyCameraRumble, true);
+        ALICE_PROPERTY(bool, m_enableExtraCombatHaptics, true);
+        ALICE_PROPERTY(int, m_hapticsPlayerIndex, 0);
+        ALICE_PROPERTY(float, m_hapticsMasterScale, 1.15f);
         ALICE_PROPERTY(bool, m_playerInteractionEnabled, false);
         ALICE_PROPERTY(float, m_healStartDelaySec, 1.0f);
         ALICE_PROPERTY(float, m_healTickIntervalSec, 1.0f);
         ALICE_PROPERTY(float, m_healTransferRatio, 0.1f);
         ALICE_PROPERTY(float, m_healWeaponMinRatio, 0.1f);
         ALICE_PROPERTY(float, m_healPlayerMaxRatio, 0.9f);
-        // Legacy ratio heal tuning kept for backward compatibility; fixed-tick heal logic ignores these.
+        // Ratio constraints are still honored (HP cap / weapon floor) by fixed-tick heal.
 
         // Boss groggy tuning
         ALICE_PROPERTY(float, m_bossGroggyGainLight, 8.0f);
@@ -100,6 +116,8 @@ namespace Alice
         ALICE_PROPERTY(float, m_lightComboWindowSec, 0.5f);
         ALICE_PROPERTY(float, m_chargeCombo2Speed, 0.7f);
         ALICE_PROPERTY(float, m_playerRageLightAttackSpeedScale, 1.5f);
+        ALICE_PROPERTY(float, m_playerRageHeavyAttackSpeedScale, 1.2f);
+        ALICE_PROPERTY(float, m_playerRageHeavyJudgementScale, 1.2f);
         ALICE_PROPERTY(float, m_rageDurationSec, 15.0f);
         ALICE_PROPERTY(float, m_rageCooldownSec, 30.0f);
         ALICE_PROPERTY(float, m_rageCooldownReduceLight1Sec, 1.0f);
@@ -129,9 +147,9 @@ namespace Alice
         ALICE_PROPERTY(float, m_weaponHealOnHitHeavy2, 100.0f);
         ALICE_PROPERTY(float, m_weaponHealOnHitHeavy3, 150.0f);
         ALICE_PROPERTY(float, m_weaponHealOnHitExecution, 500.0f);
-        ALICE_PROPERTY(float, m_healInitialAmount, 100.0f);
+        ALICE_PROPERTY(float, m_healInitialAmount, 200.0f);
         ALICE_PROPERTY(float, m_healHoldTickIntervalSec, 0.5f);
-        ALICE_PROPERTY(float, m_healHoldTickAmount, 50.0f);
+        ALICE_PROPERTY(float, m_healHoldTickAmount, 100.0f);
         // Player rage trail (red) on weapon target.
         ALICE_PROPERTY(bool, m_enablePlayerRageTrailVfx, true);
         ALICE_PROPERTY(std::string, m_playerRageTrailTargetName, "W_Target");
@@ -249,7 +267,7 @@ namespace Alice
         ALICE_PROPERTY(float, m_bossChargeFacingTrackSec, 0.6f);
         ALICE_PROPERTY(float, m_bossSoulFacingTrackSec, 0.5f);
         ALICE_PROPERTY(float, m_bossDashMoveStartSec, -1.0f);
-        ALICE_PROPERTY(float, m_bossKickAttackSpeedScale, 1.5f);
+        ALICE_PROPERTY(float, m_bossKickAttackSpeedScale, 1.0f);
         ALICE_PROPERTY(float, m_bossBoostAttackSpeedScale, 1.5f);
         ALICE_PROPERTY(std::string, m_bossBoostDashVfxName, "BossDeshEffect");
         ALICE_PROPERTY(float, m_bossGapStepDistance, 0.5f);

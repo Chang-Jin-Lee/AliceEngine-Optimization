@@ -1,0 +1,9 @@
+{
+    "materials": [
+        "Assets/Materials/wallflip_0.mat",
+        "Assets/Materials/wallflip_1.mat",
+        "Assets/Materials/wallflip_2.mat"
+    ],
+    "mesh": "wallflip",
+    "source_fbx": "Resource/fbx/wallflip.fbx"
+}

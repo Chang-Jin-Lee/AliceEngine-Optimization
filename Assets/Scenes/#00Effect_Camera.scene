@@ -7478,7 +7478,7 @@
                         "type": "Guard"
                     },
                     {
-                        "canBeInterrupted": true,
+                        "canBeInterrupted": false,
                         "clipName": "rig|Tia_Normal_Attack_hard",
                         "enabled": true,
                         "endTimeSec": 0.8629999756813049,

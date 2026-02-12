@@ -1,0 +1,8 @@
+{
+    "materials": [
+        "Assets/Materials/Columnside_f7470d55_0.mat",
+        "Assets/Materials/Columnside_f7470d55_1.mat"
+    ],
+    "mesh": "Columnside_f7470d55",
+    "source_fbx": "Resource/fbx/Columnside.fbx"
+}
