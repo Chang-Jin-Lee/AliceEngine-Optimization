@@ -79,6 +79,28 @@ namespace Alice
         }
     }
 
+    void MultiImageScript::SetIndex(int index)
+    {
+        if (!m_initialized)
+        {
+            ResolveTarget();
+            ParsePaths();
+            m_initialized = true;
+        }
+
+        if (m_images.empty())
+        {
+            ALICE_LOG_WARN("[MultiImageScript] SetIndex failed: image list is empty.");
+            return;
+        }
+
+        const int maxIndex = static_cast<int>(m_images.size()) - 1;
+        const int clamped = std::clamp(index, 0, maxIndex);
+        m_currentIndex = clamped;
+        m_elapsed = 0.0f;
+        ApplyImage();
+    }
+
     void MultiImageScript::ResolveTarget()
     {
         World* w = GetWorld();
