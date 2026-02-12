@@ -70,6 +70,19 @@ namespace Alice
         ALICE_PROPERTY(std::string, parryRingOverlayPrefabPath, "Assets/Prefabs/(05)YellowRing.prefab");
         // One-shot ring when boss enters groggy.
         ALICE_PROPERTY(std::string, bossGroggyRingOverlayPrefabPath, "Assets/Prefabs/(05)RedRing.prefab");
+        // Spawn one yellow spark when world is hit before hurtbox contact in an attack.
+        ALICE_PROPERTY(bool, enablePreHitWorldSpark, false);
+        // Also consume boss traces for pre-hit world spark logic.
+        ALICE_PROPERTY(bool, includeBossPreHitWorldSpark, false);
+        // Reuse one point light for spark flashes.
+        ALICE_PROPERTY(bool, enableSparkPointLightFlash, false);
+        ALICE_PROPERTY(std::string, sparkPointLightEntityName, "");
+        ALICE_PROPERTY(float, sparkPointLightDurationSec, 0.3f);
+        ALICE_PROPERTY(DirectX::XMFLOAT3, sparkPointLightOffset, DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, sparkPointLightColor, DirectX::XMFLOAT3(1.0f, 0.8f, 0.45f));
+        ALICE_PROPERTY(float, sparkPointLightIntensity, 8.0f);
+        ALICE_PROPERTY(float, sparkPointLightRange, 4.0f);
+        ALICE_PROPERTY(bool, sparkPointLightCastShadow, false);
 
         // Pool settings
         ALICE_PROPERTY(int, slashPoolSize, 3);
@@ -148,6 +161,13 @@ namespace Alice
             float emissionDurationSec = 0.0f;
         };
 
+        struct AttackOrdinalGate
+        {
+            std::uint32_t prevTraceMask = 0u;
+            std::uint32_t ordinal = 0u;
+            std::uint32_t spawnedOrdinal = 0u;
+        };
+
         void ResolveSessionAndActors(bool logWarnings);
         void TryBindResolveDelegate();
         void UnbindResolveDelegateSafe();
@@ -160,7 +180,15 @@ namespace Alice
         void UpdateComputeOneShotEmission(float deltaTime);
         void DeactivateAllActive();
         bool ProcessSlashFromTraceSignals(bool allowSpawn);
+        void UpdatePreHitWorldSpark(bool allowSpawn);
+        void UpdateSparkPointLightFlash(float deltaTime);
+        void TriggerSparkPointLightFlash(const DirectX::XMFLOAT3& spawnPos);
+        EntityId EnsureSparkPointLightEntity();
+        void UpdateAttackOrdinalFromDriver(EntityId actorId, AttackOrdinalGate& gate);
         void CollectPlayerTraceEntities(std::vector<EntityId>& out) const;
+        void CollectTraceEntitiesForActor(EntityId actorId,
+                                          const std::string& fallbackTraceName,
+                                          std::vector<EntityId>& out) const;
 
         void SpawnSlashFromAttackWindow(int attackSlotIndex = -1);
         void SpawnHitFromResolve(const DirectX::XMFLOAT3& hitPos,
@@ -293,6 +321,12 @@ namespace Alice
         std::array<std::unordered_map<EntityId, float>, SlotCount> m_cachedBaseAlphas{};
         std::unordered_map<EntityId, ComputeOneShotState> m_computeOneShotStates{};
         std::unordered_map<EntityId, std::uint32_t> m_traceAttackInstanceSeen{};
+        std::unordered_map<EntityId, std::uint32_t> m_worldImpactEventSeen{};
+        AttackOrdinalGate m_playerSparkGate{};
+        AttackOrdinalGate m_bossSparkGate{};
+        EntityId m_sparkPointLightId = InvalidEntityId;
+        bool m_sparkPointLightOwned = false;
+        float m_sparkPointLightRemainingSec = 0.0f;
         std::uint32_t m_prevAttackTraceMask = 0u;
         int m_lastAttackSlotIndex = -1;
         bool m_prevSlashWindowActive = false;

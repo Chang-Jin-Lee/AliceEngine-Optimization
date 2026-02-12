@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cctype>
 
+#include "Runtime/ECS/Components/IDComponent.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/ECS/GameObject.h"
 #include "Runtime/ECS/World.h"
@@ -13,6 +14,7 @@
 #include "Runtime/Gameplay/Combat/AttackDriverComponent.h"
 #include "Runtime/Gameplay/Combat/WeaponTraceComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
+#include "Runtime/Rendering/Components/PointLightComponent.h"
 #include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/Resources/Prefab.h"
 #include "Runtime/Scripting/ScriptFactory.h"
@@ -91,6 +93,30 @@ namespace Alice
                     return static_cast<C_CombatSessionComponent*>(sc.instance.get());
             }
             return nullptr;
+        }
+
+        EntityId ResolveTraceOwnerEntity(World& world, const WeaponTraceComponent& trace, EntityId traceEntity)
+        {
+            if (trace.ownerCached != InvalidEntityId)
+            {
+                if (trace.ownerGuid == 0)
+                    return trace.ownerCached;
+
+                if (const auto* idc = world.GetComponent<IDComponent>(trace.ownerCached))
+                {
+                    if (idc->guid == trace.ownerGuid)
+                        return trace.ownerCached;
+                }
+            }
+
+            if (trace.ownerGuid == 0)
+                return traceEntity;
+
+            EntityId resolved = world.FindEntityByGuid(trace.ownerGuid);
+            if (resolved != InvalidEntityId)
+                return resolved;
+
+            return InvalidEntityId;
         }
 
         float LengthSq(const XMFLOAT3& v)
@@ -281,10 +307,27 @@ namespace Alice
         m_prevAttackTraceMask = 0u;
         m_lastAttackSlotIndex = -1;
         m_prevSlashWindowActive = IsSlashWindowActive();
+        m_worldImpactEventSeen.clear();
+        m_playerSparkGate = AttackOrdinalGate{};
+        m_bossSparkGate = AttackOrdinalGate{};
+        if (Get_enableSparkPointLightFlash())
+        {
+            const EntityId lightId = EnsureSparkPointLightEntity();
+            if (lightId != InvalidEntityId)
+            {
+                if (World* world = GetWorld())
+                {
+                    if (auto* pointLight = world->GetComponent<PointLightComponent>(lightId))
+                        pointLight->enabled = false;
+                }
+            }
+            m_sparkPointLightRemainingSec = 0.0f;
+        }
 
         UpdatePathCacheAndPools();
         UpdateSocketTracking();
         ProcessSlashFromTraceSignals(false);
+        UpdatePreHitWorldSpark(false);
     }
 
     void CombatVfxBridgeScript::Update(float deltaTime)
@@ -293,6 +336,7 @@ namespace Alice
         TryBindResolveDelegate();
         UpdatePathCacheAndPools();
         UpdateSocketTracking();
+        UpdatePreHitWorldSpark(true);
 
         if (m_session)
         {
@@ -406,9 +450,13 @@ namespace Alice
             m_attackDurationSec = 0.0f;
             m_hasAttackStartPos = false;
             m_traceAttackInstanceSeen.clear();
+            m_worldImpactEventSeen.clear();
+            m_playerSparkGate = AttackOrdinalGate{};
+            m_bossSparkGate = AttackOrdinalGate{};
             m_prevSlashWindowActive = false;
         }
 
+        UpdateSparkPointLightFlash(deltaTime);
         UpdateComputeOneShotEmission(deltaTime);
         UpdateActive(deltaTime);
     }
@@ -437,12 +485,31 @@ namespace Alice
         m_attackDurationSec = 0.0f;
         m_hasAttackStartPos = false;
         m_traceAttackInstanceSeen.clear();
+        m_worldImpactEventSeen.clear();
+        m_playerSparkGate = AttackOrdinalGate{};
+        m_bossSparkGate = AttackOrdinalGate{};
+        m_sparkPointLightRemainingSec = 0.0f;
+        if (World* world = GetWorld(); world && m_sparkPointLightId != InvalidEntityId)
+        {
+            if (auto* pointLight = world->GetComponent<PointLightComponent>(m_sparkPointLightId))
+                pointLight->enabled = false;
+        }
         m_prevSlashWindowActive = false;
     }
 
     void CombatVfxBridgeScript::OnDestroy()
     {
+        World* world = GetWorld();
+        const EntityId sparkLightId = m_sparkPointLightId;
+        const bool destroySparkLight = m_sparkPointLightOwned;
+
         OnDisable();
+
+        if (world && destroySparkLight && sparkLightId != InvalidEntityId)
+            world->DestroyEntity(sparkLightId);
+        m_sparkPointLightId = InvalidEntityId;
+        m_sparkPointLightOwned = false;
+        m_sparkPointLightRemainingSec = 0.0f;
 
         for (int slot = 0; slot < SlotCount; ++slot)
             ClearSlot(slot);
@@ -461,6 +528,9 @@ namespace Alice
             m_shockWaveId = InvalidEntityId;
             m_guardShockPointId = InvalidEntityId;
             m_bossEffectPointId = InvalidEntityId;
+            m_sparkPointLightId = InvalidEntityId;
+            m_sparkPointLightOwned = false;
+            m_sparkPointLightRemainingSec = 0.0f;
             return;
         }
 
@@ -1071,14 +1141,43 @@ namespace Alice
         }
     }
 
-    void CombatVfxBridgeScript::CollectPlayerTraceEntities(std::vector<EntityId>& out) const
+    void CombatVfxBridgeScript::UpdateAttackOrdinalFromDriver(EntityId actorId, AttackOrdinalGate& gate)
     {
-        out.clear();
-
         World* world = GetWorld();
-        if (!world || m_playerId == InvalidEntityId)
+        if (!world || actorId == InvalidEntityId)
+        {
+            gate.prevTraceMask = 0u;
+            return;
+        }
+
+        const auto* driver = world->GetComponent<AttackDriverComponent>(actorId);
+        if (!driver)
+        {
+            gate.prevTraceMask = 0u;
+            return;
+        }
+
+        const std::uint32_t currentMask = driver->attackTraceMaskActive;
+        const std::uint32_t risingMask = currentMask & ~gate.prevTraceMask;
+        if (risingMask != 0u)
+        {
+            ++gate.ordinal;
+            if (gate.ordinal == 0u)
+                gate.ordinal = 1u;
+        }
+
+        gate.prevTraceMask = currentMask;
+    }
+
+    void CombatVfxBridgeScript::CollectTraceEntitiesForActor(EntityId actorId,
+                                                             const std::string& fallbackTraceName,
+                                                             std::vector<EntityId>& out) const
+    {
+        World* world = GetWorld();
+        if (!world || actorId == InvalidEntityId)
             return;
 
+        const std::size_t beforeCount = out.size();
         auto pushUniqueTrace = [&](EntityId id) {
             if (id == InvalidEntityId)
                 return;
@@ -1089,7 +1188,7 @@ namespace Alice
             out.push_back(id);
         };
 
-        if (const auto* driver = world->GetComponent<AttackDriverComponent>(m_playerId))
+        if (const auto* driver = world->GetComponent<AttackDriverComponent>(actorId))
         {
             if (driver->traceGuid != 0)
             {
@@ -1099,7 +1198,7 @@ namespace Alice
             else
             {
                 // traceGuid==0 means owner/self trace slot in attack driver convention.
-                pushUniqueTrace(m_playerId);
+                pushUniqueTrace(actorId);
             }
 
             for (std::uint64_t guid : driver->traceGuids)
@@ -1110,18 +1209,223 @@ namespace Alice
             }
         }
 
-        if (!out.empty())
+        if (out.size() > beforeCount || fallbackTraceName.empty())
             return;
 
         // Name fallback when attack driver trace GUID wiring is missing.
-        const std::string traceName = Get_weaponTraceEntityName();
-        if (traceName.empty())
-            return;
-
-        GameObject traceGo = world->FindGameObject(traceName);
+        GameObject traceGo = world->FindGameObject(fallbackTraceName);
         if (!traceGo.IsValid())
             return;
         pushUniqueTrace(traceGo.id());
+    }
+
+    void CombatVfxBridgeScript::CollectPlayerTraceEntities(std::vector<EntityId>& out) const
+    {
+        out.clear();
+        CollectTraceEntitiesForActor(m_playerId, Get_weaponTraceEntityName(), out);
+    }
+
+    void CombatVfxBridgeScript::UpdatePreHitWorldSpark(bool allowSpawn)
+    {
+        World* world = GetWorld();
+        if (!world)
+            return;
+
+        if (!Get_enablePreHitWorldSpark())
+        {
+            m_worldImpactEventSeen.clear();
+            m_playerSparkGate = AttackOrdinalGate{};
+            m_bossSparkGate = AttackOrdinalGate{};
+            return;
+        }
+
+        UpdateAttackOrdinalFromDriver(m_playerId, m_playerSparkGate);
+        if (Get_includeBossPreHitWorldSpark())
+            UpdateAttackOrdinalFromDriver(m_bossId, m_bossSparkGate);
+        else
+            m_bossSparkGate = AttackOrdinalGate{};
+
+        std::vector<EntityId> traces;
+        CollectPlayerTraceEntities(traces);
+        if (Get_includeBossPreHitWorldSpark())
+            CollectTraceEntitiesForActor(m_bossId, std::string(), traces);
+
+        if (traces.empty())
+        {
+            m_worldImpactEventSeen.clear();
+            return;
+        }
+
+        for (auto it = m_worldImpactEventSeen.begin(); it != m_worldImpactEventSeen.end();)
+        {
+            if (std::find(traces.begin(), traces.end(), it->first) == traces.end())
+                it = m_worldImpactEventSeen.erase(it);
+            else
+                ++it;
+        }
+
+        for (EntityId traceId : traces)
+        {
+            const auto* trace = world->GetComponent<WeaponTraceComponent>(traceId);
+            if (!trace)
+                continue;
+
+            const std::uint32_t currentSeq = trace->worldImpactEventSequence;
+            auto [it, inserted] = m_worldImpactEventSeen.emplace(traceId, currentSeq);
+            if (inserted)
+                continue;
+
+            if (it->second == currentSeq)
+                continue;
+
+            it->second = currentSeq;
+            if (!allowSpawn)
+                continue;
+
+            EntityId attackerId = ResolveTraceOwnerEntity(*world, *trace, traceId);
+            AttackOrdinalGate* gate = nullptr;
+            if (attackerId == m_playerId)
+            {
+                gate = &m_playerSparkGate;
+            }
+            else if (Get_includeBossPreHitWorldSpark() && attackerId == m_bossId)
+            {
+                gate = &m_bossSparkGate;
+            }
+            else if (trace->teamId == 0 && m_playerId != InvalidEntityId)
+            {
+                gate = &m_playerSparkGate;
+            }
+            else if (Get_includeBossPreHitWorldSpark() && trace->teamId == 1 && m_bossId != InvalidEntityId)
+            {
+                gate = &m_bossSparkGate;
+            }
+
+            if (!gate || gate->ordinal == 0u || gate->spawnedOrdinal == gate->ordinal)
+                continue;
+
+            SpawnHitOverlayAtPosition(trace->worldImpactEventPosWS, OverlaySpawnKind::Spark, -1, false);
+            gate->spawnedOrdinal = gate->ordinal;
+        }
+    }
+
+    EntityId CombatVfxBridgeScript::EnsureSparkPointLightEntity()
+    {
+        World* world = GetWorld();
+        if (!world)
+            return InvalidEntityId;
+
+        if (m_sparkPointLightId != InvalidEntityId)
+        {
+            if (world->GetComponent<PointLightComponent>(m_sparkPointLightId))
+                return m_sparkPointLightId;
+            m_sparkPointLightId = InvalidEntityId;
+            m_sparkPointLightOwned = false;
+            m_sparkPointLightRemainingSec = 0.0f;
+        }
+
+        const std::string configuredName = Get_sparkPointLightEntityName();
+        if (!configuredName.empty())
+        {
+            GameObject lightGo = world->FindGameObject(configuredName);
+            if (lightGo.IsValid())
+            {
+                m_sparkPointLightId = lightGo.id();
+                m_sparkPointLightOwned = false;
+            }
+        }
+
+        if (m_sparkPointLightId == InvalidEntityId)
+        {
+            m_sparkPointLightId = world->CreatePointLight();
+            if (m_sparkPointLightId == InvalidEntityId)
+                return InvalidEntityId;
+            m_sparkPointLightOwned = true;
+            world->SetEntityName(m_sparkPointLightId,
+                                 configuredName.empty() ? "__CombatSparkPointLight" : configuredName);
+            world->SetParent(m_sparkPointLightId, InvalidEntityId, false);
+        }
+
+        auto* pointLight = world->GetComponent<PointLightComponent>(m_sparkPointLightId);
+        if (!pointLight)
+            pointLight = &world->AddComponent<PointLightComponent>(m_sparkPointLightId);
+
+        pointLight->color = Get_sparkPointLightColor();
+        pointLight->intensity = (std::max)(0.0f, Get_sparkPointLightIntensity());
+        pointLight->range = (std::max)(0.01f, Get_sparkPointLightRange());
+        pointLight->castShadow = Get_sparkPointLightCastShadow();
+        pointLight->enabled = false;
+        return m_sparkPointLightId;
+    }
+
+    void CombatVfxBridgeScript::TriggerSparkPointLightFlash(const DirectX::XMFLOAT3& spawnPos)
+    {
+        if (!Get_enableSparkPointLightFlash())
+            return;
+
+        World* world = GetWorld();
+        if (!world)
+            return;
+
+        const EntityId lightId = EnsureSparkPointLightEntity();
+        if (lightId == InvalidEntityId)
+            return;
+
+        auto* pointLight = world->GetComponent<PointLightComponent>(lightId);
+        if (!pointLight)
+            return;
+
+        pointLight->color = Get_sparkPointLightColor();
+        pointLight->intensity = (std::max)(0.0f, Get_sparkPointLightIntensity());
+        pointLight->range = (std::max)(0.01f, Get_sparkPointLightRange());
+        pointLight->castShadow = Get_sparkPointLightCastShadow();
+        pointLight->enabled = true;
+
+        auto* tr = world->GetComponent<TransformComponent>(lightId);
+        if (!tr)
+            tr = &world->AddComponent<TransformComponent>(lightId);
+        tr->position = Add(spawnPos, Get_sparkPointLightOffset());
+        world->MarkTransformDirty(lightId);
+
+        m_sparkPointLightRemainingSec = (std::max)(0.0f, Get_sparkPointLightDurationSec());
+        if (m_sparkPointLightRemainingSec <= 0.0f)
+            pointLight->enabled = false;
+    }
+
+    void CombatVfxBridgeScript::UpdateSparkPointLightFlash(float deltaTime)
+    {
+        World* world = GetWorld();
+        if (!world)
+            return;
+
+        if (m_sparkPointLightId == InvalidEntityId)
+            return;
+
+        auto* pointLight = world->GetComponent<PointLightComponent>(m_sparkPointLightId);
+        if (!pointLight)
+        {
+            m_sparkPointLightId = InvalidEntityId;
+            m_sparkPointLightOwned = false;
+            m_sparkPointLightRemainingSec = 0.0f;
+            return;
+        }
+
+        if (!Get_enableSparkPointLightFlash())
+        {
+            pointLight->enabled = false;
+            m_sparkPointLightRemainingSec = 0.0f;
+            return;
+        }
+
+        if (m_sparkPointLightRemainingSec <= 0.0f)
+        {
+            pointLight->enabled = false;
+            return;
+        }
+
+        m_sparkPointLightRemainingSec = (std::max)(0.0f, m_sparkPointLightRemainingSec - (std::max)(0.0f, deltaTime));
+        if (m_sparkPointLightRemainingSec <= 0.0f)
+            pointLight->enabled = false;
     }
 
     bool CombatVfxBridgeScript::ProcessSlashFromTraceSignals(bool allowSpawn)
@@ -1601,6 +1905,8 @@ namespace Alice
         }
 
         m_active[overlaySlot].push_back({ overlayId, overlayLifeSec, overlayLifeSec, false, overlayAnchor });
+        if (kind == OverlaySpawnKind::Spark)
+            TriggerSparkPointLightFlash(spawnPos);
     }
 
     void CombatVfxBridgeScript::OnCombatResolve(EntityId victimId,

@@ -456,18 +456,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.06339609622955322,
-                    "y": 2.334850788116455,
-                    "z": -0.05043201148509979
+                    "x": -0.0551588237285614,
+                    "y": 2.3383121490478516,
+                    "z": -0.04951895773410797
                 },
                 "rotation": {
-                    "x": -0.13790608942508698,
-                    "y": 0.9183589816093445,
-                    "z": 0.014538398943841457
+                    "x": -0.1401040107011795,
+                    "y": 0.9218094944953918,
+                    "z": 0.01002141647040844
                 },
                 "scale": {
-                    "x": 0.009999995119869709,
-                    "y": 0.009999995119869709,
+                    "x": 0.009999996982514858,
+                    "y": 0.009999996051192284,
                     "z": 0.009999995119869709
                 },
                 "visible": false
@@ -551,19 +551,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.29746127128601074,
-                    "y": 1.500564455986023,
-                    "z": 0.12626904249191284
+                    "x": 0.29855045676231384,
+                    "y": 1.5005834102630615,
+                    "z": 0.1262444704771042
                 },
                 "rotation": {
-                    "x": -0.43583449721336365,
-                    "y": 1.1113412380218506,
-                    "z": 0.010144350118935108
+                    "x": -0.4275473654270172,
+                    "y": 1.114909291267395,
+                    "z": 0.005524926818907261
                 },
                 "scale": {
                     "x": 0.009999997913837433,
-                    "y": 0.009999997913837433,
-                    "z": 0.009999999776482582
+                    "y": 0.009999996982514858,
+                    "z": 0.009999998845160007
                 },
                 "visible": false
             },
@@ -646,18 +646,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.3001249432563782,
-                    "y": 1.7268072366714478,
-                    "z": 0.22675414383411407
+                    "x": -0.2961602807044983,
+                    "y": 1.7328815460205078,
+                    "z": 0.22949518263339996
                 },
                 "rotation": {
-                    "x": 0.24795882403850555,
-                    "y": -0.983477771282196,
-                    "z": 2.114427328109741
+                    "x": 0.23551319539546967,
+                    "y": -0.9751906991004944,
+                    "z": 2.114375591278076
                 },
                 "scale": {
-                    "x": 0.009999995119869709,
-                    "y": 0.009999995119869709,
+                    "x": 0.009999994188547134,
+                    "y": 0.009999994188547134,
                     "z": 0.00999999325722456
                 },
                 "visible": false
@@ -741,18 +741,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.14935563504695892,
-                    "y": 1.7193783521652222,
-                    "z": -0.3626708984375
+                    "x": 0.14928337931632996,
+                    "y": 1.7211849689483643,
+                    "z": -0.3632246255874634
                 },
                 "rotation": {
-                    "x": 0.05622022971510887,
-                    "y": -3.077587366104126,
-                    "z": -2.486422538757324
+                    "x": 0.05762167274951935,
+                    "y": -3.0654397010803223,
+                    "z": -2.4914937019348145
                 },
                 "scale": {
-                    "x": 0.009999998845160007,
-                    "y": 0.009999996982514858,
+                    "x": 0.009999999776482582,
+                    "y": 0.009999997913837433,
                     "z": 0.010000001639127731
                 },
                 "visible": false
@@ -836,19 +836,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.1478181928396225,
-                    "y": 0.6102239489555359,
-                    "z": 0.4454020857810974
+                    "x": 0.14238490164279938,
+                    "y": 0.6100819706916809,
+                    "z": 0.43921828269958496
                 },
                 "rotation": {
-                    "x": -0.4408012330532074,
-                    "y": 1.5957517623901367,
-                    "z": 2.902662515640259
+                    "x": -0.4520692825317383,
+                    "y": 1.593071460723877,
+                    "z": 2.920522689819336
                 },
                 "scale": {
-                    "x": 0.010000023059546947,
-                    "y": 0.010000028647482395,
-                    "z": 0.010000058449804783
+                    "x": 0.010000022128224373,
+                    "y": 0.010000031441450119,
+                    "z": 0.010000054724514484
                 },
                 "visible": false
             },
@@ -931,19 +931,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.19933539628982544,
-                    "y": 0.6559048891067505,
-                    "z": -0.24145810306072235
+                    "x": 0.2027645856142044,
+                    "y": 0.6551332473754883,
+                    "z": -0.24359093606472015
                 },
                 "rotation": {
-                    "x": -0.07480885833501816,
-                    "y": 0.9736618995666504,
-                    "z": -2.9891982078552246
+                    "x": -0.05405721068382263,
+                    "y": 0.975304365158081,
+                    "z": -2.9844703674316406
                 },
                 "scale": {
-                    "x": 0.01000003982335329,
-                    "y": 0.01000002957880497,
-                    "z": 0.010000028647482395
+                    "x": 0.010000033304095268,
+                    "y": 0.010000025853514671,
+                    "z": 0.010000025853514671
                 },
                 "visible": false
             },
@@ -8404,8 +8404,8 @@
                     "loopB": true,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 1.5604370832443237,
-                    "timeB": 0.9604544639587402
+                    "timeA": 0.7712023258209229,
+                    "timeB": 0.20455369353294373
                 },
                 "enabled": true,
                 "ik": {
@@ -9065,18 +9065,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.10797037184238434,
-                    "y": 1.0821943283081055,
-                    "z": 0.25402772426605225
+                    "x": -0.10954897105693817,
+                    "y": 1.0861917734146118,
+                    "z": 0.25806179642677307
                 },
                 "rotation": {
-                    "x": -0.006399943493306637,
-                    "y": 2.2359280586242676,
-                    "z": -0.8531425595283508
+                    "x": 0.004264695569872856,
+                    "y": 2.246345043182373,
+                    "z": -0.8510376811027527
                 },
                 "scale": {
-                    "x": 1.4999990463256836,
-                    "y": 1.4999991655349731,
+                    "x": 1.499998927116394,
+                    "y": 1.4999990463256836,
                     "z": 1.499998688697815
                 },
                 "visible": true
@@ -9758,6 +9758,8 @@
                         "bossGroggyRingOverlayPrefabPath": "Assets/Prefabs/(05)RedRing.prefab",
                         "damageOverlayPrefabPath": "Assets/Prefabs/FX_Hit_Gray_OneShot.prefab",
                         "enableHeavyFadeOut": true,
+                        "enablePreHitWorldSpark": true,
+                        "enableSparkPointLightFlash": true,
                         "guardBreakRingOverlayPrefabPath": "Assets/Prefabs/(05)OrangeDoubleRing.prefab",
                         "guardOverlayPrefabPath": "Assets/Prefabs/FX_Guard_White_OneShot.prefab",
                         "guardRingOverlayPrefabPath": "Assets/Prefabs/(05)OrangeRing.prefab",
@@ -9771,7 +9773,7 @@
                             "z": 0.0
                         },
                         "hitOverlayPrefabPath": "Assets/Prefabs/(00)Spark.prefab",
-                        "hitPoolSize": 3,
+                        "hitPoolSize": 8,
                         "hitPrefabPath": "",
                         "hitRotationOffsetDeg": {
                             "x": 0.0,
@@ -9791,11 +9793,27 @@
                         "hitSlotPrefabPath4": "Assets/Prefabs/(02)Red_HIT.prefab",
                         "hitSlotPrefabPath5": "",
                         "hitSlotPrefabPath6": "",
+                        "includeBossPreHitWorldSpark": true,
                         "organizePoolUnderRoot": true,
                         "parryRingOverlayPrefabPath": "Assets/Prefabs/(05)YellowRing.prefab",
                         "playerEntityName": "Player(Tia)",
                         "poolRootName": "__CombatVfxPool",
                         "prewarm": false,
+                        "sparkPointLightCastShadow": false,
+                        "sparkPointLightColor": {
+                            "x": 1.0,
+                            "y": 0.800000011920929,
+                            "z": 0.44999998807907107
+                        },
+                        "sparkPointLightDurationSec": 0.10000000149011612,
+                        "sparkPointLightEntityName": "",
+                        "sparkPointLightIntensity": 50.0,
+                        "sparkPointLightOffset": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "sparkPointLightRange": 4.0,
                         "sessionEntityName": "SceneManager",
                         "shockBlastLifeTimeSec": 1.0,
                         "shockBlastPoolSize": 6,
@@ -49725,10 +49743,11 @@
                         "gaugeWidgetName": "UI_Gauge4",
                         "imageWidgetName": "UI_GaugeBackground2",
                         "lowValueImagePath": "Resource/Test/4_Resources/UI/StateBar/Egoweapon_Destroyed.png",
-                        "normalImageWidgetName": "UI_GaugeBackground2",
                         "normalImagePath": "Resource/Test/4_Resources/UI/StateBar/Egoweapon_Gauge_OUT.png",
+                        "normalImageWidgetName": "UI_GaugeBackground2",
                         "sessionEntityName": "SceneManager",
-                        "triggerThreshold": 0.30000001192092896
+                        "triggerThreshold": 0.30000001192092896,
+                        "weaponBreakThreshold": 0.0010000000474974513
                     }
                 },
                 {
@@ -50646,12 +50665,14 @@
                     "enabled": true,
                     "name": "PrintDarkQuardScript",
                     "props": {
+                        "bossDeathImageWidgetName": "",
                         "bossDeathText": "",
                         "bossHealthEntityName": "",
                         "dieTextWidgetName": "UI_DieText",
                         "healthEntityName": "",
                         "m_totalCycle": 3.200000047683716,
                         "m_triggerKey": 3,
+                        "playerDeathImageWidgetName": "",
                         "playerDeathText": "",
                         "triggerOnBossDeath": false,
                         "triggerOnDeath": false
