@@ -30,10 +30,10 @@ namespace Alice
         // 뜬눈 이미지 컴포넌트 위젯 이름
         ALICE_PROPERTY(std::string, normalImageWidgetName, "");
 
-        // 감은눈(쿨타임) 이미지 컴포넌트 위젯 이름
+        // 감은눈(저상태) 이미지 컴포넌트 위젯 이름
         ALICE_PROPERTY(std::string, cooldownImageWidgetName, "");
 
-        // 전투 세션 엔티티 이름 (광폭화 상태 조회용)
+        // 전투 세션 엔티티 이름 (weak 상태 조회용)
         ALICE_PROPERTY(std::string, sessionEntityName, "SceneManager");
         
         // 레거시 값(현재 로직에서 미사용)
@@ -42,7 +42,7 @@ namespace Alice
         // 평소 이미지 경로
         ALICE_PROPERTY(std::string, normalImagePath, "");
         
-        // 쿨다운 중일 때 사용할 이미지 경로
+        // 저상태(weak/무기파손)일 때 사용할 이미지 경로
         ALICE_PROPERTY(std::string, lowValueImagePath, "");
 
         // 무기 파괴(공격 불가)로 간주할 게이지 임계값(0~1)
@@ -58,13 +58,13 @@ namespace Alice
         UIImageComponent* TargetImage = nullptr;      // 단일 이미지 fallback
         UIImageComponent* NormalImage = nullptr;      // 뜬눈
         UIImageComponent* CooldownImage = nullptr;    // 감은눈
+        EntityId NormalImageEntity = InvalidEntityId;
+        EntityId CooldownImageEntity = InvalidEntityId;
         C_CombatSessionComponent* TargetSession = nullptr;
-        float NormalBaseAlpha = 1.0f;
-        float CooldownBaseAlpha = 1.0f;
         
         // 이전 상태 추적 (불필요한 이미지 변경 방지)
         bool wasLowValue = false;
-        bool ImageBlendInitialized = false;
+        bool VisibilityInitialized = false;
         
         void TryResolveSession();
         void TryResolveImages();
