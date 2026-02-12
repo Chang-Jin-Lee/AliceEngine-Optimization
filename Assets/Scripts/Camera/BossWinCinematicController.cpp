@@ -27,6 +27,7 @@
 #include "Runtime/Rendering/Components/SpotLightComponent.h"
 #include "Runtime/Rendering/Components/RectLightComponent.h"
 #include "../Combat/C_CombatSessionComponent.h"
+#include "../TempUIContnets/FadeInOutScript.h"
 #include "../TempUIContnets/MainChangerScript.h"
 #include "../TempUIContnets/PrintDarkQuardScript.h"
 
@@ -199,6 +200,28 @@ namespace Alice
             return out;
         }
 
+        FadeInOutScript* FindFadeScript(World& world, const std::string& entityName)
+        {
+            if (entityName.empty())
+                return nullptr;
+
+            const GameObject go = world.FindGameObject(entityName);
+            if (!go.IsValid())
+                return nullptr;
+
+            auto* scripts = world.GetScripts(go.id());
+            if (!scripts)
+                return nullptr;
+
+            for (auto& sc : *scripts)
+            {
+                if (sc.scriptName == "FadeInOutScript" && sc.instance)
+                    return static_cast<FadeInOutScript*>(sc.instance.get());
+            }
+
+            return nullptr;
+        }
+
         bool FetchWorldPosition(World* world, EntityId id, DirectX::XMFLOAT3& outPos)
         {
             if (!world || id == InvalidEntityId)
@@ -234,6 +257,11 @@ namespace Alice
         m_seq = {};
         m_pendingSceneLoad = false;
         m_pendingSceneLoadTimerSec = 0.0f;
+        m_pendingUseFade = false;
+        m_pendingFadeStarted = false;
+        m_pendingFadeLeadInSec = 0.0f;
+        m_pendingSceneDelayAfterFadeSec = 0.0f;
+        m_pendingFadeEntityName.clear();
         m_controlsOverridden = false;
         m_bossMaterials.clear();
         m_scriptOverrides.clear();
@@ -270,13 +298,37 @@ namespace Alice
         if (m_pendingSceneLoad)
         {
             m_pendingSceneLoadTimerSec += dt;
-            if (m_pendingSceneLoadTimerSec >= std::max(0.0f, Get_m_sceneTransitionDelaySec()))
+
+            if (m_pendingUseFade && !m_pendingFadeStarted
+                && m_pendingSceneLoadTimerSec >= std::max(0.0f, m_pendingFadeLeadInSec))
+            {
+                if (World* world = GetWorld())
+                {
+                    if (auto* fade = FindFadeScript(*world, m_pendingFadeEntityName))
+                    {
+                        fade->OnEnable();
+                        fade->StartFadeIn();
+                    }
+                }
+                m_pendingFadeStarted = true;
+            }
+
+            const float transitionDelaySec = m_pendingUseFade
+                ? (std::max(0.0f, m_pendingFadeLeadInSec) + std::max(0.0f, m_pendingSceneDelayAfterFadeSec))
+                : std::max(0.0f, m_pendingSceneDelayAfterFadeSec);
+
+            if (m_pendingSceneLoadTimerSec >= transitionDelaySec)
             {
                 const std::string nextScene = Get_m_nextScenePath();
                 if (!nextScene.empty() && Scenes())
                     Scenes()->LoadSceneFileRequest(nextScene.c_str());
 
                 m_pendingSceneLoad = false;
+                m_pendingUseFade = false;
+                m_pendingFadeStarted = false;
+                m_pendingFadeLeadInSec = 0.0f;
+                m_pendingSceneDelayAfterFadeSec = 0.0f;
+                m_pendingFadeEntityName.clear();
             }
             return;
         }
@@ -969,6 +1021,11 @@ namespace Alice
 
         m_pendingSceneLoad = false;
         m_pendingSceneLoadTimerSec = 0.0f;
+        m_pendingUseFade = false;
+        m_pendingFadeStarted = false;
+        m_pendingFadeLeadInSec = 0.0f;
+        m_pendingSceneDelayAfterFadeSec = 0.0f;
+        m_pendingFadeEntityName.clear();
         m_bossFadeArmed = !Get_m_waitBossPoseBeforeFade();
         m_bossFadeArmSec = std::max(0.0f, Get_m_bossFadeStartSec());
         m_bossFadeComplete = !Get_m_fadeBossEnabled();
@@ -1101,11 +1158,85 @@ namespace Alice
 
         if (willLoadScene)
         {
+            bool useFade = false;
+            float fadeLeadInSec = 0.0f;
+            float sceneDelayAfterFadeSec = std::max(0.0f, Get_m_sceneTransitionDelaySec());
+            std::string fadeEntityName{};
+
+            World* world = GetWorld();
+            if (world && m_sceneManagerEntity != InvalidEntityId)
+            {
+                auto* scripts = world->GetScripts(m_sceneManagerEntity);
+                if (scripts)
+                {
+                    for (const auto& scriptComp : *scripts)
+                    {
+                        if (scriptComp.scriptName != Get_m_mainChangerScriptName() || !scriptComp.instance)
+                            continue;
+
+                        auto* mainChanger = dynamic_cast<MainChangerScript*>(scriptComp.instance.get());
+                        if (!mainChanger)
+                            continue;
+
+                        const std::string configuredFadeEntityName = mainChanger->Get_fadeEntityName();
+                        if (mainChanger->Get_useFadeOnDeath() && !configuredFadeEntityName.empty())
+                        {
+                            useFade = true;
+                            fadeEntityName = configuredFadeEntityName;
+                            fadeLeadInSec = std::max(0.0f, mainChanger->Get_deathEffectDelaySec());
+
+                            float delaySec = mainChanger->Get_delaySec();
+                            if (delaySec < 0.0f)
+                            {
+                                if (auto* fade = FindFadeScript(*world, configuredFadeEntityName))
+                                {
+                                    const float speed = std::max(0.0f, fade->Get_fadeSpeed());
+                                    if (speed > 0.0f)
+                                    {
+                                        const float startAlpha = std::clamp(fade->Get_startAlpha(), 0.0f, 1.0f);
+                                        delaySec = (1.0f - startAlpha) / speed;
+                                    }
+                                    else
+                                    {
+                                        delaySec = 0.0f;
+                                    }
+                                }
+                                else
+                                {
+                                    delaySec = 0.0f;
+                                }
+                            }
+                            sceneDelayAfterFadeSec = std::max(0.0f, delaySec);
+
+                            const float configuredTotalDelay = std::max(0.0f, Get_m_sceneTransitionDelaySec());
+                            if (configuredTotalDelay > 0.0f)
+                            {
+                                const float minDelayAfterFade = std::max(0.0f, configuredTotalDelay - fadeLeadInSec);
+                                sceneDelayAfterFadeSec = std::max(sceneDelayAfterFadeSec, minDelayAfterFade);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
             m_pendingSceneLoad = true;
             m_pendingSceneLoadTimerSec = 0.0f;
+            m_pendingUseFade = useFade;
+            m_pendingFadeStarted = false;
+            m_pendingFadeLeadInSec = useFade ? fadeLeadInSec : 0.0f;
+            m_pendingSceneDelayAfterFadeSec = useFade
+                ? sceneDelayAfterFadeSec
+                : std::max(0.0f, Get_m_sceneTransitionDelaySec());
+            m_pendingFadeEntityName = useFade ? fadeEntityName : std::string{};
         }
         else
         {
+            m_pendingUseFade = false;
+            m_pendingFadeStarted = false;
+            m_pendingFadeLeadInSec = 0.0f;
+            m_pendingSceneDelayAfterFadeSec = 0.0f;
+            m_pendingFadeEntityName.clear();
             RestoreOverriddenScripts();
         }
 
@@ -1118,6 +1249,11 @@ namespace Alice
         m_seq = {};
         m_pendingSceneLoad = false;
         m_pendingSceneLoadTimerSec = 0.0f;
+        m_pendingUseFade = false;
+        m_pendingFadeStarted = false;
+        m_pendingFadeLeadInSec = 0.0f;
+        m_pendingSceneDelayAfterFadeSec = 0.0f;
+        m_pendingFadeEntityName.clear();
 
         RestorePostProcessBaseline();
         SetGameplayCameraControl(true);
