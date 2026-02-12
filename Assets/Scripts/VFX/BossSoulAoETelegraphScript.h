@@ -47,6 +47,7 @@ namespace Alice
         void UpdateHowlDust(float deltaTime);
         void ResetHowlDust();
         float ResolveCurrentSoulClipDurationSec() const;
+        bool IsBossDeadNow() const;
         bool IsBoostPatternActive() const;
         bool TryGetCurrentClipTimeSec(const std::string& clipName, float& outTimeSec) const;
         bool TryGetCurrentSoulTimeSec(float& outTimeSec) const;

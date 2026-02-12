@@ -20,6 +20,7 @@ namespace Alice
         void Update(float deltaTime) override;
         void OnDisable() override;
         void OnDestroy() override;
+        bool IsUiBlockingActive() const;
 
     private:
         struct PpvBaseline
@@ -59,6 +60,7 @@ namespace Alice
         bool ResolveFpsCamera();
         bool EnsurePostProcessVolume();
         bool ResolveActorEntities();
+        bool IsPlayerDead();
 
         void CapturePostProcessBaseline();
         void RestorePostProcessBaseline();
@@ -74,6 +76,7 @@ namespace Alice
         void ApplyFallBlend(float deltaTime);
         void ApplyLookAtBoss(float deltaTime);
         void TriggerBossCharge();
+        float GetEffectiveBossChargeDelaySec() const;
 
         void SetGameplayCameraControl(bool enable);
         void DisableBlockingScriptsForSequence();
@@ -86,7 +89,13 @@ namespace Alice
     private:
         ALICE_PROPERTY(std::string, m_outputCameraName, "MainCamera");
         ALICE_PROPERTY(std::string, m_fpsCameraName, "FPSCamera");
+        ALICE_PROPERTY(bool, m_autoCreateFallbackFpsCamera, true);
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_fallbackFpsLocalOffset, DirectX::XMFLOAT3(-0.0435285568f, 1.05593562f, 0.233519554f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_fallbackFpsLocalRotation, DirectX::XMFLOAT3(-0.1f, 0.0f, 0.0f));
+        ALICE_PROPERTY(DirectX::XMFLOAT3, m_fallbackFpsLocalScale, DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f));
+        ALICE_PROPERTY(float, m_fallbackFpsFovDeg, 62.0f);
         ALICE_PROPERTY(std::string, m_playerEntityName, "Player(Tia)");
+        ALICE_PROPERTY(std::string, m_playerCoreEntityName, "EGO_Core");
         ALICE_PROPERTY(std::string, m_playerWeaponEntityName, "EGO_Blade(combined)");
         ALICE_PROPERTY(std::string, m_bossEntityName, "Boss");
         ALICE_PROPERTY(std::string, m_bossHeadEntityName, "BossEffectPoint");
@@ -98,6 +107,7 @@ namespace Alice
         ALICE_PROPERTY(bool, m_enableHotkey, true);
         ALICE_PROPERTY(bool, m_restartOnKey, true);
         ALICE_PROPERTY(bool, m_triggerWithAlpha7, true);
+        ALICE_PROPERTY(bool, m_autoStartOnPlayerDeath, false);
 
         ALICE_PROPERTY(bool, m_disableFollowDuringSequence, true);
         ALICE_PROPERTY(bool, m_disableLookAtDuringSequence, true);
@@ -105,7 +115,9 @@ namespace Alice
         ALICE_PROPERTY(bool, m_holdFpsAfterCut, true);
         ALICE_PROPERTY(bool, m_restoreGameplayCameraWhenFinished, false);
         ALICE_PROPERTY(bool, m_hidePlayerOnCut, true);
+        ALICE_PROPERTY(bool, m_hidePlayerCoreOnCut, true);
         ALICE_PROPERTY(bool, m_hidePlayerWeaponOnCut, true);
+        ALICE_PROPERTY(bool, m_hidePlayerImmediatelyOnDeath, true);
         ALICE_PROPERTY(bool, m_restoreVisibilityOnStop, true);
         ALICE_PROPERTY(bool, m_disableCombatSessionDuringSequence, true);
         ALICE_PROPERTY(bool, m_disableBossCombatSessionDuringSequence, true);
@@ -130,6 +142,8 @@ namespace Alice
         ALICE_PROPERTY(float, m_holdFpsDurationSec, 0.0f); // 0: infinite hold
         ALICE_PROPERTY(float, m_fallBlendDurationSec, 0.55f);
         ALICE_PROPERTY(DirectX::XMFLOAT3, m_fallOffsetWorld, DirectX::XMFLOAT3(0.0f, -0.82f, 0.18f));
+        ALICE_PROPERTY(bool, m_approachBossDuringFall, true);
+        ALICE_PROPERTY(float, m_targetBossDistanceAfterFall, 3.0f);
         ALICE_PROPERTY(float, m_lookAtBossHeightOffset, 1.30f);
         ALICE_PROPERTY(float, m_lookPitchOffsetDeg, -2.0f);
         ALICE_PROPERTY(float, m_lookRotationDamping, 10.0f);
@@ -142,12 +156,14 @@ namespace Alice
         EntityId m_fpsCameraEntity = InvalidEntityId;
         EntityId m_volumeEntity = InvalidEntityId;
         EntityId m_playerEntity = InvalidEntityId;
+        EntityId m_playerCoreEntity = InvalidEntityId;
         EntityId m_playerWeaponEntity = InvalidEntityId;
         EntityId m_bossEntity = InvalidEntityId;
         EntityId m_bossHeadEntity = InvalidEntityId;
 
         bool m_running = false;
         bool m_cutDone = false;
+        bool m_prevPlayerDead = false;
         float m_elapsedSec = 0.0f;
         float m_holdFpsElapsedSec = 0.0f;
         float m_afterCutElapsedSec = 0.0f;

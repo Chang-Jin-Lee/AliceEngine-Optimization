@@ -18,6 +18,7 @@ namespace Alice
     public:
         void Start() override;
         void Update(float deltaTime) override;
+        void TriggerBossDeathNow();
 
         /// ??????????筌왖????뽯뻻????(KeyCode 揶? 0=Alpha0, 3=D, 26=Space ??
         ALICE_PROPERTY(int, m_triggerKey, 3);
@@ -41,12 +42,27 @@ namespace Alice
         ALICE_PROPERTY(std::string, playerDeathImageWidgetName, "");
         ALICE_PROPERTY(std::string, bossDeathImageWidgetName, "");
 
+        // Optional cinematic gates: UI trigger waits until these cinematic scripts are idle.
+        ALICE_PROPERTY(std::string, deathCinematicEntityName, "SceneManager");
+        ALICE_PROPERTY(std::string, deathCinematicScriptName, "CombatDeathFpsProduction");
+        ALICE_PROPERTY(std::string, winCinematicEntityName, "SceneManager");
+        ALICE_PROPERTY(std::string, winCinematicScriptName, "BossWinCinematicController");
+
     private:
         float m_elapsed{ 0.0f };
         float m_scriptElapsed{ 0.0f };  // ?袁⑹읅 ??볦퍢 (startTime ?袁⑤뼎??
         bool m_isShowing{ false };
         bool m_playerDeathTriggered{ false };
         bool m_bossDeathTriggered{ false };
+        bool m_waitPlayerDeathCinematicRelease{ false };
+        bool m_waitBossDeathCinematicRelease{ false };
+        bool m_playerDeathCinematicSawBlock{ false };
+        bool m_bossDeathCinematicSawBlock{ false };
+        float m_playerDeathCinematicWaitSec{ 0.0f };
+        float m_bossDeathCinematicWaitSec{ 0.0f };
+        bool m_playerDeathLatched{ false };
+        bool m_bossDeathLatched{ false };
+        bool m_forceBossDeathTriggerRequested{ false };
         EntityId m_dieTextEntityId{ InvalidEntityId };  // UI_DieText widget
         EntityId m_playerImageEntityId{ InvalidEntityId };
         EntityId m_bossImageEntityId{ InvalidEntityId };

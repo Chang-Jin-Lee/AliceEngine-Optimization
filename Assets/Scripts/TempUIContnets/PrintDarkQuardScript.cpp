@@ -8,11 +8,83 @@
 #include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/UITextComponent.h"
 #include "Runtime/UI/BindWidget.h"
+#include "../Camera/CombatDeathFpsProduction.h"
+#include "../Camera/BossWinCinematicController.h"
+#include "../Combat/C_CombatSessionComponent.h"
 #include <algorithm>
 
 namespace Alice
 {
     REGISTER_SCRIPT(PrintDarkQuardScript);
+
+    namespace
+    {
+        constexpr float kCinematicGateFallbackSec = 0.35f;
+
+        template <typename TScript>
+        TScript* FindScriptOnEntity(World& world, const std::string& entityName, const std::string& scriptName)
+        {
+            if (scriptName.empty())
+                return nullptr;
+
+            if (!entityName.empty())
+            {
+                const GameObject go = world.FindGameObject(entityName);
+                if (go.IsValid())
+                {
+                    auto* scripts = world.GetScripts(go.id());
+                    if (scripts)
+                    {
+                        for (auto& sc : *scripts)
+                        {
+                            if (sc.scriptName != scriptName || !sc.instance)
+                                continue;
+                            if (auto* typed = dynamic_cast<TScript*>(sc.instance.get()))
+                                return typed;
+                        }
+                    }
+                }
+            }
+
+            for (auto& [entityId, scripts] : world.GetAllScriptsInWorld())
+            {
+                (void)entityId;
+                for (auto& sc : scripts)
+                {
+                    if (sc.scriptName != scriptName || !sc.instance)
+                        continue;
+                    if (auto* typed = dynamic_cast<TScript*>(sc.instance.get()))
+                        return typed;
+                }
+            }
+
+            return nullptr;
+        }
+
+        C_CombatSessionComponent* FindCombatSession(World& world, const std::string& entityName)
+        {
+            if (entityName.empty())
+                return nullptr;
+
+            const GameObject go = world.FindGameObject(entityName);
+            if (!go.IsValid())
+                return nullptr;
+
+            auto* scripts = world.GetScripts(go.id());
+            if (!scripts)
+                return nullptr;
+
+            for (auto& sc : *scripts)
+            {
+                if (sc.scriptName != "C_CombatSessionComponent" || !sc.instance)
+                    continue;
+                if (auto* session = dynamic_cast<C_CombatSessionComponent*>(sc.instance.get()))
+                    return session;
+            }
+
+            return nullptr;
+        }
+    }
 
     void PrintDarkQuardScript::Start()
     {
@@ -21,6 +93,15 @@ namespace Alice
         m_isShowing = false;
         m_playerDeathTriggered = false;
         m_bossDeathTriggered = false;
+        m_waitPlayerDeathCinematicRelease = false;
+        m_waitBossDeathCinematicRelease = false;
+        m_playerDeathCinematicSawBlock = false;
+        m_bossDeathCinematicSawBlock = false;
+        m_playerDeathCinematicWaitSec = 0.0f;
+        m_bossDeathCinematicWaitSec = 0.0f;
+        m_playerDeathLatched = false;
+        m_bossDeathLatched = false;
+        m_forceBossDeathTriggerRequested = false;
         m_dieTextEntityId = InvalidEntityId;
         m_playerImageEntityId = InvalidEntityId;
         m_bossImageEntityId = InvalidEntityId;
@@ -75,6 +156,12 @@ namespace Alice
         }
     }
 
+    void PrintDarkQuardScript::TriggerBossDeathNow()
+    {
+        m_forceBossDeathTriggerRequested = true;
+        m_bossDeathLatched = true;
+    }
+
     void PrintDarkQuardScript::Update(float deltaTime)
     {
         m_scriptElapsed += (deltaTime > 0.0f ? deltaTime : 0.0f);
@@ -96,8 +183,20 @@ namespace Alice
             bool shouldTrigger = false;
             TriggerType triggerType = TriggerType::None;
             World* w = GetWorld();
-            if (Get_triggerOnDeath() && !m_playerDeathTriggered && w)
+            if (m_forceBossDeathTriggerRequested)
             {
+                shouldTrigger = true;
+                triggerType = TriggerType::BossDeath;
+                m_forceBossDeathTriggerRequested = false;
+            }
+
+            if (!shouldTrigger && Get_triggerOnDeath() && !m_playerDeathTriggered && w)
+            {
+                bool playerDeadThisFrame = false;
+                bool playerDeadBySession = false;
+                if (auto* session = FindCombatSession(*w, "SceneManager"))
+                    playerDeadBySession = (session->GetPlayerState() == Combat::ActionState::Dead);
+
                 const std::string& healthName = Get_healthEntityName();
                 if (!healthName.empty())
                 {
@@ -106,18 +205,75 @@ namespace Alice
                     {
                         if (auto* health = w->GetComponent<HealthComponent>(healthGo.id()))
                         {
-                            if ((!health->alive || health->currentHealth <= 0.0f))
+                            playerDeadThisFrame = (!health->alive || health->currentHealth <= 0.0f);
+                            if (playerDeadThisFrame)
+                                m_playerDeathLatched = true;
+                            const bool playerDeadNow = m_playerDeathLatched;
+                            if (playerDeadNow)
                             {
-                                shouldTrigger = true;
-                                triggerType = TriggerType::PlayerDeath;
+                                bool hasDeathCinematicGate = false;
+                                bool blockByCinematic = false;
+                                if (auto* deathCine = FindScriptOnEntity<CombatDeathFpsProduction>(
+                                        *w,
+                                        Get_deathCinematicEntityName(),
+                                        Get_deathCinematicScriptName()))
+                                {
+                                    hasDeathCinematicGate = deathCine->Get_m_autoStartOnPlayerDeath();
+                                    blockByCinematic = deathCine->IsUiBlockingActive();
+                                }
+
+                                if (hasDeathCinematicGate)
+                                {
+                                    if (!m_waitPlayerDeathCinematicRelease)
+                                    {
+                                        m_waitPlayerDeathCinematicRelease = true;
+                                        m_playerDeathCinematicSawBlock = false;
+                                        m_playerDeathCinematicWaitSec = 0.0f;
+                                    }
+                                    else
+                                    {
+                                        m_playerDeathCinematicWaitSec += (deltaTime > 0.0f ? deltaTime : 0.0f);
+                                    }
+
+                                    if (blockByCinematic)
+                                        m_playerDeathCinematicSawBlock = true;
+
+                                    const bool readyAfterCinematic = (m_playerDeathCinematicSawBlock && !blockByCinematic);
+                                    const bool fallbackRelease =
+                                        (!m_playerDeathCinematicSawBlock && m_playerDeathCinematicWaitSec >= kCinematicGateFallbackSec);
+                                    const bool canReleaseUi = (readyAfterCinematic || fallbackRelease);
+                                    if (!canReleaseUi)
+                                        blockByCinematic = true;
+                                }
+
+                                if (!blockByCinematic)
+                                {
+                                    shouldTrigger = true;
+                                    triggerType = TriggerType::PlayerDeath;
+                                }
                             }
                         }
                     }
+                }
+
+                if (playerDeadBySession)
+                    m_playerDeathLatched = true;
+
+                if (!m_playerDeathLatched)
+                {
+                    m_waitPlayerDeathCinematicRelease = false;
+                    m_playerDeathCinematicSawBlock = false;
+                    m_playerDeathCinematicWaitSec = 0.0f;
                 }
             }
 
             if (!shouldTrigger && Get_triggerOnBossDeath() && !m_bossDeathTriggered && w)
             {
+                bool bossDeadThisFrame = false;
+                bool bossDeadBySession = false;
+                if (auto* session = FindCombatSession(*w, "SceneManager"))
+                    bossDeadBySession = (session->GetBossState() == Combat::ActionState::Dead);
+
                 const std::string& bossHealthName = Get_bossHealthEntityName();
                 if (!bossHealthName.empty())
                 {
@@ -126,13 +282,86 @@ namespace Alice
                     {
                         if (auto* health = w->GetComponent<HealthComponent>(bossHealthGo.id()))
                         {
-                            if ((!health->alive || health->currentHealth <= 0.0f))
+                            bossDeadThisFrame = (!health->alive || health->currentHealth <= 0.0f);
+                            if (bossDeadThisFrame)
+                                m_bossDeathLatched = true;
+                            const bool bossDeadNow = m_bossDeathLatched;
+                            if (bossDeadNow)
                             {
-                                shouldTrigger = true;
-                                triggerType = TriggerType::BossDeath;
+                                BossWinCinematicController* winCine = nullptr;
+                                bool hasWinCinematicGate = false;
+                                bool blockByCinematic = false;
+                                if (auto* found = FindScriptOnEntity<BossWinCinematicController>(
+                                        *w,
+                                        Get_winCinematicEntityName(),
+                                        Get_winCinematicScriptName()))
+                                {
+                                    winCine = found;
+                                    hasWinCinematicGate = winCine->Get_m_autoStartOnBossDeath();
+                                    blockByCinematic = winCine->IsUiBlockingActive();
+                                }
+
+                                if (hasWinCinematicGate)
+                                {
+                                    if (!m_waitBossDeathCinematicRelease)
+                                    {
+                                        m_waitBossDeathCinematicRelease = true;
+                                        m_bossDeathCinematicSawBlock = false;
+                                        m_bossDeathCinematicWaitSec = 0.0f;
+                                    }
+                                    else
+                                    {
+                                        m_bossDeathCinematicWaitSec += (deltaTime > 0.0f ? deltaTime : 0.0f);
+                                    }
+
+                                    if (blockByCinematic)
+                                        m_bossDeathCinematicSawBlock = true;
+
+                                    float fallbackAfterBlendSec = 0.0f;
+                                    if (winCine)
+                                    {
+                                        fallbackAfterBlendSec =
+                                            std::max(0.0f, winCine->Get_m_focusDurationSec()) +
+                                            std::max(0.0f, winCine->Get_m_focusHoldSec()) +
+                                            std::max(0.0f, winCine->Get_m_returnDurationSec()) +
+                                            std::max(0.0f, winCine->Get_m_waitBeforeShakeSec()) +
+                                            std::max(0.0f, winCine->Get_m_shakeBlurDurationSec()) +
+                                            0.05f;
+                                    }
+
+                                    // Prefer strict "after real cinematic end"; fallback to expected blend length when detection misses.
+                                    bool canReleaseUi = false;
+                                    if (m_bossDeathCinematicSawBlock)
+                                    {
+                                        canReleaseUi = !blockByCinematic;
+                                    }
+                                    else if (fallbackAfterBlendSec > 0.0f
+                                             && m_bossDeathCinematicWaitSec >= fallbackAfterBlendSec)
+                                    {
+                                        canReleaseUi = true;
+                                    }
+                                    if (!canReleaseUi)
+                                        blockByCinematic = true;
+                                }
+
+                                if (!blockByCinematic)
+                                {
+                                    shouldTrigger = true;
+                                    triggerType = TriggerType::BossDeath;
+                                }
                             }
                         }
                     }
+                }
+
+                if (bossDeadBySession)
+                    m_bossDeathLatched = true;
+
+                if (!m_bossDeathLatched)
+                {
+                    m_waitBossDeathCinematicRelease = false;
+                    m_bossDeathCinematicSawBlock = false;
+                    m_bossDeathCinematicWaitSec = 0.0f;
                 }
             }
 
@@ -238,9 +467,21 @@ namespace Alice
                 m_isShowing = true;
                 m_elapsed = 0.0f;
                 if (triggerType == TriggerType::PlayerDeath)
+                {
                     m_playerDeathTriggered = true;
+                    m_waitPlayerDeathCinematicRelease = false;
+                    m_playerDeathCinematicSawBlock = false;
+                    m_playerDeathCinematicWaitSec = 0.0f;
+                    m_playerDeathLatched = false;
+                }
                 else if (triggerType == TriggerType::BossDeath)
+                {
                     m_bossDeathTriggered = true;
+                    m_waitBossDeathCinematicRelease = false;
+                    m_bossDeathCinematicSawBlock = false;
+                    m_bossDeathCinematicWaitSec = 0.0f;
+                    m_bossDeathLatched = false;
+                }
             }
             return;
         }

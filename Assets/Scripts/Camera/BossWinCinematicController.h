@@ -22,6 +22,7 @@ namespace Alice
         void Update(float deltaTime) override;
         void OnDisable() override;
         void OnDestroy() override;
+        bool IsUiBlockingActive() const { return m_seq.running; }
 
     private:
         enum class Phase : std::uint8_t
@@ -98,9 +99,13 @@ namespace Alice
         void ApplyCameraPose(const CameraPose& pose) const;
         bool BuildFocusPose(CameraPose& outPose) const;
         void SetGameplayCameraControl(bool enable);
+        void CaptureClearResultSnapshot();
+        bool ShouldMainChangerHandleBossTransition() const;
+        bool IsBossFadePoseReady() const;
 
         void DisableMainChangerIfNeeded(bool onStart);
         void RestoreOverriddenScripts();
+        void TriggerBossDeathUiIfAvailable();
 
         void StartSequence(bool forceBossDead);
         void UpdateSequence(float deltaTime);
@@ -109,6 +114,7 @@ namespace Alice
 
         void UpdateBossFade();
         void ApplyBossAlpha(float alpha);
+        void DisableBossEffectsRecursive();
         void CollectBossMaterials();
         void RestoreBossMaterials();
         void SetEntityVisible(EntityId id, bool visible);
@@ -127,6 +133,7 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_bossWeaponEntityName, "BossWeapon");
         ALICE_PROPERTY(std::string, m_bossEffectPointName, "BossEffectPoint");
         ALICE_PROPERTY(std::string, m_eyeObjectName, "W_EYE");
+        ALICE_PROPERTY(std::string, m_additionalBossEffectNamesCsv, "BossDeshEffect,Boss_AttackTrailVfx1,Boss_AttackTrailVfx2");
 
         ALICE_PROPERTY(bool, m_enableHotkeys, true);
         ALICE_PROPERTY(int, m_previewKey, static_cast<int>(KeyCode::Alpha6));
@@ -157,6 +164,8 @@ namespace Alice
         ALICE_PROPERTY(float, m_bossFadeStartSec, 0.18f);
         ALICE_PROPERTY(float, m_bossFadeDurationSec, 1.6f);
         ALICE_PROPERTY(float, m_bossMinAlpha, 0.0f);
+        ALICE_PROPERTY(bool, m_waitBossPoseBeforeFade, true);
+        ALICE_PROPERTY(float, m_bossFadePoseWaitTimeoutSec, 4.0f);
         ALICE_PROPERTY(bool, m_showEyeDuringSequence, true);
 
         ALICE_PROPERTY(std::string, m_postProcessVolumeName, "BossWinCinematicVolume");
@@ -191,14 +200,24 @@ namespace Alice
         EntityId m_cameraEntity = InvalidEntityId;
         EntityId m_playerEntity = InvalidEntityId;
         EntityId m_bossEntity = InvalidEntityId;
+        EntityId m_bossEffectPointEntity = InvalidEntityId;
         EntityId m_bossWeaponEntity = InvalidEntityId;
         EntityId m_eyeEntity = InvalidEntityId;
         EntityId m_volumeEntity = InvalidEntityId;
+        std::vector<EntityId> m_additionalBossEffectEntities{};
 
         SequenceState m_seq{};
         bool m_prevBossDead = false;
         bool m_pendingSceneLoad = false;
         float m_pendingSceneLoadTimerSec = 0.0f;
+        bool m_pendingUseFade = false;
+        bool m_pendingFadeStarted = false;
+        float m_pendingFadeLeadInSec = 0.0f;
+        float m_pendingSceneDelayAfterFadeSec = 0.0f;
+        std::string m_pendingFadeEntityName{};
+        bool m_bossFadeArmed = false;
+        bool m_bossFadeComplete = false;
+        float m_bossFadeArmSec = 0.0f;
 
         bool m_controlsOverridden = false;
         bool m_hasFollow = false;
