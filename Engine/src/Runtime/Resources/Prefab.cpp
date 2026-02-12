@@ -426,6 +426,7 @@ namespace Alice
                     MaterialComponent matCopy = *mat;
                     matCopy.assetPath = NormalizePathToRelative(matCopy.assetPath);
                     matCopy.albedoTexturePath = NormalizePathToRelative(matCopy.albedoTexturePath);
+                    matCopy.emissiveTexturePath = NormalizePathToRelative(matCopy.emissiveTexturePath);
 
                     rttr::instance inst = matCopy;
                     outEntity["Material"] = JsonRttr::ToJsonObject(inst);

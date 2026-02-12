@@ -99,7 +99,7 @@ bool FbxModel::Load(ID3D11Device* device, const std::wstring& pathW)
 	std::string pathA = Utf8FromWString(pathW);
 	m_->scene = m_->importer->ReadFile(pathA,
 		aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality |
-		aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_ConvertToLeftHanded |
+		aiProcess_CalcTangentSpace | aiProcess_ConvertToLeftHanded |
 		aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph | aiProcess_LimitBoneWeights);
 	if (!m_->scene || !m_->scene->HasMeshes()) return false;
 
@@ -338,7 +338,7 @@ bool FbxModel::LoadFromMemory(ID3D11Device* device,
 
 	const unsigned int flags =
 		aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality |
-		aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_ConvertToLeftHanded |
+		aiProcess_CalcTangentSpace | aiProcess_ConvertToLeftHanded |
 		aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph | aiProcess_LimitBoneWeights;
 
 	// 확장자 추출 (예: "fbx")
@@ -541,7 +541,7 @@ bool FbxModel::LoadFromMemory(ID3D11Device* device,
 
 	const unsigned int flags =
 		aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality |
-		aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_ConvertToLeftHanded |
+		aiProcess_CalcTangentSpace | aiProcess_ConvertToLeftHanded |
 		aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph | aiProcess_LimitBoneWeights;
 
 	// pHint 는 확장자 추출 (예: "fbx")

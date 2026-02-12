@@ -112,6 +112,7 @@ namespace Alice
     {
         bool enabled = true;          // Bloom 활성화
         float intensity = 0.0f;      // Bloom 합성 강도 (최종 합성 시 적용)
+        float emissiveBloomIntensity = 1.0f; // Emissive 전용 Bloom 강도
         float gaussianIntensity = 1.0f; // Gaussian 블러 강도 (블러 단계에서 적용)
         float threshold = 1.0f;      // 밝기 추출 기준
         float knee = 0.5f;            // Soft threshold (0~1)
@@ -138,6 +139,8 @@ namespace Alice
         float             globalIBLIntensity { 1.0f };          // 전역 IBL 강도 (0.0 ~ 1.0)
         float             shadowStrength { 1.0f };              // 전역 그림자 강도 (0~1)
         float             toonShadowStrength { 1.0f };          // ToonPBREditable 전용 그림자 강도 (0~1)
+        float             skyboxRotation{ 0.0f };               // 스카이박스 Yaw 회전
+        float             skyboxRotationPitch{ 0.0f };          // 스카이박스 Pitch 회전
 
         // 광원 세기
         float             keyIntensity  { 1.0f };
@@ -232,6 +235,9 @@ namespace Alice
         float             ambientOcclusion { 1.0f };
         float             envDiffuseStrength { 1.0f };
         float             envSpecularStrength { 1.0f };
+        DirectX::XMFLOAT3 emissiveColor { 1.0f, 1.0f, 1.0f };
+        float             emissiveIntensity { 0.0f };
+        float             emissiveBloom { 1.0f };
         float             normalStrength { 1.0f }; // 노말맵 강도 조절
         int               shadingMode { -1 }; // -1: 전역, 0~7: 개별 셰이딩 모드, 6: OnlyTextureWithOutline, 7: ToonPBREditable
         bool              transparent { false };
@@ -249,6 +255,8 @@ namespace Alice
 
         // 선택적인 알베도 텍스처 경로 (.alice 단일 포맷 또는 원본 이미지 경로)
         std::string       albedoTexturePath;
+        // 선택적인 에미시브 텍스처 경로 (.alice 단일 포맷 또는 원본 이미지 경로)
+        std::string       emissiveTexturePath;
         // 어떤 스키닝 메시(레지스트리 키)를 사용할지 나타내는 논리 키
         std::string       meshKey;
     };
@@ -257,9 +265,9 @@ namespace Alice
 	struct ShadowSettings
 	{
 		// 튜토리얼(34_ToneMapping)과 동일한 기본값 스케일
-		std::uint32_t mapSizePx = 4096;   // 섀도우맵 해상도(한 변)
-		float         bias = 0.0015f;
-		float         pcfRadius = 0.5f;   // texel 단위(0~3 권장)
+		std::uint32_t mapSizePx = 5120;   // 섀도우맵 해상도(한 변)
+		float         bias = 0.00002f;
+		float         pcfRadius = 0.8f;   // texel 단위(0~3 권장)
 		float         orthoRadius = 20.0f; // 월드 단위(씬 크기에 맞게 조절)
 		bool          enabled = true;
 	};
@@ -285,12 +293,13 @@ namespace Alice
 	{
 		float threshold;
 		float knee;
-		float bloomIntensity;      // Bloom 합성 강도 (Composite 패스에서 사용)
+		float bloomIntensity;      // 장면 밝기 Bloom 강도
+		float emissiveBloomIntensity; // Emissive 전용 Bloom 강도
 		float gaussianIntensity;   // Gaussian 블러 강도 (Blur 패스에서 사용)
 		float radius;
 		DirectX::XMFLOAT2 texelSize;
 		int downsample;
-		float padding;
+		float padding[3];
 	};
 
 	// 디퍼드에서 쓰이는 중
@@ -404,7 +413,9 @@ namespace Alice
 		DirectX::XMFLOAT4 direction;
 		DirectX::XMFLOAT4 color;
 		float intensity;
-		float pad[3];
+		float skyboxRotationRad;
+		float skyboxRotationPitchRad;
+		float pad;
 	};
 
 
