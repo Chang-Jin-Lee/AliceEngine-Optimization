@@ -286,7 +286,7 @@ float4 main(PSInput input) : SV_Target
         float intensity = gEmptyParams.w;
         float shade = lerp(1.0f - intensity, 1.0f, cloud);
         
-        finalColor = gEmptyColor * shade;
+        finalColor = color * shade;
         finalColor.a = color.a; // 원본 알파 유지
     }
     
@@ -561,7 +561,7 @@ float4 main(PSInput input) : SV_Target
         float intensity = gEmptyParams.w;
         float shade = lerp(1.0f - intensity, 1.0f, cloud);
         
-        finalColor = gEmptyColor * shade;
+        finalColor = color * shade;
         finalColor.a = color.a; // 원본 알파 유지
     }
     

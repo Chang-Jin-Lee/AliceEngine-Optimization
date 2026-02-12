@@ -54,7 +54,7 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 0.0,
+                    "w": 1.0,
                     "x": 0.0,
                     "y": 0.0,
                     "z": 0.0
@@ -172,16 +172,16 @@
                 "alignH": "Center",
                 "alignV": "Center",
                 "anchorMax": {
-                    "x": 0.0,
-                    "y": 0.0
+                    "x": 0.5,
+                    "y": 0.5
                 },
                 "anchorMin": {
-                    "x": 0.0,
-                    "y": 0.0
+                    "x": 0.5,
+                    "y": 0.5
                 },
                 "pivot": {
-                    "x": -0.5,
-                    "y": 0.5
+                    "x": 0.0,
+                    "y": 0.0
                 },
                 "position": {
                     "x": 0.0,
@@ -223,7 +223,7 @@
                         "fadeEntityName": "UI_Fade",
                         "fadeInOnStart": true,
                         "fadeOutDelaySec": 2.0,
-                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/Main.scene"
+                        "targetScenePath": "Assets/Scenes/#00Combat0211.scene"
                     }
                 },
                 {
@@ -285,16 +285,16 @@
                 "alignH": "Center",
                 "alignV": "Center",
                 "anchorMax": {
-                    "x": 0.125,
-                    "y": 0.125
+                    "x": 0.5,
+                    "y": 0.5
                 },
                 "anchorMin": {
-                    "x": 0.125,
-                    "y": 0.125
+                    "x": 0.5,
+                    "y": 0.5
                 },
                 "pivot": {
-                    "x": -0.5,
-                    "y": 0.5
+                    "x": 0.0,
+                    "y": 0.0
                 },
                 "position": {
                     "x": 0.0,
@@ -319,7 +319,7 @@
                 "shaderName": "Default",
                 "space": "Screen",
                 "visibility": "Visible",
-                "widgetName": "UI_Image"
+                "widgetName": "UI_Loading_image"
             },
             "guid": "14603078868386504603",
             "name": "UI_Loading_image"
