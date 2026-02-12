@@ -115,6 +115,7 @@ namespace Alice
         void PlaySfx3();
         void PlaySfx4();
         void PlaySfx5();
+        void CancelDelayedAttackSfx();
 
         // 특정 공격 상태의 볼륨 조절 (0.0f ~ 1.0f)
         void SetAttackStateVolume(BossAttackState state, float volume);
@@ -133,6 +134,7 @@ namespace Alice
         ALICE_FUNC(PlaySfx3);
         ALICE_FUNC(PlaySfx4);
         ALICE_FUNC(PlaySfx5);
+        ALICE_FUNC(CancelDelayedAttackSfx);
         ALICE_FUNC(SetAttackStateVolume);
         ALICE_FUNC(SetMovementStateVolume);
         ALICE_FUNC(SetOtherStateVolume);

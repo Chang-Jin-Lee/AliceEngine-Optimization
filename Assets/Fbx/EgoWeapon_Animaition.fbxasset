@@ -1,6 +1,7 @@
 {
     "materials": [
-        "Assets/Materials/EgoWeapon_Animaition_0.mat"
+        "Assets/Materials/EgoWeapon_Animaition_0.mat",
+        "Assets/Materials/EgoWeapon_Animaition_1.mat"
     ],
     "mesh": "EgoWeapon_Animaition",
     "source_fbx": "Resource/Test/4_Resources/charecter/EgoWeapon_Animaition.fbx"

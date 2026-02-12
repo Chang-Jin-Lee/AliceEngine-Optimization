@@ -5,6 +5,7 @@
 #include "Runtime/Gameplay/Combat/HealthComponent.h"
 #include "Runtime/UI/UIEmptyGaugeEffectComponent.h"
 #include "Runtime/UI/UIWidgetComponent.h"
+#include "Runtime/UI/UIImageComponent.h"
 #include "Runtime/UI/UITextComponent.h"
 #include "Runtime/UI/BindWidget.h"
 #include <algorithm>
@@ -21,6 +22,9 @@ namespace Alice
         m_playerDeathTriggered = false;
         m_bossDeathTriggered = false;
         m_dieTextEntityId = InvalidEntityId;
+        m_playerImageEntityId = InvalidEntityId;
+        m_bossImageEntityId = InvalidEntityId;
+        m_activeImageEntityId = InvalidEntityId;
 
         World* w = GetWorld();
         if (w)
@@ -28,6 +32,14 @@ namespace Alice
             const std::string& dieTextName = Get_dieTextWidgetName();
             if (!dieTextName.empty())
                 m_dieTextEntityId = AliceUI::FindWidgetByName(*w, gameObject().id(), dieTextName);
+
+            const std::string& playerImageName = Get_playerDeathImageWidgetName();
+            if (!playerImageName.empty())
+                m_playerImageEntityId = AliceUI::FindWidgetByName(*w, gameObject().id(), playerImageName);
+
+            const std::string& bossImageName = Get_bossDeathImageWidgetName();
+            if (!bossImageName.empty())
+                m_bossImageEntityId = AliceUI::FindWidgetByName(*w, gameObject().id(), bossImageName);
         }
 
         auto* widget = gameObject().GetComponent<UIWidgetComponent>();
@@ -42,6 +54,24 @@ namespace Alice
             auto* dieText = w->GetComponent<UITextComponent>(m_dieTextEntityId);
             if (dieText)
                 dieText->color.w = 0.0f;
+        }
+
+        if (w)
+        {
+            auto ResetImage = [&](EntityId id) {
+                if (id == InvalidEntityId)
+                    return;
+                if (auto* imgWidget = w->GetComponent<UIWidgetComponent>(id))
+                    imgWidget->visibility = AliceUI::UIVisibility::Collapsed;
+                if (auto* img = w->GetComponent<UIImageComponent>(id))
+                {
+                    auto c = img->color;
+                    c.w = 0.0f;
+                    img->color = c;
+                }
+            };
+            ResetImage(m_playerImageEntityId);
+            ResetImage(m_bossImageEntityId);
         }
     }
 
@@ -125,7 +155,51 @@ namespace Alice
                     dieParams->startTime = m_scriptElapsed - deltaTime;
 
                 widget->visibility = AliceUI::UIVisibility::Visible;
-                if (m_dieTextEntityId != InvalidEntityId)
+
+                m_activeImageEntityId = InvalidEntityId;
+                if (triggerType == TriggerType::BossDeath)
+                    m_activeImageEntityId = m_bossImageEntityId;
+                else if (triggerType == TriggerType::PlayerDeath)
+                    m_activeImageEntityId = m_playerImageEntityId;
+                else if (triggerType == TriggerType::Manual)
+                {
+                    if (m_playerImageEntityId != InvalidEntityId)
+                        m_activeImageEntityId = m_playerImageEntityId;
+                    else if (m_bossImageEntityId != InvalidEntityId)
+                        m_activeImageEntityId = m_bossImageEntityId;
+                }
+
+                if (w)
+                {
+                    auto ResetImage = [&](EntityId id) {
+                        if (id == InvalidEntityId)
+                            return;
+                        if (auto* imgWidget = w->GetComponent<UIWidgetComponent>(id))
+                            imgWidget->visibility = AliceUI::UIVisibility::Collapsed;
+                        if (auto* img = w->GetComponent<UIImageComponent>(id))
+                        {
+                            auto c = img->color;
+                            c.w = 0.0f;
+                            img->color = c;
+                        }
+                    };
+                    ResetImage(m_playerImageEntityId);
+                    ResetImage(m_bossImageEntityId);
+
+                    if (m_activeImageEntityId != InvalidEntityId)
+                    {
+                        if (auto* imgWidget = w->GetComponent<UIWidgetComponent>(m_activeImageEntityId))
+                            imgWidget->visibility = AliceUI::UIVisibility::Visible;
+                        if (auto* img = w->GetComponent<UIImageComponent>(m_activeImageEntityId))
+                        {
+                            auto c = img->color;
+                            c.w = 0.0f;
+                            img->color = c;
+                        }
+                    }
+                }
+
+                if (m_dieTextEntityId != InvalidEntityId && m_activeImageEntityId == InvalidEntityId)
                 {
                     World* w = GetWorld();
                     if (w)
@@ -152,6 +226,15 @@ namespace Alice
                         }
                     }
                 }
+                else if (m_dieTextEntityId != InvalidEntityId && w)
+                {
+                    auto* dieTextWidget = w->GetComponent<UIWidgetComponent>(m_dieTextEntityId);
+                    if (dieTextWidget)
+                        dieTextWidget->visibility = AliceUI::UIVisibility::Collapsed;
+                    auto* dieText = w->GetComponent<UITextComponent>(m_dieTextEntityId);
+                    if (dieText)
+                        dieText->color.w = 0.0f;
+                }
                 m_isShowing = true;
                 m_elapsed = 0.0f;
                 if (triggerType == TriggerType::PlayerDeath)
@@ -165,7 +248,7 @@ namespace Alice
         m_elapsed += deltaTime;
 
         // DieText ??곕솁 癰귣떯而?(DieLine????덉뵬 ????而? 筌ㅼ뮆? 0.8)
-        if (m_dieTextEntityId != InvalidEntityId)
+        if (m_activeImageEntityId != InvalidEntityId || m_dieTextEntityId != InvalidEntityId)
         {
             World* w = GetWorld();
             if (w)
@@ -184,9 +267,22 @@ namespace Alice
                     alpha = 0.8f * (1.0f - (t - phase2End) / phase3Dur);
                 alpha = std::clamp(alpha, 0.0f, 0.8f);
 
-                auto* dieText = w->GetComponent<UITextComponent>(m_dieTextEntityId);
-                if (dieText)
-                    dieText->color.w = alpha;
+                if (m_activeImageEntityId != InvalidEntityId)
+                {
+                    auto* img = w->GetComponent<UIImageComponent>(m_activeImageEntityId);
+                    if (img)
+                    {
+                        auto c = img->color;
+                        c.w = alpha;
+                        img->color = c;
+                    }
+                }
+                else if (m_dieTextEntityId != InvalidEntityId)
+                {
+                    auto* dieText = w->GetComponent<UITextComponent>(m_dieTextEntityId);
+                    if (dieText)
+                        dieText->color.w = alpha;
+                }
             }
         }
 
@@ -206,6 +302,25 @@ namespace Alice
                         dieText->color.w = 0.0f;
                 }
             }
+            if (World* w = GetWorld())
+            {
+                auto ResetImage = [&](EntityId id) {
+                    if (id == InvalidEntityId)
+                        return;
+                    if (auto* imgWidget = w->GetComponent<UIWidgetComponent>(id))
+                        imgWidget->visibility = AliceUI::UIVisibility::Collapsed;
+                    if (auto* img = w->GetComponent<UIImageComponent>(id))
+                    {
+                        auto c = img->color;
+                        c.w = 0.0f;
+                        img->color = c;
+                    }
+                };
+                ResetImage(m_playerImageEntityId);
+                ResetImage(m_bossImageEntityId);
+                ResetImage(m_activeImageEntityId);
+            }
+            m_activeImageEntityId = InvalidEntityId;
             m_isShowing = false;
         }
     }

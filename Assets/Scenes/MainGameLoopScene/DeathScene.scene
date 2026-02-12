@@ -35,7 +35,7 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 0.0,
+                    "w": 0.2102794498205185,
                     "x": 0.0,
                     "y": 0.0,
                     "z": 0.0
@@ -368,7 +368,7 @@
                         "fadeEntityName": "UI_Fade",
                         "fadeInOnStart": true,
                         "fadeOutDelaySec": 2.0,
-                        "targetScenePath": "Assets/Scenes/MainGameLoopScene/Main.scene"
+                        "targetScenePath": "Assets/Scenes/#00Combat0211.scene"
                     }
                 },
                 {
