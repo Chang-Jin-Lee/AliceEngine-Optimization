@@ -3096,6 +3096,12 @@ namespace Alice
 			&& (m_state->prevPlayerState != Combat::ActionState::Attack || outPlayer.attackRestarted));
 		const bool playerAttackEnded = (m_state->prevPlayerState == Combat::ActionState::Attack
 			&& outPlayer.state != Combat::ActionState::Attack);
+		const std::string playerFatalAttackClip = !m_playerFatalAttackClip.empty()
+			? m_playerFatalAttackClip
+			: m_fatalAttackClip;
+		const bool playerAttackEndedOnGroggyFatal = playerAttackEnded
+			&& !playerFatalAttackClip.empty()
+			&& (m_state->playerAnim.attackClip == playerFatalAttackClip);
 		const bool playerDodgeEntered = (outPlayer.state == Combat::ActionState::Dodge
 			&& m_state->prevPlayerState != Combat::ActionState::Dodge);
 		if (playerDodgeEntered)
@@ -3104,6 +3110,7 @@ namespace Alice
 		const bool playerAttackEndedOnFinal = playerAttackEnded
 			&& !m_state->playerLastAttackHeavy
 			&& (m_state->playerLightComboIndex >= kMaxLightCombo);
+		const bool blendIdleOnPlayerAttackEnd = playerAttackEndedOnFinal || playerAttackEndedOnGroggyFatal;
 
 		if (playerAttackStarted)
 		{
@@ -4888,6 +4895,8 @@ namespace Alice
 			bool attackRestartPulse,
 			bool forceHardCutTransition,
 			bool blendIdleOnAttackEnd,
+			bool useShortPlayerAttackEndBlend,
+			bool useLongPlayerAttackEndBlend,
 			bool hitReactActive,
 			bool suppressGuardExit,
 			bool forceGuardLoopOnly,
@@ -5879,7 +5888,9 @@ namespace Alice
 					if (attackEnded && !blendOnAttackEnd)
 					{
 						const bool wantsShortPlayerAttackEndBlend =
-							(entityId == playerId) && blendIdleOnAttackEnd;
+							(entityId == playerId) && useShortPlayerAttackEndBlend;
+						const bool wantsLongPlayerAttackEndBlend =
+							(entityId == playerId) && useLongPlayerAttackEndBlend;
 						if (wantsShortPlayerAttackEndBlend)
 						{
 							constexpr float kPlayerAttackEndBlendMaxSec = 0.06f;
@@ -5891,8 +5902,11 @@ namespace Alice
 						else if (blendIdleOnAttackEnd
 							&& !avoidRootMotionBlendBack)
 						{
+							float attackEndBlendSec = blendSec;
+							if (wantsLongPlayerAttackEndBlend)
+								attackEndBlendSec = std::max(attackEndBlendSec, std::max(0.0f, m_playerGroggyAttackEndBlendSec));
 							if (!animState.blending || animState.blendingToOverride)
-								BeginBlendToSaved(blendSec);
+								BeginBlendToSaved(attackEndBlendSec);
 						}
 						else
 						{
@@ -6005,9 +6019,9 @@ namespace Alice
 
 		const bool playerGuardEnterPulse = playerGuardPressed;
 		ApplyAnimByState(playerId, playerIntent, outPlayer.state, m_state->prevPlayerState, m_state->playerAnim, m_state->playerMoveBlend,
-			playerGuardEnterPulse, outPlayer.parryRecoverToIdle, outPlayer.parryRecoverToIdle, playerParrySuccessPulse, m_state->playerChargeActive, outPlayer.attackRestarted, outPlayer.attackMotionCanceled, playerAttackEndedOnFinal, false, suppressPlayerGuardExitAnim, forcePlayerGuardLoopOnly, false);
+			playerGuardEnterPulse, outPlayer.parryRecoverToIdle, outPlayer.parryRecoverToIdle, playerParrySuccessPulse, m_state->playerChargeActive, outPlayer.attackRestarted, outPlayer.attackMotionCanceled, blendIdleOnPlayerAttackEnd, playerAttackEndedOnFinal, playerAttackEndedOnGroggyFatal, false, suppressPlayerGuardExitAnim, forcePlayerGuardLoopOnly, false);
 		ApplyAnimByState(bossId, bossIntentCompat, outBoss.state, m_state->prevBossState, m_state->bossAnim, m_state->bossMoveBlend,
-			false, false, false, false, m_state->bossChargeActive, outBoss.attackRestarted, false, false, bossOut.hitReactActive, false, false, bossOut.groggyRecoverActive);
+			false, false, false, false, m_state->bossChargeActive, outBoss.attackRestarted, false, false, false, false, bossOut.hitReactActive, false, false, bossOut.groggyRecoverActive);
 		m_state->playerHowlingGuardActivePrev = playerHowlingGuardActive;
 
 		auto ApplyHitstopVelocityStop = [&](EntityId entityId, float timerSec)
