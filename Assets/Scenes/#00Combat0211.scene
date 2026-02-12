@@ -456,19 +456,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.07782826572656631,
-                    "y": 2.3376331329345703,
-                    "z": 10.734418869018555
+                    "x": -0.07923020422458649,
+                    "y": 2.333338737487793,
+                    "z": 10.724708557128906
                 },
                 "rotation": {
-                    "x": -0.13814163208007813,
-                    "y": 0.01600506901741028,
-                    "z": 0.01135734748095274
+                    "x": -0.13994500041007996,
+                    "y": 0.0037966228555887938,
+                    "z": 0.015561496838927269
                 },
                 "scale": {
-                    "x": 0.009999996051192284,
+                    "x": 0.009999996982514858,
                     "y": 0.009999994188547134,
-                    "z": 0.009999995119869709
+                    "z": 0.009999994188547134
                 },
                 "visible": false
             },
@@ -551,19 +551,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.0035479937214404345,
-                    "y": 1.5005805492401123,
-                    "z": 11.122281074523926
+                    "x": 0.0024134607519954443,
+                    "y": 1.5005484819412231,
+                    "z": 11.121147155761719
                 },
                 "rotation": {
-                    "x": -0.4291725754737854,
-                    "y": 0.20755013823509216,
-                    "z": 0.0076419576071202755
+                    "x": -0.4394713342189789,
+                    "y": 0.20009540021419525,
+                    "z": 0.009777170605957508
                 },
                 "scale": {
-                    "x": 0.009999997913837433,
-                    "y": 0.009999998845160007,
-                    "z": 0.009999999776482582
+                    "x": 0.009999998845160007,
+                    "y": 0.009999996982514858,
+                    "z": 0.009999997913837433
                 },
                 "visible": false
             },
@@ -646,19 +646,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.44466903805732727,
-                    "y": 1.7312805652618408,
-                    "z": 10.717069625854492
+                    "x": -0.4427913725376129,
+                    "y": 1.7249494791030884,
+                    "z": 10.708996772766113
                 },
                 "rotation": {
-                    "x": 0.2429007738828659,
-                    "y": -1.8864752054214478,
-                    "z": 2.1074161529541016
+                    "x": 0.2430647313594818,
+                    "y": -1.889874815940857,
+                    "z": 2.128793954849243
                 },
                 "scale": {
-                    "x": 0.00999999325722456,
-                    "y": 0.009999995119869709,
-                    "z": 0.009999995119869709
+                    "x": 0.009999996051192284,
+                    "y": 0.009999997913837433,
+                    "z": 0.009999996982514858
                 },
                 "visible": false
             },
@@ -741,19 +741,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.2962750196456909,
-                    "y": 1.72097647190094,
-                    "z": 10.703335762023926
+                    "x": 0.2990799844264984,
+                    "y": 1.7185848951339722,
+                    "z": 10.703676223754883
                 },
                 "rotation": {
-                    "x": 0.05781949311494827,
-                    "y": 2.308807134628296,
-                    "z": -2.4864695072174072
+                    "x": 0.05372694507241249,
+                    "y": 2.291295051574707,
+                    "z": -2.4908409118652344
                 },
                 "scale": {
-                    "x": 0.009999997913837433,
-                    "y": 0.009999996051192284,
-                    "z": 0.009999999776482582
+                    "x": 0.009999995119869709,
+                    "y": 0.009999996982514858,
+                    "z": 0.010000001639127731
                 },
                 "visible": false
             },
@@ -836,19 +836,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.3399447798728943,
-                    "y": 0.6103128790855408,
-                    "z": 11.194108963012695
+                    "x": -0.3409072458744049,
+                    "y": 0.6099847555160522,
+                    "z": 11.202765464782715
                 },
                 "rotation": {
-                    "x": -0.4463179409503937,
-                    "y": 0.6856902241706848,
-                    "z": 2.9153780937194824
+                    "x": -0.44226643443107605,
+                    "y": 0.6899741888046265,
+                    "z": 2.897374153137207
                 },
                 "scale": {
-                    "x": 0.010000023990869522,
-                    "y": 0.010000032372772694,
-                    "z": 0.010000058449804783
+                    "x": 0.010000026784837246,
+                    "y": 0.010000034235417843,
+                    "z": 0.010000056587159634
                 },
                 "visible": false
             },
@@ -931,19 +931,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.2342044711112976,
-                    "y": 0.6549630165100098,
-                    "z": 10.818974494934082
+                    "x": 0.2318541556596756,
+                    "y": 0.6566523313522339,
+                    "z": 10.81764030456543
                 },
                 "rotation": {
-                    "x": -0.05831744521856308,
-                    "y": 0.0670742318034172,
-                    "z": -2.987447738647461
+                    "x": -0.0837952196598053,
+                    "y": 0.06565400958061218,
+                    "z": -2.989363193511963
                 },
                 "scale": {
                     "x": 0.010000035166740417,
-                    "y": 0.010000026784837246,
-                    "z": 0.010000030510127544
+                    "y": 0.010000024922192097,
+                    "z": 0.010000025853514671
                 },
                 "visible": false
             },
@@ -8581,8 +8581,8 @@
                     "loopB": true,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 1.0847506523132324,
-                    "timeB": 0.018110796809196472
+                    "timeA": 0.20046035945415497,
+                    "timeB": 0.0004899501800537109
                 },
                 "enabled": true,
                 "ik": {
@@ -9244,19 +9244,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.34778258204460144,
-                    "y": 1.0841866731643677,
-                    "z": 10.878440856933594
+                    "x": -0.3516511023044586,
+                    "y": 1.082933783531189,
+                    "z": 10.886656761169434
                 },
                 "rotation": {
-                    "x": -0.0017369696870446205,
-                    "y": 1.3360519409179688,
-                    "z": -0.8437515497207642
+                    "x": -0.002745304023846984,
+                    "y": 1.325689435005188,
+                    "z": -0.8697555065155029
                 },
                 "scale": {
-                    "x": 1.499998927116394,
-                    "y": 1.499998927116394,
-                    "z": 1.4999988079071045
+                    "x": 1.4999992847442627,
+                    "y": 1.4999991655349731,
+                    "z": 1.4999994039535522
                 },
                 "visible": true
             },
@@ -48518,6 +48518,53 @@
                         "targetWidgetName": "UI_playeInfo",
                         "useNonUniformScale": false
                     }
+                },
+                {
+                    "enabled": true,
+                    "name": "PlayerRageStateIconScript",
+                    "props": {
+                        "cooldownIconWidgetName": "UI_RageCooldownIcon",
+                        "durationIconWidgetName": "UI_RageDurationIcon",
+                        "sessionEntityName": "SceneManager"
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 60.0,
+                        "baseSizeY": 60.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_RageCooldownIcon",
+                        "useNonUniformScale": false
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 60.0,
+                        "baseSizeY": 60.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_RageDurationIcon",
+                        "useNonUniformScale": false
+                    }
                 }
             ],
             "Transform": {
@@ -54917,6 +54964,262 @@
             },
             "guid": "12186323676936461739",
             "name": "Cube(FBX)"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/4_Resources/UI/StateBar/Egoweapon1.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UIEffect": {
+                "globalAlpha": 1.0,
+                "glowAngle": 0.0,
+                "glowColor": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "glowEnabled": false,
+                "glowSpeed": 1.0,
+                "glowStrength": 0.800000011920929,
+                "glowWidth": 0.25,
+                "grayscale": 0.0,
+                "outlineColor": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineEnabled": false,
+                "outlineThickness": 1.0,
+                "radialAngleOffset": 0.0,
+                "radialClockwise": true,
+                "radialDim": 0.3499999940395355,
+                "radialEnabled": true,
+                "radialFill": 0.0,
+                "radialInner": 0.0,
+                "radialOuter": 0.5,
+                "radialSoftness": 0.009999999776482582,
+                "vitalAmplitude": 0.25,
+                "vitalBgColor": {
+                    "w": 0.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "vitalColor": {
+                    "w": 1.0,
+                    "x": 0.10000000149011612,
+                    "y": 1.0,
+                    "z": 0.20000000298023224
+                },
+                "vitalEnabled": false,
+                "vitalFrequency": 2.0,
+                "vitalSpeed": 1.5,
+                "vitalThickness": 0.019999999552965164
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -130.0,
+                    "y": 80.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 60.0,
+                    "y": 60.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_RageCooldownIcon"
+            },
+            "_parentGuid": "15692019774589272268",
+            "guid": "6858746416118714896",
+            "name": "UI_RageCooldownIcon"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/4_Resources/UI/StateBar/Egoweapon2.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UIEffect": {
+                "globalAlpha": 1.0,
+                "glowAngle": 0.0,
+                "glowColor": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "glowEnabled": false,
+                "glowSpeed": 1.0,
+                "glowStrength": 0.800000011920929,
+                "glowWidth": 0.25,
+                "grayscale": 0.0,
+                "outlineColor": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineEnabled": false,
+                "outlineThickness": 1.0,
+                "radialAngleOffset": 0.0,
+                "radialClockwise": true,
+                "radialDim": 0.3499999940395355,
+                "radialEnabled": true,
+                "radialFill": 1.0,
+                "radialInner": 0.0,
+                "radialOuter": 0.5,
+                "radialSoftness": 0.009999999776482582,
+                "vitalAmplitude": 0.25,
+                "vitalBgColor": {
+                    "w": 0.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "vitalColor": {
+                    "w": 1.0,
+                    "x": 0.10000000149011612,
+                    "y": 1.0,
+                    "z": 0.20000000298023224
+                },
+                "vitalEnabled": false,
+                "vitalFrequency": 2.0,
+                "vitalSpeed": 1.5,
+                "vitalThickness": 0.019999999552965164
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -130.0,
+                    "y": 80.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 60.0,
+                    "y": 60.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_RageDurationIcon"
+            },
+            "_parentGuid": "15692019774589272268",
+            "guid": "4911577685126811015",
+            "name": "UI_RageDurationIcon"
         }
     ],
     "sceneName": "#00Combat0211",
