@@ -76,17 +76,17 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.009362902492284775,
-                    "y": 1.171445608139038,
-                    "z": -23.048755645751953
+                    "x": -0.009364276193082333,
+                    "y": 1.1704447269439697,
+                    "z": -22.748756408691406
                 },
                 "rotation": {
-                    "x": -0.05933145433664322,
-                    "y": -3.129664421081543,
-                    "z": -0.012199235148727894
+                    "x": -0.05933143571019173,
+                    "y": -3.1296627521514893,
+                    "z": -0.012200341559946537
                 },
                 "scale": {
-                    "x": 1.0,
+                    "x": 1.0000001192092896,
                     "y": 0.9999996423721313,
                     "z": 0.9999996423721313
                 },
@@ -171,19 +171,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.011566887609660625,
-                    "y": 0.9291789531707764,
-                    "z": -23.061071395874023
+                    "x": -0.01156801450997591,
+                    "y": 0.9281781315803528,
+                    "z": -22.761072158813477
                 },
                 "rotation": {
-                    "x": -0.03126073256134987,
-                    "y": -2.990816831588745,
-                    "z": 0.0013564112596213818
+                    "x": -0.03126056492328644,
+                    "y": -2.9908151626586914,
+                    "z": 0.001355318701826036
                 },
                 "scale": {
-                    "x": 1.0,
+                    "x": 0.9999999403953552,
                     "y": 0.9999993443489075,
-                    "z": 0.999999463558197
+                    "z": 0.9999994039535522
                 },
                 "visible": false
             },
@@ -266,17 +266,17 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.13387426733970642,
-                    "y": 0.25011658668518066,
-                    "z": -22.994369506835938
+                    "x": 0.13387401401996613,
+                    "y": 0.24911591410636902,
+                    "z": -22.69437026977539
                 },
                 "rotation": {
-                    "x": 0.09473151713609695,
-                    "y": -1.7479987144470215,
-                    "z": 2.8782379627227783
+                    "x": 0.09473258256912231,
+                    "y": -1.7479970455169678,
+                    "z": 2.878237724304199
                 },
                 "scale": {
-                    "x": 0.9999994039535522,
+                    "x": 0.999999463558197,
                     "y": 1.0000001192092896,
                     "z": 1.0000001192092896
                 },
@@ -361,19 +361,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.13509511947631836,
-                    "y": 0.2505241632461548,
-                    "z": -23.095483779907227
+                    "x": -0.13509555160999298,
+                    "y": 0.24952319264411926,
+                    "z": -22.795482635498047
                 },
                 "rotation": {
-                    "x": 0.028316661715507507,
-                    "y": 1.7975802421569824,
-                    "z": -2.7297096252441406
+                    "x": 0.028315572068095207,
+                    "y": 1.7975817918777466,
+                    "z": -2.7297098636627197
                 },
                 "scale": {
                     "x": 0.999999463558197,
                     "y": 0.9999993443489075,
-                    "z": 0.9999997019767761
+                    "z": 0.9999997615814209
                 },
                 "visible": false
             },
@@ -456,19 +456,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.08035130798816681,
-                    "y": 2.332568645477295,
-                    "z": 10.723212242126465
+                    "x": -0.07723941653966904,
+                    "y": 2.366858959197998,
+                    "z": 10.7348051071167
                 },
                 "rotation": {
-                    "x": -0.1392853707075119,
-                    "y": 0.003454356687143445,
-                    "z": 0.01660795323550701
+                    "x": -0.1386270821094513,
+                    "y": 0.015584254637360573,
+                    "z": 0.010991975665092468
                 },
                 "scale": {
-                    "x": 0.009999998845160007,
-                    "y": 0.009999998845160007,
-                    "z": 0.009999996051192284
+                    "x": 0.009999996051192284,
+                    "y": 0.009999994188547134,
+                    "z": 0.009999994188547134
                 },
                 "visible": false
             },
@@ -551,19 +551,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.00227284524589777,
-                    "y": 1.5005481243133545,
-                    "z": 11.120966911315918
+                    "x": 0.0035723920445889235,
+                    "y": 1.5295813083648682,
+                    "z": 11.122329711914063
                 },
                 "rotation": {
-                    "x": -0.44123002886772156,
-                    "y": 0.1994248777627945,
-                    "z": 0.010989939793944359
+                    "x": -0.42862844467163086,
+                    "y": 0.2075406014919281,
+                    "z": 0.007072578649967909
                 },
                 "scale": {
-                    "x": 0.010000000707805157,
-                    "y": 0.009999998845160007,
-                    "z": 0.009999999776482582
+                    "x": 0.009999998845160007,
+                    "y": 0.009999997913837433,
+                    "z": 0.009999997913837433
                 },
                 "visible": false
             },
@@ -646,19 +646,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.4429462254047394,
-                    "y": 1.723561406135559,
-                    "z": 10.708060264587402
+                    "x": -0.4444790482521057,
+                    "y": 1.7607673406600952,
+                    "z": 10.717220306396484
                 },
                 "rotation": {
-                    "x": 0.24660587310791016,
-                    "y": -1.8921722173690796,
-                    "z": 2.127800464630127
+                    "x": 0.24083267152309418,
+                    "y": -1.8852778673171997,
+                    "z": 2.1091158390045166
                 },
                 "scale": {
-                    "x": 0.009999996982514858,
+                    "x": 0.009999995119869709,
                     "y": 0.009999994188547134,
-                    "z": 0.009999992325901985
+                    "z": 0.00999999325722456
                 },
                 "visible": false
             },
@@ -741,19 +741,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.2988280653953552,
-                    "y": 1.718269944190979,
-                    "z": 10.703805923461914
+                    "x": 0.29643532633781433,
+                    "y": 1.750095009803772,
+                    "z": 10.703336715698242
                 },
                 "rotation": {
-                    "x": 0.053625546395778656,
-                    "y": 2.288742780685425,
-                    "z": -2.4894001483917236
+                    "x": 0.05803440138697624,
+                    "y": 2.3094136714935303,
+                    "z": -2.487426996231079
                 },
                 "scale": {
-                    "x": 0.009999999776482582,
-                    "y": 0.009999997913837433,
-                    "z": 0.010000001639127731
+                    "x": 0.009999995119869709,
+                    "y": 0.009999996051192284,
+                    "z": 0.009999998845160007
                 },
                 "visible": false
             },
@@ -836,18 +836,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.3412989377975464,
-                    "y": 0.6100655198097229,
-                    "z": 11.204521179199219
+                    "x": -0.33974310755729675,
+                    "y": 0.6392581462860107,
+                    "z": 11.193456649780273
                 },
                 "rotation": {
-                    "x": -0.4395918548107147,
-                    "y": 0.6905544400215149,
-                    "z": 2.8932790756225586
+                    "x": -0.4478369653224945,
+                    "y": 0.6855776906013489,
+                    "z": 2.9169223308563232
                 },
                 "scale": {
-                    "x": 0.010000023990869522,
-                    "y": 0.01000002957880497,
+                    "x": 0.010000024922192097,
+                    "y": 0.010000034235417843,
                     "z": 0.010000058449804783
                 },
                 "visible": false
@@ -931,19 +931,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.23046016693115234,
-                    "y": 0.6567245721817017,
-                    "z": 10.817434310913086
+                    "x": 0.23465950787067413,
+                    "y": 0.6839734315872192,
+                    "z": 10.819087982177734
                 },
                 "rotation": {
-                    "x": -0.08863195776939392,
-                    "y": 0.0653195008635521,
-                    "z": -2.9914231300354004
+                    "x": -0.05693444609642029,
+                    "y": 0.06721130013465881,
+                    "z": -2.9867868423461914
                 },
                 "scale": {
-                    "x": 0.010000036098062992,
-                    "y": 0.010000028647482395,
-                    "z": 0.010000026784837246
+                    "x": 0.010000035166740417,
+                    "y": 0.010000025853514671,
+                    "z": 0.010000028647482395
                 },
                 "visible": false
             },
@@ -3556,12 +3556,34 @@
                     "enabled": true,
                     "name": "BossUiActivationGateScript",
                     "props": {
-                        "additionalWidgetNamesCsv": "UI_BossHP_Gauge,UI_BossGroggy_Gauge,UI_BossWindow,UI_BossBrain,UI_BossState_Idle,UI_BossState_Move,UI_BossState_Attack,UI_BossState_Guard,UI_BossState_Dodge,UI_BossState_Groggy",
+                        "additionalWidgetNamesCsv": "UI_BossHP_Gauge,UI_BossGroggy_Gauge",
                         "bossBrainScriptName": "C_BossBrainComponent",
                         "bossEntityName": "Boss",
                         "hideOnStart": true,
                         "rehideWhenInactive": false,
                         "rootWidgetName": "UI_BossInfor"
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "BossLockOnMarkerScript",
+                    "props": {
+                        "bossEntityName": "Boss",
+                        "cameraEntityName": "MainCamera",
+                        "distanceScaleFarDistance": 8.0,
+                        "distanceScaleFarMultiplier": 1.0,
+                        "distanceScaleNearDistance": 2.0,
+                        "distanceScaleNearMultiplier": 0.25,
+                        "enableDistanceScale": true,
+                        "groggyTexturePath": "Resource/Test/4_Resources/UI/LockOn/Groggy.png",
+                        "lockOnTexturePath": "Resource/Test/4_Resources/UI/LockOn/LockON.png",
+                        "markerEntityName": "__BossLockOnMarkerWorld",
+                        "markerSizeX": 30.0,
+                        "markerSizeY": 30.0,
+                        "markerTowardCameraOffset": 2.0,
+                        "markerWorldScale": 0.009999999776482582,
+                        "markerYOffset": 1.7000000476837158,
+                        "sessionEntityName": "SceneManager"
                     }
                 },
                 {
@@ -3619,6 +3641,8 @@
                             "z": 1.0
                         },
                         "m_fpsCameraName": "FPSCamera",
+                        "m_hidePlayerCoreOnCut": true,
+                        "m_hidePlayerImmediatelyOnDeath": true,
                         "m_hidePlayerOnCut": true,
                         "m_hidePlayerWeaponOnCut": true,
                         "m_holdFpsAfterCut": true,
@@ -3628,6 +3652,7 @@
                         "m_lookPitchOffsetDeg": -8.0,
                         "m_lookRotationDamping": 10.0,
                         "m_outputCameraName": "MainCamera",
+                        "m_playerCoreEntityName": "EGO_Core",
                         "m_playerEntityName": "Player(Tia)",
                         "m_playerWeaponEntityName": "EGO_Blade(combined)",
                         "m_postProcessPriority": 2800,
@@ -3666,7 +3691,7 @@
         },
         {
             "Camera": {
-                "FOV": 60.0,
+                "FOV": 59.99908447265625,
                 "Far Plane": 1000.0,
                 "Near Plane": 0.10000000149011612,
                 "aspectOverride": 0.0,
@@ -3713,7 +3738,7 @@
                 "maxDistance": 8.079999923706055,
                 "minDistance": 0.0,
                 "mode": 0,
-                "pitchDeg": -4.543227672576904,
+                "pitchDeg": 4.265414714813232,
                 "pitchMaxDeg": 80.0,
                 "pitchMinDeg": -45.0,
                 "positionDamping": 8.0,
@@ -3722,7 +3747,7 @@
                 "shoulderOffset": 0.0,
                 "shoulderSide": 1.0,
                 "targetName": "Player(Tia)",
-                "yawDeg": -19.731746673583984
+                "yawDeg": 10.3444242477417
             },
             "CameraInput": {
                 "blendTimeKey3": 0.6000000238418579,
@@ -4050,14 +4075,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -7.772213459014893,
-                    "y": 1.0342624187469482,
-                    "z": -17.408714294433594
+                    "x": -1.8578613996505737,
+                    "y": 1.3687547445297241,
+                    "z": -15.918617248535156
                 },
                 "rotation": {
-                    "x": -0.07929428666830063,
-                    "y": -0.34438395500183105,
-                    "z": 0.0
+                    "x": 0.07444553077220917,
+                    "y": 0.18054427206516266,
+                    "z": -9.31322685637781e-10
                 },
                 "scale": {
                     "x": 1.0,
@@ -4578,6 +4603,7 @@
                     "enabled": true,
                     "name": "BossWinCinematicController",
                     "props": {
+                        "m_additionalBossEffectNamesCsv": "BossDeshEffect,Boss_AttackTrailVfx1,Boss_AttackTrailVfx2",
                         "m_autoCreatePostProcessVolume": true,
                         "m_autoStartOnBossDeath": true,
                         "m_bloomBoostIntensity": 1.0800000429153442,
@@ -4586,6 +4612,7 @@
                         "m_bossEffectPointName": "BossEffectPoint",
                         "m_bossEntityName": "Boss",
                         "m_bossFadeDurationSec": 4.266666889190674,
+                        "m_bossFadePoseWaitTimeoutSec": 4.0,
                         "m_bossFadeStartSec": 0.18000000715255737,
                         "m_bossMinAlpha": 0.0,
                         "m_bossWeaponEntityName": "BossWeapon",
@@ -4633,7 +4660,8 @@
                         "m_showEyeDuringSequence": true,
                         "m_targetLookYOffset": 0.7599999904632568,
                         "m_useSmoothBlend": true,
-                        "m_waitBeforeShakeSec": 0.7699999809265137
+                        "m_waitBeforeShakeSec": 0.7699999809265137,
+                        "m_waitBossPoseBeforeFade": true
                     }
                 }
             ],
@@ -5672,18 +5700,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.03946933150291443,
-                    "y": 1.0828380584716797,
-                    "z": -23.6237735748291
+                    "x": -0.039471570402383804,
+                    "y": 1.0818371772766113,
+                    "z": -23.323774337768555
                 },
                 "rotation": {
-                    "x": 0.6770175695419312,
-                    "y": -1.922027587890625,
-                    "z": 0.6360163688659668
+                    "x": 0.6770186424255371,
+                    "y": -1.9220263957977295,
+                    "z": 0.636015772819519
                 },
                 "scale": {
                     "x": 0.9999998211860657,
-                    "y": 0.9999995827674866,
+                    "y": 0.9999996423721313,
                     "z": 1.0
                 },
                 "visible": true
@@ -7530,19 +7558,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.019254548475146294,
-                    "y": 0.9007564187049866,
-                    "z": -23.111400604248047
+                    "x": -0.019255727529525757,
+                    "y": 0.899755597114563,
+                    "z": -22.8114013671875
                 },
                 "rotation": {
-                    "x": -0.03126073256134987,
-                    "y": -2.990816831588745,
-                    "z": 0.0013564112596213818
+                    "x": -0.03126056492328644,
+                    "y": -2.9908151626586914,
+                    "z": 0.001355318701826036
                 },
                 "scale": {
-                    "x": 1.0,
+                    "x": 0.9999999403953552,
                     "y": 0.9999993443489075,
-                    "z": 0.999999463558197
+                    "z": 0.9999994039535522
                 },
                 "visible": true
             },
@@ -7744,7 +7772,7 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.10000000149011612,
                 "teleport": true,
-                "verticalVelocity": -0.34194424748420715
+                "verticalVelocity": 0.0
             },
             "Health": {
                 "alive": true,
@@ -7788,14 +7816,14 @@
                 "weaponDurabilityMax": 1000.0
             },
             "Material": {
-                "albedoTexturePath": "Resource/Textures/Tia_Animaition/Tia_Animaition_D_0.png",
+                "albedoTexturePath": "Resource/Textures/tia/tia_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Tia_Animaition_0.mat",
+                "assetPath": "Assets/Materials/tia_0.mat",
                 "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
+                    "x": 1.0,
+                    "y": 0.9373145699501038,
+                    "z": 0.8880308866500854
                 },
                 "emissiveBloom": 1.0,
                 "emissiveColor": {
@@ -7815,8 +7843,8 @@
                     "z": 0.0
                 },
                 "outlineWidth": 0.0,
-                "roughness": 0.5,
-                "shadingMode": -1,
+                "roughness": 1.0,
+                "shadingMode": 3,
                 "shadowStrength": 1.0,
                 "toonPbrBlur": false,
                 "toonPbrCut1": 0.20000000298023224,
@@ -7830,7 +7858,7 @@
                 "toonPbrLevel3Alpha": 1.0,
                 "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
+                "toonSelfShadowStrength": 0.0,
                 "transparent": false
             },
             "Scripts": [
@@ -8019,13 +8047,13 @@
                 "enabled": true,
                 "position": {
                     "x": 0.0,
-                    "y": 0.001000821590423584,
-                    "z": -23.0
+                    "y": 0.0,
+                    "z": -22.700000762939453
                 },
                 "rotation": {
-                    "x": -1.4210854715202004e-14,
-                    "y": -3.141592502593994,
-                    "z": 1.1046697636629688e-06
+                    "x": -0.0,
+                    "y": -3.1415908336639404,
+                    "z": 0.0
                 },
                 "scale": {
                     "x": 1.0,
@@ -8307,25 +8335,25 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.03946933150291443,
-                    "y": 1.0828380584716797,
-                    "z": -23.6237735748291
+                    "x": -0.039471570402383804,
+                    "y": 1.0818371772766113,
+                    "z": -23.323774337768555
                 },
                 "rotation": {
-                    "x": 0.6770175695419312,
-                    "y": -1.922027587890625,
-                    "z": 0.6360163688659668
+                    "x": 0.6770186424255371,
+                    "y": -1.9220263957977295,
+                    "z": 0.636015772819519
                 },
                 "scale": {
                     "x": 0.9999998211860657,
-                    "y": 0.9999995827674866,
+                    "y": 0.9999996423721313,
                     "z": 1.0
                 },
                 "visible": true
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 1761,
+                "attackInstanceId": 1798,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -8575,8 +8603,8 @@
                     "loopB": true,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 1.8434216976165771,
-                    "timeB": 0.7767806649208069
+                    "timeA": 1.0151424407958984,
+                    "timeB": 0.8151746392250061
                 },
                 "enabled": true,
                 "ik": {
@@ -8786,11 +8814,11 @@
                 "slopeLimitRadians": 0.7853981852531433,
                 "stepOffset": 0.10000000149011612,
                 "teleport": false,
-                "verticalVelocity": -0.34194424748420715
+                "verticalVelocity": 0.0
             },
             "Health": {
                 "alive": true,
-                "currentHealth": 1.0,
+                "currentHealth": 7000.0,
                 "dodgeActive": false,
                 "dodgeAvoidedThisFrame": false,
                 "groggy": 999.0,
@@ -8830,14 +8858,14 @@
                 "weaponDurabilityMax": 100.0
             },
             "Material": {
-                "albedoTexturePath": "Resource/Textures/Boss_Animaition/Boss_Animaition_D_0.png",
+                "albedoTexturePath": "Resource/Textures/Boss_Animaition_72eb8a8d/Boss_Animaition_72eb8a8d_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Boss_Animaition_0.mat",
+                "assetPath": "Assets/Materials/Boss_Animaition_72eb8a8d_0.mat",
                 "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
+                    "x": 0.200772225856781,
+                    "y": 0.19590862095355988,
+                    "z": 0.15038537979125977
                 },
                 "emissiveBloom": 1.0,
                 "emissiveColor": {
@@ -8845,8 +8873,8 @@
                     "y": 1.0,
                     "z": 1.0
                 },
-                "emissiveIntensity": 1.3580000400543213,
-                "emissiveTexturePath": "Resource/Textures/Boss_Animaition/Boss_Animaition_E_1.png",
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -8857,22 +8885,22 @@
                     "z": 0.0
                 },
                 "outlineWidth": 0.0,
-                "roughness": 0.5,
-                "shadingMode": -1,
+                "roughness": 0.8349999785423279,
+                "shadingMode": 3,
                 "shadowStrength": 1.0,
                 "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut1": 0.7680000066757202,
                 "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrCut3": 0.3919999897480011,
+                "toonPbrLevel1": 0.10300000011920929,
+                "toonPbrLevel1Alpha": 0.0,
+                "toonPbrLevel2": 0.8809999823570251,
                 "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3": 0.6800000071525574,
                 "toonPbrLevel3Alpha": 1.0,
                 "toonPbrRampIntensity": 0.0,
                 "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
+                "toonSelfShadowStrength": 0.0,
                 "transparent": false
             },
             "Scripts": [
@@ -9137,8 +9165,8 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 1.750951383883148e-08,
-                    "y": 0.0009998083114624023,
+                    "x": 7.182067207622822e-08,
+                    "y": 0.029999613761901855,
                     "z": 11.130000114440918
                 },
                 "rotation": {
@@ -9238,19 +9266,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.3502892851829529,
-                    "y": 1.081910490989685,
-                    "z": 10.88599681854248
+                    "x": -0.34879612922668457,
+                    "y": 1.11370849609375,
+                    "z": 10.87928295135498
                 },
                 "rotation": {
-                    "x": -0.005799236707389355,
-                    "y": 1.3231394290924072,
-                    "z": -0.8691352009773254
+                    "x": -2.0563602447509766e-06,
+                    "y": 1.3370362520217896,
+                    "z": -0.8454573750495911
                 },
                 "scale": {
                     "x": 1.4999990463256836,
-                    "y": 1.4999994039535522,
-                    "z": 1.4999985694885254
+                    "y": 1.499998927116394,
+                    "z": 1.499998688697815
                 },
                 "visible": true
             },
@@ -9631,19 +9659,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": 0.13651669025421143,
-                    "y": 0.6680270433425903,
-                    "z": -23.169605255126953
+                    "x": 0.13651567697525024,
+                    "y": 0.6670264005661011,
+                    "z": -22.869606018066406
                 },
                 "rotation": {
-                    "x": -1.1973907947540283,
-                    "y": -1.3406246900558472,
-                    "z": 3.1139094829559326
+                    "x": -1.197389841079712,
+                    "y": -1.340623140335083,
+                    "z": 3.1139097213745117
                 },
                 "scale": {
-                    "x": 0.9999998211860657,
-                    "y": 0.9999997615814209,
-                    "z": 0.9999999403953552
+                    "x": 0.9999998807907104,
+                    "y": 0.9999997019767761,
+                    "z": 0.9999998807907104
                 },
                 "visible": true
             },
@@ -9726,14 +9754,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -0.17451481521129608,
-                    "y": 0.6647251844406128,
-                    "z": -23.01224136352539
+                    "x": -0.17451556026935577,
+                    "y": 0.6637241840362549,
+                    "z": -22.712242126464844
                 },
                 "rotation": {
-                    "x": -1.5296125411987305,
-                    "y": 1.5450867414474487,
-                    "z": -2.038787603378296
+                    "x": -1.529613971710205,
+                    "y": 1.545087456703186,
+                    "z": -2.0387864112854004
                 },
                 "scale": {
                     "x": 1.0000001192092896,
@@ -48512,6 +48540,58 @@
                         "targetWidgetName": "UI_playeInfo",
                         "useNonUniformScale": false
                     }
+                },
+                {
+                    "enabled": true,
+                    "name": "PlayerRageStateIconScript",
+                    "props": {
+                        "cooldownIconWidgetName": "UI_RageCooldownIcon",
+                        "durationIconWidgetName": "UI_RageDurationIcon",
+                        "radialClockwise": true,
+                        "radialDim": 0.3499999940395355,
+                        "radialInner": 0.0,
+                        "radialOuter": 0.5,
+                        "radialSoftness": 0.009999999776482582,
+                        "sessionEntityName": "SceneManager"
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 60.0,
+                        "baseSizeY": 60.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_RageCooldownIcon",
+                        "useNonUniformScale": false
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 60.0,
+                        "baseSizeY": 60.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_RageDurationIcon",
+                        "useNonUniformScale": false
+                    }
                 }
             ],
             "Transform": {
@@ -48574,8 +48654,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 10.0,
-                    "y": 10.0
+                    "x": 11.0,
+                    "y": 11.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -48728,8 +48808,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 386.0,
-                    "y": 14.0
+                    "x": 432.0,
+                    "y": 16.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -48884,8 +48964,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 382.0,
-                    "y": 14.0
+                    "x": 428.0,
+                    "y": 16.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -48985,8 +49065,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 401.0,
-                    "y": 29.0
+                    "x": 449.0,
+                    "y": 33.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49101,8 +49181,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 398.0,
-                    "y": 47.0
+                    "x": 446.0,
+                    "y": 52.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49163,7 +49243,7 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 0.0,
+                    "w": 1.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
@@ -49202,8 +49282,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 398.0,
-                    "y": 47.0
+                    "x": 446.0,
+                    "y": 52.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49214,7 +49294,7 @@
                 "raycastTarget": true,
                 "shaderName": "Default",
                 "space": "Screen",
-                "visibility": "Visible",
+                "visibility": "Collapsed",
                 "widgetName": "UI_GaugeBackground2_Cooldown"
             },
             "_parentGuid": "15692019774589272268",
@@ -49303,8 +49383,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 10.0,
-                    "y": 10.0
+                    "x": 11.0,
+                    "y": 11.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49315,7 +49395,7 @@
                 "raycastTarget": true,
                 "shaderName": "Default",
                 "space": "Screen",
-                "visibility": "Visible",
+                "visibility": "Collapsed",
                 "widgetName": "UI_BossInfor"
             },
             "guid": "2566172173018441992",
@@ -49455,8 +49535,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1202.0,
-                    "y": 14.0
+                    "x": 1347.0,
+                    "y": 16.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49609,8 +49689,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1202.0,
-                    "y": 14.0
+                    "x": 1347.0,
+                    "y": 16.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49710,8 +49790,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1205.0,
-                    "y": 18.0
+                    "x": 1351.0,
+                    "y": 20.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49811,8 +49891,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1205.0,
-                    "y": 18.0
+                    "x": 1351.0,
+                    "y": 20.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -49912,8 +49992,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1849.0,
-                    "y": 900.0
+                    "x": 1920.0,
+                    "y": 1009.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -50040,8 +50120,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1600.0,
-                    "y": 500.0
+                    "x": 1920.0,
+                    "y": 561.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -50141,8 +50221,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 0.0,
-                    "y": 0.0
+                    "x": 1794.0,
+                    "y": 1009.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -50252,8 +50332,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 1600.0,
-                    "y": 900.0
+                    "x": 1920.0,
+                    "y": 1009.0
                 },
                 "sortOrder": 6,
                 "useAlignment": false
@@ -52910,165 +52990,6 @@
             "name": "Spot Light"
         },
         {
-            "Material": {
-                "albedoTexturePath": "Resource/Textures/Blood/Blood_D_0.png",
-                "alpha": 0.5,
-                "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Blood_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "emissiveBloom": 1.0,
-                "emissiveColor": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "emissiveIntensity": 0.0,
-                "emissiveTexturePath": "",
-                "envDiffuseStrength": 1.0,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.8399999737739563,
-                "shadingMode": 7,
-                "shadowStrength": 1.0,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrLevel3Alpha": 1.0,
-                "toonPbrRampIntensity": 0.0,
-                "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Blood.fbxasset",
-                "meshAssetPath": "Blood"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": -7.016539573669434,
-                    "y": 0.0024102628231048584,
-                    "z": 5.293519496917725
-                },
-                "rotation": {
-                    "x": -0.0,
-                    "y": -0.6268773674964905,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "guid": "10636056651600580107",
-            "name": "B1"
-        },
-        {
-            "Material": {
-                "albedoTexturePath": "Resource/Textures/Blood/Blood_D_0.png",
-                "alpha": 0.5,
-                "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Blood_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "emissiveBloom": 1.0,
-                "emissiveColor": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "emissiveIntensity": 0.0,
-                "emissiveTexturePath": "",
-                "envDiffuseStrength": 1.0,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.18000000715255737,
-                "shadingMode": 7,
-                "shadowStrength": 1.0,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrLevel3Alpha": 1.0,
-                "toonPbrRampIntensity": 0.0,
-                "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Blood.fbxasset",
-                "meshAssetPath": "Blood"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 11.519304275512695,
-                    "y": 0.0017687827348709106,
-                    "z": -2.18449068069458
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.6545370817184448,
-                    "z": -0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "guid": "5136661194170036895"
-        },
-        {
             "Decal": {
                 "albedoTexturePath": "Resource/Test/4_Resources/background/Decal/Mold.png",
                 "color": {
@@ -53361,86 +53282,6 @@
             },
             "guid": "14507889185691181368",
             "name": "GameObject940"
-        },
-        {
-            "Material": {
-                "albedoTexturePath": "Resource/Textures/Blood_f851239b/Blood_f851239b_D_0.png",
-                "alpha": 0.5,
-                "ambientOcclusion": 1.0,
-                "assetPath": "Assets/Materials/Blood_f851239b_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "emissiveBloom": 1.0,
-                "emissiveColor": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "emissiveIntensity": 0.0,
-                "emissiveTexturePath": "",
-                "envDiffuseStrength": 1.0,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.8759999871253967,
-                "shadingMode": 7,
-                "shadowStrength": 1.0,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrLevel3Alpha": 1.0,
-                "toonPbrRampIntensity": 0.0,
-                "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Blood_f851239b.fbxasset",
-                "meshAssetPath": "Blood_f851239b"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": -4.95802116394043,
-                    "y": 0.0010000000474974513,
-                    "z": 0.04257402941584587
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.27401667833328247,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": -0.800000011920929,
-                    "y": 1.0,
-                    "z": 0.5
-                },
-                "visible": true
-            },
-            "guid": "7425056624870842888",
-            "name": "B2"
         },
         {
             "Decal": {
@@ -53779,85 +53620,6 @@
             "name": "GameObject949"
         },
         {
-            "Material": {
-                "albedoTexturePath": "Resource/Textures/Blood_f851239b/Blood_f851239b_D_0.png",
-                "alpha": 0.35100001096725464,
-                "ambientOcclusion": 0.23999999463558197,
-                "assetPath": "Assets/Materials/Blood_f851239b_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "emissiveBloom": 1.0,
-                "emissiveColor": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "emissiveIntensity": 0.0,
-                "emissiveTexturePath": "",
-                "envDiffuseStrength": 1.0299999713897705,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.3709999918937683,
-                "shadingMode": 7,
-                "shadowStrength": 1.0,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrLevel3Alpha": 1.0,
-                "toonPbrRampIntensity": 0.0,
-                "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Blood_f851239b.fbxasset",
-                "meshAssetPath": "Blood_f851239b"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": -10.590937614440918,
-                    "y": 0.0010000000474974513,
-                    "z": 21.661970138549805
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": -0.44854962825775146,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 2.0999999046325684,
-                    "y": 1.0,
-                    "z": 2.0999999046325684
-                },
-                "visible": true
-            },
-            "guid": "15984180309094145858"
-        },
-        {
             "Decal": {
                 "albedoTexturePath": "Resource/Test/4_Resources/background/Decal/Mold.png",
                 "color": {
@@ -53898,164 +53660,6 @@
             },
             "guid": "6202407431015635165",
             "name": "GameObject952"
-        },
-        {
-            "Material": {
-                "albedoTexturePath": "Resource/Textures/Blood_f851239b/Blood_f851239b_D_0.png",
-                "alpha": 0.3499999940395355,
-                "ambientOcclusion": 0.5899999737739563,
-                "assetPath": "Assets/Materials/Blood_f851239b_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "emissiveBloom": 1.0,
-                "emissiveColor": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "emissiveIntensity": 0.0,
-                "emissiveTexturePath": "",
-                "envDiffuseStrength": 1.0,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.3869999945163727,
-                "shadingMode": 7,
-                "shadowStrength": 1.0,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrLevel3Alpha": 1.0,
-                "toonPbrRampIntensity": 0.0,
-                "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Blood_f851239b.fbxasset",
-                "meshAssetPath": "Blood_f851239b"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 10.811579704284668,
-                    "y": 0.0010000000474974513,
-                    "z": 9.090453147888184
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 2.3893556594848633,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 4.400000095367432,
-                    "y": 1.0,
-                    "z": 1.7999999523162842
-                },
-                "visible": true
-            },
-            "guid": "10057165722374016486"
-        },
-        {
-            "Material": {
-                "albedoTexturePath": "Resource/Textures/Blood_f851239b/Blood_f851239b_D_0.png",
-                "alpha": 0.4020000100135803,
-                "ambientOcclusion": 0.6200000047683716,
-                "assetPath": "Assets/Materials/Blood_f851239b_0.mat",
-                "color": {
-                    "x": 0.699999988079071,
-                    "y": 0.699999988079071,
-                    "z": 0.699999988079071
-                },
-                "emissiveBloom": 1.0,
-                "emissiveColor": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "emissiveIntensity": 0.0,
-                "emissiveTexturePath": "",
-                "envDiffuseStrength": 1.0,
-                "envSpecularStrength": 1.0,
-                "metalness": 0.0,
-                "normalStrength": 1.0,
-                "outlineColor": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "outlineWidth": 0.0,
-                "roughness": 0.35100001096725464,
-                "shadingMode": 7,
-                "shadowStrength": 1.0,
-                "toonPbrBlur": false,
-                "toonPbrCut1": 0.20000000298023224,
-                "toonPbrCut2": 0.5,
-                "toonPbrCut3": 0.949999988079071,
-                "toonPbrLevel1": 0.10000000149011612,
-                "toonPbrLevel1Alpha": 1.0,
-                "toonPbrLevel2": 0.4000000059604645,
-                "toonPbrLevel2Alpha": 1.0,
-                "toonPbrLevel3": 0.699999988079071,
-                "toonPbrLevel3Alpha": 1.0,
-                "toonPbrRampIntensity": 0.0,
-                "toonPbrStrength": 1.0,
-                "toonSelfShadowStrength": 1.0,
-                "transparent": false
-            },
-            "SkinnedAnimation": {
-                "clipIndex": 0,
-                "playing": true,
-                "speed": 1.0,
-                "timeSec": 0.0
-            },
-            "SkinnedMesh": {
-                "boneCount": 1,
-                "instanceAssetPath": "Assets/Fbx/Blood_f851239b.fbxasset",
-                "meshAssetPath": "Blood_f851239b"
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 8.529516220092773,
-                    "y": 0.0010000000474974513,
-                    "z": 5.188783168792725
-                },
-                "rotation": {
-                    "x": -0.0,
-                    "y": -0.4178376793861389,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 0.6000000238418579,
-                    "y": 1.0,
-                    "z": 0.6000000238418579
-                },
-                "visible": true
-            },
-            "guid": "16936263433932018218"
         },
         {
             "Decal": {
@@ -54969,8 +54573,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 565.0,
-                    "y": 82.0
+                    "x": 633.0,
+                    "y": 92.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -55070,8 +54674,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 890.0,
-                    "y": 108.0
+                    "x": 998.0,
+                    "y": 121.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -55387,6 +54991,1532 @@
             },
             "guid": "12186323676936461739",
             "name": "Cube(FBX)"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIEffect": {
+                "globalAlpha": 1.0,
+                "glowAngle": 0.0,
+                "glowColor": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "glowEnabled": false,
+                "glowSpeed": 1.0,
+                "glowStrength": 0.800000011920929,
+                "glowWidth": 0.25,
+                "grayscale": 0.0,
+                "outlineColor": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineEnabled": false,
+                "outlineThickness": 1.0,
+                "radialAngleOffset": 0.0,
+                "radialClockwise": true,
+                "radialDim": 0.3499999940395355,
+                "radialEnabled": true,
+                "radialFill": 1.0,
+                "radialInner": 0.0,
+                "radialOuter": 0.5,
+                "radialSoftness": 0.009999999776482582,
+                "vitalAmplitude": 0.25,
+                "vitalBgColor": {
+                    "w": 0.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "vitalColor": {
+                    "w": 1.0,
+                    "x": 0.10000000149011612,
+                    "y": 1.0,
+                    "z": 0.20000000298023224
+                },
+                "vitalEnabled": false,
+                "vitalFrequency": 2.0,
+                "vitalSpeed": 1.5,
+                "vitalThickness": 0.019999999552965164
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/4_Resources/UI/StateBar/Egoweapon1.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -130.0,
+                    "y": 80.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 67.0,
+                    "y": 67.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_RageCooldownIcon"
+            },
+            "_parentGuid": "15692019774589272268",
+            "guid": "6858746416118714896",
+            "name": "UI_RageCooldownIcon"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIEffect": {
+                "globalAlpha": 1.0,
+                "glowAngle": 0.0,
+                "glowColor": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "glowEnabled": false,
+                "glowSpeed": 1.0,
+                "glowStrength": 0.800000011920929,
+                "glowWidth": 0.25,
+                "grayscale": 0.0,
+                "outlineColor": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineEnabled": false,
+                "outlineThickness": 1.0,
+                "radialAngleOffset": 0.0,
+                "radialClockwise": true,
+                "radialDim": 0.3499999940395355,
+                "radialEnabled": true,
+                "radialFill": 1.0,
+                "radialInner": 0.0,
+                "radialOuter": 0.5,
+                "radialSoftness": 0.009999999776482582,
+                "vitalAmplitude": 0.25,
+                "vitalBgColor": {
+                    "w": 0.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "vitalColor": {
+                    "w": 1.0,
+                    "x": 0.10000000149011612,
+                    "y": 1.0,
+                    "z": 0.20000000298023224
+                },
+                "vitalEnabled": false,
+                "vitalFrequency": 2.0,
+                "vitalSpeed": 1.5,
+                "vitalThickness": 0.019999999552965164
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/4_Resources/UI/StateBar/Egoweapon2.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": -130.0,
+                    "y": 80.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 67.0,
+                    "y": 67.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Visible",
+                "widgetName": "UI_RageDurationIcon"
+            },
+            "_parentGuid": "15692019774589272268",
+            "guid": "4911577685126811015",
+            "name": "UI_RageDurationIcon"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "PauseMenuControllerScript",
+                    "props": {
+                        "gamepadPlayerIndex": 0,
+                        "mainMenuButtonWidgetName": "UI_PauseMainMenuButton",
+                        "panelWidgetName": "UI_PausePanel",
+                        "quitButtonWidgetName": "UI_PauseQuitButton",
+                        "rootWidgetName": "UI_PauseMenuRoot",
+                        "setCursorLockedOnPause": false,
+                        "setCursorLockedOnResume": true,
+                        "setCursorVisibleOnPause": true,
+                        "setCursorVisibleOnResume": false,
+                        "titleScenePath": "Assets/Scenes/MainGameLoopScene/TitleScene.scene"
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 551.0,
+                        "baseSizeY": 671.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_PausePanel",
+                        "useNonUniformScale": false
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 220.0,
+                        "baseSizeY": 45.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_PauseMainMenuButton",
+                        "useNonUniformScale": false
+                    }
+                },
+                {
+                    "enabled": true,
+                    "name": "OnResizeScript",
+                    "props": {
+                        "baseSizeX": 299.0,
+                        "baseSizeY": 56.0,
+                        "forceScaleOne": true,
+                        "maxScale": 10.0,
+                        "minScale": 0.10000000149011612,
+                        "overrideHeight": 0.0,
+                        "overrideWidth": 0.0,
+                        "referenceHeight": 900.0,
+                        "referenceWidth": 1600.0,
+                        "roundToInt": true,
+                        "scaleMode": 0,
+                        "targetWidgetName": "UI_PauseQuitButton",
+                        "useNonUniformScale": false
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 0.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": false,
+                "texturePath": "",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 10.0,
+                    "y": 10.0
+                },
+                "sortOrder": 100,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_PauseMenuRoot"
+            },
+            "guid": "16770951360123987421",
+            "name": "UI_PauseMenuRoot"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/4_Resources/UI/ECS/Pause.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 318.0,
+                    "y": 326.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 618.0,
+                    "y": 752.0
+                },
+                "sortOrder": 101,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_PausePanel"
+            },
+            "_parentGuid": "16770951360123987421",
+            "guid": "16770951360123987422",
+            "name": "UI_PausePanel"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIButton": {
+                "disabledTexture": "",
+                "disabledTint": {
+                    "w": 1.0,
+                    "x": 0.4000000059604645,
+                    "y": 0.4000000059604645,
+                    "z": 0.4000000059604645
+                },
+                "enabled": true,
+                "hoveredTexture": "Resource/Test/4_Resources/UI/ECS/Main_Menu_On.png",
+                "hoveredTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "normalTexture": "",
+                "normalTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "pressedTexture": "Resource/Test/4_Resources/UI/ECS/Main_Menu_On.png",
+                "pressedTint": {
+                    "w": 1.0,
+                    "x": 0.8500000238418579,
+                    "y": 0.8500000238418579,
+                    "z": 0.8500000238418579
+                },
+                "state": "Normal"
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/4_Resources/UI/ECS/Main_Menu_Off.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 126.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 247.0,
+                    "y": 50.0
+                },
+                "sortOrder": 102,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_PauseMainMenuButton"
+            },
+            "_parentGuid": "16770951360123987421",
+            "guid": "16770951360123987423",
+            "name": "UI_PauseMainMenuButton"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIButton": {
+                "disabledTexture": "",
+                "disabledTint": {
+                    "w": 1.0,
+                    "x": 0.4000000059604645,
+                    "y": 0.4000000059604645,
+                    "z": 0.4000000059604645
+                },
+                "enabled": true,
+                "hoveredTexture": "Resource/Test/4_Resources/UI/ECS/Quit_to_desktop_On.png",
+                "hoveredTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "normalTexture": "",
+                "normalTint": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "pressedTexture": "Resource/Test/4_Resources/UI/ECS/Quit_to_desktop_On.png",
+                "pressedTint": {
+                    "w": 1.0,
+                    "x": 0.8500000238418579,
+                    "y": 0.8500000238418579,
+                    "z": 0.8500000238418579
+                },
+                "state": "Normal"
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/4_Resources/UI/ECS/Quit_to_desktop_'off.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 167.5,
+                    "y": -260.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 335.0,
+                    "y": 63.0
+                },
+                "sortOrder": 102,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_PauseQuitButton"
+            },
+            "_parentGuid": "16770951360123987421",
+            "guid": "16770951360123987424",
+            "name": "UI_PauseQuitButton"
+        },
+        {
+            "Camera": {
+                "FOV": 60.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
+                "aspectOverride": 0.0,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -0.04352855682373047,
+                    "y": 1.0559356212615967,
+                    "z": 0.2335195541381836
+                },
+                "rotation": {
+                    "x": -0.10000000149011612,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "13576622615802014507",
+            "guid": "5989900972319014717",
+            "name": "FPSCamera"
+        },
+        {
+            "DebugDrawBox": {
+                "boundsMax": {
+                    "x": 5.0,
+                    "y": 5.0,
+                    "z": 5.0
+                },
+                "boundsMin": {
+                    "x": -5.0,
+                    "y": -5.0,
+                    "z": -5.0
+                },
+                "color": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 1.0,
+                    "z": 0.0
+                },
+                "depthTest": false,
+                "enabled": true
+            },
+            "PostProcessVolume": {
+                "blendRadius": 0.0,
+                "blendWeight": 1.0,
+                "boxSize": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "priority": 2800,
+                "referenceObjectName": "",
+                "settings": {
+                    "bOverride_BloomDownsample": false,
+                    "bOverride_BloomGaussianIntensity": false,
+                    "bOverride_BloomIntensity": false,
+                    "bOverride_BloomKnee": false,
+                    "bOverride_BloomRadius": false,
+                    "bOverride_BloomThreshold": false,
+                    "bOverride_ColorGradingContrast": false,
+                    "bOverride_ColorGradingGain": false,
+                    "bOverride_ColorGradingGamma": false,
+                    "bOverride_ColorGradingSaturation": false,
+                    "bOverride_EmissiveBloomIntensity": false,
+                    "bOverride_Exposure": false,
+                    "bOverride_ImpactBlurCenterX": false,
+                    "bOverride_ImpactBlurCenterY": false,
+                    "bOverride_ImpactBlurIntensity": false,
+                    "bOverride_ImpactBlurRadius": false,
+                    "bOverride_MaxHDRNits": false,
+                    "bOverride_SplitAmount": false,
+                    "bOverride_SplitAngleDeg": false,
+                    "bOverride_SplitFeather": false,
+                    "bOverride_SplitFxColorA": false,
+                    "bOverride_SplitFxColorB": false,
+                    "bOverride_SplitFxIntensity": false,
+                    "bOverride_SplitFxSpeed": false,
+                    "bOverride_SplitFxTimeSec": false,
+                    "bOverride_SplitFxWidth": false,
+                    "bOverride_SplitLineOffset": false,
+                    "bloomDownsample": 2,
+                    "bloomGaussianIntensity": 1.0,
+                    "bloomIntensity": 0.0,
+                    "bloomKnee": 0.5,
+                    "bloomRadius": 1.0,
+                    "bloomThreshold": 1.0,
+                    "contrast": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "emissiveBloomIntensity": 1.0,
+                    "exposure": 0.0,
+                    "gain": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "gamma": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "impactBlurCenterX": 0.5,
+                    "impactBlurCenterY": 0.5,
+                    "impactBlurIntensity": 0.0,
+                    "impactBlurRadius": 0.25,
+                    "maxHDRNits": 1000.0,
+                    "saturation": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "splitAmount": 0.0,
+                    "splitAngleDeg": 0.0,
+                    "splitFeather": 0.0010000000474974513,
+                    "splitFxColorA": {
+                        "x": 2.799999952316284,
+                        "y": 1.2000000476837158,
+                        "z": 0.44999998807907104
+                    },
+                    "splitFxColorB": {
+                        "x": 0.10000000149011612,
+                        "y": 1.0499999523162842,
+                        "z": 0.949999988079071
+                    },
+                    "splitFxIntensity": 0.0,
+                    "splitFxSpeed": 30.0,
+                    "splitFxTimeSec": 0.0,
+                    "splitFxWidth": 0.009999999776482582,
+                    "splitLineOffset": 0.0
+                },
+                "shape": "Box",
+                "unbound": true,
+                "useReferenceObject": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "13499460473175554482",
+            "name": "DeathFpsImpactVolume"
+        },
+        {
+            "DebugDrawBox": {
+                "boundsMax": {
+                    "x": 5.0,
+                    "y": 5.0,
+                    "z": 5.0
+                },
+                "boundsMin": {
+                    "x": -5.0,
+                    "y": -5.0,
+                    "z": -5.0
+                },
+                "color": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 1.0,
+                    "z": 0.0
+                },
+                "depthTest": false,
+                "enabled": true
+            },
+            "PostProcessVolume": {
+                "blendRadius": 0.0,
+                "blendWeight": 1.0,
+                "boxSize": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "priority": 2950,
+                "referenceObjectName": "",
+                "settings": {
+                    "bOverride_BloomDownsample": false,
+                    "bOverride_BloomGaussianIntensity": false,
+                    "bOverride_BloomIntensity": false,
+                    "bOverride_BloomKnee": false,
+                    "bOverride_BloomRadius": false,
+                    "bOverride_BloomThreshold": false,
+                    "bOverride_ColorGradingContrast": false,
+                    "bOverride_ColorGradingGain": false,
+                    "bOverride_ColorGradingGamma": false,
+                    "bOverride_ColorGradingSaturation": false,
+                    "bOverride_EmissiveBloomIntensity": false,
+                    "bOverride_Exposure": false,
+                    "bOverride_ImpactBlurCenterX": false,
+                    "bOverride_ImpactBlurCenterY": false,
+                    "bOverride_ImpactBlurIntensity": false,
+                    "bOverride_ImpactBlurRadius": false,
+                    "bOverride_MaxHDRNits": false,
+                    "bOverride_SplitAmount": false,
+                    "bOverride_SplitAngleDeg": false,
+                    "bOverride_SplitFeather": false,
+                    "bOverride_SplitFxColorA": false,
+                    "bOverride_SplitFxColorB": false,
+                    "bOverride_SplitFxIntensity": false,
+                    "bOverride_SplitFxSpeed": false,
+                    "bOverride_SplitFxTimeSec": false,
+                    "bOverride_SplitFxWidth": false,
+                    "bOverride_SplitLineOffset": false,
+                    "bloomDownsample": 2,
+                    "bloomGaussianIntensity": 1.0,
+                    "bloomIntensity": 0.0,
+                    "bloomKnee": 0.5,
+                    "bloomRadius": 1.0,
+                    "bloomThreshold": 1.0,
+                    "contrast": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "emissiveBloomIntensity": 1.0,
+                    "exposure": 0.0,
+                    "gain": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "gamma": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "impactBlurCenterX": 0.5,
+                    "impactBlurCenterY": 0.5,
+                    "impactBlurIntensity": 0.0,
+                    "impactBlurRadius": 0.25,
+                    "maxHDRNits": 1000.0,
+                    "saturation": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "splitAmount": 0.0,
+                    "splitAngleDeg": 0.0,
+                    "splitFeather": 0.0010000000474974513,
+                    "splitFxColorA": {
+                        "x": 2.799999952316284,
+                        "y": 1.2000000476837158,
+                        "z": 0.44999998807907104
+                    },
+                    "splitFxColorB": {
+                        "x": 0.10000000149011612,
+                        "y": 1.0499999523162842,
+                        "z": 0.949999988079071
+                    },
+                    "splitFxIntensity": 0.0,
+                    "splitFxSpeed": 30.0,
+                    "splitFxTimeSec": 0.0,
+                    "splitFxWidth": 0.009999999776482582,
+                    "splitLineOffset": 0.0
+                },
+                "shape": "Box",
+                "unbound": true,
+                "useReferenceObject": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "8992125433288779320",
+            "name": "BossWinCinematicVolume"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": false
+            },
+            "_parentGuid": "8917386486070800600",
+            "guid": "12657988037631409763",
+            "name": "__CombatVfxPool_1812"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.800000011920929,
+                    "z": 0.44999998807907104
+                },
+                "enabled": false,
+                "intensity": 0.0,
+                "range": 4.0
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "6284060156657622239",
+            "name": "__CombatSparkPointLight"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": false
+            },
+            "_parentGuid": "8917386486070800600",
+            "guid": "2740989441430829519",
+            "name": "__CombatVfxPool_2689"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.800000011920929,
+                    "z": 0.44999998807907104
+                },
+                "enabled": false,
+                "intensity": 0.0,
+                "range": 4.0
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "14863467520667701442",
+            "name": "__CombatSparkPointLight"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -0.13700829446315765,
+                    "y": 1.9812361001968384,
+                    "z": 9.135293960571289
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.009999999776482582,
+                    "y": 0.009999999776482582,
+                    "z": 0.009999999776482582
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 1.0,
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Test/4_Resources/UI/LockOn/LockON.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 30.0,
+                    "y": 30.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": true,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Collapsed",
+                "widgetName": "__BossLockOnMarkerWorld"
+            },
+            "guid": "7549964791413478826",
+            "name": "__BossLockOnMarkerWorld"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": false
+            },
+            "_parentGuid": "8917386486070800600",
+            "guid": "3429814814048777298",
+            "name": "__CombatVfxPool_62"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.800000011920929,
+                    "z": 0.44999998807907104
+                },
+                "enabled": false,
+                "intensity": 0.0,
+                "range": 4.0
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 13.746273040771484,
+                    "y": 1.3439407348632813,
+                    "z": -5.7196526527404785
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "12764689197919914562",
+            "name": "__CombatSparkPointLight"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.699999988079071,
+                    "y": 0.5,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.5270894169807434
+                },
+                "scale": {
+                    "x": 0.5,
+                    "y": 0.5,
+                    "z": 0.5
+                },
+                "visible": true
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
+                "emitNewParticles": true,
+                "enableTrails": true,
+                "enabled": true,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.659000039100647,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "_parentGuid": "13576622615802014507",
+            "guid": "13651884888738068378",
+            "name": "Combo_slash_fx_04_03_NoParticle"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": -0.699999988079071,
+                    "y": 0.8999999761581421,
+                    "z": -0.4000000059604645
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -1.5707963705062866
+                },
+                "scale": {
+                    "x": 0.5,
+                    "y": 0.5,
+                    "z": 0.5
+                },
+                "visible": false
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
+                "emitNewParticles": false,
+                "enableTrails": true,
+                "enabled": false,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.659000039100647,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "_parentGuid": "3429814814048777298",
+            "guid": "5080410634134628623",
+            "name": "Combo_slash_fx_04_03_NoParticle"
+        },
+        {
+            "ComputeEffect": {
+                "color": {
+                    "x": 1.0,
+                    "y": 0.47058823704719543,
+                    "z": 0.0
+                },
+                "depthBiasMeters": 0.05000000074505806,
+                "depthTest": true,
+                "drag": 0.18199999630451202,
+                "emissionDurationSec": 0.14000000059604645,
+                "emitNewParticles": false,
+                "enabled": false,
+                "gravity": {
+                    "x": 0.0,
+                    "y": -2.5369999408721924,
+                    "z": 0.0
+                },
+                "intensity": 2.821000099182129,
+                "lifeMax": 0.6880000233650208,
+                "lifeMin": 0.09399999678134918,
+                "localOffset": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "loop": false,
+                "radius": 0.009999999776482582,
+                "shaderName": "Sparks",
+                "simulationSpace": "World",
+                "sizePx": 6.0,
+                "spawnRate": 9.999999747378752e-05,
+                "startSpeed": 3.0999999046325684
+            },
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 13.746273040771484,
+                    "y": 1.3439407348632813,
+                    "z": -5.7196526527404785
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 2.4624032974243164,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 0.15000000596046448,
+                    "y": 0.15000000596046448,
+                    "z": 0.15000000596046448
+                },
+                "visible": false
+            },
+            "_parentGuid": "3429814814048777298",
+            "guid": "13464862105684632197",
+            "name": "GameObject2"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.800000011920929,
+                    "z": 0.44999998807907104
+                },
+                "enabled": false,
+                "intensity": 0.0,
+                "range": 4.0
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "5057338764609596735",
+            "name": "__CombatSparkPointLight"
+        },
+        {
+            "Transform": {
+                "enabled": false,
+                "position": {
+                    "x": 0.699999988079071,
+                    "y": 0.5,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.5270894169807434
+                },
+                "scale": {
+                    "x": 0.5,
+                    "y": 0.5,
+                    "z": 0.5
+                },
+                "visible": false
+            },
+            "UnityVfx": {
+                "alphaScale": 1.0,
+                "colorScale": 1.0,
+                "colorTint": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "dissolveOffset": 0.0,
+                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
+                "emitNewParticles": false,
+                "enableTrails": true,
+                "enabled": false,
+                "hdrColorClamp": 1.0,
+                "intensityScale": 1.0,
+                "lifetimeScale": 1.0,
+                "loop": false,
+                "noiseScale": 1.0,
+                "overrideLoop": true,
+                "rampScale": 1.0,
+                "sizeScale": 1.659000039100647,
+                "spawnRateScale": 1.0,
+                "speedScale": 1.0,
+                "timeScale": 1.0,
+                "trailLifeScale": 1.0,
+                "trailWidthScale": 1.0,
+                "useComputeEffect": false,
+                "useMeshRenderer": true,
+                "uvScrollScale": 1.0
+            },
+            "_parentGuid": "2886815702245507848",
+            "guid": "18343167698707904763",
+            "name": "Combo_slash_fx_04_03_NoParticle"
         }
     ],
     "sceneName": "#00Combat0211",
