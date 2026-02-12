@@ -2780,16 +2780,6 @@ namespace Alice
         if (!m_localShadow2DSRV || !m_localPointShadowSRV)
             return;
 
-        auto forwardFromEuler = [](const DirectX::XMFLOAT3& euler) -> DirectX::XMFLOAT3
-        {
-            using namespace DirectX;
-            const XMVECTOR forward = XMVectorSet(0, 0, 1, 0);
-            const XMMATRIX rot = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&euler));
-            XMFLOAT3 out{};
-            XMStoreFloat3(&out, XMVector3Normalize(XMVector3TransformNormal(forward, rot)));
-            return out;
-        };
-
         struct PointShadowCandidate
         {
             EntityId id = InvalidEntityId;
@@ -2839,9 +2829,12 @@ namespace Alice
             if (!light.enabled || !light.castShadow) continue;
             const auto* tr = world.GetComponent<TransformComponent>(id);
             if (!tr || !tr->enabled || !tr->visible) continue;
+            const XMMATRIX worldM = BuildWorldMatrix(world, id, *tr);
+            XMFLOAT3 worldPos{};
+            XMStoreFloat3(&worldPos, worldM.r[3]);
             PointShadowCandidate c{};
             c.id = id;
-            c.pos = tr->position;
+            c.pos = worldPos;
             c.range = (std::max)(light.range, 0.1f);
             c.distanceSq = distanceSqToCamera(c.pos);
             pointCandidates.push_back(c);
@@ -2852,10 +2845,16 @@ namespace Alice
             if (!light.enabled || !light.castShadow) continue;
             const auto* tr = world.GetComponent<TransformComponent>(id);
             if (!tr || !tr->enabled || !tr->visible) continue;
+            const XMMATRIX worldM = BuildWorldMatrix(world, id, *tr);
+            XMFLOAT3 worldPos{};
+            XMStoreFloat3(&worldPos, worldM.r[3]);
+            const XMVECTOR forward = XMVectorSet(0, 0, 1, 0);
+            XMFLOAT3 worldDir{};
+            XMStoreFloat3(&worldDir, XMVector3Normalize(XMVector3TransformNormal(forward, worldM)));
             SpotShadowCandidate c{};
             c.id = id;
-            c.pos = tr->position;
-            c.dir = forwardFromEuler(tr->rotation);
+            c.pos = worldPos;
+            c.dir = worldDir;
             c.range = (std::max)(light.range, 0.1f);
             c.outerAngleDeg = (std::max)(light.outerAngleDeg, 1.0f);
             c.distanceSq = distanceSqToCamera(c.pos);
@@ -2867,10 +2866,16 @@ namespace Alice
             if (!light.enabled || !light.castShadow) continue;
             const auto* tr = world.GetComponent<TransformComponent>(id);
             if (!tr || !tr->enabled || !tr->visible) continue;
+            const XMMATRIX worldM = BuildWorldMatrix(world, id, *tr);
+            XMFLOAT3 worldPos{};
+            XMStoreFloat3(&worldPos, worldM.r[3]);
+            const XMVECTOR forward = XMVectorSet(0, 0, 1, 0);
+            XMFLOAT3 worldDir{};
+            XMStoreFloat3(&worldDir, XMVector3Normalize(XMVector3TransformNormal(forward, worldM)));
             RectShadowCandidate c{};
             c.id = id;
-            c.pos = tr->position;
-            c.dir = forwardFromEuler(tr->rotation);
+            c.pos = worldPos;
+            c.dir = worldDir;
             c.width = (std::max)(light.width, 0.1f);
             c.height = (std::max)(light.height, 0.1f);
             c.range = (std::max)(light.range, 0.1f);
@@ -5370,9 +5375,12 @@ namespace Alice
             if (data.pointCount >= MaxPointLights) break;
             const auto* tr = world.GetComponent<TransformComponent>(id);
             if (!tr || !tr->enabled || !tr->visible) continue;
+            const XMMATRIX worldM = BuildWorldMatrix(world, id, *tr);
+            XMFLOAT3 worldPos{};
+            XMStoreFloat3(&worldPos, worldM.r[3]);
 
             auto& dst = data.pointLights[data.pointCount++];
-            dst.position = tr->position;
+            dst.position = worldPos;
             dst.range = (std::max)(light.range, 0.01f);
             dst.color = light.color;
             dst.intensity = light.intensity;
@@ -5390,10 +5398,12 @@ namespace Alice
             if (data.spotCount >= MaxSpotLights) break;
             const auto* tr = world.GetComponent<TransformComponent>(id);
             if (!tr || !tr->enabled || !tr->visible) continue;
+            const XMMATRIX worldM = BuildWorldMatrix(world, id, *tr);
+            XMFLOAT3 worldPos{};
+            XMStoreFloat3(&worldPos, worldM.r[3]);
 
             XMVECTOR forward = XMVectorSet(0, 0, 1, 0);
-            XMMATRIX rot = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&tr->rotation));
-            XMVECTOR dirW = XMVector3Normalize(XMVector3TransformNormal(forward, rot));
+            XMVECTOR dirW = XMVector3Normalize(XMVector3TransformNormal(forward, worldM));
             XMFLOAT3 dir{};
             XMStoreFloat3(&dir, dirW);
 
@@ -5401,7 +5411,7 @@ namespace Alice
             float outerRad = DirectX::XMConvertToRadians((std::max)(light.innerAngleDeg, light.outerAngleDeg));
 
             auto& dst = data.spotLights[data.spotCount++];
-            dst.position = tr->position;
+            dst.position = worldPos;
             dst.range = (std::max)(light.range, 0.01f);
             dst.direction = dir;
             dst.innerCos = std::cosf(innerRad);
@@ -5421,15 +5431,17 @@ namespace Alice
             if (data.rectCount >= MaxRectLights) break;
             const auto* tr = world.GetComponent<TransformComponent>(id);
             if (!tr || !tr->enabled || !tr->visible) continue;
+            const XMMATRIX worldM = BuildWorldMatrix(world, id, *tr);
+            XMFLOAT3 worldPos{};
+            XMStoreFloat3(&worldPos, worldM.r[3]);
 
             XMVECTOR forward = XMVectorSet(0, 0, 1, 0);
-            XMMATRIX rot = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&tr->rotation));
-            XMVECTOR dirW = XMVector3Normalize(XMVector3TransformNormal(forward, rot));
+            XMVECTOR dirW = XMVector3Normalize(XMVector3TransformNormal(forward, worldM));
             XMFLOAT3 dir{};
             XMStoreFloat3(&dir, dirW);
 
             auto& dst = data.rectLights[data.rectCount++];
-            dst.position = tr->position;
+            dst.position = worldPos;
             dst.range = (std::max)(light.range, 0.01f);
             dst.direction = dir;
             dst.width = (std::max)(light.width, 0.01f);

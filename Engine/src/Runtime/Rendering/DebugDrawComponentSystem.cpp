@@ -909,11 +909,15 @@ namespace Alice
             const float range = std::max(0.0f, light.range);
             if (range <= 0.0f) continue;
 
+            const XMMATRIX worldM = world.ComputeWorldMatrix(entityId);
+            XMFLOAT3 worldPos{};
+            XMStoreFloat3(&worldPos, worldM.r[3]);
+
             const XMFLOAT4 color = (entityId == selectedEntity)
                 ? XMFLOAT4(1.0f, 1.0f, 0.2f, 1.0f)
                 : XMFLOAT4(light.color.x, light.color.y, light.color.z, 1.0f);
 
-            DrawSphere(*target, tr->position, range, color);
+            DrawSphere(*target, worldPos, range, color);
         }
 
         for (const auto& [entityId, light] : world.GetComponents<SpotLightComponent>())
@@ -931,16 +935,22 @@ namespace Alice
             const float radius = std::tan(angleRad * 0.5f) * range;
             if (radius <= 0.0f) continue;
 
+            const XMMATRIX worldM = world.ComputeWorldMatrix(entityId);
+            XMVECTOR scaleV, rotQ, transV;
+            if (!XMMatrixDecompose(&scaleV, &rotQ, &transV, worldM))
+                continue;
+            XMFLOAT3 worldPos{};
+            XMStoreFloat3(&worldPos, transV);
+
             const XMFLOAT4 color = (entityId == selectedEntity)
                 ? XMFLOAT4(1.0f, 0.6f, 0.2f, 1.0f)
                 : XMFLOAT4(light.color.x, light.color.y, light.color.z, 1.0f);
 
-            const XMVECTOR rot = EulerToQuaternion(tr->rotation);
-            const XMVECTOR forward = XMVector3Normalize(RotateVector(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), rot));
-            const XMVECTOR right = XMVector3Normalize(RotateVector(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), rot));
-            const XMVECTOR up = XMVector3Normalize(RotateVector(XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f), rot));
+            const XMVECTOR forward = XMVector3Normalize(RotateVector(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), rotQ));
+            const XMVECTOR right = XMVector3Normalize(RotateVector(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), rotQ));
+            const XMVECTOR up = XMVector3Normalize(RotateVector(XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f), rotQ));
 
-            DrawCone(*target, tr->position, forward, right, up, range, radius, color);
+            DrawCone(*target, worldPos, forward, right, up, range, radius, color);
         }
 
         for (const auto& [entityId, light] : world.GetComponents<RectLightComponent>())
@@ -957,20 +967,25 @@ namespace Alice
             if (halfW <= 0.0f || halfH <= 0.0f || range <= 0.0f)
                 continue;
 
+            const XMMATRIX worldM = world.ComputeWorldMatrix(entityId);
+            XMVECTOR scaleV, rotQ, transV;
+            if (!XMMatrixDecompose(&scaleV, &rotQ, &transV, worldM))
+                continue;
+
             const XMFLOAT4 color = (entityId == selectedEntity)
                 ? XMFLOAT4(0.2f, 1.0f, 1.0f, 1.0f)
                 : XMFLOAT4(light.color.x, light.color.y, light.color.z, 1.0f);
 
-            const XMVECTOR rot = EulerToQuaternion(tr->rotation);
-            const XMVECTOR forward = XMVector3Normalize(RotateVector(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), rot));
+            const XMVECTOR forward = XMVector3Normalize(RotateVector(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), rotQ));
 
-            XMFLOAT3 center = tr->position;
+            XMFLOAT3 center{};
+            XMStoreFloat3(&center, transV);
             center.x += XMVectorGetX(forward) * (range * 0.5f);
             center.y += XMVectorGetY(forward) * (range * 0.5f);
             center.z += XMVectorGetZ(forward) * (range * 0.5f);
 
             XMFLOAT3 halfExtents{ halfW, halfH, range * 0.5f };
-            DrawBox(*target, center, halfExtents, rot, color);
+            DrawBox(*target, center, halfExtents, rotQ, color);
         }
 
         // Collider debug draw

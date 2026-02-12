@@ -558,9 +558,16 @@ namespace Alice
     void ScriptSystem::CallUpdate(World& world, float deltaTime)
     {
         auto& allScripts = world.GetAllScriptsInWorld();
-        for (auto it = allScripts.begin(); it != allScripts.end(); ++it)
+        std::vector<EntityId> entityIds;
+        entityIds.reserve(allScripts.size());
+        for (const auto& kv : allScripts)
+            entityIds.push_back(kv.first);
+
+        for (EntityId entityId : entityIds)
         {
-            EntityId entityId = it->first;
+            auto it = allScripts.find(entityId);
+            if (it == allScripts.end())
+                continue;
             auto& list = it->second;
 
             // 벡터를 순회할 때 size를 매번 체크하며 인덱스로 접근
@@ -589,7 +596,7 @@ namespace Alice
                     if (i >= list.size()) break;
                     if (!list[i].instance) continue; // 삭제된 경우
 
-                    if (comp.enabled) comp.instance->OnEnable();
+                    if (list[i].enabled) list[i].instance->OnEnable();
                 }
 
                 // 중간에 삭제되었는지 다시 확인
@@ -629,8 +636,16 @@ namespace Alice
     void ScriptSystem::CallFixedUpdate(World& world, float fixedDt)
     {
         auto& allScripts = world.GetAllScriptsInWorld();
-        for (auto it = allScripts.begin(); it != allScripts.end(); ++it)
+        std::vector<EntityId> entityIds;
+        entityIds.reserve(allScripts.size());
+        for (const auto& kv : allScripts)
+            entityIds.push_back(kv.first);
+
+        for (EntityId entityId : entityIds)
         {
+            auto it = allScripts.find(entityId);
+            if (it == allScripts.end())
+                continue;
             auto& list = it->second;
             for (size_t i = 0; i < list.size(); ++i)
             {
@@ -646,8 +661,16 @@ namespace Alice
     void ScriptSystem::CallLateUpdate(World& world, float deltaTime)
     {
         auto& allScripts = world.GetAllScriptsInWorld();
-        for (auto it = allScripts.begin(); it != allScripts.end(); ++it)
+        std::vector<EntityId> entityIds;
+        entityIds.reserve(allScripts.size());
+        for (const auto& kv : allScripts)
+            entityIds.push_back(kv.first);
+
+        for (EntityId entityId : entityIds)
         {
+            auto it = allScripts.find(entityId);
+            if (it == allScripts.end())
+                continue;
             auto& list = it->second;
 
             for (size_t i = 0; i < list.size(); ++i)
@@ -663,9 +686,16 @@ namespace Alice
     void ScriptSystem::CallPostCombatUpdate(World& world, float deltaTime)
     {
         auto& allScripts = world.GetAllScriptsInWorld();
-        for (auto it = allScripts.begin(); it != allScripts.end(); ++it)
+        std::vector<EntityId> entityIds;
+        entityIds.reserve(allScripts.size());
+        for (const auto& kv : allScripts)
+            entityIds.push_back(kv.first);
+
+        for (EntityId entityId : entityIds)
         {
-            EntityId entityId = it->first;
+            auto it = allScripts.find(entityId);
+            if (it == allScripts.end())
+                continue;
             auto& list = it->second;
 
             for (size_t i = 0; i < list.size(); ++i)
@@ -740,6 +770,9 @@ namespace Alice
 
         // FixedUpdate
         m_fixedAcc += deltaTime;
+        constexpr float kMaxFixedCatchupSeconds = 0.2f;
+        if (m_fixedAcc > kMaxFixedCatchupSeconds)
+            m_fixedAcc = kMaxFixedCatchupSeconds;
         while (m_fixedAcc >= m_fixedDt)
         {
             CallFixedUpdate(world, m_fixedDt);

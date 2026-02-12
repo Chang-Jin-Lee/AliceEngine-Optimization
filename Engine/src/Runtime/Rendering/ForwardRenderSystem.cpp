@@ -1251,9 +1251,12 @@ namespace Alice
             if (data.pointCount >= MaxPointLights) break;
             const auto* tr = world.GetComponent<TransformComponent>(id);
             if (!tr || !tr->enabled || !tr->visible) continue;
+            const XMMATRIX worldM = BuildWorldMatrix(world, id, *tr);
+            XMFLOAT3 worldPos{};
+            XMStoreFloat3(&worldPos, worldM.r[3]);
 
             auto& dst = data.pointLights[data.pointCount++];
-            dst.position = tr->position;
+            dst.position = worldPos;
             dst.range = (std::max)(light.range, 0.01f);
             dst.color = light.color;
             dst.intensity = light.intensity;
@@ -1270,10 +1273,12 @@ namespace Alice
             if (data.spotCount >= MaxSpotLights) break;
             const auto* tr = world.GetComponent<TransformComponent>(id);
             if (!tr || !tr->enabled || !tr->visible) continue;
+            const XMMATRIX worldM = BuildWorldMatrix(world, id, *tr);
+            XMFLOAT3 worldPos{};
+            XMStoreFloat3(&worldPos, worldM.r[3]);
 
             XMVECTOR forward = XMVectorSet(0, 0, 1, 0);
-            XMMATRIX rot = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&tr->rotation));
-            XMVECTOR dirW = XMVector3Normalize(XMVector3TransformNormal(forward, rot));
+            XMVECTOR dirW = XMVector3Normalize(XMVector3TransformNormal(forward, worldM));
             XMFLOAT3 dir{};
             XMStoreFloat3(&dir, dirW);
 
@@ -1281,7 +1286,7 @@ namespace Alice
             float outerRad = DirectX::XMConvertToRadians((std::max)(light.innerAngleDeg, light.outerAngleDeg));
 
             auto& dst = data.spotLights[data.spotCount++];
-            dst.position = tr->position;
+            dst.position = worldPos;
             dst.range = (std::max)(light.range, 0.01f);
             dst.direction = dir;
             dst.innerCos = std::cosf(innerRad);
@@ -1300,15 +1305,17 @@ namespace Alice
             if (data.rectCount >= MaxRectLights) break;
             const auto* tr = world.GetComponent<TransformComponent>(id);
             if (!tr || !tr->enabled || !tr->visible) continue;
+            const XMMATRIX worldM = BuildWorldMatrix(world, id, *tr);
+            XMFLOAT3 worldPos{};
+            XMStoreFloat3(&worldPos, worldM.r[3]);
 
             XMVECTOR forward = XMVectorSet(0, 0, 1, 0);
-            XMMATRIX rot = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&tr->rotation));
-            XMVECTOR dirW = XMVector3Normalize(XMVector3TransformNormal(forward, rot));
+            XMVECTOR dirW = XMVector3Normalize(XMVector3TransformNormal(forward, worldM));
             XMFLOAT3 dir{};
             XMStoreFloat3(&dir, dirW);
 
             auto& dst = data.rectLights[data.rectCount++];
-            dst.position = tr->position;
+            dst.position = worldPos;
             dst.range = (std::max)(light.range, 0.01f);
             dst.direction = dir;
             dst.width = (std::max)(light.width, 0.01f);

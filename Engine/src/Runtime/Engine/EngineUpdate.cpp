@@ -204,7 +204,9 @@ namespace Alice
 
 		const Camera& sourceCamera = camComp->GetCamera();
 
-		const float defaultAspect = static_cast<float>(m_width) / m_height;
+		const float defaultAspect =
+			static_cast<float>(m_width == 0 ? 1u : m_width) /
+			static_cast<float>(m_height == 0 ? 1u : m_height);
 		const float aspect = (camComp->useAspectOverride && camComp->aspectOverride > 0.0f)
 			? camComp->aspectOverride : defaultAspect;
 

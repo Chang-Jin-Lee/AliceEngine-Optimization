@@ -1,0 +1,203 @@
+{
+    "entities": [
+        {
+            "Camera": {
+                "FOV": 45.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
+                "aspectOverride": 0.0,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "CameraWASDMove",
+                    "props": {
+                        "m_dragMoveSpeed": 0.019999999552965164,
+                        "m_moveSpeed": 8.0
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -0.3700868487358093,
+                    "y": 0.4349607825279236,
+                    "z": -5.306968688964844
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0852658674120903,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "6045284604150159740",
+            "name": "MainCamera"
+        },
+        {
+            "Scripts": [
+                {
+                    "enabled": true,
+                    "name": "FlareFlickerDemo",
+                    "props": {
+                        "m_alphaAmplitude": 0.10999999940395355,
+                        "m_baseAlpha": 0.800000011920929,
+                        "m_baseColor": {
+                            "x": 1.0,
+                            "y": 0.550000011920929,
+                            "z": 0.3499999940395355
+                        },
+                        "m_baseSize": {
+                            "x": 2.5,
+                            "y": 2.5
+                        },
+                        "m_billboard": false,
+                        "m_framePath1": "Resource/Image/candle_fire.png",
+                        "m_framePath2": "",
+                        "m_framePath3": "",
+                        "m_framePath4": "",
+                        "m_framePath5": "",
+                        "m_framePath6": "",
+                        "m_framePath7": "",
+                        "m_framePath8": "",
+                        "m_frameRate": 11.460000038146973,
+                        "m_loopFrames": false,
+                        "m_maxAlpha": 1.0700000524520874,
+                        "m_maxColorScale": 0.9200000166893005,
+                        "m_minAlpha": 0.41999998688697815,
+                        "m_minColorScale": 0.75,
+                        "m_primarySpeed": 2.8499999046325684,
+                        "m_responseCurve": 0.9900000095367432,
+                        "m_scaleAmplitude": 0.07999999821186066,
+                        "m_secondarySpeed": 5.860000133514404,
+                        "m_secondaryWeight": 0.44999998807907104,
+                        "m_texturePath": "Resource/Image/candle_fire.png",
+                        "m_timeScale": 1.0,
+                        "m_useAlphaFlicker": true,
+                        "m_useFrameAnimation": false
+                    }
+                }
+            ],
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": -6.003548622131348,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIImage": {
+                "color": {
+                    "w": 0.7542508244514465,
+                    "x": 0.7996483445167542,
+                    "y": 0.43980661034584045,
+                    "z": 0.2798769176006317
+                },
+                "preserveAspect": true,
+                "texturePath": "Resource/Image/candle_fire.png",
+                "uvRect": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 1.0
+                }
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.0,
+                    "y": 1.100000023841858
+                },
+                "anchorMin": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 0.9262459874153137,
+                    "y": 0.9262459874153137
+                },
+                "size": {
+                    "x": 2.5,
+                    "y": 2.5
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": false,
+                "raycastTarget": false,
+                "shaderName": "Default",
+                "space": "World",
+                "visibility": "Visible",
+                "widgetName": "FlareUI"
+            },
+            "guid": "16298872751955367987",
+            "name": "Flare"
+        },
+        {
+            "PointLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.7000000476837158,
+                    "z": 0.5000000596046448
+                },
+                "enabled": true,
+                "intensity": 14.75,
+                "range": 5.0970001220703125
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -1.5
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.03839724510908127,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "10133454070682601705",
+            "name": "FlareFillLight"
+        }
+    ],
+    "sceneName": "Flare",
+    "version": 1
+}

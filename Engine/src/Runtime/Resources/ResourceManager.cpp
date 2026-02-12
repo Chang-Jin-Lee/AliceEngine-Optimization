@@ -1331,11 +1331,17 @@ namespace Alice
 
         ALICE_LOG_INFO("[Integrity] Verifying %zu assets...", count);
 
-        // 3. 실제 파일 존재 여부 전수 검사
+        // 3. 실제 청크 파일 존재 + 헤더 무결성 검사
         for (std::size_t i = 0; i < count; ++i)
         {
             const std::uint64_t fid = entries[i].fileId;
             const std::uint32_t cCount = entries[i].chunkCount;
+            if (cCount == 0)
+            {
+                ALICE_LOG_ERRORF("[Integrity] Invalid chunkCount=0 (entry=%zu, id=%llu)",
+                    i, static_cast<unsigned long long>(fid));
+                return false;
+            }
 
             // FileID -> Hex Path 변환
             char hex[17] = {};
@@ -1343,7 +1349,10 @@ namespace Alice
             std::string hexStr = hex;
             fs::path baseDir = CookedDir() / "Chunks" / hexStr.substr(0, 2) / hexStr;
 
-            // 각 청크 파일(c0000.alice ...)이 실제로 있는지 확인
+            std::uint64_t expectedOriginalSize = 0;
+            std::uint64_t totalPayload = 0;
+
+            // 각 청크 파일(c0000.alice ...)에 대해 존재 + 헤더 검증
             for (std::uint32_t c = 0; c < cCount; ++c)
             {
                 char name[32] = {};
@@ -1357,6 +1366,84 @@ namespace Alice
                         hexStr.c_str(), static_cast<unsigned>(c), p.string().c_str());
                     return false;
                 }
+
+                std::vector<std::uint8_t> raw;
+                if (!LoadBinary(p, raw, false))
+                {
+                    ALICE_LOG_ERRORF("[Integrity] Chunk read failed. ID=%s Chunk=%u Path=%s",
+                        hexStr.c_str(), static_cast<unsigned>(c), p.string().c_str());
+                    return false;
+                }
+                if (raw.size() < sizeof(AliceChunkHeader))
+                {
+                    ALICE_LOG_ERRORF("[Integrity] Chunk too small. ID=%s Chunk=%u Size=%zu",
+                        hexStr.c_str(), static_cast<unsigned>(c), raw.size());
+                    return false;
+                }
+
+                AliceChunkHeader hdr{};
+                std::memcpy(&hdr, raw.data(), sizeof(AliceChunkHeader));
+
+                if (std::memcmp(hdr.magic, "ALIC", 4) != 0 || hdr.version != 1)
+                {
+                    ALICE_LOG_ERRORF("[Integrity] Invalid chunk header magic/version. ID=%s Chunk=%u",
+                        hexStr.c_str(), static_cast<unsigned>(c));
+                    return false;
+                }
+                if (hdr.fileId != fid)
+                {
+                    ALICE_LOG_ERRORF("[Integrity] Chunk fileId mismatch. ID=%s Chunk=%u HeaderFileId=%llu",
+                        hexStr.c_str(), static_cast<unsigned>(c), static_cast<unsigned long long>(hdr.fileId));
+                    return false;
+                }
+                if (hdr.chunkIndex != c || hdr.chunkCount != cCount)
+                {
+                    ALICE_LOG_ERRORF("[Integrity] Chunk index/count mismatch. ID=%s Chunk=%u HeaderIndex=%u HeaderCount=%u ExpectedCount=%u",
+                        hexStr.c_str(), static_cast<unsigned>(c), static_cast<unsigned>(hdr.chunkIndex),
+                        static_cast<unsigned>(hdr.chunkCount), static_cast<unsigned>(cCount));
+                    return false;
+                }
+
+                const std::size_t payloadOff = sizeof(AliceChunkHeader);
+                const std::size_t payloadSize = static_cast<std::size_t>(hdr.payloadSize);
+                if (payloadOff + payloadSize > raw.size())
+                {
+                    ALICE_LOG_ERRORF("[Integrity] Chunk payload range invalid. ID=%s Chunk=%u Raw=%zu Payload=%zu",
+                        hexStr.c_str(), static_cast<unsigned>(c), raw.size(), payloadSize);
+                    return false;
+                }
+
+                if (c == 0)
+                {
+                    expectedOriginalSize = hdr.originalSize;
+                }
+                else if (hdr.originalSize != expectedOriginalSize)
+                {
+                    ALICE_LOG_ERRORF("[Integrity] Chunk originalSize mismatch. ID=%s Chunk=%u HeaderOriginal=%llu Expected=%llu",
+                        hexStr.c_str(), static_cast<unsigned>(c),
+                        static_cast<unsigned long long>(hdr.originalSize),
+                        static_cast<unsigned long long>(expectedOriginalSize));
+                    return false;
+                }
+
+                totalPayload += static_cast<std::uint64_t>(hdr.payloadSize);
+                if (totalPayload > expectedOriginalSize)
+                {
+                    ALICE_LOG_ERRORF("[Integrity] Chunk payload overflow. ID=%s Chunk=%u TotalPayload=%llu Expected=%llu",
+                        hexStr.c_str(), static_cast<unsigned>(c),
+                        static_cast<unsigned long long>(totalPayload),
+                        static_cast<unsigned long long>(expectedOriginalSize));
+                    return false;
+                }
+            }
+
+            if (totalPayload != expectedOriginalSize)
+            {
+                ALICE_LOG_ERRORF("[Integrity] Chunk payload total mismatch. ID=%s TotalPayload=%llu Expected=%llu",
+                    hexStr.c_str(),
+                    static_cast<unsigned long long>(totalPayload),
+                    static_cast<unsigned long long>(expectedOriginalSize));
+                return false;
             }
         }
 
