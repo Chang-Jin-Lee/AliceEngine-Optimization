@@ -3033,6 +3033,7 @@ namespace Alice
 		const bool bossBoostAttackActive = bossBrain
 			&& (outBoss.state == Combat::ActionState::Attack)
 			&& IsBossBoostPattern(bossBrain->GetActivePattern());
+		const bool bossDeadForDashVfx = bossDeadNow || (outBoss.state == Combat::ActionState::Dead);
 		auto HasBoostDashVfx = [&](EntityId id) -> bool
 			{
 				return id != InvalidEntityId
@@ -3052,7 +3053,13 @@ namespace Alice
 					m_bossBoostDashVfxId = ResolveEntityByName(vfxName);
 			}
 		}
-		if (bossBoostAttackActive)
+		if (bossDeadForDashVfx)
+		{
+			if (m_bossBoostDashVfxId != InvalidEntityId)
+				SetSimpleVfxActive(world, m_bossBoostDashVfxId, false);
+			m_bossBoostDashVfxForced = false;
+		}
+		else if (bossBoostAttackActive)
 		{
 			if (m_bossBoostDashVfxId != InvalidEntityId && !m_bossBoostDashVfxForced)
 			{

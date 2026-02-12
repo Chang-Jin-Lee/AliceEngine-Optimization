@@ -200,6 +200,16 @@ namespace Alice
         m_attackCooldownTimer = std::max(0.0f, m_attackCooldownTimer - dt);
         m_blockedCooldownTimer = std::max(0.0f, m_blockedCooldownTimer - dt);
 
+        const float dx = targetTr->position.x - selfTr->position.x;
+        const float dz = targetTr->position.z - selfTr->position.z;
+        const float dist = std::sqrt(dx * dx + dz * dz);
+        if (!m_brainActivated && m_enableDistanceActivation)
+        {
+            const float activationRange = std::max(0.0f, m_distanceActivationRange);
+            if (dist <= activationRange)
+                SetBrainActivated(true);
+        }
+
         if (m_brainActivated)
         {
             m_deactivateAfterCurrentAttack = false;
@@ -215,9 +225,6 @@ namespace Alice
             return intent;
         }
 
-        const float dx = targetTr->position.x - selfTr->position.x;
-        const float dz = targetTr->position.z - selfTr->position.z;
-        const float dist = std::sqrt(dx * dx + dz * dz);
         const float closeRange = std::max(0.0f, m_kickRange);
         const float meleeRange = std::max(closeRange, m_meleeDistance);
         const bool inMelee = dist <= meleeRange;
