@@ -353,6 +353,12 @@ namespace Alice
         const float seqDuration = std::max(0.0f, Get_m_sequenceDurationSec());
         if (seqDuration > 0.0f && m_elapsedSec >= seqDuration)
         {
+            for (EntityId id : m_effectEntities)
+                SetEntityVisible(id, false);
+
+            if (m_shockWaveEntity != InvalidEntityId)
+                SetEntityVisible(m_shockWaveEntity, false);
+
             m_running = false;
             RestoreOverriddenScripts();
         }

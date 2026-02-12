@@ -3581,7 +3581,7 @@
             "m_shockWaveSpawnRateMin": 1.0,
             "m_restartOnKey": true,
             "m_restoreStateOnDisable": true,
-            "m_sequenceDurationSec": 0.0,
+            "m_sequenceDurationSec": 4.0,
             "m_triggerWithAlpha7": true,
             "m_uiDeathEntityName": "UI_Death",
             "m_uiFadeEntityName": "UI_Fade",
