@@ -4079,7 +4079,7 @@
                     "x": 1786.0,
                     "y": 900.0
                 },
-                "sortOrder": 0,
+                "sortOrder": 100,
                 "useAlignment": false
             },
             "UIWidget": {
