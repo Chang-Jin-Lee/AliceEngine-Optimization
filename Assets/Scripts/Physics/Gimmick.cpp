@@ -292,6 +292,9 @@ namespace Alice
                 trace.prevCentersWS.clear();
                 trace.prevRotsWS.clear();
                 trace.hitVictims.clear();
+                trace.firstContactResolvedForAttack = false;
+                trace.firstContactWasHurtbox = false;
+                trace.worldImpactEventPosWS = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
             }
             trace.active = true;
         };

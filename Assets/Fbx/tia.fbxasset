@@ -1,0 +1,8 @@
+{
+    "materials": [
+        "Assets/Materials/tia_0.mat",
+        "Assets/Materials/tia_1.mat"
+    ],
+    "mesh": "tia",
+    "source_fbx": "Resource/fbx/tia.fbx"
+}

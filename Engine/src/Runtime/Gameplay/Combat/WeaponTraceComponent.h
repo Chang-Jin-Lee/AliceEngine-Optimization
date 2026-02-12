@@ -104,5 +104,11 @@ namespace Alice
 
         uint32_t lastAttackInstanceId = 0;
         std::unordered_set<std::uint64_t> hitVictims;
+
+        // Runtime-only pre-hit world impact event (not serialized).
+        std::uint32_t worldImpactEventSequence = 0;
+        DirectX::XMFLOAT3 worldImpactEventPosWS{ 0.0f, 0.0f, 0.0f };
+        bool firstContactResolvedForAttack = false;
+        bool firstContactWasHurtbox = false;
     };
 }

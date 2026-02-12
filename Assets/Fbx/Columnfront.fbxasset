@@ -1,0 +1,8 @@
+{
+    "materials": [
+        "Assets/Materials/Columnfront_0.mat",
+        "Assets/Materials/Columnfront_1.mat"
+    ],
+    "mesh": "Columnfront",
+    "source_fbx": "Resource/Test/4_Resources/background/0211scene/Columnfront.fbx"
+}

@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/Blood_0.mat"
+    ],
+    "mesh": "Blood",
+    "source_fbx": "Resource/fbx/Blood.fbx"
+}

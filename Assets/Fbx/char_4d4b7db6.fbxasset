@@ -1,0 +1,23 @@
+{
+    "materials": [
+        "Assets/Materials/char_4d4b7db6_0.mat",
+        "Assets/Materials/char_4d4b7db6_1.mat",
+        "Assets/Materials/char_4d4b7db6_2.mat",
+        "Assets/Materials/char_4d4b7db6_3.mat",
+        "Assets/Materials/char_4d4b7db6_4.mat",
+        "Assets/Materials/char_4d4b7db6_5.mat",
+        "Assets/Materials/char_4d4b7db6_6.mat",
+        "Assets/Materials/char_4d4b7db6_7.mat",
+        "Assets/Materials/char_4d4b7db6_8.mat",
+        "Assets/Materials/char_4d4b7db6_9.mat",
+        "Assets/Materials/char_4d4b7db6_10.mat",
+        "Assets/Materials/char_4d4b7db6_11.mat",
+        "Assets/Materials/char_4d4b7db6_12.mat",
+        "Assets/Materials/char_4d4b7db6_13.mat",
+        "Assets/Materials/char_4d4b7db6_14.mat",
+        "Assets/Materials/char_4d4b7db6_15.mat",
+        "Assets/Materials/char_4d4b7db6_16.mat"
+    ],
+    "mesh": "char_4d4b7db6",
+    "source_fbx": "Resource/fbx/char/char.fbx"
+}

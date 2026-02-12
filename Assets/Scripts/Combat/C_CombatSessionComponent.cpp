@@ -205,6 +205,7 @@ namespace Alice
 			float dashTimer = 0.0f;
 			float dashForwardSec = 0.0f;
 			float dashReverseSec = 0.0f;
+			float dashReverseStartSec = 0.0f;
 			std::string dashClipName{};
 			bool parryOverrideActive = false;
 			bool parryHardCutPending = false;
@@ -1079,6 +1080,24 @@ namespace Alice
 		return g_bossRetryCount;
 	}
 
+	void C_CombatSessionComponent::ResetBossAttemptRecord()
+	{
+		g_bossRetryCount = 0;
+
+		if (!m_state)
+			return;
+
+		m_state->attackSuccessCount = 0;
+		m_state->guardSuccessCount = 0;
+		m_state->parrySuccessCount = 0;
+		m_state->playerHitCount = 0;
+		m_state->playerGuardBreakCount = 0;
+		m_state->playTimeSec = 0.0f;
+		m_state->encounterRecordingActive = false;
+		m_state->encounterRecordingFinished = false;
+		m_state->summaryLogged = false;
+	}
+
 	bool C_CombatSessionComponent::IsPlayerRageActive() const
 	{
 		return m_state ? m_state->playerRageActive : false;
@@ -1092,6 +1111,11 @@ namespace Alice
 	float C_CombatSessionComponent::GetPlayerRageCooldownRemainingSec() const
 	{
 		return m_state ? std::max(0.0f, m_state->playerRageCooldownRemainingSec) : 0.0f;
+	}
+
+	bool C_CombatSessionComponent::IsPlayerWeakActive() const
+	{
+		return m_state ? (m_state->player.weakRemainingSec > 0.0f) : false;
 	}
 
 	float C_CombatSessionComponent::GetPlayerRageCooldownNormalized() const
@@ -1574,6 +1598,7 @@ namespace Alice
 		const bool playerCanInteract = m_playerInteractionEnabled && !blockPlayerActions;
 		const auto* skinnedRegistry = SkinnedRegistry();
 		constexpr float kPlayerGuardExitReverseSpeedScale = 2.5f;
+		constexpr float kDashReverseStartEpsilonSec = 0.016f;
 		auto IsPlayerGuardExitMoveLocked = [&]() -> bool
 			{
 				return (m_state->playerGuardExitLockSec > 0.0f)
@@ -2386,9 +2411,11 @@ namespace Alice
 				camBasis = BuildYawBasis(yawRad);
 		}
 
-		const bool bossPhaseHowlingActive = bossBrain
+		const bool hasBossForLockOn = (bossId != InvalidEntityId);
+		const bool bossPhaseHowlingActive = hasBossForLockOn
+			&& bossBrain
 			&& (bossBrain->GetActivePattern() == C_BossBrainComponent::PatternType::Special);
-		const bool playerGuardBreakCameraActive = (m_state->playerGuardBreakLockOnSec > 0.0f);
+		const bool playerGuardBreakCameraActive = hasBossForLockOn && (m_state->playerGuardBreakLockOnSec > 0.0f);
 		const bool forceLockOnZoomActive = bossPhaseHowlingActive || playerGuardBreakCameraActive;
 		float forcedZoomInRatio = 0.0f;
 		if (bossPhaseHowlingActive)
@@ -2396,7 +2423,13 @@ namespace Alice
 		if (playerGuardBreakCameraActive)
 			forcedZoomInRatio = std::max(forcedZoomInRatio, std::clamp(m_guardBreakZoomInRatio, 0.0f, 1.0f));
 
-		const bool canLockOn = (camFollow && camFollow->enableLockOn);
+		const bool canLockOn = (camFollow && camFollow->enableLockOn && hasBossForLockOn);
+		if (!hasBossForLockOn)
+		{
+			m_state->playerHowlingForcedLockOn = false;
+			m_state->playerLockOnActive = false;
+			m_state->playerLockOnTarget = InvalidEntityId;
+		}
 		if (forceLockOnZoomActive)
 		{
 			m_state->playerHowlingForcedLockOn = true;
@@ -2480,7 +2513,8 @@ namespace Alice
 				zoomRightMotor = 0.24f; // weaker than mid.
 				zoomDurationSec = 0.30f;
 			}
-			EmitHapticPulse(zoomLeftMotor, zoomRightMotor, zoomDurationSec, GamepadVibrationBlend::Max, zoomHapticKey, 0.06f);
+			// X(zoomToggle) 입력 시 카메라 줌 진동 비활성화 요청에 따라 주석 처리.
+			// EmitHapticPulse(zoomLeftMotor, zoomRightMotor, zoomDurationSec, GamepadVibrationBlend::Max, zoomHapticKey, 0.06f);
 		}
 
 		if (m_state->playerLockOnActive)
@@ -5356,6 +5390,7 @@ namespace Alice
 					animState.dashTimer = 0.0f;
 					animState.dashForwardSec = 0.0f;
 					animState.dashReverseSec = 0.0f;
+					animState.dashReverseStartSec = 0.0f;
 					animState.dashClipName.clear();
 				}
 				else
@@ -5363,6 +5398,7 @@ namespace Alice
 					float dashDuration = GetClipDurationSecByName(registry, world, entityId, clipName);
 					if (dashDuration <= 0.0f)
 						dashDuration = 0.5f;
+					const float dashReverseStartMaxSec = std::max(0.0f, dashDuration - kDashReverseStartEpsilonSec);
 					if (!animState.dashActive || animState.dashClipName != clipName || prev != curr)
 					{
 						animState.dashActive = true;
@@ -5370,6 +5406,7 @@ namespace Alice
 						animState.dashTimer = 0.0f;
 						animState.dashForwardSec = dashDuration;
 						animState.dashReverseSec = dashDuration;
+						animState.dashReverseStartSec = dashReverseStartMaxSec;
 						animState.dashClipName = clipName;
 						dashPhaseChanged = true;
 					}
@@ -5380,6 +5417,10 @@ namespace Alice
 						{
 							animState.dashReverse = true;
 							animState.dashTimer = 0.0f;
+							float reverseStartSec = animState.dashForwardSec;
+							if (animState.overrideActive && animState.overrideClip == clipName)
+								reverseStartSec = std::max(anim->base.timeA, anim->base.timeB);
+							animState.dashReverseStartSec = std::clamp(reverseStartSec, 0.0f, dashReverseStartMaxSec);
 							dashPhaseChanged = true;
 						}
 						else if (animState.dashReverse && animState.dashTimer >= animState.dashReverseSec)
@@ -5388,11 +5429,13 @@ namespace Alice
 							{
 								animState.dashReverse = false;
 								animState.dashTimer = 0.0f;
+								animState.dashReverseStartSec = dashReverseStartMaxSec;
 								dashPhaseChanged = true;
 							}
 							else
 							{
 								animState.dashActive = false;
+								animState.dashReverseStartSec = 0.0f;
 							}
 						}
 					}
@@ -5573,7 +5616,7 @@ namespace Alice
 				else if (isDashClip && animState.dashActive && animState.dashReverse)
 				{
 					wantsReverse = true;
-					reverseStartTime = std::max(0.0f, animState.dashForwardSec);
+					reverseStartTime = std::max(0.0f, animState.dashReverseStartSec);
 				}
 				if (wantsReverse && overrideSpeed > 0.0f)
 					overrideSpeed = -overrideSpeed;
@@ -5606,6 +5649,8 @@ namespace Alice
 				const bool bossChargeBlendHardCut = (entityId == bossId)
 					&& (chargeActiveNow || bossChargePatternActive || bossChargeAttackClip);
 				if (bossChargeBlendHardCut)
+					blendSec = 0.0f;
+				if (isDashClip)
 					blendSec = 0.0f;
 				const bool playerGuardEnterToLoopTransition = isPlayerEntity
 					&& !cfg.guardEnterClip.empty()
@@ -6789,6 +6834,16 @@ namespace Alice
 				{
 					EmitHapticPulse(0.33f, 0.45f, guardBreakPushDurationForHaptic,
 						GamepadVibrationBlend::Add, HapticCooldownKey::GuardBreakVictimSustain, 0.0f);
+				}
+
+				// GuardBreak 진입 시 광폭화 즉시 종료 + 쿨다운 시작.
+				if (m_state->playerRageActive)
+				{
+					const float rageCooldownSec = std::max(0.0f, m_rageCooldownSec);
+					m_state->playerRageActive = false;
+					m_state->playerRageRemainingSec = 0.0f;
+					m_state->playerRageCooldownRemainingSec =
+						std::max(m_state->playerRageCooldownRemainingSec, rageCooldownSec);
 				}
 			}
 			if (wasGuardBreak && hit.attackerOwner == playerId && hit.victimOwner == bossId)

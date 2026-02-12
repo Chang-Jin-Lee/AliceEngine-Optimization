@@ -1,0 +1,9 @@
+{
+    "materials": [
+        "Assets/Materials/doorwall_0.mat",
+        "Assets/Materials/doorwall_1.mat",
+        "Assets/Materials/doorwall_2.mat"
+    ],
+    "mesh": "doorwall",
+    "source_fbx": "Resource/fbx/doorwall.fbx"
+}
