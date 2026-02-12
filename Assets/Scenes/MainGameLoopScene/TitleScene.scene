@@ -587,7 +587,7 @@
                     "y": 0.8500000238418579,
                     "z": 0.8500000238418579
                 },
-                "state": "Hovered"
+                "state": "Normal"
             },
             "UIImage": {
                 "color": {
@@ -1371,11 +1371,11 @@
                 "alignH": "Center",
                 "alignV": "Center",
                 "anchorMax": {
-                    "x": 0.5,
+                    "x": 0.550000011920929,
                     "y": 0.5
                 },
                 "anchorMin": {
-                    "x": 0.5,
+                    "x": 0.550000011920929,
                     "y": 0.5
                 },
                 "pivot": {
