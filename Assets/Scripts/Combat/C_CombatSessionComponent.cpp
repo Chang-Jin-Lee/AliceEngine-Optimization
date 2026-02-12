@@ -2441,6 +2441,17 @@ namespace Alice
 		float healExitDurationSec = 0.0f;
 		Combat::Sensors sPlayer = m_state->player.BuildSensors(world, bossId, deltaTime);
 		Combat::Sensors sBoss = m_state->boss.BuildSensors(world, playerId, deltaTime);
+		auto ApplyPlayerChargedHeavySuperArmor = [&](Combat::Sensors& sensors, Combat::ActionState state)
+			{
+				// Charged heavy (level 1+) should keep super armor across the full attack state.
+				const bool chargedHeavyAttackActive =
+					(state == Combat::ActionState::Attack)
+					&& m_state->playerLastAttackHeavy
+					&& (m_state->playerLastAttackChargeLevel >= 1);
+				if (chargedHeavyAttackActive)
+					sensors.attackCancelable = false;
+			};
+		ApplyPlayerChargedHeavySuperArmor(sPlayer, m_state->player.state);
 		sPlayer.hitstunDurationSec = m_state->playerHitstunDurationSec;
 		sBoss.hitstunDurationSec = m_state->bossHitstunDurationSec;
 		sPlayer.interactAvailable = playerCanInteract;
@@ -6209,6 +6220,7 @@ namespace Alice
 
 		Combat::Sensors resolvePlayerSensors = m_state->player.BuildSensors(world, bossId, deltaTime);
 		Combat::Sensors resolveBossSensors = m_state->boss.BuildSensors(world, playerId, deltaTime);
+		ApplyPlayerChargedHeavySuperArmor(resolvePlayerSensors, m_state->player.state);
 
 		{
 			auto RecomputeTargetInFront = [&](EntityId selfId,
