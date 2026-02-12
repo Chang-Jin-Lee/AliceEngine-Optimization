@@ -13,6 +13,7 @@
 #include "Runtime/Rendering/Components/CameraFollowComponent.h"
 #include "Runtime/Rendering/Components/CameraShakeComponent.h"
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
+#include "Runtime/Input/InputTypes.h"
 #include "Runtime/Resources/ResourceManager.h"
 
 #include "../Combat/C_CombatContracts.h"
@@ -96,6 +97,7 @@ namespace Alice
         m_chargeCurrentMaxZoomDeg = std::max(Get_m_chargeMaxZoomInDeg(), 0.001f);
         m_prevStateValid = false;
         m_prevChargeActive = false;
+        m_prevChargeLevel = 0;
         m_rollOverrideActive = false;
         m_groggyModeOverrideActive = false;
         m_groggyModeRemainingSec = 0.0f;
@@ -574,6 +576,7 @@ namespace Alice
             UpdateParryPause(deltaTime);
             m_prevStateValid = false;
             m_prevChargeActive = false;
+            m_prevChargeLevel = 0;
             return;
         }
 
@@ -607,6 +610,8 @@ namespace Alice
 
         const bool chargeActive = Get_m_chargeEnabled() && playerFlags.chargeActive && (playerFlags.chargeLevel > 0);
         const int chargeLevel = std::max(0, playerFlags.chargeLevel);
+        if (chargeActive && (!m_prevChargeActive || chargeLevel > m_prevChargeLevel))
+            TriggerGamepadRumble(Get_m_gamepadRumbleChargeDurationSec());
         const float levelScale = 1.0f + std::max(0, chargeLevel - 1) * std::max(0.0f, Get_m_chargePerLevelScale());
         const float targetZoom = chargeActive
             ? std::max(0.0f, Get_m_chargeMaxZoomInDeg()) * levelScale
@@ -623,6 +628,7 @@ namespace Alice
             m_chargeZoomDeg = 0.0f;
 
         m_prevChargeActive = chargeActive;
+        m_prevChargeLevel = chargeActive ? chargeLevel : 0;
 
         UpdateRollAssist(playerState == Combat::ActionState::Dodge);
         UpdateGroggyFollowMode(deltaTime);
@@ -860,6 +866,38 @@ namespace Alice
         shake->duration = std::max(shake->duration, newEnd);
     }
 
+    void CombatCameraEffectsController::TriggerGamepadRumble(float durationSec)
+    {
+        if (!Get_m_gamepadRumbleEnabled())
+            return;
+        if (m_session && m_session->Get_m_disableLegacyCameraRumble())
+            return;
+
+        auto* input = Input();
+        if (!input)
+            return;
+
+        const int playerIndex = std::clamp(Get_m_gamepadRumblePlayerIndex(), 0, 3);
+        if (!input->GetGamepadConnected(playerIndex))
+            return;
+
+        const float duration = std::max(0.0f, durationSec);
+        if (duration <= 0.0f)
+            return;
+
+        const float leftMotor = std::clamp(Get_m_gamepadRumbleLeftMotor(), 0.0f, 1.0f);
+        const float rightMotor = std::clamp(Get_m_gamepadRumbleRightMotor(), 0.0f, 1.0f);
+        if (leftMotor <= 0.0f && rightMotor <= 0.0f)
+            return;
+
+        input->PlayGamepadVibration(
+            playerIndex,
+            leftMotor,
+            rightMotor,
+            duration,
+            GamepadVibrationBlend::Override);
+    }
+
     DirectX::XMFLOAT2 CombatCameraEffectsController::ResolvePulseCenter(const DirectX::XMFLOAT3* hitPosWS) const
     {
         DirectX::XMFLOAT2 center(Get_m_defaultBlurCenterX(), Get_m_defaultBlurCenterY());
@@ -952,6 +990,7 @@ namespace Alice
         m_lastGlobalPulseTriggerSec = m_runtimeSec;
 
         ApplyShake(config);
+        TriggerGamepadRumble(Get_m_gamepadRumblePulseDurationSec());
     }
 
     void CombatCameraEffectsController::TriggerImpactPulse(const DirectX::XMFLOAT3& hitPosWS, bool heavyHit, float heavyScaleOverride)

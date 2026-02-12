@@ -76,19 +76,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.270739555358887,
-                    "y": 1.0836186408996582,
-                    "z": -15.868739128112793
+                    "x": -3.555018663406372,
+                    "y": 1.1714450120925903,
+                    "z": -2.1025912761688232
                 },
                 "rotation": {
-                    "x": 0.05520375072956085,
-                    "y": -2.6764113903045654,
-                    "z": -0.03621409088373184
+                    "x": -0.059331443160772324,
+                    "y": -1.9809861183166504,
+                    "z": -0.01220035832375288
                 },
                 "scale": {
                     "x": 1.0000001192092896,
-                    "y": 0.9999997019767761,
-                    "z": 0.9999999403953552
+                    "y": 0.9999996423721313,
+                    "z": 0.9999996423721313
                 },
                 "visible": false
             },
@@ -171,19 +171,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.263723373413086,
-                    "y": 0.8418327569961548,
-                    "z": -15.854907989501953
+                    "x": -3.5671563148498535,
+                    "y": 0.9291784167289734,
+                    "z": -2.1056268215179443
                 },
                 "rotation": {
-                    "x": 0.0874873474240303,
-                    "y": -2.703855514526367,
-                    "z": 0.02508137747645378
+                    "x": -0.031260568648576736,
+                    "y": -1.8421387672424316,
+                    "z": 0.0013552926247939467
                 },
                 "scale": {
-                    "x": 0.9999997019767761,
-                    "y": 0.9999994039535522,
-                    "z": 0.9999995827674866
+                    "x": 1.0,
+                    "y": 0.9999993443489075,
+                    "z": 0.999999463558197
                 },
                 "visible": false
             },
@@ -266,19 +266,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.11353588104248,
-                    "y": 0.2421342134475708,
-                    "z": -15.768198013305664
+                    "x": -3.4467227458953857,
+                    "y": 0.2501161992549896,
+                    "z": -2.210974931716919
                 },
                 "rotation": {
-                    "x": 0.05628054589033127,
-                    "y": -1.6675316095352173,
-                    "z": 2.538841962814331
+                    "x": 0.0947326123714447,
+                    "y": -0.5993204712867737,
+                    "z": 2.878237724304199
                 },
                 "scale": {
-                    "x": 0.9999995827674866,
+                    "x": 0.9999995231628418,
                     "y": 1.0000001192092896,
-                    "z": 1.0
+                    "z": 1.0000001192092896
                 },
                 "visible": false
             },
@@ -361,19 +361,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.364325523376465,
-                    "y": 0.2178380787372589,
-                    "z": -15.80508041381836
+                    "x": -3.649156093597412,
+                    "y": 0.25052347779273987,
+                    "z": -2.007040500640869
                 },
                 "rotation": {
-                    "x": 0.06742957979440689,
-                    "y": 1.800744891166687,
-                    "z": -2.4395415782928467
+                    "x": 0.028315573930740356,
+                    "y": 2.946258306503296,
+                    "z": -2.7297098636627197
                 },
                 "scale": {
                     "x": 0.999999463558197,
-                    "y": 0.9999992251396179,
-                    "z": 0.9999998211860657
+                    "y": 0.9999993443489075,
+                    "z": 0.9999997615814209
                 },
                 "visible": false
             },
@@ -456,18 +456,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.266600608825684,
-                    "y": 2.334339141845703,
-                    "z": -6.129508972167969
+                    "x": -0.06339609622955322,
+                    "y": 2.334850788116455,
+                    "z": -0.05043201148509979
                 },
                 "rotation": {
-                    "x": -0.13821975886821747,
-                    "y": -0.477384090423584,
-                    "z": 0.015000361949205399
+                    "x": -0.13790608942508698,
+                    "y": 0.9183589816093445,
+                    "z": 0.014538398943841457
                 },
                 "scale": {
-                    "x": 0.009999996982514858,
-                    "y": 0.009999996982514858,
+                    "x": 0.009999995119869709,
+                    "y": 0.009999995119869709,
                     "z": 0.009999995119869709
                 },
                 "visible": false
@@ -551,18 +551,18 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.377660751342773,
-                    "y": 1.5005624294281006,
-                    "z": -5.742318153381348
+                    "x": 0.29746127128601074,
+                    "y": 1.500564455986023,
+                    "z": 0.12626904249191284
                 },
                 "rotation": {
-                    "x": -0.43705353140830994,
-                    "y": -0.2837250232696533,
-                    "z": 0.010331648401916027
+                    "x": -0.43583449721336365,
+                    "y": 1.1113412380218506,
+                    "z": 0.010144350118935108
                 },
                 "scale": {
-                    "x": 0.009999999776482582,
-                    "y": 0.009999998845160007,
+                    "x": 0.009999997913837433,
+                    "y": 0.009999997913837433,
                     "z": 0.009999999776482582
                 },
                 "visible": false
@@ -646,19 +646,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.580848693847656,
-                    "y": 1.726077675819397,
-                    "z": -6.313511371612549
+                    "x": -0.3001249432563782,
+                    "y": 1.7268072366714478,
+                    "z": 0.22675414383411407
                 },
                 "rotation": {
-                    "x": 0.2476574182510376,
-                    "y": -2.377810001373291,
-                    "z": 2.117452383041382
+                    "x": 0.24795882403850555,
+                    "y": -0.983477771282196,
+                    "z": 2.114427328109741
                 },
                 "scale": {
-                    "x": 0.009999998845160007,
-                    "y": 0.009999996051192284,
-                    "z": 0.009999995119869709
+                    "x": 0.009999995119869709,
+                    "y": 0.009999995119869709,
+                    "z": 0.00999999325722456
                 },
                 "visible": false
             },
@@ -741,19 +741,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -9.921913146972656,
-                    "y": 1.71915602684021,
-                    "z": -5.973714828491211
+                    "x": 0.14935563504695892,
+                    "y": 1.7193783521652222,
+                    "z": -0.3626708984375
                 },
                 "rotation": {
-                    "x": 0.055626314133405685,
-                    "y": 1.8094909191131592,
-                    "z": -2.4871139526367188
+                    "x": 0.05622022971510887,
+                    "y": -3.077587366104126,
+                    "z": -2.486422538757324
                 },
                 "scale": {
-                    "x": 0.010000000707805157,
+                    "x": 0.009999998845160007,
                     "y": 0.009999996982514858,
-                    "z": 0.009999999776482582
+                    "z": 0.010000001639127731
                 },
                 "visible": false
             },
@@ -836,19 +836,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.718649864196777,
-                    "y": 0.6101866364479065,
-                    "z": -5.832529544830322
+                    "x": 0.1478181928396225,
+                    "y": 0.6102239489555359,
+                    "z": 0.4454020857810974
                 },
                 "rotation": {
-                    "x": -0.44052767753601074,
-                    "y": 0.2022082507610321,
-                    "z": 2.9005448818206787
+                    "x": -0.4408012330532074,
+                    "y": 1.5957517623901367,
+                    "z": 2.902662515640259
                 },
                 "scale": {
-                    "x": 0.010000020265579224,
+                    "x": 0.010000023059546947,
                     "y": 0.010000028647482395,
-                    "z": 0.010000057518482208
+                    "z": 0.010000058449804783
                 },
                 "visible": false
             },
@@ -931,19 +931,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.03287410736084,
-                    "y": 0.6561457514762878,
-                    "z": -5.903588771820068
+                    "x": 0.19933539628982544,
+                    "y": 0.6559048891067505,
+                    "z": -0.24145810306072235
                 },
                 "rotation": {
-                    "x": -0.07780711352825165,
-                    "y": -0.4206028878688812,
-                    "z": -2.989124298095703
+                    "x": -0.07480885833501816,
+                    "y": 0.9736618995666504,
+                    "z": -2.9891982078552246
                 },
                 "scale": {
-                    "x": 0.010000035166740417,
-                    "y": 0.010000023990869522,
-                    "z": 0.010000030510127544
+                    "x": 0.01000003982335329,
+                    "y": 0.01000002957880497,
+                    "z": 0.010000028647482395
                 },
                 "visible": false
             },
@@ -3259,9 +3259,12 @@
                         "m_chargeScale3": 1.7999999523162842,
                         "m_debugAttackMoveTime": false,
                         "m_debugBossGapWarp": false,
+                        "m_disableLegacyCameraRumble": true,
                         "m_dodgeClip": "rig|Tia_Rolling",
                         "m_enableBossAttackTrailVfx": true,
+                        "m_enableCombatHaptics": true,
                         "m_enableCombatLogs": true,
+                        "m_enableExtraCombatHaptics": true,
                         "m_enableLogs": false,
                         "m_enablePlayerRageTrailVfx": true,
                         "m_fatalApproachSec": 0.25,
@@ -3276,16 +3279,19 @@
                         "m_guardBreakClip": "",
                         "m_guardBreakPushbackDurationSec": 1.0,
                         "m_guardBreakPushbackScale": 0.6000000238418579,
+                        "m_guardBreakZoomInRatio": 0.5,
                         "m_guardEnterClip": "rig|Tia_Guard",
                         "m_guardEnterDurationSec": 0.30000001192092896,
                         "m_guardExitClip": "rig|Tia_Guard",
                         "m_guardExitDurationSec": 0.30000001192092896,
                         "m_guardLoopClip": "rig|Tia_Guarding",
                         "m_guardSuccessPushbackScale": 0.20000000298023224,
+                        "m_hapticsMasterScale": 1.149999976158142,
+                        "m_hapticsPlayerIndex": 0,
                         "m_healGimmickEntityName": "Heal_EYE",
-                        "m_healHoldTickAmount": 50.0,
+                        "m_healHoldTickAmount": 100.0,
                         "m_healHoldTickIntervalSec": 0.5,
-                        "m_healInitialAmount": 100.0,
+                        "m_healInitialAmount": 200.0,
                         "m_healLoopClip": "",
                         "m_healPlayerMaxRatio": 0.8999999761581421,
                         "m_healStartDelaySec": 1.0,
@@ -3320,6 +3326,7 @@
                         "m_phaseHowlingLockInput": true,
                         "m_phaseHowlingPushbackDurationSec": 0.75,
                         "m_phaseHowlingPushbackScale": 0.20000000298023224,
+                        "m_phaseHowlingZoomInRatio": 1.0,
                         "m_playerCanBeHitstunned": true,
                         "m_playerChargeEnterClip": "rig|Tia_Charging",
                         "m_playerChargeLoopClip": "rig|Tia_Charging",
@@ -3362,6 +3369,8 @@
                         "m_playerParryClip": "rig|Tia_Parrying",
                         "m_playerParryRecoverBlendSec": 0.10000000149011612,
                         "m_playerRageAttackClip": "rig|Tia_Normal_Attack_1,2,3",
+                        "m_playerRageHeavyAttackSpeedScale": 1.2000000476837158,
+                        "m_playerRageHeavyJudgementScale": 1.2000000476837158,
                         "m_playerRageLightAttackSpeedScale": 1.5,
                         "m_playerRageTrailChildName": "W_Target_RageTrailVfx",
                         "m_playerRageTrailColorScale": 1.0,
@@ -3415,6 +3424,7 @@
                     "enabled": true,
                     "name": "C_BossCombatSessionComponent",
                     "props": {
+                        "m_groggyRecoverIdleHoldSec": 1.0,
                         "m_hitReactDurationSec": 0.25,
                         "m_hitReactUseFullClipDuration": true
                     }
@@ -3528,7 +3538,7 @@
                         "bossScenePath": "Assets/Scenes/MainGameLoopScene/ClearScene.scene",
                         "deathEffectDelaySec": 3.0,
                         "deathWidgetName": "UI_Death",
-                        "delaySec": 5.0,
+                        "delaySec": 3.0,
                         "fadeEntityName": "UI_Fade",
                         "playerEntityName": "Player(Tia)",
                         "playerScenePath": "Assets/Scenes/MainGameLoopScene/DeathScene.scene",
@@ -3566,7 +3576,7 @@
         },
         {
             "Camera": {
-                "FOV": 54.99998092651367,
+                "FOV": 60.00002670288086,
                 "Far Plane": 1000.0,
                 "Near Plane": 0.10000000149011612,
                 "aspectOverride": 0.0,
@@ -3612,8 +3622,8 @@
                 "lockOnSwitchAngleDeg": 45.0,
                 "maxDistance": 8.079999923706055,
                 "minDistance": 0.0,
-                "mode": 2,
-                "pitchDeg": 1.8827558755874634,
+                "mode": 0,
+                "pitchDeg": 13.755228042602539,
                 "pitchMaxDeg": 80.0,
                 "pitchMinDeg": -45.0,
                 "positionDamping": 8.0,
@@ -3622,7 +3632,7 @@
                 "shoulderOffset": 0.0,
                 "shoulderSide": 1.0,
                 "targetName": "Player(Tia)",
-                "yawDeg": -0.7837172150611877
+                "yawDeg": -165.3893585205078
             },
             "CameraInput": {
                 "blendTimeKey3": 0.6000000238418579,
@@ -3640,7 +3650,7 @@
                 "slowTriggerTKey5": 0.5
             },
             "CameraLookAt": {
-                "enabled": true,
+                "enabled": false,
                 "rotationDamping": 8.0,
                 "targetName": "Boss",
                 "targetYOffset": 1.2000000476837158
@@ -3656,7 +3666,7 @@
                 "collisionLayerMask": 1,
                 "collisionMinDistance": 0.20000000298023224,
                 "collisionQueryMask": 4294967295,
-                "distance": 3.9999990463256836,
+                "distance": 2.0,
                 "distanceDamping": 6.0,
                 "enableCollision": true,
                 "enableZoom": true,
@@ -3698,6 +3708,10 @@
                     "enabled": true,
                     "name": "CameraController",
                     "props": {
+                        "m_enableGamepadLook": true,
+                        "m_gamepadLookDeadzone": 0.15000000596046448,
+                        "m_gamepadLookSpeedDegPerSec": 450.0,
+                        "m_gamepadPlayerIndex": 0,
                         "m_shakeAmplitude": 0.5,
                         "m_shakeDecay": 2.0,
                         "m_shakeDuration": 2.200000047683716,
@@ -3761,6 +3775,12 @@
                         "m_defaultBlurCenterY": 0.5,
                         "m_defaultBlurRadius": 0.25,
                         "m_enableLogs": false,
+                        "m_gamepadRumbleChargeDurationSec": 0.10000000149011612,
+                        "m_gamepadRumbleEnabled": true,
+                        "m_gamepadRumbleLeftMotor": 1.0,
+                        "m_gamepadRumblePlayerIndex": 0,
+                        "m_gamepadRumblePulseDurationSec": 0.11999999731779099,
+                        "m_gamepadRumbleRightMotor": 1.0,
                         "m_globalPulseCooldownSec": 0.019999999552965164,
                         "m_groggyBlurIntensity": 0.949999988079071,
                         "m_groggyCooldownSec": 0.15000000596046448,
@@ -3923,14 +3943,14 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.192407608032227,
-                    "y": 1.6616936922073364,
-                    "z": -19.749422073364258
+                    "x": -37.688133239746094,
+                    "y": 1.4287807941436768,
+                    "z": -13.440422058105469
                 },
                 "rotation": {
-                    "x": 0.03286029025912285,
-                    "y": -0.013678446412086487,
-                    "z": 2.9103826987286752e-11
+                    "x": 0.2400740385055542,
+                    "y": -2.8865890502929688,
+                    "z": -3.725290298461914e-09
                 },
                 "scale": {
                     "x": 1.0,
@@ -3984,6 +4004,7 @@
                     "bOverride_ColorGradingGain": false,
                     "bOverride_ColorGradingGamma": false,
                     "bOverride_ColorGradingSaturation": false,
+                    "bOverride_EmissiveBloomIntensity": false,
                     "bOverride_Exposure": false,
                     "bOverride_ImpactBlurCenterX": false,
                     "bOverride_ImpactBlurCenterY": false,
@@ -4011,6 +4032,7 @@
                         "y": 1.0,
                         "z": 1.0
                     },
+                    "emissiveBloomIntensity": 1.0,
                     "exposure": 0.0,
                     "gain": {
                         "x": 1.0,
@@ -4119,6 +4141,7 @@
                     "bOverride_ColorGradingGain": false,
                     "bOverride_ColorGradingGamma": false,
                     "bOverride_ColorGradingSaturation": false,
+                    "bOverride_EmissiveBloomIntensity": false,
                     "bOverride_Exposure": false,
                     "bOverride_ImpactBlurCenterX": false,
                     "bOverride_ImpactBlurCenterY": false,
@@ -4146,6 +4169,7 @@
                         "y": 1.0,
                         "z": 1.0
                     },
+                    "emissiveBloomIntensity": 1.0,
                     "exposure": 0.0,
                     "gain": {
                         "x": 1.0,
@@ -4466,7 +4490,7 @@
         },
         {
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/EGOweapon_Blade_1/EGOweapon_Blade_1_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Blade_1_0.mat",
@@ -4475,6 +4499,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -4575,7 +4607,7 @@
         },
         {
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/EGOweapon_Blade_2/EGOweapon_Blade_2_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Blade_2_0.mat",
@@ -4584,6 +4616,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -4684,7 +4724,7 @@
         },
         {
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/EGOweapon_Blade_3/EGOweapon_Blade_3_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Blade_3_0.mat",
@@ -4693,6 +4733,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -4793,7 +4841,7 @@
         },
         {
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/EGOweapon_Blade_4/EGOweapon_Blade_4_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Blade_4_0.mat",
@@ -4802,6 +4850,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -4902,7 +4958,7 @@
         },
         {
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/EGOweapon_Blade_5/EGOweapon_Blade_5_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Blade_5_0.mat",
@@ -4911,6 +4967,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -5011,7 +5075,7 @@
         },
         {
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/EGOweapon_Blade_6/EGOweapon_Blade_6_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Blade_6_0.mat",
@@ -5020,6 +5084,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -5120,7 +5192,7 @@
         },
         {
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/EGOweapon_Eye/EGOweapon_Eye_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Eye_0.mat",
@@ -5129,6 +5201,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -5238,6 +5318,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -5413,19 +5501,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.247920989990234,
-                    "y": 1.080995798110962,
-                    "z": -16.559682846069336
+                    "x": -4.091897487640381,
+                    "y": 1.082837462425232,
+                    "z": -2.310708522796631
                 },
                 "rotation": {
-                    "x": 1.119763970375061,
-                    "y": -2.5278778076171875,
-                    "z": 0.3914710581302643
+                    "x": 0.6770187020301819,
+                    "y": -0.7733500003814697,
+                    "z": 0.6360160112380981
                 },
                 "scale": {
-                    "x": 1.0000001192092896,
-                    "y": 1.0000001192092896,
-                    "z": 1.000000238418579
+                    "x": 0.9999998807907104,
+                    "y": 0.9999996423721313,
+                    "z": 1.0
                 },
                 "visible": true
             },
@@ -7191,7 +7279,7 @@
         },
         {
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Tia_Ribbon/Tia_Ribbon_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Tia_Ribbon_0.mat",
@@ -7200,6 +7288,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -7263,19 +7359,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.284407615661621,
-                    "y": 0.8075881004333496,
-                    "z": -15.89732837677002
+                    "x": -3.616217613220215,
+                    "y": 0.9007558822631836,
+                    "z": -2.1192336082458496
                 },
                 "rotation": {
-                    "x": 0.0874873474240303,
-                    "y": -2.703855514526367,
-                    "z": 0.02508137747645378
+                    "x": -0.031260568648576736,
+                    "y": -1.8421387672424316,
+                    "z": 0.0013552926247939467
                 },
                 "scale": {
-                    "x": 0.9999997019767761,
-                    "y": 0.9999994039535522,
-                    "z": 0.9999995827674866
+                    "x": 1.0,
+                    "y": 0.9999993443489075,
+                    "z": 0.999999463558197
                 },
                 "visible": true
             },
@@ -7311,8 +7407,8 @@
                     "loopB": false,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.10031280666589737,
-                    "timeB": 0.10031280666589737
+                    "timeA": 1.8333333730697632,
+                    "timeB": 1.8333333730697632
                 },
                 "enabled": true,
                 "ik": {
@@ -7335,8 +7431,8 @@
                 },
                 "rootBoneLock": false,
                 "rootBoneName": "c_pos",
-                "rootMotionDriveCct": false,
-                "rootMotionUnlock": false,
+                "rootMotionDriveCct": true,
+                "rootMotionUnlock": true,
                 "sockets": [],
                 "upper": {
                     "autoAdvance": true,
@@ -7406,7 +7502,7 @@
                         "type": "Guard"
                     },
                     {
-                        "canBeInterrupted": true,
+                        "canBeInterrupted": false,
                         "clipName": "rig|Tia_Normal_Attack_hard",
                         "enabled": true,
                         "endTimeSec": 0.8629999756813049,
@@ -7494,24 +7590,24 @@
                 "hitThisFrame": false,
                 "invulnDuration": 0.0,
                 "invulnRemaining": 0.0,
-                "lastHitAttacker": 2475,
-                "lastHitDamage": 199.0,
+                "lastHitAttacker": 55,
+                "lastHitDamage": 0.0,
                 "lastHitNormalWS": {
-                    "x": 0.5207914710044861,
-                    "y": 0.05547486990690231,
-                    "z": 0.8518795371055603
+                    "x": 0.417982280254364,
+                    "y": 0.6387945413589478,
+                    "z": 0.6459353566169739
                 },
-                "lastHitPart": 31,
+                "lastHitPart": 10,
                 "lastHitPosWS": {
-                    "x": -11.702310562133789,
-                    "y": 0.25662124156951904,
-                    "z": -8.23935317993164
+                    "x": 2.382035255432129,
+                    "y": 1.2090158462524414,
+                    "z": 2.0039703845977783
                 },
                 "maxHealth": 1000.0,
                 "pushbackDir": {
-                    "x": 0.7384783029556274,
+                    "x": 0.999069333076477,
                     "y": 0.0,
-                    "z": -0.6742772459983826
+                    "z": -0.04313370957970619
                 },
                 "pushbackRemainingSec": 0.0,
                 "pushbackSpeed": 0.6000000238418579,
@@ -7521,7 +7617,7 @@
                 "weaponDurabilityMax": 1000.0
             },
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Tia_Animaition/Tia_Animaition_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Tia_Animaition_0.mat",
@@ -7530,6 +7626,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -7567,6 +7671,8 @@
                         "m_chargeStage2Sec": 2.0,
                         "m_chargeStage3Sec": 3.0,
                         "m_enableLogs": false,
+                        "m_gamepadMoveDeadzone": 0.15000000596046448,
+                        "m_gamepadPlayerIndex": 0,
                         "m_keyAttack": 19,
                         "m_keyBackward": 28,
                         "m_keyChargeModifier": 45,
@@ -7584,6 +7690,7 @@
                         "m_mouseLockOnButton": 2,
                         "m_parryWindowSec": 0.5,
                         "m_rageChargeStageStepSec": 0.5,
+                        "m_useGamepadInput": true,
                         "m_useMouseAttack": true,
                         "m_useMouseLockOn": true
                     }
@@ -7740,13 +7847,13 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.246737480163574,
-                    "y": 0.0010010600090026855,
-                    "z": -15.77759075164795
+                    "x": -3.506706476211548,
+                    "y": 0.0010002851486206055,
+                    "z": -2.091158866882324
                 },
                 "rotation": {
-                    "x": 0.0,
-                    "y": 3.1279141902923584,
+                    "x": -0.0,
+                    "y": -1.9929143190383911,
                     "z": 0.0
                 },
                 "scale": {
@@ -7788,8 +7895,8 @@
                     "loopB": false,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 0.10031280666589737,
-                    "timeB": 0.10031280666589737
+                    "timeA": 1.8333333730697632,
+                    "timeB": 1.8333333730697632
                 },
                 "enabled": true,
                 "ik": {
@@ -7831,7 +7938,7 @@
                 }
             },
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/EgoWeapon_Animaition/EgoWeapon_Animaition_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EgoWeapon_Animaition_0.mat",
@@ -7840,6 +7947,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -7941,7 +8056,7 @@
         },
         {
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/EGOweapon_Blade/EGOweapon_Blade_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/EGOweapon_Blade_0.mat",
@@ -7950,6 +8065,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -8013,25 +8136,25 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.247920989990234,
-                    "y": 1.080995798110962,
-                    "z": -16.559682846069336
+                    "x": -4.091897487640381,
+                    "y": 1.082837462425232,
+                    "z": -2.310708522796631
                 },
                 "rotation": {
-                    "x": 1.119763970375061,
-                    "y": -2.5278778076171875,
-                    "z": 0.3914710581302643
+                    "x": 0.6770187020301819,
+                    "y": -0.7733500003814697,
+                    "z": 0.6360160112380981
                 },
                 "scale": {
-                    "x": 1.0000001192092896,
-                    "y": 1.0000001192092896,
-                    "z": 1.000000238418579
+                    "x": 0.9999998807907104,
+                    "y": 0.9999996423721313,
+                    "z": 1.0
                 },
                 "visible": true
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 1848,
+                "attackInstanceId": 1752,
                 "baseDamage": 10.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -8057,8 +8180,8 @@
                         "capsuleHalfHeight": 0.20000000298023224,
                         "enabled": true,
                         "localPos": {
-                            "x": 0.5699999928474426,
-                            "y": -0.029999999329447746,
+                            "x": -0.05999999865889549,
+                            "y": -0.4000000059604645,
                             "z": 0.0
                         },
                         "localRotDeg": {
@@ -8096,8 +8219,8 @@
                         "capsuleHalfHeight": 0.20000000298023224,
                         "enabled": true,
                         "localPos": {
-                            "x": 0.009999999776482582,
-                            "y": 0.6200000047683716,
+                            "x": -0.029999999329447746,
+                            "y": 0.7699999809265137,
                             "z": 0.0
                         },
                         "localRotDeg": {
@@ -8281,8 +8404,8 @@
                     "loopB": true,
                     "speedA": 1.0,
                     "speedB": 1.0,
-                    "timeA": 1.6243563890457153,
-                    "timeB": 0.6243577599525452
+                    "timeA": 1.5604370832443237,
+                    "timeB": 0.9604544639587402
                 },
                 "enabled": true,
                 "ik": {
@@ -8389,10 +8512,10 @@
                         "canBeInterrupted": true,
                         "clipName": "Boss|Boss|Kick_Attack",
                         "enabled": true,
-                        "endTimeSec": 0.8610000014305115,
+                        "endTimeSec": 0.7400000095367432,
                         "source": "Explicit",
-                        "startTimeSec": 0.5389999747276306,
-                        "traceSlotMask": 272,
+                        "startTimeSec": 0.621999979019165,
+                        "traceSlotMask": 16,
                         "type": "Attack"
                     },
                     {
@@ -8536,7 +8659,7 @@
                 "weaponDurabilityMax": 100.0
             },
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Boss_Animaition/Boss_Animaition_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Boss_Animaition_0.mat",
@@ -8545,6 +8668,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "Resource/Textures/Boss_Animaition/Boss_Animaition_E_1.png",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -8670,7 +8801,7 @@
                 "timeSec": 0.0
             },
             "SkinnedMesh": {
-                "boneCount": 65,
+                "boneCount": 58,
                 "instanceAssetPath": "Assets/Fbx/Boss_Animaition.fbxasset",
                 "meshAssetPath": "Boss_Animaition"
             },
@@ -8833,13 +8964,13 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.384100914001465,
-                    "y": 0.0010007619857788086,
-                    "z": -5.7360358238220215
+                    "x": 0.3023192286491394,
+                    "y": 0.0009995698928833008,
+                    "z": 0.13374067842960358
                 },
                 "rotation": {
                     "x": 0.0,
-                    "y": -0.4863983690738678,
+                    "y": 0.9077524542808533,
                     "z": 0.0
                 },
                 "scale": {
@@ -8854,7 +8985,7 @@
         },
         {
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Boss_Weapon/Boss_Weapon_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Boss_Weapon_0.mat",
@@ -8863,6 +8994,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -8926,25 +9065,25 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.575775146484375,
-                    "y": 1.082120656967163,
-                    "z": -6.118040561676025
+                    "x": -0.10797037184238434,
+                    "y": 1.0821943283081055,
+                    "z": 0.25402772426605225
                 },
                 "rotation": {
-                    "x": -0.006262194365262985,
-                    "y": 0.840666651725769,
-                    "z": -0.8567581176757813
+                    "x": -0.006399943493306637,
+                    "y": 2.2359280586242676,
+                    "z": -0.8531425595283508
                 },
                 "scale": {
-                    "x": 1.4999991655349731,
-                    "y": 1.4999995231628418,
-                    "z": 1.4999992847442627
+                    "x": 1.4999990463256836,
+                    "y": 1.4999991655349731,
+                    "z": 1.499998688697815
                 },
                 "visible": true
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 319,
+                "attackInstanceId": 318,
                 "baseDamage": 199.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -9319,19 +9458,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.091987609863281,
-                    "y": 0.8124785423278809,
-                    "z": -15.956595420837402
+                    "x": -3.605494976043701,
+                    "y": 0.6680266857147217,
+                    "z": -2.2851781845092773
                 },
                 "rotation": {
-                    "x": -0.7297205924987793,
-                    "y": -1.9305529594421387,
-                    "z": -0.46845757961273193
+                    "x": -1.1973897218704224,
+                    "y": -0.19194647669792175,
+                    "z": 3.1139097213745117
                 },
                 "scale": {
-                    "x": 1.0000001192092896,
-                    "y": 0.9999996423721313,
-                    "z": 1.0
+                    "x": 0.9999998807907104,
+                    "y": 0.9999997615814209,
+                    "z": 0.9999998807907104
                 },
                 "visible": true
             },
@@ -9414,19 +9553,19 @@
             "Transform": {
                 "enabled": true,
                 "position": {
-                    "x": -10.236534118652344,
-                    "y": 0.8009859919548035,
-                    "z": -15.743889808654785
+                    "x": -3.589371681213379,
+                    "y": 0.6647244691848755,
+                    "z": -1.9369771480560303
                 },
                 "rotation": {
-                    "x": -0.7575690150260925,
-                    "y": -2.3070929050445557,
-                    "z": 2.398533821105957
+                    "x": -1.5296154022216797,
+                    "y": 2.6937670707702637,
+                    "z": -2.038789749145508
                 },
                 "scale": {
-                    "x": 1.000000238418579,
-                    "y": 0.9999996423721313,
-                    "z": 0.9999999403953552
+                    "x": 1.0000001192092896,
+                    "y": 0.9999994039535522,
+                    "z": 0.9999995827674866
                 },
                 "visible": true
             },
@@ -9444,6 +9583,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -9540,7 +9687,7 @@
                         "sessionEntityName": "SceneManager",
                         "targetEntityName": "Player(Tia)",
                         "useBus": true,
-                        "volume": 0.46000000834465027,
+                        "volume": 0.5,
                         "volumeAttack1": 1.0,
                         "volumeAttack2": 1.0,
                         "volumeAttack3": 1.0,
@@ -9556,8 +9703,8 @@
                         "volumeHitRoll": 1.0,
                         "volumeParry": 1.0,
                         "volumeRoll": 1.0,
-                        "volumeRun": 0.4000000059604645,
-                        "volumeStop": 0.5199999809265137
+                        "volumeRun": 1.0,
+                        "volumeStop": 1.0
                     }
                 }
             ],
@@ -9596,7 +9743,7 @@
                     "props": {
                         "audioBossEntityName": "AudioBoss",
                         "busEntityName": "AudioBus",
-                        "combo2ExtraDelaySec": 0.0,
+                        "combo2ExtraDelaySec": 0.7300000190734863,
                         "combo2ExtraEnabled": true,
                         "sessionEntityName": "SceneManager"
                     }
@@ -9784,11 +9931,11 @@
                     "name": "AudioBossScript",
                     "props": {
                         "attackADelay1Sec": 0.20000000298023224,
-                        "attackBDelay2Sec": 0.30000001192092896,
-                        "attackBDelay3Sec": 0.44999998807907104,
+                        "attackBDelay2Sec": 0.20000000298023224,
+                        "attackBDelay3Sec": 0.6000000238418579,
                         "attackCDelay1Sec": 0.20000000298023224,
-                        "attackCDelay2Sec": 0.4000000059604645,
-                        "attackCDelay3Sec": 0.6000000238418579,
+                        "attackCDelay2Sec": 0.800000011920929,
+                        "attackCDelay3Sec": 1.600000023841858,
                         "attackCDelayABCSec": 0.0,
                         "busEntityName": "AudioBus",
                         "delayAttack1": 0.0,
@@ -9800,9 +9947,9 @@
                         "delaySideAttack": 0.0,
                         "delaySoulSwordAttack": 0.0,
                         "delaySoulSwordCharge": 0.0,
-                        "is3D": false,
+                        "is3D": true,
                         "loop": false,
-                        "maxDistance": 300.0,
+                        "maxDistance": 50.0,
                         "minDistance": 1.0,
                         "pathAttack1": "Resource/Test/4_Resources/sound/SFX/Boss/Attack1/Boss_Attack_01.mp3",
                         "pathAttack2": "Resource/Test/4_Resources/sound/SFX/Boss/Attack2/Boss_Attack_02.wav",
@@ -9826,7 +9973,7 @@
                         "volumeAttack1": 1.0,
                         "volumeAttack2": 1.0,
                         "volumeAttack3": 1.0,
-                        "volumeAttackABC": 4.760000228881836,
+                        "volumeAttackABC": 1.0,
                         "volumeAttackAlarm": 1.0,
                         "volumeDashAttack": 1.0,
                         "volumeDeath": 1.0,
@@ -10429,7 +10576,7 @@
                 "active": false,
                 "attackInstanceId": 25,
                 "baseDamage": 199.0,
-                "debugDraw": true,
+                "debugDraw": false,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
                 "debugPathMarkerRadius": 0.05000000074505806,
@@ -10517,7 +10664,7 @@
                 "active": false,
                 "attackInstanceId": 10,
                 "baseDamage": 249.0,
-                "debugDraw": true,
+                "debugDraw": false,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
                 "debugPathMarkerRadius": 0.05000000074505806,
@@ -10605,7 +10752,7 @@
                 "active": false,
                 "attackInstanceId": 12,
                 "baseDamage": 249.0,
-                "debugDraw": true,
+                "debugDraw": false,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
                 "debugPathMarkerRadius": 0.05000000074505806,
@@ -10742,10 +10889,10 @@
                         "pathStartLocalPos": {
                             "x": -0.17000000178813934,
                             "y": 1.2899999618530273,
-                            "z": -0.7699999809265137
+                            "z": 0.019999999552965164
                         },
                         "radius": 0.3799999952316284,
-                        "type": "Box"
+                        "type": "Sphere"
                     }
                 ],
                 "subSteps": 1,
@@ -10779,9 +10926,9 @@
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 21,
+                "attackInstanceId": 20,
                 "baseDamage": 199.0,
-                "debugDraw": true,
+                "debugDraw": false,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
                 "debugPathMarkerRadius": 0.05000000074505806,
@@ -47914,7 +48061,7 @@
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 22,
+                "attackInstanceId": 21,
                 "baseDamage": 99.0,
                 "debugDraw": true,
                 "debugPathGridSteps": 6,
@@ -48006,7 +48153,7 @@
                 "type": "Box"
             },
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Cube/Cube_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Cube_0.mat",
@@ -48015,6 +48162,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -48102,7 +48257,7 @@
                 "type": "Box"
             },
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Cube/Cube_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Cube_0.mat",
@@ -48111,6 +48266,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -48198,7 +48361,7 @@
                 "type": "Box"
             },
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Cube/Cube_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Cube_0.mat",
@@ -48207,6 +48370,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -48294,7 +48465,7 @@
                 "type": "Box"
             },
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Cube/Cube_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Cube_0.mat",
@@ -48303,6 +48474,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -48386,9 +48565,9 @@
             },
             "WeaponTrace": {
                 "active": false,
-                "attackInstanceId": 22,
+                "attackInstanceId": 21,
                 "baseDamage": 199.0,
-                "debugDraw": true,
+                "debugDraw": false,
                 "debugPathGridSteps": 6,
                 "debugPathGuide": true,
                 "debugPathMarkerRadius": 0.05000000074505806,
@@ -48478,7 +48657,7 @@
                 "type": "Box"
             },
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Cube/Cube_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Cube_0.mat",
@@ -48487,6 +48666,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -48574,7 +48761,7 @@
                 "type": "Box"
             },
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Cube/Cube_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Cube_0.mat",
@@ -48583,6 +48770,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -48670,7 +48865,7 @@
                 "type": "Box"
             },
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Cube/Cube_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Cube_0.mat",
@@ -48679,6 +48874,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -48766,7 +48969,7 @@
                 "type": "Box"
             },
             "Material": {
-                "albedoTexturePath": "",
+                "albedoTexturePath": "Resource/Textures/Cube/Cube_D_0.png",
                 "alpha": 1.0,
                 "ambientOcclusion": 1.0,
                 "assetPath": "Assets/Materials/Cube_0.mat",
@@ -48775,6 +48978,14 @@
                     "y": 0.699999988079071,
                     "z": 0.699999988079071
                 },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
                 "envDiffuseStrength": 1.0,
                 "envSpecularStrength": 1.0,
                 "metalness": 0.0,
@@ -49102,7 +49313,7 @@
                         "gaugeWidgetName": "UI_Gauge3",
                         "healthEntityName": "Player(Tia)",
                         "maxValue": 100.0,
-                        "nowValue": 1.0,
+                        "nowValue": 0.3199999928474426,
                         "rootWidgetName": "UI_playeInfo",
                         "targetEntityName": "Cube_HPTest1",
                         "targetScriptName": "BoxDeligateScript",
@@ -49189,7 +49400,7 @@
                 "minValue": 0.0,
                 "normalized": true,
                 "smoothing": 0.0,
-                "useBackground": true,
+                "useBackground": false,
                 "useCustomShader": true,
                 "useFillLate": true,
                 "useUvClip": false,
@@ -49201,7 +49412,7 @@
                     "x": 0.0,
                     "y": 0.0
                 },
-                "value": 1.0
+                "value": 0.4099999964237213
             },
             "UITransform": {
                 "alignH": "Center",
@@ -49339,13 +49550,13 @@
                     "z": 1.0
                 },
                 "fillLateShaderName": "GaugeCustom",
-                "fillLateTexture": "Resource/Test/4_Resources/UI/StateBar/Egoweapon_Gauge_IN.png",
+                "fillLateTexture": "",
                 "fillTexture": "Resource/Test/4_Resources/UI/StateBar/Egoweapon_Gauge_IN.png",
                 "maxValue": 1.0,
                 "minValue": 0.0,
                 "normalized": true,
                 "smoothing": 0.0,
-                "useBackground": true,
+                "useBackground": false,
                 "useCustomShader": true,
                 "useFillLate": true,
                 "useUvClip": false,
@@ -49357,7 +49568,7 @@
                     "x": 0.05000000074505806,
                     "y": 0.05000000074505806
                 },
-                "value": 1.0
+                "value": 0.8700000047683716
             },
             "UITransform": {
                 "alignH": "Center",
@@ -49726,7 +49937,7 @@
                         "gaugeWidgetName": "UI_Gauge1",
                         "healthEntityName": "Boss",
                         "maxValue": 100.0,
-                        "nowValue": 1.0,
+                        "nowValue": 0.10000000149011612,
                         "rootWidgetName": "UI_BossInfor",
                         "targetEntityName": "Cube_HPTest1",
                         "targetScriptName": "BoxDeligateScript"
@@ -49811,7 +50022,7 @@
                 "minValue": 0.0,
                 "normalized": true,
                 "smoothing": 0.0,
-                "useBackground": true,
+                "useBackground": false,
                 "useCustomShader": true,
                 "useFillLate": true,
                 "useUvClip": false,
@@ -49823,7 +50034,7 @@
                     "x": 0.05000000074505806,
                     "y": 0.05000000074505806
                 },
-                "value": 1.0
+                "value": 0.10000000149011612
             },
             "UITransform": {
                 "alignH": "Center",
@@ -49880,7 +50091,7 @@
                         "gaugeWidgetName": "UI_Gauge2",
                         "healthEntityName": "Boss",
                         "maxValue": 100.0,
-                        "nowValue": 0.9990000128746033,
+                        "nowValue": 0.7799999713897705,
                         "rootWidgetName": "UI_BossInfor",
                         "targetEntityName": "Cube_HPTest1",
                         "targetScriptName": "BoxDeligateScript"
@@ -49934,7 +50145,7 @@
                 },
                 "enabled": true,
                 "frequency": 1.5,
-                "intensity": 0.1599999964237213,
+                "intensity": 0.3499999940395355,
                 "speed": 1.0
             },
             "UIGauge": {
@@ -49954,9 +50165,9 @@
                 },
                 "fillLateColor": {
                     "w": 1.0,
-                    "x": 0.6988416910171509,
-                    "y": 0.6876112222671509,
-                    "z": 0.28331419825553894
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
                 },
                 "fillLateShaderName": "Default",
                 "fillLateTexture": "",
@@ -49965,7 +50176,7 @@
                 "minValue": 0.0,
                 "normalized": true,
                 "smoothing": 0.0,
-                "useBackground": true,
+                "useBackground": false,
                 "useCustomShader": true,
                 "useFillLate": true,
                 "useUvClip": false,
@@ -49977,7 +50188,7 @@
                     "x": 0.05000000074505806,
                     "y": 0.05000000074505806
                 },
-                "value": 0.9990000128746033
+                "value": 0.7799999713897705
             },
             "UITransform": {
                 "alignH": "Center",
@@ -50331,17 +50542,15 @@
                     "enabled": true,
                     "name": "PrintDarkQuardScript",
                     "props": {
-                        "bossDeathImageWidgetName": "UI_BossText",
                         "bossDeathText": "",
-                        "bossHealthEntityName": "Boss",
+                        "bossHealthEntityName": "",
                         "dieTextWidgetName": "UI_DieText",
-                        "healthEntityName": "Player(Tia)",
+                        "healthEntityName": "",
                         "m_totalCycle": 3.200000047683716,
                         "m_triggerKey": 3,
-                        "playerDeathImageWidgetName": "UI_PlayerText",
                         "playerDeathText": "",
-                        "triggerOnBossDeath": true,
-                        "triggerOnDeath": true
+                        "triggerOnBossDeath": false,
+                        "triggerOnDeath": false
                     }
                 },
                 {
@@ -50387,7 +50596,7 @@
                 "phase1Duration": 1.2000000476837158,
                 "phase2End": 2.0,
                 "phase3Duration": 1.2000000476837158,
-                "startTime": 51.30200958251953,
+                "startTime": 61.45052719116211,
                 "totalCycle": 3.200000047683716
             },
             "UIImage": {
@@ -50451,13 +50660,93 @@
             "name": "UI_Die"
         },
         {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "UIText": {
+                "alignH": "Left",
+                "alignV": "Top",
+                "color": {
+                    "w": 0.0,
+                    "x": 0.24324321746826172,
+                    "y": 0.0009391644853167236,
+                    "z": 0.0009391644853167236
+                },
+                "fontPath": "Resource/Fonts/NotoSansKR-Regular.ttf",
+                "fontSize": 120.0,
+                "lineSpacing": 0.0,
+                "maxWidth": 0.0,
+                "text": "Text",
+                "wrap": false
+            },
+            "UITransform": {
+                "alignH": "Center",
+                "alignV": "Center",
+                "anchorMax": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "anchorMin": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "rotationRad": 0.0,
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "size": {
+                    "x": 200.0,
+                    "y": 80.0
+                },
+                "sortOrder": 0,
+                "useAlignment": false
+            },
+            "UIWidget": {
+                "billboard": false,
+                "interactable": true,
+                "raycastTarget": true,
+                "shaderName": "Default",
+                "space": "Screen",
+                "visibility": "Collapsed",
+                "widgetName": "UI_DieText"
+            },
+            "_parentGuid": "8067992724437108823",
+            "guid": "6817700141886351624",
+            "name": "UI_DieText"
+        },
+        {
             "Scripts": [
                 {
                     "enabled": true,
                     "name": "OnResizeScript",
                     "props": {
-                        "baseSizeX": 10.0,
-                        "baseSizeY": 10.0,
+                        "baseSizeX": 1600.0,
+                        "baseSizeY": 900.0,
                         "forceScaleOne": true,
                         "maxScale": 10.0,
                         "minScale": 0.10000000149011612,
@@ -50493,7 +50782,7 @@
             },
             "UIImage": {
                 "color": {
-                    "w": 0.0,
+                    "w": 1.0,
                     "x": 1.0,
                     "y": 1.0,
                     "z": 1.0
@@ -50532,8 +50821,8 @@
                     "y": 1.0
                 },
                 "size": {
-                    "x": 10.0,
-                    "y": 10.0
+                    "x": 1600.0,
+                    "y": 900.0
                 },
                 "sortOrder": 0,
                 "useAlignment": false
@@ -50740,1467 +51029,6 @@
             "_parentGuid": "2566172173018441992",
             "guid": "277154810367947521",
             "name": "UI_Text"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": false
-            },
-            "_parentGuid": "8917386486070800600",
-            "guid": "8465067767070497103",
-            "name": "__CombatVfxPool_897"
-        },
-        {
-            "ComputeEffect": {
-                "color": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "depthBiasMeters": 0.05000000074505806,
-                "depthTest": true,
-                "drag": 0.9829999804496765,
-                "emissionDurationSec": 0.026000000536441803,
-                "emitNewParticles": false,
-                "enabled": true,
-                "gravity": {
-                    "x": 0.0,
-                    "y": -0.6499999761581421,
-                    "z": 0.0
-                },
-                "intensity": 0.671999990940094,
-                "lifeMax": 0.17900000512599945,
-                "lifeMin": 0.009999999776482582,
-                "localOffset": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "loop": false,
-                "radius": 0.009999999776482582,
-                "shaderName": "Explosion",
-                "simulationSpace": "World",
-                "sizePx": 7.017000198364258,
-                "spawnRate": 0.0,
-                "startSpeed": 2.2130000591278076
-            },
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": -11.763023376464844,
-                    "y": 1.2646234035491943,
-                    "z": -7.715216159820557
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "guid": "10909511182931274274",
-            "name": "ShockWave"
-        },
-        {
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": -0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "UIImage": {
-                "color": {
-                    "w": 0.0,
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "preserveAspect": false,
-                "texturePath": "Resource/Test/4_Resources/UI/Die_Clear/Per_aspera_ad_astra.png",
-                "uvRect": {
-                    "w": 1.0,
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 1.0
-                }
-            },
-            "UITransform": {
-                "alignH": "Center",
-                "alignV": "Center",
-                "anchorMax": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "anchorMin": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "pivot": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "rotationRad": 0.0,
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0
-                },
-                "size": {
-                    "x": 890.0,
-                    "y": 107.5
-                },
-                "sortOrder": 0,
-                "useAlignment": false
-            },
-            "UIWidget": {
-                "billboard": false,
-                "interactable": true,
-                "raycastTarget": true,
-                "shaderName": "Default",
-                "space": "Screen",
-                "visibility": "Collapsed",
-                "widgetName": "UI_BossText"
-            },
-            "_parentGuid": "8067992724437108823",
-            "guid": "7142248555834684078",
-            "name": "UI_BossText"
-        },
-        {
-            "Transform": {
-                "enabled": true,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": -0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": true
-            },
-            "UIImage": {
-                "color": {
-                    "w": 0.0,
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "preserveAspect": false,
-                "texturePath": "Resource/Test/4_Resources/UI/Die_Clear/DISCARDED.png",
-                "uvRect": {
-                    "w": 1.0,
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 1.0
-                }
-            },
-            "UITransform": {
-                "alignH": "Center",
-                "alignV": "Center",
-                "anchorMax": {
-                    "x": 0.5,
-                    "y": 0.5
-                },
-                "anchorMin": {
-                    "x": 0.5,
-                    "y": 0.5
-                },
-                "pivot": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "rotationRad": 0.0,
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0
-                },
-                "size": {
-                    "x": 565.0,
-                    "y": 83.0
-                },
-                "sortOrder": 0,
-                "useAlignment": false
-            },
-            "UIWidget": {
-                "billboard": false,
-                "interactable": true,
-                "raycastTarget": true,
-                "shaderName": "Default",
-                "space": "Screen",
-                "visibility": "Collapsed",
-                "widgetName": "UI_PlayerText"
-            },
-            "_parentGuid": "8067992724437108823",
-            "guid": "17377741777044784590",
-            "name": "UI_PlayerText"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": false
-            },
-            "_parentGuid": "8917386486070800600",
-            "guid": "8730602448529925794",
-            "name": "__CombatVfxPool_2481"
-        },
-        {
-            "ComputeEffect": {
-                "color": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "depthBiasMeters": 0.05000000074505806,
-                "depthTest": true,
-                "drag": 0.9829999804496765,
-                "emissionDurationSec": 0.026000000536441803,
-                "emitNewParticles": false,
-                "enabled": false,
-                "gravity": {
-                    "x": 0.0,
-                    "y": -0.6499999761581421,
-                    "z": 0.0
-                },
-                "intensity": 0.671999990940094,
-                "lifeMax": 0.17900000512599945,
-                "lifeMin": 0.009999999776482582,
-                "localOffset": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "loop": false,
-                "radius": 0.009999999776482582,
-                "shaderName": "Explosion",
-                "simulationSpace": "World",
-                "sizePx": 7.017000198364258,
-                "spawnRate": 1.0,
-                "startSpeed": 2.2130000591278076
-            },
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": -11.702310562133789,
-                    "y": 0.25662124156951904,
-                    "z": -8.23935317993164
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": false
-            },
-            "_parentGuid": "8730602448529925794",
-            "guid": "2620427065234802703",
-            "name": "ShockWave"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.699999988079071,
-                    "y": 0.5,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.5270894169807434
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "8730602448529925794",
-            "guid": "2708987164868657343",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": -0.699999988079071,
-                    "y": 0.8999999761581421,
-                    "z": -0.4000000059604645
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": -1.5707963705062866
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "8730602448529925794",
-            "guid": "13342051665104241331",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": false
-            },
-            "_parentGuid": "8917386486070800600",
-            "guid": "10390578603089336927",
-            "name": "__CombatVfxPool_4132"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.699999988079071,
-                    "y": 0.5,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.5270894169807434
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "10390578603089336927",
-            "guid": "11249441676355571377",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": -0.699999988079071,
-                    "y": 0.8999999761581421,
-                    "z": -0.4000000059604645
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": -1.5707963705062866
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "10390578603089336927",
-            "guid": "9263792567715326431",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.699999988079071,
-                    "y": 0.5,
-                    "z": -0.15000000596046448
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.593411922454834
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "10390578603089336927",
-            "guid": "7859523144680492813",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.949999988079071,
-                    "y": 0.5,
-                    "z": -0.15000000596046448
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.9424777626991272
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "10390578603089336927",
-            "guid": "12011861166728137016",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": false
-            },
-            "_parentGuid": "8917386486070800600",
-            "guid": "8709610955294663932",
-            "name": "__CombatVfxPool_4990"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.699999988079071,
-                    "y": 0.5,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.5270894169807434
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "8709610955294663932",
-            "guid": "16472937326453906207",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": -0.699999988079071,
-                    "y": 0.8999999761581421,
-                    "z": -0.4000000059604645
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": -1.5707963705062866
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "8709610955294663932",
-            "guid": "8783609837562145231",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": false
-            },
-            "_parentGuid": "8917386486070800600",
-            "guid": "333634479292024867",
-            "name": "__CombatVfxPool_935"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.699999988079071,
-                    "y": 0.5,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.5270894169807434
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "333634479292024867",
-            "guid": "13455253422132004695",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": -0.699999988079071,
-                    "y": 0.8999999761581421,
-                    "z": -0.4000000059604645
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": -1.5707963705062866
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "333634479292024867",
-            "guid": "17190456780269642889",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": false
-            },
-            "_parentGuid": "8917386486070800600",
-            "guid": "14898127810812979932",
-            "name": "__CombatVfxPool_4418"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.699999988079071,
-                    "y": 0.5,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.5270894169807434
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "14898127810812979932",
-            "guid": "3760574824586355435",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": false
-            },
-            "_parentGuid": "8917386486070800600",
-            "guid": "16793258433266640474",
-            "name": "__CombatVfxPool_7025"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": false
-            },
-            "_parentGuid": "8917386486070800600",
-            "guid": "6814322957707469919",
-            "name": "__CombatVfxPool_8704"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.699999988079071,
-                    "y": 0.5,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.5270894169807434
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "6814322957707469919",
-            "guid": "3467059206594885774",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": -0.699999988079071,
-                    "y": 0.8999999761581421,
-                    "z": -0.4000000059604645
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": -1.5707963705062866
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "6814322957707469919",
-            "guid": "16533647350156840184",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "scale": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "visible": false
-            },
-            "_parentGuid": "8917386486070800600",
-            "guid": "9542155777847602960",
-            "name": "__CombatVfxPool_10458"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.699999988079071,
-                    "y": 0.5,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.5270894169807434
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "9542155777847602960",
-            "guid": "3321295341950784680",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": -0.699999988079071,
-                    "y": 0.8999999761581421,
-                    "z": -0.4000000059604645
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": -1.5707963705062866
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "9542155777847602960",
-            "guid": "13850886799509261270",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.699999988079071,
-                    "y": 0.5,
-                    "z": -0.15000000596046448
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.593411922454834
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "9542155777847602960",
-            "guid": "17944012395910812962",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.949999988079071,
-                    "y": 0.5,
-                    "z": -0.15000000596046448
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.9424777626991272
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "9542155777847602960",
-            "guid": "11028954158804897570",
-            "name": "Combo_slash_fx_04_03_NoParticle"
-        },
-        {
-            "Transform": {
-                "enabled": false,
-                "position": {
-                    "x": 0.699999988079071,
-                    "y": 0.5,
-                    "z": 0.0
-                },
-                "rotation": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.5270894169807434
-                },
-                "scale": {
-                    "x": 0.5,
-                    "y": 0.5,
-                    "z": 0.5
-                },
-                "visible": false
-            },
-            "UnityVfx": {
-                "alphaScale": 1.0,
-                "colorScale": 1.0,
-                "colorTint": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-                "dissolveOffset": 0.0,
-                "effectPath": "Assets/VFX/UnityExport/Combo_slash_fx_04_03_NoParticle/effect.json",
-                "emitNewParticles": false,
-                "enableTrails": true,
-                "enabled": false,
-                "hdrColorClamp": 1.0,
-                "intensityScale": 1.0,
-                "lifetimeScale": 1.0,
-                "loop": false,
-                "noiseScale": 1.0,
-                "overrideLoop": true,
-                "rampScale": 1.0,
-                "sizeScale": 1.659000039100647,
-                "spawnRateScale": 1.0,
-                "speedScale": 1.0,
-                "timeScale": 1.0,
-                "trailLifeScale": 1.0,
-                "trailWidthScale": 1.0,
-                "useComputeEffect": false,
-                "useMeshRenderer": true,
-                "uvScrollScale": 1.0
-            },
-            "_parentGuid": "5920284910544232243",
-            "guid": "8269088520854682079",
-            "name": "Combo_slash_fx_04_03_NoParticle"
         }
     ],
     "sceneName": "#00Combat0211",
