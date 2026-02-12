@@ -460,9 +460,6 @@ namespace Alice
             m_attackDurationSec = 0.0f;
             m_hasAttackStartPos = false;
             m_traceAttackInstanceSeen.clear();
-            m_worldImpactEventSeen.clear();
-            m_playerSparkGate = AttackOrdinalGate{};
-            m_bossSparkGate = AttackOrdinalGate{};
             m_prevSlashWindowActive = false;
         }
 

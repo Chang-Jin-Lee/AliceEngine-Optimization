@@ -2411,9 +2411,11 @@ namespace Alice
 				camBasis = BuildYawBasis(yawRad);
 		}
 
-		const bool bossPhaseHowlingActive = bossBrain
+		const bool hasBossForLockOn = (bossId != InvalidEntityId);
+		const bool bossPhaseHowlingActive = hasBossForLockOn
+			&& bossBrain
 			&& (bossBrain->GetActivePattern() == C_BossBrainComponent::PatternType::Special);
-		const bool playerGuardBreakCameraActive = (m_state->playerGuardBreakLockOnSec > 0.0f);
+		const bool playerGuardBreakCameraActive = hasBossForLockOn && (m_state->playerGuardBreakLockOnSec > 0.0f);
 		const bool forceLockOnZoomActive = bossPhaseHowlingActive || playerGuardBreakCameraActive;
 		float forcedZoomInRatio = 0.0f;
 		if (bossPhaseHowlingActive)
@@ -2421,7 +2423,13 @@ namespace Alice
 		if (playerGuardBreakCameraActive)
 			forcedZoomInRatio = std::max(forcedZoomInRatio, std::clamp(m_guardBreakZoomInRatio, 0.0f, 1.0f));
 
-		const bool canLockOn = (camFollow && camFollow->enableLockOn);
+		const bool canLockOn = (camFollow && camFollow->enableLockOn && hasBossForLockOn);
+		if (!hasBossForLockOn)
+		{
+			m_state->playerHowlingForcedLockOn = false;
+			m_state->playerLockOnActive = false;
+			m_state->playerLockOnTarget = InvalidEntityId;
+		}
 		if (forceLockOnZoomActive)
 		{
 			m_state->playerHowlingForcedLockOn = true;
