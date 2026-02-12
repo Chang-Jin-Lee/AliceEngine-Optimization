@@ -927,6 +927,10 @@ namespace Alice
 	{
 		ThreadSafety::SetMainThreadId(std::this_thread::get_id());
 		LinkComponentRegistry();
+#if defined(_WIN32)
+		// 로딩 중 장시간 작업 시 클릭으로 발생하는 Ghost Window(흰 화면/회전 커서)를 막습니다.
+		DisableProcessWindowsGhosting();
+#endif
 		ALICE_LOG_INFO("Engine::Initialize: Begin (EditorMode=%d)", m_editorMode);
 	}
 
