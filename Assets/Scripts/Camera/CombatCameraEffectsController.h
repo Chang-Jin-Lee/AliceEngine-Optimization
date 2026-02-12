@@ -151,6 +151,7 @@ namespace Alice
         ALICE_PROPERTY(std::string, m_bossEntityName, "Boss");
         ALICE_PROPERTY(std::string, m_cameraName, "MainCamera");
         ALICE_PROPERTY(bool, m_enableLogs, false);
+        ALICE_PROPERTY(bool, m_suspendFovWhenFatalActive, true);
 
         ALICE_PROPERTY(std::string, m_postProcessVolumeName, "CombatCameraImpactVolume");
         ALICE_PROPERTY(bool, m_autoCreatePostProcessVolume, true);
