@@ -407,6 +407,9 @@ if(MSVC)
     target_compile_options(Engine PRIVATE /bigobj)
 endif()
 
+# PCH: Windows.h / DirectX / RTTR / JSON 등 무거운 헤더를 사전 컴파일
+target_precompile_headers(Engine PRIVATE "${ALICE_SRC_DIR}/EnginePCH.h")
+
 source_group(TREE ${ALICE_SRC_DIR} FILES ${ENGINE_SOURCES} ${ENGINE_HEADERS})
 
 # ==========================================

@@ -37,6 +37,10 @@ namespace Alice
 
         void Update(World& world, double dtSec)
         {
+            // 파괴된 엔티티의 런타임 정리
+            for (auto it = m_runtime.begin(); it != m_runtime.end(); )
+                it = world.GetComponent<SkinnedMeshComponent>(it->first) ? ++it : m_runtime.erase(it);
+
             auto skinnedMap = world.GetComponents<SkinnedMeshComponent>();
             if (skinnedMap.empty())
                 return;
@@ -123,14 +127,14 @@ namespace Alice
                     auto* animComp = world.GetComponent<SkinnedAnimationComponent>(entityId);
                     if (!animComp)
                         animComp = &world.AddComponent<SkinnedAnimationComponent>(entityId);
-                    animComp->palette = rt.palette;
-                    
+                    animComp->palette.swap(rt.palette);
+
                     if (auto* skinnedWrite = world.GetComponent<SkinnedMeshComponent>(entityId))
                     {
                         skinnedWrite->boneMatrices = animComp->palette.data();
                         skinnedWrite->boneCount = static_cast<std::uint32_t>(animComp->palette.size());
                     }
-                    
+
                     // 소켓 갱신
                     UpdateSockets(world, entityId, rt);
                     continue;
@@ -345,34 +349,14 @@ namespace Alice
                 }
                 #endif
 
-                // 디버그용: Advanced 계산을 건너뛰고 ref 팔레트를 그대로 사용하는 옵션
-                const bool USE_REF_PALETTE_FORCE = false;
-                
-                if (USE_REF_PALETTE_FORCE)
-                {
-                    const int clipA = FindClip(rt, comp->base.clipA);
-                    if (clipA >= 0)
-                    {
-                        rt.anim.BuildPaletteAt(clipA, WrapTime(rt.timeBaseA, clipA, comp->base.loopA, rt), rt.palette);
-                        TransposePalette(rt.palette);
-                    }
-                    else
-                    {
-                        BuildPalette(*mesh->sourceModel, rt.globals, rt.palette);
-                        TransposePalette(rt.palette);
-                    }
-                }
-                else
-                {
-                    BuildPalette(*mesh->sourceModel, rt.globals, rt.palette);
-                    TransposePalette(rt.palette);
-                }
+                BuildPalette(*mesh->sourceModel, rt.globals, rt.palette);
+                TransposePalette(rt.palette);
 
                 // SkinnedAnimationComponent에 결과 연결
                 auto* animComp = world.GetComponent<SkinnedAnimationComponent>(entityId);
                 if (!animComp)
                     animComp = &world.AddComponent<SkinnedAnimationComponent>(entityId);
-                animComp->palette = rt.palette;
+                animComp->palette.swap(rt.palette);
 
                 if (auto* skinnedWrite = world.GetComponent<SkinnedMeshComponent>(entityId))
                 {

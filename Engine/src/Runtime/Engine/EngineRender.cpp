@@ -418,9 +418,10 @@ namespace Alice
 	{
 		EntityId renderEntity = (m_sceneManager) ? m_sceneManager->GetPrimaryRenderableEntity() : InvalidEntityId;
 
-		std::unordered_set<EntityId> cameraIDs;
+		m_cameraIDsScratch.clear();
 		for (const auto& [id, _] : m_world.GetComponents<CameraComponent>())
-			cameraIDs.insert(id);
+			m_cameraIDsScratch.insert(id);
+		const auto& cameraIDs = m_cameraIDsScratch;
 
 		const int finalShadingMode = m_editorMode
 			? static_cast<int>(m_shadingMode)
@@ -465,9 +466,10 @@ namespace Alice
 			previewCam.SetScale(camTr->scale);
 		}
 
-		std::unordered_set<EntityId> cameraIDs;
+		m_cameraIDsScratch.clear();
 		for (const auto& [id, _] : m_world.GetComponents<CameraComponent>())
-			cameraIDs.insert(id);
+			m_cameraIDsScratch.insert(id);
+		const auto& cameraIDs = m_cameraIDsScratch;
 
 		const int finalShadingMode = m_editorMode
 			? static_cast<int>(m_shadingMode)

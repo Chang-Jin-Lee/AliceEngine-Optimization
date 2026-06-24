@@ -607,27 +607,6 @@ namespace Alice
         m_warmedUnityEffects.clear();
     }
 
-    void ComputeEffectSystem::SetEmitterNormalized(float x, float y, float radius)
-    {
-        // 레거시 함수: 멀티 이미터 구조에서는 사용되지 않음
-        // 컴포넌트별로 개별 설정하는 것을 권장
-        ALICE_LOG_WARN("[ComputeEffectSystem] SetEmitterNormalized is deprecated. Use ComputeEffectComponent to set emitter parameters per entity.");
-    }
-
-    void ComputeEffectSystem::SetParticleColor(float r, float g, float b)
-    {
-        // 레거시 함수: 멀티 이미터 구조에서는 사용되지 않음
-        // 컴포넌트별로 개별 설정하는 것을 권장
-        ALICE_LOG_WARN("[ComputeEffectSystem] SetParticleColor is deprecated. Use ComputeEffectComponent to set particle color per entity.");
-    }
-    
-    void ComputeEffectSystem::SetParticleSizePx(float sizePx)
-    {
-        // 레거시 함수: 멀티 이미터 구조에서는 사용되지 않음
-        // 컴포넌트별로 개별 설정하는 것을 권장
-        ALICE_LOG_WARN("[ComputeEffectSystem] SetParticleSizePx is deprecated. Use ComputeEffectComponent to set particle size per entity.");
-    }
-
     bool ComputeEffectSystem::HasActiveEffect() const
     {
         return m_hasActiveEffect;

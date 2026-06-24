@@ -8,12 +8,10 @@
 #include "Runtime/Resources/ResourceManager.h"
 
 #include <filesystem>
-#include <ranges>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <queue>
 
 using namespace DirectX;
 
@@ -196,23 +194,6 @@ bool FbxModel::Load(ID3D11Device* device, const std::wstring& pathW)
 				for (unsigned ci = 0; ci < node->mNumChildren; ++ci) fillBase(node->mChildren[ci]);
 			};
 			fillBase(m_->scene->mRootNode);
-
-			// BFS를 쓰는 방법
-			/*std::queue<const aiNode*> q;
-			q.push(m_->scene->mRootNode);*/
-
-			//while (!q.empty()) {
-			//	const aiNode* node = q.front(); q.pop();
-			//	for (unsigned mi = 0; mi < node->mNumMeshes; ++mi)
-			//	{
-			//		const unsigned meshIdx = node->mMeshes[mi];
-			//		baseVertex[meshIdx] = cursor;
-			//		cursor += m_->scene->mMeshes[meshIdx]->mNumVertices;
-			//	}
-			//	for (const aiNode* child : std::views::counted(node->mChildren, node->mNumChildren)) {
-			//		q.push(child);
-			//	}
-			//}
 
 			for (unsigned mi = 0; mi < m_->scene->mNumMeshes; ++mi)
 			{

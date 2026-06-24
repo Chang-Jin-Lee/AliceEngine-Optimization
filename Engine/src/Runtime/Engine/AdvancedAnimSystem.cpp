@@ -156,11 +156,10 @@ namespace Alice
 
     void AdvancedAnimSystem::Update(World& world, double dtSec)
     {
-        // ------------------------------
-        // Advanced Animation Only
-        // ------------------------------
-        // 고급 애니메이션 컴포넌트가 있는 엔티티만 처리합니다.
-        // 일반 애니메이션(SkinnedAnimationComponent)은 엔진의 기본 시스템이 담당합니다.
+        // 파괴된 엔티티의 런타임 정리
+        for (auto it = m_runtime.begin(); it != m_runtime.end(); )
+            it = world.GetComponent<AdvancedAnimationComponent>(it->first) ? ++it : m_runtime.erase(it);
+
         for (auto&& [entityId, animComp] : world.GetComponents<AdvancedAnimationComponent>())
         {
             // 비활성화 상태면 스킵

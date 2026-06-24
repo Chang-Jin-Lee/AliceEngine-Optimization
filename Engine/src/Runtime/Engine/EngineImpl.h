@@ -197,6 +197,7 @@ namespace Alice
 		AttackDriverSystem m_attackDriverSystem;
 		AudioSystem m_audioSystem;
 		std::vector<SkinnedDrawCommand> m_skinnedDrawCommands;
+		std::unordered_set<EntityId>    m_cameraIDsScratch;
 		std::unordered_map<std::string, std::shared_ptr<const std::vector<std::uint8_t>>> m_preloadedBlobs;
 
 		bool m_animUpdatedThisFrame = false;
