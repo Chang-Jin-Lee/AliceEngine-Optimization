@@ -374,7 +374,7 @@ namespace Alice {
 
 	EntityId World::CreateCamera()
 	{
-		const bool hasCamera = GetComponents<CameraComponent>().empty();
+		const bool hasCamera = !GetComponents<CameraComponent>().empty();
 		const std::uint32_t camIndex = static_cast<std::uint32_t>(GetComponents<CameraComponent>().size() + 1);
 
 		EntityId e = CreateEntity();

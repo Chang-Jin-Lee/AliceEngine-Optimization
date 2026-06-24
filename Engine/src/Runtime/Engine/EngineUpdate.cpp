@@ -103,7 +103,6 @@ namespace Alice
 
 	void Engine::Impl::UpdateAttackDriver()
 	{
-		//m_attackDriverSystem.Update(m_world);
 		m_attackDriverSystem.PreUpdate(m_world);
 	}
 

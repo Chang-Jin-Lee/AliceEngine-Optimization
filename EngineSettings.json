@@ -48,7 +48,7 @@
     },
     "skybox": {
         "choice": 5,
-        "customDir": "C:/Users/User/Documents/GitHub/EGOSIS/Resource/Test/4_Resources/background/Graysky",
+        "customDir": "Resource/Test/4_Resources/background/Graysky",
         "customPrefix": "Graysky",
         "resolution": 0
     }

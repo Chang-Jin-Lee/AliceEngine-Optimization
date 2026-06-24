@@ -52,12 +52,6 @@ namespace Alice
         /// 파티클 개수를 설정합니다.
         void SetParticleCount(std::uint32_t particleCount);
 
-        // (레거시) 전역 파티클 파라미터 설정 - 멀티 이미터 구조에서는 의미가 거의 없음
-        // 컴포넌트별로 개별 설정하는 것을 권장
-        void SetEmitterNormalized(float x, float y, float radius);
-        void SetParticleColor(float r, float g, float b);
-        void SetParticleSizePx(float sizePx);
-        
         /// 등록된 파티클 셰이더 이름 목록을 반환합니다 (인스펙터 UI용)
         std::vector<std::string> GetRegisteredShaderNames() const;
 

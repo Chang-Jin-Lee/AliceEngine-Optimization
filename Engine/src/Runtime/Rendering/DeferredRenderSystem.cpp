@@ -2257,7 +2257,8 @@ namespace Alice
         if (!m_resources) return false;
 
         namespace fs = std::filesystem;
-        fs::path base = fs::path("Resource/Skybox") / iblDir;
+        const fs::path iblPath(iblDir);
+        fs::path base = iblPath.parent_path().empty() ? fs::path("Resource/Skybox") / iblDir : iblPath;
         const std::string suffix = iblSuffix.empty() ? "HDR" : iblSuffix;
         const bool allowFallback = (suffix != "HDR");
 
@@ -5478,12 +5479,8 @@ namespace Alice
         auto* cb = reinterpret_cast<CBBones*>(mapped.pData);
         cb->boneCount = (std::min)(boneCount, MaxBones);
 
-        // 유효한 본은 Transpose해서 넣고, 나머지는 Identity로 채움
-        for (std::uint32_t i = 0; i < MaxBones; ++i)
-        {
-            if (i < cb->boneCount) cb->bones[i] = XMMatrixTranspose(XMLoadFloat4x4(&boneMatrices[i]));
-            else cb->bones[i] = XMMatrixIdentity();
-        }
+        for (std::uint32_t i = 0; i < cb->boneCount; ++i)
+            cb->bones[i] = XMMatrixTranspose(XMLoadFloat4x4(&boneMatrices[i]));
 
         m_context->Unmap(m_cbBones.Get(), 0);
         m_context->VSSetConstantBuffers(2, 1, m_cbBones.GetAddressOf());

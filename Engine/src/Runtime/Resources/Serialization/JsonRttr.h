@@ -245,15 +245,21 @@ namespace Alice
                 if (t == rttr::type::get<int>())
                     return v.to_int();
                 if (t == rttr::type::get<std::uint32_t>())
-                    return static_cast<std::uint32_t>(v.to_int64());
+                    return static_cast<std::uint32_t>(v.to_uint64());
                 if (t == rttr::type::get<std::int64_t>())
-                    return static_cast<std::int64_t>(v.to_int64());
+                    return v.to_int64();
                 if (t == rttr::type::get<std::uint64_t>())
-                    return static_cast<std::uint64_t>(v.to_int64());
+                    return v.to_uint64();
                 if (t == rttr::type::get<float>())
-                    return v.to_double();
+                {
+                    const float f = static_cast<float>(v.to_double());
+                    return std::isfinite(f) ? json(f) : json(0.0f);
+                }
                 if (t == rttr::type::get<double>())
-                    return v.to_double();
+                {
+                    const double d = v.to_double();
+                    return std::isfinite(d) ? json(d) : json(0.0);
+                }
 
                 return v.to_string();
             }
@@ -327,22 +333,27 @@ namespace Alice
             if (t == rttr::type::get<std::int64_t>())
             {
                 if (!jval.is_number()) return false;
-                prop.set_value(obj, static_cast<std::int64_t>(jval.get<double>()));
+                const std::int64_t val = jval.is_number_integer()
+                    ? jval.get<std::int64_t>()
+                    : static_cast<std::int64_t>(jval.get<double>());
+                prop.set_value(obj, val);
                 return true;
             }
 
             if (t == rttr::type::get<std::uint64_t>())
             {
                 if (!jval.is_number()) return false;
-                const double v = jval.get<double>();
-                if (v < 0.0) return false;
-                prop.set_value(obj, static_cast<std::uint64_t>(v));
+                if (jval.is_number_integer() && !jval.is_number_unsigned()) {
+                    if (jval.get<std::int64_t>() < 0) return false;
+                }
+                const std::uint64_t val = jval.is_number_unsigned()
+                    ? jval.get<std::uint64_t>()
+                    : static_cast<std::uint64_t>(jval.get<double>());
+                prop.set_value(obj, val);
                 return true;
             }
 
-            // 나머지 산술형은 문자열로라도 시도(최소 안전)
-            prop.set_value(obj, rttr::variant(jval.dump()));
-            return true;
+            return false;
         }
 
         inline bool SetString(rttr::instance obj, const rttr::property& prop, const json& jval)

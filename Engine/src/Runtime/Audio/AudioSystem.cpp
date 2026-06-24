@@ -97,6 +97,26 @@ namespace Alice
 
         if (m_resources)
         {
+            // 파괴된 엔티티의 런타임 정리
+            for (auto it = m_runtime.begin(); it != m_runtime.end(); )
+            {
+                if (!world.GetComponent<AudioSourceComponent>(it->first))
+                {
+                    if (it->second.playing3D) Sound::Stop3D(it->second.instanceId);
+                    it = m_runtime.erase(it);
+                }
+                else ++it;
+            }
+            for (auto it = m_soundBoxRuntime.begin(); it != m_soundBoxRuntime.end(); )
+            {
+                if (!world.GetComponent<SoundBoxComponent>(it->first))
+                {
+                    if (it->second.wasInside) Sound::Stop3D(it->second.instanceId);
+                    it = m_soundBoxRuntime.erase(it);
+                }
+                else ++it;
+            }
+
             // 1. 리스너 업데이트 및 위치 확보 (SoundBox 로직에서 사용)
             DirectX::XMFLOAT3 listenerPos{ 0, 0, 0 };
             UpdateListener(world, listenerPos);

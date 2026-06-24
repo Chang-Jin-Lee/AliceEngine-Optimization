@@ -11,6 +11,7 @@
 #include <DirectXMath.h>
 #include <filesystem>
 #include <fstream>
+#include <unordered_map>
 #include <cstring>
 #include <shellapi.h>
 #include "ThirdParty/json/json.hpp"
@@ -363,10 +364,21 @@ namespace Alice
 				// 이 노드가 그 사이에 삭제되었으면 순회를 건너뜁니다.
 				if (fs::exists(path) && fs::is_directory(path))
 				{
-					for (const auto& entry : fs::directory_iterator(path))
+					struct DirCache { std::vector<fs::path> entries; fs::file_time_type stamp; };
+					static std::unordered_map<std::string, DirCache> s_dirCache;
+
+					const std::string key = path.string();
+					auto mtime = fs::last_write_time(path);
+					auto& cached = s_dirCache[key];
+					if (cached.entries.empty() || cached.stamp != mtime)
 					{
-						DrawDirectoryNode(world, selectedEntity, entry.path());
+						cached.entries.clear();
+						for (const auto& e : fs::directory_iterator(path))
+							cached.entries.push_back(e.path());
+						cached.stamp = mtime;
 					}
+					for (const auto& childPath : cached.entries)
+						DrawDirectoryNode(world, selectedEntity, childPath);
 				}
 
 				ImGui::TreePop();
