@@ -1,25 +1,25 @@
 @echo off
 setlocal
 
-rem 1. ¼­ºê¸ðµâ ¾÷µ¥ÀÌÆ®
+rem 1. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 git -C .. submodule sync --recursive
 git -C .. submodule update --init --recursive
 if errorlevel 1 goto :Error
 
-rem 2. ¸ÞÀÎ ÇÁ·ÎÁ§Æ® »ý¼º
+rem 2. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
 cmake -S .. -B ..\build -G "Visual Studio 17 2022"
 if errorlevel 1 goto :Error
 
-rem 3. ScriptsBuild ÇÏÀ§ ÇÁ·ÎÁ§Æ® »ý¼º
-cmake -S ..\ScriptsBuild -B ..\ScriptsBuild\build -G "Visual Studio 17 2022"
+rem 3. ScriptsBuild ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
+cmake -S ..\EngineSource\ScriptsBuild -B ..\EngineSource\ScriptsBuild\build -G "Visual Studio 17 2022"
 if errorlevel 1 goto :Error
 
-echo [OK] ¸ðµç ¼Ö·ç¼Ç »ý¼ºÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù.
+echo [OK] ï¿½ï¿½ï¿½ ï¿½Ö·ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
 goto :End
 
 :Error
 echo.
-echo [FAIL] ÇÁ·ÎÁ§Æ® »ý¼º Áß ¿À·ù°¡ ¹ß»ýÇß½À´Ï´Ù. À§ ·Î±×¸¦ È®ÀÎÇÏ¼¼¿ä.
+echo [FAIL] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½ß½ï¿½ï¿½Ï´ï¿½. ï¿½ï¿½ ï¿½Î±×¸ï¿½ È®ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½.
 
 :End
 endlocal
