@@ -137,12 +137,12 @@ echo.
 echo ========================================================
 echo [SUCCESS] All steps completed.
 echo.
-echo  [1] 에디터/게임 빌드:
-echo      build\AliceRenderer.sln  ^> Launch 또는 AlicePlayer 빌드
+echo  [1] Editor / Game build:
+echo      build\AliceRenderer.sln  ^> Build Launch or AlicePlayer
 echo.
-echo  [2] 유저 스크립트 빌드 (핫리로드용):
+echo  [2] User script build (hot-reload):
 echo      EngineSource\ScriptsBuild\build\AliceUserScripts.sln
-echo      ^> AliceScripts 빌드 ^> build\bin\{Config}\dll\AliceScripts.dll 생성
+echo      ^> Build AliceScripts ^> build\bin\{Config}\dll\AliceScripts.dll
 echo ========================================================
 
 :End
