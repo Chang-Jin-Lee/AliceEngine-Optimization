@@ -51,12 +51,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # 출력 디렉터리 설정 (빌드 폴더 내부 bin/)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-set(ALICE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Engine/src")
-set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Engine/ThirdParty/ImGui")
-set(IMGUIZMO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Engine/ThirdParty/ImGuizmo")
-set(IMGUI_NODE_EDITOR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Engine/ThirdParty/imgui-node-editor")
-set(THIRDPARTY_3DMODEL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Engine/ThirdParty/3DModel")
-set(FMOD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Engine/ThirdParty/FMOD")
+set(ALICE_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/EngineSource/Engine/src")
+set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/EngineSource/Engine/ThirdParty/ImGui")
+set(IMGUIZMO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/EngineSource/Engine/ThirdParty/ImGuizmo")
+set(IMGUI_NODE_EDITOR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/EngineSource/Engine/ThirdParty/imgui-node-editor")
+set(THIRDPARTY_3DMODEL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/EngineSource/Engine/ThirdParty/3DModel")
+set(FMOD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/EngineSource/Engine/ThirdParty/FMOD")
 
 # ==========================================
 # [설정] RTTR 라이브러리 (Engine에 통합)
@@ -77,7 +77,7 @@ set(BUILD_RTTR_DYNAMIC ON CACHE BOOL "" FORCE)
 set(BUILD_WITH_STATIC_RUNTIME_LIBS OFF CACHE BOOL "" FORCE)
 
 # RTTR 서브모듈 추가 (경로: ThirdParty/rttr)
-add_subdirectory(Engine/ThirdParty/rttr)
+add_subdirectory(EngineSource/Engine/ThirdParty/rttr)
 
 # window, std 둘의 min, max 충돌삭제
 add_compile_definitions(NOMINMAX)
@@ -517,7 +517,7 @@ target_include_directories(Engine
         ${IMGUI_DIR}
         ${IMGUI_DIR}/backends
         ${IMGUI_NODE_EDITOR_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/Engine/ThirdParty/rttr/src  # RTTR 헤더 경로
+        ${CMAKE_CURRENT_SOURCE_DIR}/EngineSource/Engine/ThirdParty/rttr/src  # RTTR 헤더 경로
 )
 
 
