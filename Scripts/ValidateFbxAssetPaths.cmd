@@ -2,8 +2,7 @@
 setlocal EnableExtensions
 chcp 65001 >nul
 
-set "BASE_DIR=%~dp0"
-if "%BASE_DIR:~-1%"=="\" set "BASE_DIR=%BASE_DIR:~0,-1%"
+set "BASE_DIR=%~dp0.."
 set "TARGET_DIR=%BASE_DIR%\Assets\Fbx"
 if not "%~1"=="" set "TARGET_DIR=%~1"
 

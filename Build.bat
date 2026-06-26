@@ -2,75 +2,141 @@
 setlocal EnableExtensions EnableDelayedExpansion
 
 echo ========================================================
-echo [Build.bat] Engine 스마트 빌드 시스템 (Monorepo)
-echo 목표: ThirdParty 서브모듈 동기화 + 라이브러리 셋업 + 빌드
+echo [Build.bat] Engine Build System (Monorepo)
 echo ========================================================
 
 set "EXIT_CODE=0"
-set "ENGINE_DIR=%~dp0Engine"
+set "SCRIPTS_DIR=%~dp0Scripts"
 
+REM ================================================================
+REM [Pre-Check] Git
+REM ================================================================
 where git >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [FAIL] Git이 없습니다.
+    echo [FAIL] Git not found. Install from https://git-scm.com/
     set "EXIT_CODE=1"
     goto :End
 )
 
-if not exist "%ENGINE_DIR%\" (
-    echo [FAIL] Engine 폴더가 없습니다.
+if not exist "%SCRIPTS_DIR%\" (
+    echo [FAIL] Scripts directory not found.
     set "EXIT_CODE=1"
     goto :End
 )
 
+REM ================================================================
+REM [STEP 1] Submodule Update
+REM ================================================================
 echo.
-echo [STEP 1] ThirdParty 서브모듈 업데이트 중...
+echo [STEP 1] Updating submodules...
 git submodule update --init --recursive
 if errorlevel 1 (
-    echo [FAIL] 서브모듈 업데이트 실패.
+    echo [FAIL] Submodule update failed.
     set "EXIT_CODE=1"
     goto :End
 )
 
+REM ================================================================
+REM [STEP 2] Engine Setup (vcpkg + libraries)
+REM ================================================================
 echo.
-echo [STEP 2] Engine Setup (라이브러리 설정)
-pushd "%ENGINE_DIR%"
-if not exist "Setup.bat" (
-    echo [FAIL] Setup.bat 파일이 없습니다.
-    popd
+echo [STEP 2] Engine Setup (vcpkg + library install)
+if not exist "%SCRIPTS_DIR%\Setup.bat" (
+    echo [FAIL] Setup.bat not found at %SCRIPTS_DIR%
     set "EXIT_CODE=1"
     goto :End
 )
 set "CALLED_FROM_BUILD=1"
-call Setup.bat
+call "%SCRIPTS_DIR%\Setup.bat"
 set "CALLED_FROM_BUILD="
 if errorlevel 1 (
-    echo [FAIL] Setup.bat 실행 실패
-    popd
+    echo [FAIL] Setup.bat failed.
     set "EXIT_CODE=1"
     goto :End
 )
 
+REM ================================================================
+REM [STEP 3] CMake Check & Auto-Install
+REM ================================================================
 echo.
-echo [STEP 3] 솔루션 생성 (build_msvc.cmd)
-if not exist "build_msvc.cmd" (
-    echo [FAIL] build_msvc.cmd 파일이 없습니다.
-    popd
+echo [STEP 3] Checking CMake...
+
+where cmake >nul 2>nul
+if %errorlevel% equ 0 (
+    echo [OK] CMake found in PATH.
+    for /f "tokens=3" %%v in ('cmake --version 2^>^&1 ^| findstr /i "cmake version"') do echo        Version: %%v
+    goto :CMAKE_READY
+)
+
+REM Try Visual Studio bundled CMake (when C++ CMake tools workload is installed)
+set "VS_CMAKE=C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin"
+if exist "%VS_CMAKE%\cmake.exe" (
+    echo [OK] CMake found in Visual Studio 2022.
+    set "PATH=%VS_CMAKE%;%PATH%"
+    goto :CMAKE_READY
+)
+
+REM Try default standalone CMake install location
+if exist "C:\Program Files\CMake\bin\cmake.exe" (
+    echo [OK] CMake found at Program Files.
+    set "PATH=C:\Program Files\CMake\bin;%PATH%"
+    goto :CMAKE_READY
+)
+
+REM Not found - install via winget
+echo [INFO] CMake not found. Attempting auto-install via winget...
+where winget >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [FAIL] winget not found. Install CMake manually: https://cmake.org/download/
     set "EXIT_CODE=1"
     goto :End
 )
-call build_msvc.cmd
-if errorlevel 1 (
-    echo [FAIL] build_msvc.cmd 실행 실패
-    popd
+
+winget install --id Kitware.CMake --silent --accept-package-agreements --accept-source-agreements
+if %errorlevel% neq 0 (
+    echo [FAIL] CMake auto-install failed. Install manually: https://cmake.org/download/
     set "EXIT_CODE=1"
     goto :End
 )
+
+REM winget installs to this default path
+set "PATH=C:\Program Files\CMake\bin;%PATH%"
+
+if not exist "C:\Program Files\CMake\bin\cmake.exe" (
+    echo [FAIL] CMake installed but binary not found at expected path.
+    echo        Please restart this terminal and run Build.bat again.
+    set "EXIT_CODE=1"
+    goto :End
+)
+echo [OK] CMake installed successfully.
+
+:CMAKE_READY
+cmake --version 2>&1 | findstr /i "cmake version"
+
+REM ================================================================
+REM [STEP 4] CMake Configure (generate VS solution)
+REM ================================================================
+echo.
+echo [STEP 4] Generating VS Solution...
+if not exist "%SCRIPTS_DIR%\build_msvc.cmd" (
+    echo [FAIL] build_msvc.cmd not found at %SCRIPTS_DIR%
+    set "EXIT_CODE=1"
+    goto :End
+)
+pushd "%SCRIPTS_DIR%"
+call "%SCRIPTS_DIR%\build_msvc.cmd"
+set "BUILD_EL=%errorlevel%"
 popd
+if %BUILD_EL% neq 0 (
+    echo [FAIL] build_msvc.cmd failed.
+    set "EXIT_CODE=1"
+    goto :End
+)
 
 echo.
 echo ========================================================
-echo [SUCCESS] 모든 작업이 완료되었습니다.
-echo Build 폴더에서 솔루션 파일을 확인하세요.
+echo [SUCCESS] All steps completed.
+echo Open build\AliceRenderer.sln in Visual Studio to compile.
 echo ========================================================
 
 :End

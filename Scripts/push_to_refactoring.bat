@@ -9,7 +9,7 @@ REM  사전 조건: GitHub에 빈 레포(EGOSIS_Refactoring)가 만들어져 있
 REM             (README/라이선스 없이 생성)
 REM ============================================================
 
-cd /d "%~dp0"
+cd /d "%~dp0.."
 
 set "REMOTE_URL=https://github.com/Chang-Jin-Lee/EGOSIS_Refactoring.git"
 set "BRANCH=dev"
