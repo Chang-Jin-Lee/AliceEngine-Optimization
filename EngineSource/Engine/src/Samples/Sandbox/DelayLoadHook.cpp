@@ -54,7 +54,21 @@ static FARPROC WINAPI DelayLoadFailureHook(unsigned dliNotify, PDelayLoadInfo in
     }
 
     const std::filesystem::path fullPath = std::filesystem::path(dllDir) / NarrowToWide(info->szDll);
-    HMODULE module = LoadLibraryW(fullPath.c_str());
+
+    // Add dll/ to the user search directory list so that the loaded DLL's own
+    // transitive dependencies (e.g. zd.dll, minizipd.dll required by assimp)
+    // are also resolved from the same dll/ folder, not just the exe directory.
+    DLL_DIRECTORY_COOKIE cookie = AddDllDirectory(dllDir.c_str());
+    HMODULE module = LoadLibraryExW(
+        fullPath.c_str(),
+        nullptr,
+        LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_USER_DIRS
+    );
+    if (cookie)
+    {
+        RemoveDllDirectory(cookie);
+    }
+
     return reinterpret_cast<FARPROC>(module);
 }
 
