@@ -78,11 +78,22 @@ if exist "%RES_ROOT%\Bridge" if exist "%RES_ROOT%\Sample" if exist "%RES_ROOT%\I
 )
 echo  - 리소스 다운로드를 시작합니다.
 if not exist "%RES_ROOT%" mkdir "%RES_ROOT%"
-curl -L -o 7zr.exe https://www.7-zip.org/a/7zr.exe >nul 2>&1
-if not exist "7zr.exe" ( echo [오류] 7zr.exe 다운로드 실패. & goto SKIP_SKYBOX )
+rem 7-Zip 탐색: PATH > 일반 설치 경로 > curl 다운로드 > PowerShell 순으로 시도
+set "SEVEN_ZIP="
+where 7z.exe  >nul 2>nul && set "SEVEN_ZIP=7z.exe"
+if not defined SEVEN_ZIP if exist "C:\Program Files\7-Zip\7z.exe" set "SEVEN_ZIP=C:\Program Files\7-Zip\7z.exe"
+if not defined SEVEN_ZIP where 7zr.exe >nul 2>nul && set "SEVEN_ZIP=7zr.exe"
+if not defined SEVEN_ZIP (
+    curl -L --max-time 30 -o 7zr.exe https://www.7-zip.org/a/7zr.exe >nul 2>&1
+    if exist "7zr.exe" ( set "SEVEN_ZIP=7zr.exe" ) else (
+        powershell -NoProfile -Command "try{Invoke-WebRequest 'https://www.7-zip.org/a/7zr.exe' -OutFile '7zr.exe' -UseBasicParsing -TimeoutSec 30}catch{exit 1}" 2>nul
+        if exist "7zr.exe" set "SEVEN_ZIP=7zr.exe"
+    )
+)
+if not defined SEVEN_ZIP ( echo [경고] 7-Zip을 찾을 수 없어 스카이박스 다운로드를 건너뜁니다. & goto SKIP_SKYBOX )
 curl -L -o "%TEMP_ARC%" "%DOWNLOAD_URL%"
 if not exist "%TEMP_ARC%" ( echo [오류] 다운로드 실패. & goto :CLEANUP_SKYBOX )
-7zr.exe x "%TEMP_ARC%" -o"%RES_ROOT%" -y >nul
+"%SEVEN_ZIP%" x "%TEMP_ARC%" -o"%RES_ROOT%" -y >nul
 echo  - 리소스 설치 완료!
 :CLEANUP_SKYBOX
 if exist 7zr.exe erase 7zr.exe
