@@ -416,13 +416,6 @@ endif()
 # PCH: Windows.h / DirectX / RTTR / JSON 등 무거운 헤더를 사전 컴파일
 target_precompile_headers(Engine PRIVATE "${ALICE_SRC_DIR}/EnginePCH.h")
 
-# Unity Build: 여러 .cpp를 하나의 컴파일 단위로 묶어 컴파일 시간을 대폭 단축
-# 빌드 오류 시 set_source_files_properties(<file.cpp> PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON) 로 개별 제외 가능
-set_target_properties(Engine PROPERTIES
-    UNITY_BUILD ON
-    UNITY_BUILD_BATCH_SIZE 8
-)
-
 source_group(TREE ${ALICE_SRC_DIR} FILES ${ENGINE_SOURCES} ${ENGINE_HEADERS})
 
 # ==========================================
