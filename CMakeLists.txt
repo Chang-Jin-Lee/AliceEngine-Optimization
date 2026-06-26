@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.20)
 # 프로젝트 이름은 전체 솔루션 이름
 project(AliceRenderer LANGUAGES CXX)
 
+# VS Solution Explorer 폴더 구조 활성화
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "_CMake")
 
 # /utf-8 옵션 추가 경고 안뜨게 하기 위함
 if(MSVC)
@@ -78,6 +81,9 @@ set(BUILD_WITH_STATIC_RUNTIME_LIBS OFF CACHE BOOL "" FORCE)
 
 # RTTR 서브모듈 추가 (경로: ThirdParty/rttr)
 add_subdirectory(EngineSource/Engine/ThirdParty/rttr)
+if(TARGET rttr_core)
+    set_target_properties(rttr_core PROPERTIES FOLDER "ThirdParty")
+endif()
 
 # window, std 둘의 min, max 충돌삭제
 add_compile_definitions(NOMINMAX)
@@ -410,6 +416,13 @@ endif()
 # PCH: Windows.h / DirectX / RTTR / JSON 등 무거운 헤더를 사전 컴파일
 target_precompile_headers(Engine PRIVATE "${ALICE_SRC_DIR}/EnginePCH.h")
 
+# Unity Build: 여러 .cpp를 하나의 컴파일 단위로 묶어 컴파일 시간을 대폭 단축
+# 빌드 오류 시 set_source_files_properties(<file.cpp> PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON) 로 개별 제외 가능
+set_target_properties(Engine PROPERTIES
+    UNITY_BUILD ON
+    UNITY_BUILD_BATCH_SIZE 8
+)
+
 source_group(TREE ${ALICE_SRC_DIR} FILES ${ENGINE_SOURCES} ${ENGINE_HEADERS})
 
 # ==========================================
@@ -545,6 +558,7 @@ target_include_directories(imgui
         ${IMGUI_DIR}
         ${IMGUI_DIR}/backends
 )
+set_target_properties(imgui PROPERTIES FOLDER "ThirdParty")
 
 # Launch와 AlicePlayer가 ImGui 헤더를 찾을 수 있도록 설정
 foreach(target Launch AlicePlayer)
@@ -598,6 +612,7 @@ target_link_libraries(imguizmo
     PUBLIC
         imgui
 )
+set_target_properties(imguizmo PROPERTIES FOLDER "ThirdParty")
 
 # 실행 파일들이 ImGuizmo 헤더를 찾을 수 있도록 설정
 foreach(target Launch AlicePlayer)
@@ -688,6 +703,14 @@ if(MSVC)
             "/DELAYLOAD:poly2tri.dll"
             "/DELAYLOAD:kubazip.dll"
             "/DELAYLOAD:minizip.dll"
+        )
+    endforeach()
+
+    # Debug 빌드 링크 속도 대폭 향상: PDB를 링크 시점에 완전히 쓰지 않고
+    # OBJ 파일 참조 방식으로 생성 → 링크 시간 5~10배 단축 (로컬 개발 전용)
+    foreach(target Launch AlicePlayer)
+        target_link_options(${target} PRIVATE
+            "$<$<CONFIG:Debug>:/DEBUG:FASTLINK>"
         )
     endforeach()
 endif()

@@ -462,8 +462,6 @@ namespace Alice
 		if (name.empty() || !pixelShaderSource || !m_device)
 			return false;
 
-		ALICE_LOG_ERRORF("[AliceUI] RegisterShader");
-
 		Microsoft::WRL::ComPtr<ID3DBlob> psBlob;
 		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
 		if (FAILED(D3DCompile(pixelShaderSource, strlen(pixelShaderSource),

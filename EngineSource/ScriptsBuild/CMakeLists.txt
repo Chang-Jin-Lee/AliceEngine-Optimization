@@ -186,6 +186,10 @@ endif()
 
 set_target_properties(AliceScripts PROPERTIES
     OUTPUT_NAME "AliceScripts"
+    # 엔진이 로드하는 위치(build/bin/{Config}/dll/)로 직접 출력
+    # → AliceUserScripts.sln 빌드만 하면 즉시 핫리로드 가능
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${ALICE_ROOT}/build/bin/Debug/dll"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${ALICE_ROOT}/build/bin/Release/dll"
 )
 
 # Debug 빌드: PDB 이름을 (CMake configure 시점 기준) 매번 바꿔서 잠금 문제를 회피합니다.
