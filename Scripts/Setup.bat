@@ -78,24 +78,36 @@ if exist "%RES_ROOT%\Bridge" if exist "%RES_ROOT%\Sample" if exist "%RES_ROOT%\I
 )
 echo  - 리소스 다운로드를 시작합니다.
 if not exist "%RES_ROOT%" mkdir "%RES_ROOT%"
-rem 7-Zip 탐색: PATH > Program Files > winget 설치 > curl > PowerShell 순으로 시도
+rem 7-Zip 탐색: PATH > 고정경로 > winget > curl > PowerShell
 set "SEVEN_ZIP="
 where 7z.exe  >nul 2>nul
 if not errorlevel 1 set "SEVEN_ZIP=7z.exe"
-if not defined SEVEN_ZIP if exist "C:\Program Files\7-Zip\7z.exe" set "SEVEN_ZIP=C:\Program Files\7-Zip\7z.exe"
-if not defined SEVEN_ZIP if exist "C:\Program Files (x86)\7-Zip\7z.exe" set "SEVEN_ZIP=C:\Program Files (x86)\7-Zip\7z.exe"
+if not defined SEVEN_ZIP if exist "C:\Program Files\7-Zip\7z.exe"         set "SEVEN_ZIP=C:\Program Files\7-Zip\7z.exe"
+if not defined SEVEN_ZIP if exist "C:\Program Files (x86)\7-Zip\7z.exe"  set "SEVEN_ZIP=C:\Program Files (x86)\7-Zip\7z.exe"
+if not defined SEVEN_ZIP if exist "%LOCALAPPDATA%\Programs\7-Zip\7z.exe" set "SEVEN_ZIP=%LOCALAPPDATA%\Programs\7-Zip\7z.exe"
 if not defined SEVEN_ZIP where 7zr.exe >nul 2>nul
-if not defined SEVEN_ZIP if not errorlevel 1 set "SEVEN_ZIP=7zr.exe"
+if not defined SEVEN_ZIP if not errorlevel 1 (
+    7zr.exe i >nul 2>&1
+    if not errorlevel 1 set "SEVEN_ZIP=7zr.exe"
+)
 if not defined SEVEN_ZIP (
-    echo  - 7-Zip을 winget으로 설치합니다...
+    echo  - 7-Zip winget 자동설치 중...
     winget install --id 7zip.7zip --silent --accept-package-agreements --accept-source-agreements >nul 2>&1
-    if exist "C:\Program Files\7-Zip\7z.exe" set "SEVEN_ZIP=C:\Program Files\7-Zip\7z.exe"
+    if exist "C:\Program Files\7-Zip\7z.exe"         set "SEVEN_ZIP=C:\Program Files\7-Zip\7z.exe"
+    if not defined SEVEN_ZIP if exist "%LOCALAPPDATA%\Programs\7-Zip\7z.exe" set "SEVEN_ZIP=%LOCALAPPDATA%\Programs\7-Zip\7z.exe"
 )
 if not defined SEVEN_ZIP (
     curl -L --max-time 30 -o 7zr.exe https://www.7-zip.org/a/7zr.exe >nul 2>&1
-    if exist "7zr.exe" ( set "SEVEN_ZIP=7zr.exe" ) else (
-        powershell -NoProfile -Command "try{Invoke-WebRequest 'https://www.7-zip.org/a/7zr.exe' -OutFile '7zr.exe' -UseBasicParsing -TimeoutSec 30}catch{exit 1}" 2>nul
-        if exist "7zr.exe" set "SEVEN_ZIP=7zr.exe"
+    if exist "7zr.exe" (
+        7zr.exe i >nul 2>&1
+        if not errorlevel 1 set "SEVEN_ZIP=7zr.exe"
+    )
+)
+if not defined SEVEN_ZIP (
+    powershell -NoProfile -Command "try{Invoke-WebRequest 'https://www.7-zip.org/a/7zr.exe' -OutFile '7zr.exe' -UseBasicParsing -TimeoutSec 30}catch{exit 1}" 2>nul
+    if exist "7zr.exe" (
+        7zr.exe i >nul 2>&1
+        if not errorlevel 1 set "SEVEN_ZIP=7zr.exe"
     )
 )
 if not defined SEVEN_ZIP ( echo [경고] 7-Zip을 찾을 수 없어 스카이박스 다운로드를 건너뜁니다. & goto SKIP_SKYBOX )
