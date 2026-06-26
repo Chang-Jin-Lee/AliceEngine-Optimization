@@ -720,13 +720,27 @@ foreach(target Launch AlicePlayer)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${THIRDPARTY_3DMODEL_DIR}/minizip.dll"      "$<TARGET_FILE_DIR:${target}>/dll/minizip.dll"
 
-        # vcpkg Assimp DLL 복사
+        # vcpkg Assimp DLL + 의존성 (minizipd/zd — assimp가 직접 링크)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/debug/bin/assimp-vc143-mtd.dll"
             "$<TARGET_FILE_DIR:${target}>/dll/assimp-vc143-mtd.dll"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/bin/assimp-vc143-mt.dll"
             "$<TARGET_FILE_DIR:${target}>/dll/assimp-vc143-mt.dll"
+        # assimp Debug 의존성 (zd.dll, minizipd.dll)
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/debug/bin/zd.dll"
+            "$<TARGET_FILE_DIR:${target}>/dll/zd.dll"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/debug/bin/minizipd.dll"
+            "$<TARGET_FILE_DIR:${target}>/dll/minizipd.dll"
+        # assimp Release 의존성 (z.dll, minizip.dll)
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/bin/z.dll"
+            "$<TARGET_FILE_DIR:${target}>/dll/z.dll"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/bin/minizip.dll"
+            "$<TARGET_FILE_DIR:${target}>/dll/minizip.dll"
     )
 endforeach()
 
