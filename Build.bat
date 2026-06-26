@@ -136,7 +136,13 @@ if %BUILD_EL% neq 0 (
 echo.
 echo ========================================================
 echo [SUCCESS] All steps completed.
-echo Open build\AliceRenderer.sln in Visual Studio to compile.
+echo.
+echo  [1] 에디터/게임 빌드:
+echo      build\AliceRenderer.sln  ^> Launch 또는 AlicePlayer 빌드
+echo.
+echo  [2] 유저 스크립트 빌드 (핫리로드용):
+echo      EngineSource\ScriptsBuild\build\AliceUserScripts.sln
+echo      ^> AliceScripts 빌드 ^> build\bin\{Config}\dll\AliceScripts.dll 생성
 echo ========================================================
 
 :End
