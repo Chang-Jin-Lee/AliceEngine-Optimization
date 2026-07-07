@@ -852,6 +852,7 @@ namespace Alice
                 catch (...) { prevManifest = nlohmann::json::object(); }
             }
         }
+        if (!prevManifest.is_object()) prevManifest = nlohmann::json::object();
         nlohmann::json newManifest = nlohmann::json::object();
         std::size_t skippedCount = 0;
 
@@ -907,17 +908,23 @@ namespace Alice
                     srcMtime = static_cast<long long>(t.time_since_epoch().count());
             }
 
-            if (prevManifest.contains(relStr))
+            if (prevManifest.contains(relStr) && prevManifest[relStr].is_object())
             {
                 const auto& e = prevManifest[relStr];
                 if (e.value("size", std::uint64_t(0)) == srcSize &&
                     e.value("mtime", 0ll) == srcMtime &&
+                    e.value("chunkBytes", std::uint64_t(0)) == static_cast<std::uint64_t>(chunkBytes) &&
                     fs::exists(outDir / "c0000.alice", ec))
                 {
                     ec.clear();
-                    const std::uint32_t prevChunks = e.value("chunkCount", 0u);
-                    manifestList.push_back({ fileId, prevChunks });
+                    // chunkCount는 저장값을 신뢰하지 않고 size로부터 재계산한다.
+                    // (손상된 값이 Manifest.alice/ValidateGameData를 오염시키는 것 방지)
+                    const std::uint32_t recomputedChunks =
+                        static_cast<std::uint32_t>((srcSize + chunkBytes - 1) / chunkBytes);
+                    manifestList.push_back({ fileId, recomputedChunks });
                     newManifest[relStr] = e;
+                    newManifest[relStr]["chunkCount"] = recomputedChunks;
+                    newManifest[relStr]["chunkBytes"] = static_cast<std::uint64_t>(chunkBytes);
                     ++skippedCount;
                     ++fileCount;
                     continue;
@@ -984,6 +991,7 @@ namespace Alice
                 { "size", originalSize },
                 { "mtime", srcMtime },
                 { "chunkCount", chunkCount },
+                { "chunkBytes", static_cast<std::uint64_t>(chunkBytes) },
                 { "fileId", std::string(hexBuf) }
             };
 
@@ -1012,9 +1020,14 @@ namespace Alice
         {
             if (newManifest.contains(it.key()))
                 continue;
-            const std::string hexStr2 = it.value().value("fileId", "");
-            if (hexStr2.size() != 16)
+            if (!it.value().is_object())
                 continue;
+            const std::string hexStr2 = it.value().value("fileId", "");
+            const bool validHex = hexStr2.size() == 16 &&
+                std::all_of(hexStr2.begin(), hexStr2.end(),
+                            [](unsigned char c) { return std::isxdigit(c) != 0; });
+            if (!validHex)
+                continue; // 변조/손상된 fileId는 절대 경로로 사용하지 않는다
             const fs::path orphanDir = cookedDirAbs / "Chunks" / hexStr2.substr(0, 2) / hexStr2;
             std::error_code rec;
             const auto removed = fs::remove_all(orphanDir, rec);
