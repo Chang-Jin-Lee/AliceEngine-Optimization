@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/TutorialFloor_0.mat"
+    ],
+    "mesh": "TutorialFloor",
+    "source_fbx": "Resource/Test/4_Resources/background/Tile/TutorialFloor.fbx"
+}

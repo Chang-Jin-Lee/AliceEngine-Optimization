@@ -1,0 +1,7 @@
+{
+    "materials": [
+        "Assets/Materials/TutorialWallleft_0.mat"
+    ],
+    "mesh": "TutorialWallleft",
+    "source_fbx": "Resource/Test/4_Resources/background/wall/TutorialWallleft.fbx"
+}
