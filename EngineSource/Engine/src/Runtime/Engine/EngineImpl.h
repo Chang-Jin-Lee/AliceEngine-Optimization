@@ -65,6 +65,7 @@
 // 문자열 변환 / ImGui 래퍼
 #include "Runtime/Foundation/StringUtils.h"
 #include "Runtime/Foundation/ImGuiEx.h"
+#include "Runtime/Scripting/ScriptDomain.h"
 #include "Runtime/Scripting/ScriptHotReload.h"
 #include "Runtime/Resources/SceneFile.h"
 #include "Runtime/Foundation/ThreadSafety.h"

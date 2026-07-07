@@ -412,6 +412,9 @@ namespace Alice
 		// Build Game 등에서 플레이 상태를 제어하기 위한 포인터 (DrawEditorUI에서 갱신)
 		bool* m_isPlayingPtr = nullptr;
 
+		// Build Game 등에서 ScriptDomain::Unload 호출 시 필요한 World 포인터 (DrawEditorUI에서 갱신)
+		World* m_worldPtr = nullptr;
+
 		// UI
 		EntityId CreateAliceUIRoot(World& world, std::string_view name);
 		EntityId CreateAliceUIImage(World& world);

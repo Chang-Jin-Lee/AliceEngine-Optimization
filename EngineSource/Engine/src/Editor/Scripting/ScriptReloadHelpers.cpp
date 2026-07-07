@@ -2,6 +2,7 @@
 
 #include "Runtime/ECS/World.h"
 #include "Runtime/Resources/Serialization/JsonRttr.h"
+#include "Runtime/Scripting/ScriptDomain.h"
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/Scripting/ScriptHotReload.h"
 #include "Runtime/Scripting/ScriptSystem.h"
@@ -117,102 +118,8 @@ namespace Alice
 
 		/// 에디터 Reload Scripts 버튼에서 호출하는 헬퍼입니다.
 		/// - ScriptsBuild CMake 프로젝트를 configure/build 해서 AliceScripts.dll 을 만들고
-		///   현재 실행 중인 exe 옆으로 복사한 뒤 ScriptHotReload_Reload 를 호출합니다.
-		struct ScriptReloadSnap
-		{
-			std::string name;
-			bool enabled{};
-			nlohmann::json props;
-		};
-
-		struct EntityReloadSnap
-		{
-			EntityId id{};
-			std::vector<ScriptReloadSnap> scripts;
-		};
-
-		static void SnapshotAndDestroyScripts(World& world, std::vector<EntityReloadSnap>& out)
-		{
-			out.clear();
-
-			auto& map = world.GetAllScriptsInWorld();
-			out.reserve(map.size());
-
-			for (auto& [id, list] : map)
-			{
-				EntityReloadSnap e{};
-				e.id = id;
-				e.scripts.reserve(list.size());
-
-				for (auto& sc : list)
-				{
-					ScriptReloadSnap s{};
-					s.name = sc.scriptName;
-					s.enabled = sc.enabled;
-
-					if (sc.instance && !sc.scriptName.empty())
-					{
-						rttr::type t = rttr::type::get_by_name(sc.scriptName);
-						s.props = JsonRttr::ToJsonObject(*sc.instance, t);
-
-						// DLL이 살아있는 동안 가상함수 호출해서 정리
-						sc.instance->OnDisable();
-						sc.instance->OnDestroy();
-						sc.instance.reset();
-					}
-
-					sc.awoken = false;
-					sc.started = false;
-					sc.wasEnabled = sc.enabled;
-					sc.defaultsApplied = false;
-
-					e.scripts.push_back(std::move(s));
-				}
-				out.push_back(std::move(e));
-			}
-		}
-
-		static void RestoreScripts(World& world, const std::vector<EntityReloadSnap>& snaps)
-		{
-			auto& map = world.GetAllScriptsInWorld();
-
-			for (const auto& e : snaps)
-			{
-				auto it = map.find(e.id);
-				if (it == map.end())
-					continue;
-
-				std::vector<ScriptComponent> rebuilt;
-				rebuilt.reserve(e.scripts.size());
-
-				for (const auto& s : e.scripts)
-				{
-					if (s.name.empty())
-						continue;
-
-					ScriptComponent sc{};
-					sc.scriptName = s.name;
-					sc.enabled = s.enabled;
-					sc.instance = ScriptFactory::Create(s.name.c_str());
-					if (!sc.instance)
-						continue;
-
-					// 컨텍스트 주입 (필수): World와 EntityId 설정
-					sc.instance->SetContext(&world, e.id);
-
-					rttr::instance inst = *sc.instance;
-					rttr::type t = rttr::type::get_by_name(sc.scriptName);
-					JsonRttr::FromJsonObject(inst, s.props, t);
-
-					sc.defaultsApplied = true;
-					rebuilt.push_back(std::move(sc));
-				}
-
-				it->second = std::move(rebuilt);
-				if (it->second.empty())
-					map.erase(it);
-			}
-		}
+		///   현재 실행 중인 exe 옆으로 복사한 뒤 ScriptDomain::Reload 를 호출합니다.
+		/// - 스냅샷/파괴/복원/언로드/로드는 모두 ScriptDomain 을 통해서만 이뤄집니다.
 	}
 
 	bool ReloadScripts_FromButton(World& world)
@@ -371,44 +278,24 @@ namespace Alice
 			}
 		}
 
-		// 기존 DLL을 언로드하기 전에, 기존 스크립트 인스턴스(가상 함수)가 남아있으면 크래시가 납니다.
-		// - 값은 스냅샷 후 새 DLL 로드 뒤에 다시 주입합니다.
-		std::vector<EntityReloadSnap> snaps;
-		SnapshotAndDestroyScripts(world, snaps);
-
-		ScriptHotReload_Unload();
-
 		std::error_code ecMk;
 		const path dllDir = exeDir / "dll";
 		create_directories(dllDir, ecMk);
 
+		// 새 DLL을 배포 위치로 복사 (원본은 _live 복사본으로만 로드되므로 잠금 없음)
 		path targetDll = dllDir / "AliceScripts.dll";
 		std::error_code ecCopy;
-		copy_file(builtDll, targetDll,
-			copy_options::overwrite_existing,
-			ecCopy);
+		copy_file(builtDll, targetDll, copy_options::overwrite_existing, ecCopy);
 		if (ecCopy)
 		{
 			ALICE_LOG_ERRORF("Reload Scripts: failed to copy DLL from \"%s\" to \"%s\" (%s)",
-				builtDll.string().c_str(),
-				targetDll.string().c_str(),
-				ecCopy.message().c_str());
+				builtDll.string().c_str(), targetDll.string().c_str(), ecCopy.message().c_str());
 			return false;
 		}
 
 		ALICE_LOG_INFO("Reload Scripts: copied \"%s\" -> \"%s\"",
-			builtDll.string().c_str(),
-			targetDll.string().c_str());
+			builtDll.string().c_str(), targetDll.string().c_str());
 
-		// 6) 새 DLL 로드
-		if (!ScriptHotReload_Reload())
-		{
-			ALICE_LOG_ERRORF("Reload Scripts: ScriptHotReload_Reload() failed.");
-			return false;
-		}
-
-		// 새 DLL의 vtable/RTTR이 준비된 뒤에 인스턴스를 다시 만듭니다.
-		RestoreScripts(world, snaps);
-		return true;
+		return ScriptDomain::Reload(world);
 	}
 }

@@ -1964,7 +1964,7 @@ namespace Alice
 		m_camera.SetPerspective(DirectX::XM_PIDIV4,
 			static_cast<float>(m_width) / m_height, 0.1f, 5000.0f);
 
-		ScriptHotReload_Load();
+		ScriptDomain::LoadInitial();
 	}
 
 	bool Engine::Impl::InitializeScene(const std::filesystem::path& exeDir)

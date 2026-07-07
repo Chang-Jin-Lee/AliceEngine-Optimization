@@ -357,6 +357,7 @@ namespace Alice
 		bool& isDebugDraw)
 	{
 		m_isPlayingPtr = &isPlaying;
+		m_worldPtr = &world;
 
 		// 매 프레임 Default PostProcess Settings를 RenderSystem에 전달
 		deferred.SetDefaultPostProcessSettings(m_defaultPostProcessSettings);

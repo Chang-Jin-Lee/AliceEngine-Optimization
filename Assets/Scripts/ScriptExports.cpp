@@ -1,5 +1,6 @@
 ﻿#include "Runtime/Scripting/IScript.h"
 #include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Scripting/ScriptInstanceTracker.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/Resources/Prefab.h"
 
@@ -52,6 +53,30 @@ extern "C"
     {
         Alice::Prefab::SetDefaultWorld(nullptr);
         Alice::Prefab::SetDefaultResources(nullptr);
+    }
+
+    __declspec(dllexport) int Alice_GetAliveScriptCount()
+    {
+        return static_cast<int>(Alice::ScriptInstanceTracker::AliveCount());
+    }
+
+    __declspec(dllexport) bool Alice_GetAliveScriptName(int index, char* outName, int maxLen)
+    {
+        if (!outName || maxLen <= 0)
+            return false;
+
+        auto names = Alice::ScriptInstanceTracker::AliveNames();
+        if (index < 0 || index >= static_cast<int>(names.size()))
+            return false;
+
+        const std::string& n = names[static_cast<std::size_t>(index)];
+#ifdef _MSC_VER
+        strcpy_s(outName, static_cast<std::size_t>(maxLen), n.c_str());
+#else
+        std::strncpy(outName, n.c_str(), static_cast<std::size_t>(maxLen));
+        outName[maxLen - 1] = '\0';
+#endif
+        return true;
     }
 }
 

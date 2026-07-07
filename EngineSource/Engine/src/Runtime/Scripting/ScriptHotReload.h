@@ -17,7 +17,8 @@ namespace Alice
     bool ScriptHotReload_Reload(const wchar_t* dllName = L"AliceScripts.dll");
 
     /// DLL 을 언로드하고, 동적 스크립트 함수 포인터를 모두 해제합니다.
-    void ScriptHotReload_Unload();
+    /// - 살아있는 스크립트 인스턴스가 있으면 언로드를 거부하고 false 를 반환합니다.
+    bool ScriptHotReload_Unload();
 
     /// 현재 스크립트 DLL이 로드되어 있는지 여부
     bool ScriptHotReload_IsLoaded();
