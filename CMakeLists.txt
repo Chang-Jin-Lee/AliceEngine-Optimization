@@ -148,6 +148,7 @@ set(ENGINE_SOURCES
     ${ALICE_SRC_DIR}/Runtime/ECS/EditorComponentRegistry.cpp
     ${ALICE_SRC_DIR}/Runtime/Engine/CameraSystem.cpp
     ${ALICE_SRC_DIR}/Runtime/Resources/ResourceManager.cpp
+    ${ALICE_SRC_DIR}/Runtime/Resources/AsyncBlobLoader.cpp
     ${ALICE_SRC_DIR}/Runtime/Resources/Scene.cpp
     ${ALICE_SRC_DIR}/Runtime/Engine/TimeSystem.cpp
     ${ALICE_SRC_DIR}/Runtime/Input/InputSystem.cpp
@@ -257,6 +258,7 @@ set(ENGINE_HEADERS
     ${ALICE_SRC_DIR}/Runtime/ECS/System.h
     ${ALICE_SRC_DIR}/Runtime/Foundation/StringUtils.h
     ${ALICE_SRC_DIR}/Runtime/Resources/ResourceManager.h
+    ${ALICE_SRC_DIR}/Runtime/Resources/AsyncBlobLoader.h
     ${ALICE_SRC_DIR}/Runtime/Resources/Scene.h
     ${ALICE_SRC_DIR}/Runtime/Engine/TimeSystem.h
     ${ALICE_SRC_DIR}/Runtime/Input/InputSystem.h
