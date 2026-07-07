@@ -10,6 +10,8 @@
 #include <cctype>
 #include <filesystem>
 #include <system_error>
+#include <utility>
+#include <vector>
 
 namespace Alice
 {
@@ -74,9 +76,15 @@ namespace Alice
 
 		static char s_searchBuf[128] = {};
 
+		// 검색 결과 캐시: 검색어가 바뀔 때만 디렉터리를 다시 순회한다 (매 프레임 순회 방지)
+		static std::string s_lastSearch;
+		static std::vector<std::pair<std::string, std::filesystem::path>> s_searchResults; // (파일명, 전체 경로)
+		static bool s_forceRescan = false;
+
 		if (ImGui::Button("Refresh"))
 		{
 			ResourceManager::Get().ClearNegativeCache();
+			s_forceRescan = true;
 		}
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(-1.0f);
@@ -94,22 +102,38 @@ namespace Alice
 			std::transform(needle.begin(), needle.end(), needle.begin(),
 			               [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-			std::error_code ec;
-			int shown = 0;
-			for (std::filesystem::recursive_directory_iterator it(assetsRoot, ec), end;
-			     it != end && shown < 200; it.increment(ec))
+			// 검색어가 바뀌었거나 새로고침이 눌렸을 때만 디렉터리를 순회한다.
+			if (needle != s_lastSearch || s_forceRescan)
 			{
-				if (ec) { ec.clear(); continue; }
-				if (!it->is_regular_file(ec) || ec) { ec.clear(); continue; }
+				s_searchResults.clear();
 
-				std::string name = it->path().filename().string();
-				std::string lower = name;
-				std::transform(lower.begin(), lower.end(), lower.begin(),
-				               [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-				if (lower.find(needle) == std::string::npos)
-					continue;
+				std::error_code ec;
+				for (std::filesystem::recursive_directory_iterator it(assetsRoot, ec), end;
+				     it != end && s_searchResults.size() < 200; it.increment(ec))
+				{
+					if (ec) { ec.clear(); continue; }
+					if (!it->is_regular_file(ec) || ec) { ec.clear(); continue; }
 
-				ImGui::PushID(shown);
+					std::string name = it->path().filename().string();
+					std::string lower = name;
+					std::transform(lower.begin(), lower.end(), lower.begin(),
+					               [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+					if (lower.find(needle) == std::string::npos)
+						continue;
+
+					s_searchResults.emplace_back(std::move(name), it->path());
+				}
+
+				s_lastSearch = needle;
+				s_forceRescan = false;
+			}
+
+			// 렌더링은 캐시된 결과만 사용하고 파일 시스템에 접근하지 않는다.
+			for (size_t i = 0; i < s_searchResults.size(); ++i)
+			{
+				const auto& [name, path] = s_searchResults[i];
+
+				ImGui::PushID(static_cast<int>(i));
 				if (ImGui::Selectable(name.c_str()))
 				{
 					// 기존 트리의 파일 클릭과 동일한 동작이 필요하면
@@ -117,11 +141,10 @@ namespace Alice
 					// 최소 구현: 선택만 표시.
 				}
 				if (ImGui::IsItemHovered())
-					ImGui::SetTooltip("%s", it->path().string().c_str());
+					ImGui::SetTooltip("%s", path.string().c_str());
 				ImGui::PopID();
-				++shown;
 			}
-			if (shown == 0)
+			if (s_searchResults.empty())
 				ImGui::TextDisabled("No results.");
 		}
 
