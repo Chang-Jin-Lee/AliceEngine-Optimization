@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <mutex>
 #include <memory>
 #include <utility>
@@ -62,6 +63,10 @@ namespace Alice
 
         /// 보관 중인 리소스를 모두 정리합니다.
         void Clear();
+
+        /// 로드 실패 기록(negative cache)을 비웁니다.
+        /// 에디터에서 애셋을 새로 임포트/복사한 뒤 호출하세요.
+        void ClearNegativeCache();
 
         /// 바이너리 파일을 읽어옵니다.
         /// - encrypted 가 true 이면, 간단한 XOR 기반 복호화를 수행합니다.
@@ -152,6 +157,9 @@ namespace Alice
         std::shared_ptr<const std::vector<std::uint8_t>> LoadMetasChunksByRel(std::string_view assetsRel) const;
         std::filesystem::path Chunk0PathForMetasRel(std::string_view assetsRel) const;
 
+        /// logicalKey를 negative cache에 기록하고 nullptr을 반환합니다(로드 실패 지점에서 사용).
+        std::shared_ptr<const std::vector<std::uint8_t>> MarkMissing(const std::string& logicalKey) const;
+
         // 필요하면 나중에 키를 외부에서 주입받을 수 있게 바꿀 수 있습니다.
         const std::string m_key = "AliceRendererSimpleKey";
 
@@ -162,6 +170,10 @@ namespace Alice
         mutable std::mutex m_cacheMutex;
         mutable std::unordered_map<std::uint64_t, std::weak_ptr<const std::vector<std::uint8_t>>> m_blobCache; // key: contentHash
         mutable std::unordered_map<std::string, std::uint64_t> m_pathToHash; // logicalPath -> contentHash
+
+        // 실패한 논리 경로 기록 — 재시도로 인한 매 프레임 디스크 접근을 차단.
+        // 게임 모드에서는 파일이 불변이므로 영구, 에디터에서는 ClearNegativeCache로 무효화.
+        mutable std::unordered_set<std::string> m_missingPaths;
     };
 
     // -----------------------------------------------------------------------

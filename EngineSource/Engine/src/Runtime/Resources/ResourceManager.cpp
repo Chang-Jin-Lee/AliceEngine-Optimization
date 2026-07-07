@@ -277,6 +277,24 @@ namespace Alice
         // 이후 텍스처/메시/셰이더 등을 추가할 때 이곳에서 정리합니다.
     }
 
+    std::shared_ptr<const std::vector<std::uint8_t>> ResourceManager::MarkMissing(const std::string& logicalKey) const
+    {
+        bool firstTime = false;
+        {
+            std::lock_guard<std::mutex> lock(m_cacheMutex);
+            firstTime = m_missingPaths.insert(logicalKey).second;
+        }
+        if (firstTime)
+            ALICE_LOG_WARN("ResourceManager: load failed (cached as missing, will not retry): \"%s\"", logicalKey.c_str());
+        return nullptr;
+    }
+
+    void ResourceManager::ClearNegativeCache()
+    {
+        std::lock_guard<std::mutex> lock(m_cacheMutex);
+        m_missingPaths.clear();
+    }
+
     bool ResourceManager::LoadBinary(const std::filesystem::path& path,
                                      std::vector<std::uint8_t>& outData,
                                      bool encrypted) const
@@ -331,6 +349,8 @@ namespace Alice
                         return sp;
                 }
             }
+            if (m_missingPaths.count(logicalKey) != 0)
+                return nullptr; // 이미 실패한 경로 — 디스크 접근 없이 즉시 반환
         }
 
         // 1) gameMode: Resource는 청크 스토어에서 로드
@@ -349,7 +369,7 @@ namespace Alice
                     m_pathToHash[logicalKey] = h;
                     return sp;
                 }
-                return nullptr;
+                return MarkMissing(logicalKey);
             }
             if (StartsWith(s, "Resource/"))
             {
@@ -368,7 +388,7 @@ namespace Alice
                 }
                 
                 ALICE_LOG_ERRORF("ResourceManager: Chunk not found for \"%s\"", s.c_str());
-                return nullptr;
+                return MarkMissing(logicalKey);
             }
 
             // 그 외 Cooked 경로는 단일 .alice 파일(암호화)로 로드
@@ -378,7 +398,7 @@ namespace Alice
             {
                 std::vector<std::uint8_t> data;
                 if (!LoadBinary(resolved, data, true))
-                    return nullptr;
+                    return MarkMissing(logicalKey);
                 auto sp = std::make_shared<std::vector<std::uint8_t>>(std::move(data));
                 const auto h = ComputeBufferHashSampled(*sp);
                 std::lock_guard<std::mutex> lock(m_cacheMutex);
@@ -390,7 +410,7 @@ namespace Alice
             // 마지막 폴백: 그대로 파일 로드(개발 편의)
             std::vector<std::uint8_t> data;
             if (!LoadBinary(Resolve(normalized), data, false))
-                return nullptr;
+                return MarkMissing(logicalKey);
             auto sp = std::make_shared<std::vector<std::uint8_t>>(std::move(data));
             const auto h = ComputeBufferHashSampled(*sp);
             std::lock_guard<std::mutex> lock(m_cacheMutex);
@@ -402,7 +422,7 @@ namespace Alice
         // 2) editorMode: 원본 파일을 그대로 로드
         std::vector<std::uint8_t> data;
         if (!LoadBinary(Resolve(normalized), data, false))
-            return nullptr;
+            return MarkMissing(logicalKey);
         auto sp = std::make_shared<std::vector<std::uint8_t>>(std::move(data));
         const auto h = ComputeBufferHashSampled(*sp);
         std::lock_guard<std::mutex> lock(m_cacheMutex);
