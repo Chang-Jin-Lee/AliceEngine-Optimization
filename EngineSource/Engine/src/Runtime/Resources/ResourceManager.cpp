@@ -841,6 +841,20 @@ namespace Alice
         }
         if (chunkBytes < 4096) chunkBytes = 4096;
 
+        // 증분 쿠킹: 이전 매니페스트를 읽어 변경 없는 파일은 재암호화를 건너뛴다.
+        nlohmann::json prevManifest;
+        const fs::path cookManifestPath = cookedDirAbs / "CookManifest.json";
+        {
+            std::ifstream mfs(cookManifestPath);
+            if (mfs.is_open())
+            {
+                try { mfs >> prevManifest; }
+                catch (...) { prevManifest = nlohmann::json::object(); }
+            }
+        }
+        nlohmann::json newManifest = nlohmann::json::object();
+        std::size_t skippedCount = 0;
+
         struct ChunkHeader
         {
             char     magic[4];      // "ALIC"
@@ -879,6 +893,37 @@ namespace Alice
             const fs::path outDir = cookedDirAbs / "Chunks" / hexStr.substr(0, 2) / hexStr;
             fs::create_directories(outDir, ec);
             ec.clear();
+
+            // 변경 판정: size+mtime이 매니페스트와 같고 c0000.alice가 존재하면 스킵
+            std::uint64_t srcSize = 0;
+            long long srcMtime = 0;
+            {
+                std::error_code sec;
+                srcSize = static_cast<std::uint64_t>(fs::file_size(inPath, sec));
+                if (sec) srcSize = 0;
+                sec.clear();
+                const auto t = fs::last_write_time(inPath, sec);
+                if (!sec)
+                    srcMtime = static_cast<long long>(t.time_since_epoch().count());
+            }
+
+            if (prevManifest.contains(relStr))
+            {
+                const auto& e = prevManifest[relStr];
+                if (e.value("size", std::uint64_t(0)) == srcSize &&
+                    e.value("mtime", 0ll) == srcMtime &&
+                    fs::exists(outDir / "c0000.alice", ec))
+                {
+                    ec.clear();
+                    const std::uint32_t prevChunks = e.value("chunkCount", 0u);
+                    manifestList.push_back({ fileId, prevChunks });
+                    newManifest[relStr] = e;
+                    ++skippedCount;
+                    ++fileCount;
+                    continue;
+                }
+                ec.clear();
+            }
 
             // 파일 읽기
             std::vector<std::uint8_t> data;
@@ -933,6 +978,15 @@ namespace Alice
                 ALICE_LOG_INFO("  ChunkOut: \"%s\" payload=%u", outPath.string().c_str(), hdr.payloadSize);
             }
 
+            char hexBuf[17] = {};
+            std::snprintf(hexBuf, sizeof(hexBuf), "%016llx", static_cast<unsigned long long>(fileId));
+            newManifest[relStr] = {
+                { "size", originalSize },
+                { "mtime", srcMtime },
+                { "chunkCount", chunkCount },
+                { "fileId", std::string(hexBuf) }
+            };
+
             ++fileCount;
         }
 
@@ -952,6 +1006,30 @@ namespace Alice
 
             ALICE_LOG_INFO("CookResourceToChunkStore: Manifest saved. entries=%zu", manifestList.size());
         }
+
+        // 소스에서 삭제된 파일의 청크 디렉터리 제거 (이전 매니페스트에만 있는 항목)
+        for (auto it = prevManifest.begin(); it != prevManifest.end(); ++it)
+        {
+            if (newManifest.contains(it.key()))
+                continue;
+            const std::string hexStr2 = it.value().value("fileId", "");
+            if (hexStr2.size() != 16)
+                continue;
+            const fs::path orphanDir = cookedDirAbs / "Chunks" / hexStr2.substr(0, 2) / hexStr2;
+            std::error_code rec;
+            const auto removed = fs::remove_all(orphanDir, rec);
+            if (!rec && removed > 0)
+                ALICE_LOG_INFO("CookResourceToChunkStore: removed orphan chunks for \"%s\"", it.key().c_str());
+        }
+
+        // 새 매니페스트 저장 (평문 JSON — 쿠킹 메타데이터일 뿐 게임 데이터가 아님)
+        {
+            std::ofstream mfs(cookManifestPath, std::ios::trunc);
+            if (mfs.is_open())
+                mfs << newManifest.dump(1);
+        }
+
+        ALICE_LOG_INFO("CookResourceToChunkStore: incremental skip=%zu / total=%zu", skippedCount, fileCount);
 
         ALICE_LOG_INFO("CookResourceToChunkStore: cooked %zu files into \"%s/Chunks\"",
                        fileCount, cookedDirAbs.string().c_str());
