@@ -5,6 +5,7 @@
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/Scripting/ScriptHotReload.h"
 #include "Runtime/Scripting/ScriptInstanceTracker.h"
+#include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
 #include "Runtime/UI/UIButtonComponent.h"
 #include "Runtime/Foundation/Logger.h"
 #include "ThirdParty/json/json.hpp"
@@ -113,6 +114,23 @@ namespace Alice::ScriptDomain
             }
             if (cleared > 0)
                 ALICE_LOG_INFO("ScriptDomain: cleared %zu UI button delegate(s) before DLL unload.", cleared);
+
+            // AdvancedAnimationComponent::AddNotify는 스크립트(예: CharacterAnimatorComponent)만 호출하며
+            // 엔진 코드는 등록하지 않고 CheckAndFireNotifies*로 소비만 한다. std::bind(this, ...)로
+            // 스크립트 인스턴스를 캡처하므로 DLL 언로드 전 해제하지 않으면 리로드 후 댕글링 호출이 발생한다.
+            std::size_t notifyCleared = 0;
+            for (auto&& [id, animComp] : world.GetComponents<AdvancedAnimationComponent>())
+            {
+                (void)id;
+                for (auto& [clipName, list] : animComp.notifies)
+                {
+                    (void)clipName;
+                    notifyCleared += list.size();
+                }
+                animComp.notifies.clear();
+            }
+            if (notifyCleared > 0)
+                ALICE_LOG_INFO("ScriptDomain: cleared %zu animation notify callback(s) before DLL unload.", notifyCleared);
         }
 
         bool TeardownForUnload(World& world, std::vector<EntityReloadSnap>* outSnaps)
