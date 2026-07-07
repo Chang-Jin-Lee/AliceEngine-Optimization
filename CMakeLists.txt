@@ -136,6 +136,7 @@ set(ENGINE_SOURCES
     ${ALICE_SRC_DIR}/Runtime/ECS/World.cpp
     ${ALICE_SRC_DIR}/Runtime/Foundation/ThreadSafety.cpp
     ${ALICE_SRC_DIR}/Runtime/Scripting/IScript.cpp
+    ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptInstanceTracker.cpp
     ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptFactory.cpp
     ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptSystem.cpp
     ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptHotReload.cpp
@@ -233,6 +234,7 @@ set(ENGINE_HEADERS
     ${ALICE_SRC_DIR}/Runtime/ECS/GameObject.h
     ${ALICE_SRC_DIR}/Runtime/Foundation/Delegate.h
     ${ALICE_SRC_DIR}/Runtime/Scripting/IScript.h
+    ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptInstanceTracker.h
     ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptFactory.h
     ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptSystem.h
     ${ALICE_SRC_DIR}/Runtime/Scripting/ScriptAPI.h
