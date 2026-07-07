@@ -20,6 +20,8 @@
 
 // 표준 라이브러리
 #include <filesystem>
+#include <functional>
+#include <vector>
 #include <cfloat>      // FLT_MAX
 #include <algorithm>   // std::max
 #include <cmath>       // std::fabsf
@@ -113,6 +115,9 @@ namespace Alice
 		bool m_initCanceled = false;         // 초기화 중 사용자 종료 요청
 		bool m_debugDraw = true;
 		EntityId m_selectedEntity{ InvalidEntityId }; // 현재 선택된 엔티티 (하이러키)
+
+		// 에디터 모드에서 탐색기 드래그&드롭 파일을 처리할 핸들러 (에디터가 등록)
+		std::function<void(const std::vector<std::filesystem::path>&)> m_dropFilesHandler;
 
 		World          m_world;
 		UIRenderer     m_aliceUIRenderer;

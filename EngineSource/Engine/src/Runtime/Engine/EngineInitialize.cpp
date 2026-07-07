@@ -11,6 +11,7 @@
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
 #include "Runtime/Importing/FbxAnimation.h"
 #include "Runtime/Resources/AsyncBlobLoader.h"
+#include "Editor/Project/AssetDropImport.h"
 #include <Windows.h>
 #include <d3d11.h>
 #include <wrl/client.h>
@@ -1268,6 +1269,15 @@ namespace Alice
 		if (m_forwardRenderSystem)  m_forwardRenderSystem->SetUIRenderer(&m_aliceUIRenderer);
 		if (m_deferredRenderSystem) m_deferredRenderSystem->SetUIRenderer(&m_aliceUIRenderer);
 		if (m_editorMode)          m_editorCore.SetAliceUIRenderer(&m_aliceUIRenderer);
+
+		if (m_editorMode)
+		{
+			m_dropFilesHandler = [this](const std::vector<std::filesystem::path>& files)
+			{
+				// projectRoot = exeDir 3단계 상위 (ResourceManager::Configure와 동일 규칙)
+				AssetDropImport::Handle(files, m_resourceManager.RootDir());
+			};
+		}
 
 		return true;
 	}

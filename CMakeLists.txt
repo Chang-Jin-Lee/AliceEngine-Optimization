@@ -124,6 +124,7 @@ set(ENGINE_SOURCES
     ${ALICE_SRC_DIR}/Editor/Tools/Blueprint/AnimBlueprintEditor.cpp
     ${ALICE_SRC_DIR}/Editor/Scripting/ScriptReloadHelpers.cpp
     ${ALICE_SRC_DIR}/Editor/Project/DirectoryTree.cpp
+    ${ALICE_SRC_DIR}/Editor/Project/AssetDropImport.cpp
     ${ALICE_SRC_DIR}/Editor/Scene/SceneIO.cpp
     ${ALICE_SRC_DIR}/Editor/Scene/StartupSceneLoader.cpp
     ${ALICE_SRC_DIR}/Editor/Scene/AssetInstantiation.cpp
