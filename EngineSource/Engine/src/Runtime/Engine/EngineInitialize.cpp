@@ -10,6 +10,7 @@
 #include "Runtime/Rendering/Components/UnityVfxComponent.h"
 #include "Runtime/Rendering/Components/ComputeEffectComponent.h"
 #include "Runtime/Importing/FbxAnimation.h"
+#include "Runtime/Resources/AsyncBlobLoader.h"
 #include <Windows.h>
 #include <d3d11.h>
 #include <wrl/client.h>
@@ -1313,7 +1314,7 @@ namespace Alice
 			}
 
 			if (auto* statusText = earlyLoadingWorld.GetComponent<UITextComponent>(earlyStatusId))
-				statusText->text = status ? status : "쉐이더 컴파일중.";
+				statusText->text = status ? status : "엔진 준비중.";
 			if (auto* gauge = earlyLoadingWorld.GetComponent<UIGaugeComponent>(earlyGaugeId))
 				gauge->value = std::clamp(progress, 0.0f, 1.0f);
 
@@ -1364,7 +1365,7 @@ namespace Alice
 				statusText.fontSize = 24.0f;
 				statusText.alignH = AliceUI::UIAlignH::Center;
 				statusText.alignV = AliceUI::UIAlignV::Center;
-				statusText.text = "쉐이더 컴파일중.";
+				statusText.text = "엔진 준비중.";
 			}
 
 			earlyGaugeId = CreateEarlyScreenWidget("Early_Loading_Bar", 0.5f, 0.80f,
@@ -1379,7 +1380,7 @@ namespace Alice
 				gauge.backgroundColor = DirectX::XMFLOAT4(0.1f, 0.1f, 0.1f, 0.85f);
 			}
 
-			if (!RenderEarlyLoading(0.0f, "쉐이더 컴파일중."))
+			if (!RenderEarlyLoading(0.0f, "엔진 준비중."))
 				return false;
 		}
 
@@ -1597,7 +1598,7 @@ namespace Alice
 			statusText.fontSize = 24.0f;
 			statusText.alignH = AliceUI::UIAlignH::Center;
 			statusText.alignV = AliceUI::UIAlignV::Center;
-			statusText.text = "쉐이더 컴파일중.";
+			statusText.text = "엔진 준비중.";
 		}
 
 		// Progress gauge
@@ -1637,9 +1638,6 @@ namespace Alice
 		// 6) 로딩 화면 루프
 		using clock = std::chrono::steady_clock;
 		auto last = clock::now();
-		float dotTimer = 0.0f;
-		int dotIndex = 0;
-		const char* dotSeq[] = { ".", "..", "...", ".." };
 		float displayedProgress = 0.0f;
 		float targetProgress = 0.0f;
 
@@ -1677,15 +1675,6 @@ namespace Alice
 
 		auto UpdateLoadingUI = [&](float dt)
 		{
-			dotTimer += dt;
-			if (dotTimer >= 0.35f)
-			{
-				dotTimer = 0.0f;
-				dotIndex = (dotIndex + 1) % 4;
-			}
-			if (auto* statusText = loadingWorld.GetComponent<UITextComponent>(statusId))
-				statusText->text = std::string("쉐이더 컴파일중") + dotSeq[dotIndex];
-
 			const float speed = 3.5f;
 			const float t = std::clamp(dt * speed, 0.0f, 1.0f);
 			displayedProgress = displayedProgress + (targetProgress - displayedProgress) * t;
@@ -1743,21 +1732,17 @@ namespace Alice
 			return true;
 		};
 
-		auto AdvanceTo = [&](float nextTarget, float minSeconds) -> bool
+		// 진행 목표만 갱신하고 UI 프레임을 1장 그린다. 인위적 대기 없음.
+		auto AdvanceTo = [&](float nextTarget) -> bool
 		{
 			targetProgress = std::clamp(nextTarget, 0.0f, 1.0f);
-			const auto endTime = clock::now() + std::chrono::duration<float>(std::max(0.0f, minSeconds));
-			while (clock::now() < endTime || displayedProgress + 0.001f < targetProgress)
-			{
-				float dt = CalcDelta();
-				if (!RenderFrame(dt, true))
-				{
-					ALICE_LOG_WARN("[Loading] RenderFrame failed during progress update.");
-					return false;
-				}
-				std::this_thread::sleep_for(std::chrono::milliseconds(8));
-			}
-			return true;
+			return RenderFrame(CalcDelta(), true);
+		};
+
+		auto SetStatus = [&](const std::string& text)
+		{
+			if (auto* statusText = loadingWorld.GetComponent<UITextComponent>(statusId))
+				statusText->text = text;
 		};
 
 		// 초기 프레임
@@ -1802,7 +1787,7 @@ namespace Alice
 				gauge->value = 1.0f;
 			}
 			if (auto* statusText = loadingWorld.GetComponent<UITextComponent>(statusId))
-				statusText->text = "쉐이더 컴파일중...";
+				statusText->text = "게임 데이터 오류";
 			if (auto* hintText = loadingWorld.GetComponent<UITextComponent>(hintId))
 				hintText->text = "Chunk폴더를 임의로 바꾸셨습니다. 게임을 실행할 수 없습니다.";
 			if (auto* gaugeFx = loadingWorld.GetComponent<UIEffectComponent>(gaugeId))
@@ -1826,17 +1811,19 @@ namespace Alice
 			ALICE_LOG_ERRORF("[Loading] Chunk integrity validation failed.");
 			return false;
 		}
-		if (!AdvanceTo(0.02f, 0.15f))
+		if (!AdvanceTo(0.02f))
 			return false;
 
 		// 시스템 초기화 단계
+		SetStatus("오디오 초기화");
 		ALICE_LOG_INFO("[Loading] Initializing audio...");
 		InitializeAudio();
 		ALICE_LOG_INFO("[Loading] Audio initialized.");
 		progressBase += kAudioWeight;
-		if (!AdvanceTo(progressBase, 0.12f))
+		if (!AdvanceTo(progressBase))
 			return false;
 
+		SetStatus("렌더 시스템 초기화 (셰이더 컴파일)");
 		ALICE_LOG_INFO("[Loading] Initializing render systems...");
 		if (!InitializeRenderSystems())
 		{
@@ -1845,9 +1832,10 @@ namespace Alice
 		}
 		ALICE_LOG_INFO("[Loading] Render systems initialized.");
 		progressBase += kRenderWeight;
-		if (!AdvanceTo(progressBase, 0.20f))
+		if (!AdvanceTo(progressBase))
 			return false;
 
+		SetStatus("이펙트 시스템 초기화");
 		ALICE_LOG_INFO("[Loading] Initializing compute effect system...");
 		if (!InitializeComputeEffectSystem())
 		{
@@ -1862,7 +1850,7 @@ namespace Alice
 		preloadCtx.useForward = m_useForwardRendering;
 		ALICE_LOG_INFO("[Loading] Compute effect system initialized.");
 		progressBase += kComputeWeight;
-		if (!AdvanceTo(progressBase, 0.15f))
+		if (!AdvanceTo(progressBase))
 			return false;
 
 		// 프리로드 단계
@@ -1875,28 +1863,42 @@ namespace Alice
 		{
 			ALICE_LOG_INFO("[Loading] Preload list empty.");
 			progressBase = preloadBase + preloadWeight;
-			if (!AdvanceTo(progressBase, 0.15f))
+			if (!AdvanceTo(progressBase))
 				return false;
 		}
 		else
 		{
-			ALICE_LOG_INFO("[Loading] Preloading %zu items...", total);
-			float stepTime = 0.015f;
-			if (total <= 6) stepTime = 0.08f;
-			else if (total <= 24) stepTime = 0.03f;
+			ALICE_LOG_INFO("[Loading] Preloading %zu items (async prefetch)...", total);
 
+			// 워커가 디스크 IO+복호화를 수행해 ResourceManager 캐시에 적재하고,
+			// 메인 스레드는 완료된 항목만 GPU 리소스로 변환한다(캐시 적중 → 빠름).
+			AsyncBlobLoader prefetcher(m_resourceManager, 2);
 			for (const auto& path : preloadList)
-			{
-				if (!preloadCtx.PreloadByType(path, true))
-				{
-					ALICE_LOG_WARN("Preload failed: %s", path.c_str());
-				}
+				prefetcher.Request(path);
 
-				++loaded;
-				const float frac = static_cast<float>(loaded) / static_cast<float>(total);
-				const float nextTarget = preloadBase + preloadWeight * frac;
-				if (!AdvanceTo(nextTarget, stepTime))
-					return false;
+			while (loaded < total)
+			{
+				std::string donePath;
+				bool ok = false;
+				if (prefetcher.TryPopCompleted(donePath, ok))
+				{
+					if (!preloadCtx.PreloadByType(donePath, true))
+					{
+						ALICE_LOG_WARN("Preload failed: %s", donePath.c_str());
+					}
+					++loaded;
+					const float frac = static_cast<float>(loaded) / static_cast<float>(total);
+					SetStatus("애셋 로딩 (" + std::to_string(loaded) + "/" + std::to_string(total) + ")");
+					if (!AdvanceTo(preloadBase + preloadWeight * frac))
+						return false;
+				}
+				else
+				{
+					// 완료 항목이 없으면 UI만 갱신 (블로킹 없음)
+					if (!RenderFrame(CalcDelta(), true))
+						return false;
+					std::this_thread::sleep_for(std::chrono::milliseconds(2));
+				}
 			}
 			ALICE_LOG_INFO("[Loading] Preload finished.");
 		}
@@ -1915,12 +1917,17 @@ namespace Alice
 				preloadCtx.warmedComputePresetCounts.size(), warmedTotal, warmMs);
 
 			progressBase = (std::min)(1.0f, progressBase + 0.04f);
-			if (!AdvanceTo(progressBase, 0.06f))
+			if (!AdvanceTo(progressBase))
 				return false;
 		}
 
-		if (!AdvanceTo(1.0f, 0.10f))
-			return false;
+		targetProgress = 1.0f;
+		while (displayedProgress + 0.005f < 1.0f)
+		{
+			if (!RenderFrame(CalcDelta(), true))
+				return false;
+			std::this_thread::sleep_for(std::chrono::milliseconds(4));
+		}
 
 		// 완료 상태
 		displayedProgress = 1.0f;
@@ -1928,7 +1935,7 @@ namespace Alice
 		if (auto* gauge = loadingWorld.GetComponent<UIGaugeComponent>(gaugeId))
 			gauge->value = 1.0f;
 		if (auto* statusText = loadingWorld.GetComponent<UITextComponent>(statusId))
-			statusText->text = "쉐이더 컴파일 완료";
+			statusText->text = "로딩 완료";
 		if (auto* hintText = loadingWorld.GetComponent<UITextComponent>(hintId))
 			hintText->text = "마우스를 클릭하여 시작";
 		if (auto* gaugeFx = loadingWorld.GetComponent<UIEffectComponent>(gaugeId))
