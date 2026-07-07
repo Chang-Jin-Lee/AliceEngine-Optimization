@@ -338,11 +338,15 @@ namespace Alice
 
     void ResourceManager::ClearNegativeCache()
     {
-        std::lock_guard<std::mutex> lock(m_cacheMutex);
-        m_missingPaths.clear();
-        m_lruList.clear();
-        m_lruIndex.clear();
-        m_lruBytes = 0;
+        {
+            std::lock_guard<std::mutex> lock(m_cacheMutex);
+            m_missingPaths.clear();
+            m_lruList.clear();
+            m_lruIndex.clear();
+            m_lruBytes = 0;
+        }
+        if (m_onNegativeCacheCleared)
+            m_onNegativeCacheCleared();
     }
 
     bool ResourceManager::LoadBinary(const std::filesystem::path& path,

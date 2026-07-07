@@ -54,6 +54,10 @@ namespace Alice
         /// - 경로가 비거나 로딩 실패 시 false 반환.
         bool PreloadTexture(const std::string& path);
 
+        /// 실패(nullptr)로 캐시된 텍스처 항목만 제거합니다.
+        /// 에디터에서 애셋을 새로 임포트한 뒤 재시도할 수 있게 합니다.
+        void ClearFailedTextures();
+
         /// 디퍼드 렌더링을 수행합니다.
         /// @param world ECS 월드
         /// @param camera 카메라

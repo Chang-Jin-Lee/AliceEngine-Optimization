@@ -1059,6 +1059,17 @@ namespace Alice
         return srv.Get();
     }
 
+    void ForwardRenderSystem::ClearFailedTextures()
+    {
+        for (auto it = m_textureCache.begin(); it != m_textureCache.end();)
+        {
+            if (!it->second.Get())
+                it = m_textureCache.erase(it);
+            else
+                ++it;
+        }
+    }
+
     bool ForwardRenderSystem::PreloadTexture(const std::string& path)
     {
         return GetOrCreateTexture(path) != nullptr;

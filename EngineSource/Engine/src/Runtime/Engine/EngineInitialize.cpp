@@ -1250,6 +1250,13 @@ namespace Alice
 		if (m_forwardRenderSystem)  m_forwardRenderSystem->SetUIRenderer(&m_aliceUIRenderer);
 		if (m_deferredRenderSystem) m_deferredRenderSystem->SetUIRenderer(&m_aliceUIRenderer);
 
+		// 임포트/새로고침으로 negative cache가 비워지면 렌더 시스템의 실패 텍스처 캐시도 함께 무효화
+		m_resourceManager.SetNegativeCacheClearedCallback([this]()
+		{
+			if (m_forwardRenderSystem)  m_forwardRenderSystem->ClearFailedTextures();
+			if (m_deferredRenderSystem) m_deferredRenderSystem->ClearFailedTextures();
+		});
+
 		return true;
 	}
 
@@ -1275,7 +1282,9 @@ namespace Alice
 			m_dropFilesHandler = [this](const std::vector<std::filesystem::path>& files)
 			{
 				// projectRoot = exeDir 3단계 상위 (ResourceManager::Configure와 동일 규칙)
-				AssetDropImport::Handle(files, m_resourceManager.RootDir());
+				// device/skinnedRegistry를 넘겨 .fbx 드롭 시 기존 Load FBX 파이프라인으로 .fbxasset까지 생성한다.
+				ID3D11Device* device = m_renderDevice ? m_renderDevice->GetDevice() : nullptr;
+				AssetDropImport::Handle(files, m_resourceManager.RootDir(), device, &m_skinnedMeshRegistry);
 			};
 		}
 

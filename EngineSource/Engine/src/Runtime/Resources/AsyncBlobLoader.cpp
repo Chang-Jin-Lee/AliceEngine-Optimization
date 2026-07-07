@@ -65,7 +65,16 @@ namespace Alice
                 ++m_inFlight;
             }
 
-            const bool ok = (m_rm.LoadSharedBinaryAuto(path) != nullptr);
+            bool ok = false;
+            try
+            {
+                ok = (m_rm.LoadSharedBinaryAuto(path) != nullptr);
+            }
+            catch (...)
+            {
+                // 예외는 실패로 처리한다. 워커가 죽으면 로딩 루프가 영원히 기다리게 된다.
+                ok = false;
+            }
 
             {
                 std::lock_guard<std::mutex> lock(m_mutex);

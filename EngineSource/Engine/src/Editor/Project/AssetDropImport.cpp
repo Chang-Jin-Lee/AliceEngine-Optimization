@@ -2,6 +2,7 @@
 
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/Resources/ResourceManager.h"
+#include "Runtime/Importing/FbxImporter.h"
 
 #include <algorithm>
 #include <cctype>
@@ -56,7 +57,23 @@ namespace Alice::AssetDropImport
             return dest;
         }
 
+        // 복사된 .fbx에 대해 기존 Load FBX 파이프라인(FbxImporter::Import)을 그대로 실행해
+        // .fbxasset까지 생성한다. device가 없으면(=호출자가 미지원) 복사만으로 종료한다.
+        void ImportFbxAsset(const fs::path& dest, ID3D11Device* device, SkinnedMeshRegistry* skinnedRegistry)
+        {
+            FbxImportOptions opt{};
+            FbxImporter importer(ResourceManager::Get(), skinnedRegistry);
+            FbxImportResult result = importer.Import(device, dest, opt);
+            if (result.meshAssetPath.empty())
+            {
+                ALICE_LOG_WARN("[DropImport] fbxasset generation failed: \"%s\"", dest.string().c_str());
+                return;
+            }
+            ALICE_LOG_INFO("[DropImport] fbxasset generated: \"%s\"", result.instanceAssetPath.c_str());
+        }
+
         void ImportOneFile(const fs::path& file, const fs::path& projectRoot,
+                           ID3D11Device* device, SkinnedMeshRegistry* skinnedRegistry,
                            std::size_t& imported, std::size_t& skipped)
         {
             const fs::path targetDir = TargetDirFor(file, projectRoot);
@@ -85,10 +102,14 @@ namespace Alice::AssetDropImport
             ALICE_LOG_INFO("[DropImport] imported: \"%s\" -> \"%s\"",
                            file.string().c_str(), dest.string().c_str());
             ++imported;
+
+            if (device && LowerExt(file) == ".fbx")
+                ImportFbxAsset(dest, device, skinnedRegistry);
         }
     }
 
-    void Handle(const std::vector<fs::path>& files, const fs::path& projectRoot)
+    void Handle(const std::vector<fs::path>& files, const fs::path& projectRoot,
+                ID3D11Device* device, SkinnedMeshRegistry* skinnedRegistry)
     {
         std::size_t imported = 0, skipped = 0;
         std::error_code ec;
@@ -101,13 +122,13 @@ namespace Alice::AssetDropImport
                 {
                     if (ec) { ec.clear(); continue; }
                     if (!it->is_regular_file(ec) || ec) { ec.clear(); continue; }
-                    ImportOneFile(it->path(), projectRoot, imported, skipped);
+                    ImportOneFile(it->path(), projectRoot, device, skinnedRegistry, imported, skipped);
                 }
             }
             else
             {
                 ec.clear();
-                ImportOneFile(item, projectRoot, imported, skipped);
+                ImportOneFile(item, projectRoot, device, skinnedRegistry, imported, skipped);
             }
         }
 

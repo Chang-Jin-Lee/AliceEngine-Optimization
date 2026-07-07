@@ -4,6 +4,9 @@
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/Resources/Prefab.h"
 
+#include <algorithm>
+#include <cstring>
+
 // 동적 스크립트 DLL이 내보내는 간단한 C API 입니다.
 // - 엔진 쪽에서 GetProcAddress 로 이 함수들을 찾아서
 //   ScriptFactory 에 연결합니다.
@@ -70,12 +73,9 @@ extern "C"
             return false;
 
         const std::string& n = names[static_cast<std::size_t>(index)];
-#ifdef _MSC_VER
-        strcpy_s(outName, static_cast<std::size_t>(maxLen), n.c_str());
-#else
-        std::strncpy(outName, n.c_str(), static_cast<std::size_t>(maxLen));
-        outName[maxLen - 1] = '\0';
-#endif
+        const std::size_t copyLen = (std::min)(n.size(), static_cast<std::size_t>(maxLen - 1));
+        std::memcpy(outName, n.data(), copyLen);
+        outName[copyLen] = '\0';
         return true;
     }
 }

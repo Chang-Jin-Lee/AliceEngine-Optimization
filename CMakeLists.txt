@@ -230,6 +230,7 @@ set(ENGINE_HEADERS
     ${ALICE_SRC_DIR}/Editor/Core/EditorUndoRedo.h
     ${ALICE_SRC_DIR}/Editor/Scripting/ScriptReloadHelpers.h
     ${ALICE_SRC_DIR}/Editor/Tools/Blueprint/AnimBlueprintEditor.h
+    ${ALICE_SRC_DIR}/Editor/Project/AssetDropImport.h
 
     # 코어
     ${ALICE_SRC_DIR}/Runtime/ECS/World.h

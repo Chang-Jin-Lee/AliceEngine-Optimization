@@ -11,6 +11,7 @@
 #include <memory>
 #include <utility>
 #include <cassert>
+#include <functional>
 #include <wrl/client.h>
 #include "Runtime/Foundation/Singleton.h"
 
@@ -68,6 +69,10 @@ namespace Alice
         /// 로드 실패 기록(negative cache)을 비웁니다.
         /// 에디터에서 애셋을 새로 임포트/복사한 뒤 호출하세요.
         void ClearNegativeCache();
+
+        /// ClearNegativeCache() 직후 호출될 콜백을 등록합니다.
+        /// (렌더 시스템의 실패 텍스처 캐시 등 외부 negative 상태를 함께 무효화)
+        void SetNegativeCacheClearedCallback(std::function<void()> cb) { m_onNegativeCacheCleared = std::move(cb); }
 
         /// 바이너리 파일을 읽어옵니다.
         /// - encrypted 가 true 이면, 간단한 XOR 기반 복호화를 수행합니다.
@@ -175,6 +180,9 @@ namespace Alice
         // 실패한 논리 경로 기록 — 재시도로 인한 매 프레임 디스크 접근을 차단.
         // 게임 모드에서는 파일이 불변이므로 영구, 에디터에서는 ClearNegativeCache로 무효화.
         mutable std::unordered_set<std::string> m_missingPaths;
+
+        // ClearNegativeCache() 직후 호출될 외부 콜백 (렌더 시스템의 실패 텍스처 캐시 무효화 등)
+        std::function<void()> m_onNegativeCacheCleared;
 
         // 최근 사용 blob의 강참조 LRU — weak_ptr 캐시의 조기 해제로 인한
         // 반복 재로드를 방지한다. 기본 상한 256MB.

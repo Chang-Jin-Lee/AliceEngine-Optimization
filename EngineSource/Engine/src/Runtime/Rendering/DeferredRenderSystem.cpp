@@ -5573,6 +5573,17 @@ namespace Alice
         return srv.Get();
     }
 
+    void DeferredRenderSystem::ClearFailedTextures()
+    {
+        for (auto it = m_textureCache.begin(); it != m_textureCache.end();)
+        {
+            if (!it->second.Get())
+                it = m_textureCache.erase(it);
+            else
+                ++it;
+        }
+    }
+
     bool DeferredRenderSystem::PreloadTexture(const std::string& path)
     {
         return GetOrCreateTexture(path) != nullptr;

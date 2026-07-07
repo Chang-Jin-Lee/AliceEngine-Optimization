@@ -101,6 +101,11 @@ namespace Alice::ScriptDomain
 
         // 스크립트(DLL 코드)가 캡처된 람다를 남길 수 있는 콜백을 일괄 해제한다.
         // 규약: 스크립트는 Awake/OnEnable에서 콜백을 다시 바인딩해야 한다.
+        //
+        // 전수조사 결론(2026-07): 스크립트가 런타임 등록 가능한 std::function 보유처는
+        // UIButtonComponent(onPressed/onReleased/onHovered)와
+        // AdvancedAnimationComponent(notifies) 두 곳뿐이다.
+        // World/EditorComponentRegistry/Delegate의 std::function은 엔진 내부 등록 전용.
         void ClearDllOriginatedCallbacks(World& world)
         {
             std::size_t cleared = 0;
