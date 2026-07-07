@@ -6,7 +6,10 @@
 
 #include "imgui.h"
 
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
+#include <system_error>
 
 namespace Alice
 {
@@ -69,7 +72,58 @@ namespace Alice
 			std::filesystem::create_directories(assetsRoot);
 		}
 
-		DrawDirectoryNode(world, selectedEntity, assetsRoot);
+		static char s_searchBuf[128] = {};
+
+		if (ImGui::Button("Refresh"))
+		{
+			ResourceManager::Get().ClearNegativeCache();
+		}
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(-1.0f);
+		ImGui::InputTextWithHint("##ProjectSearch", "Search assets...", s_searchBuf, sizeof(s_searchBuf));
+
+		const std::string search = s_searchBuf;
+		if (search.empty())
+		{
+			DrawDirectoryNode(world, selectedEntity, assetsRoot);
+		}
+		else
+		{
+			// 부분일치(대소문자 무시) 평면 목록
+			std::string needle = search;
+			std::transform(needle.begin(), needle.end(), needle.begin(),
+			               [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+			std::error_code ec;
+			int shown = 0;
+			for (std::filesystem::recursive_directory_iterator it(assetsRoot, ec), end;
+			     it != end && shown < 200; it.increment(ec))
+			{
+				if (ec) { ec.clear(); continue; }
+				if (!it->is_regular_file(ec) || ec) { ec.clear(); continue; }
+
+				std::string name = it->path().filename().string();
+				std::string lower = name;
+				std::transform(lower.begin(), lower.end(), lower.begin(),
+				               [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+				if (lower.find(needle) == std::string::npos)
+					continue;
+
+				ImGui::PushID(shown);
+				if (ImGui::Selectable(name.c_str()))
+				{
+					// 기존 트리의 파일 클릭과 동일한 동작이 필요하면
+					// DrawDirectoryNode 내부의 클릭 처리 함수를 재사용한다.
+					// 최소 구현: 선택만 표시.
+				}
+				if (ImGui::IsItemHovered())
+					ImGui::SetTooltip("%s", it->path().string().c_str());
+				ImGui::PopID();
+				++shown;
+			}
+			if (shown == 0)
+				ImGui::TextDisabled("No results.");
+		}
 
 		ImGui::End();
 	}
