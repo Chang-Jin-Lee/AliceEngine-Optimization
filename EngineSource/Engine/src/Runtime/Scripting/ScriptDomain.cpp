@@ -5,6 +5,7 @@
 #include "Runtime/Scripting/ScriptFactory.h"
 #include "Runtime/Scripting/ScriptHotReload.h"
 #include "Runtime/Scripting/ScriptInstanceTracker.h"
+#include "Runtime/UI/UIButtonComponent.h"
 #include "Runtime/Foundation/Logger.h"
 #include "ThirdParty/json/json.hpp"
 
@@ -97,10 +98,21 @@ namespace Alice::ScriptDomain
             }
         }
 
-        // Task 4에서 구현이 채워진다. 지금은 no-op.
+        // 스크립트(DLL 코드)가 캡처된 람다를 남길 수 있는 콜백을 일괄 해제한다.
+        // 규약: 스크립트는 Awake/OnEnable에서 콜백을 다시 바인딩해야 한다.
         void ClearDllOriginatedCallbacks(World& world)
         {
-            (void)world;
+            std::size_t cleared = 0;
+            for (auto&& [id, button] : world.GetComponents<UIButtonComponent>())
+            {
+                (void)id;
+                const std::size_t before =
+                    button.onPressed.size() + button.onReleased.size() + button.onHovered.size();
+                button.ClearDelegates();
+                cleared += before;
+            }
+            if (cleared > 0)
+                ALICE_LOG_INFO("ScriptDomain: cleared %zu UI button delegate(s) before DLL unload.", cleared);
         }
 
         bool TeardownForUnload(World& world, std::vector<EntityReloadSnap>* outSnaps)
