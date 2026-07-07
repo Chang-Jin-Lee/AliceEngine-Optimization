@@ -136,4 +136,9 @@ namespace Alice
 
         ALICE_LOG_INFO("ScriptHotReload: unloaded script DLL");
     }
+
+    bool ScriptHotReload_IsLoaded()
+    {
+        return g_ScriptModule != nullptr;
+    }
 }

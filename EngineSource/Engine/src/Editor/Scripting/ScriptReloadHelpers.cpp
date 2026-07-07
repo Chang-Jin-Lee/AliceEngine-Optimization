@@ -19,6 +19,41 @@ namespace Alice
 {
 	namespace
 	{
+		// dir 아래 스크립트 소스(.cpp/.h/.hpp)의 가장 최근 수정시각을 구합니다.
+		// 소스가 하나도 없거나 순회에 실패하면 anyFound=false.
+		std::filesystem::file_time_type NewestScriptSourceTime(
+			const std::filesystem::path& dir, bool& anyFound)
+		{
+			namespace fs = std::filesystem;
+			anyFound = false;
+			fs::file_time_type newest{};
+			std::error_code ec;
+			for (fs::recursive_directory_iterator it(dir, ec), end; it != end; it.increment(ec))
+			{
+				if (ec) { ec.clear(); continue; }
+				if (!it->is_regular_file(ec) || ec) { ec.clear(); continue; }
+				const auto ext = it->path().extension();
+				if (ext != ".cpp" && ext != ".h" && ext != ".hpp")
+					continue;
+				const auto t = fs::last_write_time(it->path(), ec);
+				if (ec) { ec.clear(); continue; }
+				if (!anyFound || t > newest) { newest = t; anyFound = true; }
+			}
+			return newest;
+		}
+
+		bool SameFileSizeAndTime(const std::filesystem::path& a, const std::filesystem::path& b)
+		{
+			namespace fs = std::filesystem;
+			std::error_code ec;
+			const auto sa = fs::file_size(a, ec); if (ec) return false;
+			const auto sb = fs::file_size(b, ec); if (ec) return false;
+			if (sa != sb) return false;
+			const auto ta = fs::last_write_time(a, ec); if (ec) return false;
+			const auto tb = fs::last_write_time(b, ec); if (ec) return false;
+			return ta == tb;
+		}
+
 		// 명령어를 실행하고 Exit Code를 반환하는 함수임
 		int ExecuteCommandWithConsole(const std::wstring& command)
 		{
@@ -213,49 +248,90 @@ namespace Alice
 #endif
 
 		// ----------------------------------------------------------------------
+		// 0: 스킵 판정 — 소스가 산출물보다 오래됐으면 빌드 생략,
+		//    배포본(dll/)이 산출물과 동일하면 리로드 전체 생략.
+		// ----------------------------------------------------------------------
+		const path intermediateDll = scriptsBuildDir / "bin" / path(kConfig) / "AliceScripts.dll";
+		const path deployedDll = exeDir / "dll" / "AliceScripts.dll";
+
+		bool needBuild = true;
+		{
+			std::error_code ec;
+			if (exists(intermediateDll, ec) && !ec)
+			{
+				bool anySource = false;
+				const auto newestSrc = NewestScriptSourceTime(projectRoot / "Assets" / "Scripts", anySource);
+				auto newestInput = newestSrc;
+				const auto cmakeTime = last_write_time(scriptsCMakePath, ec);
+				if (!ec && (!anySource || cmakeTime > newestInput))
+				{
+					newestInput = cmakeTime;
+					anySource = true;
+				}
+				ec.clear();
+				const auto dllTime = last_write_time(intermediateDll, ec);
+				if (!ec && anySource && newestInput <= dllTime)
+					needBuild = false;
+			}
+		}
+
+		if (!needBuild)
+		{
+			if (ScriptHotReload_IsLoaded() && SameFileSizeAndTime(intermediateDll, deployedDll))
+			{
+				ALICE_LOG_INFO("Reload Scripts: no changes detected. Skipping build and reload.");
+				return true;
+			}
+			ALICE_LOG_INFO("Reload Scripts: sources unchanged. Skipping build (reload only).");
+		}
+
+		// ----------------------------------------------------------------------
 		// 1: Configure (이미 구성된 빌드 트리가 있으면 건너뛰어 Play 시간을 줄인다.
 		//    스크립트 파일 추가/삭제는 GLOB의 CONFIGURE_DEPENDS가 빌드 시점에 감지한다.)
 		// ----------------------------------------------------------------------
-		if (!exists(scriptsBuildDir / "CMakeCache.txt"))
+		if (needBuild)
 		{
-			std::wstring cmdConfig = L"cmake -S \"";
-			cmdConfig += scriptsRoot.wstring();
-			cmdConfig += L"\" -B \"";
-			cmdConfig += scriptsBuildDir.wstring();
-			cmdConfig += L"\"";
-
-			int configResult = ExecuteCommandWithConsole(cmdConfig);
-			if (configResult != 0)
+			if (!exists(scriptsBuildDir / "CMakeCache.txt"))
 			{
-				ALICE_LOG_ERRORF("Reload Scripts: CMake Configure failed (exit code: %d).", configResult);
+				std::wstring cmdConfig = L"cmake -S \"";
+				cmdConfig += scriptsRoot.wstring();
+				cmdConfig += L"\" -B \"";
+				cmdConfig += scriptsBuildDir.wstring();
+				cmdConfig += L"\"";
+
+				int configResult = ExecuteCommandWithConsole(cmdConfig);
+				if (configResult != 0)
+				{
+					ALICE_LOG_ERRORF("Reload Scripts: CMake Configure failed (exit code: %d).", configResult);
+					// 실패 시에만 pause 실행 (사용자가 에러를 볼 수 있도록)
+					ExecuteCommandWithConsole(L"pause");
+					return false;
+				}
+			}
+
+			// ----------------------------------------------------------------------
+			// 2: Build 명령어 (cmd.exe /C는 ExecuteCommandWithConsole에서 처리)
+			// ----------------------------------------------------------------------
+			std::wstring cmdBuild = L"cmake --build \"";
+			cmdBuild += scriptsBuildDir.wstring();
+			cmdBuild += L"\" --config ";
+			cmdBuild += kConfig;
+			cmdBuild += L" --target AliceScripts";
+
+			// Build 실행
+			int buildResult = ExecuteCommandWithConsole(cmdBuild);
+			if (buildResult != 0)
+			{
+				ALICE_LOG_ERRORF("Reload Scripts: CMake Build failed (exit code: %d).", buildResult);
 				// 실패 시에만 pause 실행 (사용자가 에러를 볼 수 있도록)
 				ExecuteCommandWithConsole(L"pause");
 				return false;
 			}
 		}
 
-		// ----------------------------------------------------------------------
-		// 2: Build 명령어 (cmd.exe /C는 ExecuteCommandWithConsole에서 처리)
-		// ----------------------------------------------------------------------
-		std::wstring cmdBuild = L"cmake --build \"";
-		cmdBuild += scriptsBuildDir.wstring();
-		cmdBuild += L"\" --config ";
-		cmdBuild += kConfig;
-		cmdBuild += L" --target AliceScripts";
-
-		// Build 실행
-		int buildResult = ExecuteCommandWithConsole(cmdBuild);
-		if (buildResult != 0)
-		{
-			ALICE_LOG_ERRORF("Reload Scripts: CMake Build failed (exit code: %d).", buildResult);
-			// 실패 시에만 pause 실행 (사용자가 에러를 볼 수 있도록)
-			ExecuteCommandWithConsole(L"pause");
-			return false;
-		}
-
 		// 4) 중간 출력(bin/<Config>)의 AliceScripts.dll 을 실행 파일 옆으로 복사
 		//    (구 구조는 build/<Config>/ 바로 아래에 출력했으므로 함께 탐색)
-		path builtDll = scriptsBuildDir / "bin" / path(kConfig) / "AliceScripts.dll";
+		path builtDll = intermediateDll;
 		if (!exists(builtDll))
 			builtDll = scriptsBuildDir / path(kConfig) / "AliceScripts.dll";
 		if (!exists(builtDll))

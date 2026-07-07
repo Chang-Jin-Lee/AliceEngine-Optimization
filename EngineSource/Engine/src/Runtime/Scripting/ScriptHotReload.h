@@ -18,6 +18,9 @@ namespace Alice
 
     /// DLL 을 언로드하고, 동적 스크립트 함수 포인터를 모두 해제합니다.
     void ScriptHotReload_Unload();
+
+    /// 현재 스크립트 DLL이 로드되어 있는지 여부
+    bool ScriptHotReload_IsLoaded();
 }
 
 
