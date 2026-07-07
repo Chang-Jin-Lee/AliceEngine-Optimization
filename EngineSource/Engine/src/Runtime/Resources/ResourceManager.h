@@ -6,6 +6,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <list>
 #include <mutex>
 #include <memory>
 #include <utility>
@@ -174,6 +175,20 @@ namespace Alice
         // 실패한 논리 경로 기록 — 재시도로 인한 매 프레임 디스크 접근을 차단.
         // 게임 모드에서는 파일이 불변이므로 영구, 에디터에서는 ClearNegativeCache로 무효화.
         mutable std::unordered_set<std::string> m_missingPaths;
+
+        // 최근 사용 blob의 강참조 LRU — weak_ptr 캐시의 조기 해제로 인한
+        // 반복 재로드를 방지한다. 기본 상한 256MB.
+        mutable std::list<std::pair<std::uint64_t, std::shared_ptr<const std::vector<std::uint8_t>>>> m_lruList;
+        mutable std::unordered_map<std::uint64_t, decltype(m_lruList)::iterator> m_lruIndex;
+        mutable std::size_t m_lruBytes = 0;
+        std::size_t m_lruCapacityBytes = 256ull * 1024 * 1024;
+
+        void TouchLru(std::uint64_t hash,
+                      const std::shared_ptr<const std::vector<std::uint8_t>>& blob) const; // m_cacheMutex 잠근 상태에서 호출
+
+        // gameMode에서 Resolve()의 청크 경로 프로브(exists 2회) 결과 캐시.
+        // 게임 모드는 파일이 불변이므로 무효화가 필요 없다.
+        mutable std::unordered_map<std::string, std::filesystem::path> m_chunkPathCache;
     };
 
     // -----------------------------------------------------------------------

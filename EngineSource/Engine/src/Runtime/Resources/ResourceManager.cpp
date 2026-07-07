@@ -218,6 +218,12 @@ namespace Alice
         {
             if (m_gameMode)
             {
+                {
+                    std::lock_guard<std::mutex> lock(m_cacheMutex);
+                    if (auto it = m_chunkPathCache.find(s); it != m_chunkPathCache.end())
+                        return it->second;
+                }
+
                 const std::string rest = s.substr(std::string_view("Assets/").size());
                 auto path = Chunk0PathForMetasRel(rest);
                 std::error_code ec;
@@ -227,8 +233,11 @@ namespace Alice
                     auto legacyPath = Chunk0PathFromFileId(MetasDir(), legacyId);
                     ec.clear();
                     if (std::filesystem::exists(legacyPath, ec))
-                        return legacyPath;
+                        path = legacyPath;
                 }
+
+                std::lock_guard<std::mutex> lock(m_cacheMutex);
+                m_chunkPathCache[s] = path;
                 return path;
             }
             return (m_rootDir / p).lexically_normal();
@@ -244,6 +253,12 @@ namespace Alice
         {
             if (m_gameMode)
             {
+                {
+                    std::lock_guard<std::mutex> lock(m_cacheMutex);
+                    if (auto it = m_chunkPathCache.find(s); it != m_chunkPathCache.end())
+                        return it->second;
+                }
+
                 const std::string rest = s.substr(std::string_view("Resource/").size());
                 auto path = Chunk0PathForResourceRel(rest);
                 std::error_code ec;
@@ -253,8 +268,11 @@ namespace Alice
                     auto legacyPath = Chunk0PathFromFileId(CookedDir(), legacyId);
                     ec.clear();
                     if (std::filesystem::exists(legacyPath, ec))
-                        return legacyPath;
+                        path = legacyPath;
                 }
+
+                std::lock_guard<std::mutex> lock(m_cacheMutex);
+                m_chunkPathCache[s] = path;
                 return path;
             }
             return (m_rootDir / p).lexically_normal();
@@ -273,8 +291,37 @@ namespace Alice
 
     void ResourceManager::Clear()
     {
-        // 아직 구체적인 리소스는 없으므로 빈 구현입니다.
-        // 이후 텍스처/메시/셰이더 등을 추가할 때 이곳에서 정리합니다.
+        std::lock_guard<std::mutex> lock(m_cacheMutex);
+        m_blobCache.clear();
+        m_pathToHash.clear();
+        m_missingPaths.clear();
+        m_lruList.clear();
+        m_lruIndex.clear();
+        m_lruBytes = 0;
+        m_chunkPathCache.clear();
+    }
+
+    void ResourceManager::TouchLru(std::uint64_t hash,
+                                   const std::shared_ptr<const std::vector<std::uint8_t>>& blob) const
+    {
+        // 주의: 호출자가 m_cacheMutex를 이미 잠갔다고 가정한다.
+        if (auto it = m_lruIndex.find(hash); it != m_lruIndex.end())
+        {
+            m_lruList.splice(m_lruList.begin(), m_lruList, it->second); // 앞으로 이동
+            return;
+        }
+
+        m_lruList.emplace_front(hash, blob);
+        m_lruIndex[hash] = m_lruList.begin();
+        m_lruBytes += blob->size();
+
+        while (m_lruBytes > m_lruCapacityBytes && !m_lruList.empty())
+        {
+            auto& back = m_lruList.back();
+            m_lruBytes -= back.second->size();
+            m_lruIndex.erase(back.first);
+            m_lruList.pop_back();
+        }
     }
 
     std::shared_ptr<const std::vector<std::uint8_t>> ResourceManager::MarkMissing(const std::string& logicalKey) const
@@ -293,6 +340,9 @@ namespace Alice
     {
         std::lock_guard<std::mutex> lock(m_cacheMutex);
         m_missingPaths.clear();
+        m_lruList.clear();
+        m_lruIndex.clear();
+        m_lruBytes = 0;
     }
 
     bool ResourceManager::LoadBinary(const std::filesystem::path& path,
@@ -346,7 +396,10 @@ namespace Alice
                 if (auto it2 = m_blobCache.find(h); it2 != m_blobCache.end())
                 {
                     if (auto sp = it2->second.lock())
+                    {
+                        TouchLru(h, sp);
                         return sp;
+                    }
                 }
             }
             if (m_missingPaths.count(logicalKey) != 0)
@@ -367,6 +420,7 @@ namespace Alice
                     std::lock_guard<std::mutex> lock(m_cacheMutex);
                     m_blobCache[h] = sp;
                     m_pathToHash[logicalKey] = h;
+                    TouchLru(h, sp);
                     return sp;
                 }
                 return MarkMissing(logicalKey);
@@ -384,9 +438,10 @@ namespace Alice
                     std::lock_guard<std::mutex> lock(m_cacheMutex);
                     m_blobCache[h] = sp;
                     m_pathToHash[logicalKey] = h;
+                    TouchLru(h, sp);
                     return sp;
                 }
-                
+
                 ALICE_LOG_ERRORF("ResourceManager: Chunk not found for \"%s\"", s.c_str());
                 return MarkMissing(logicalKey);
             }
@@ -404,6 +459,7 @@ namespace Alice
                 std::lock_guard<std::mutex> lock(m_cacheMutex);
                 m_blobCache[h] = sp;
                 m_pathToHash[logicalKey] = h;
+                TouchLru(h, sp);
                 return sp;
             }
 
@@ -416,6 +472,7 @@ namespace Alice
             std::lock_guard<std::mutex> lock(m_cacheMutex);
             m_blobCache[h] = sp;
             m_pathToHash[logicalKey] = h;
+            TouchLru(h, sp);
             return sp;
         }
 
@@ -428,6 +485,7 @@ namespace Alice
         std::lock_guard<std::mutex> lock(m_cacheMutex);
         m_blobCache[h] = sp;
         m_pathToHash[logicalKey] = h;
+        TouchLru(h, sp);
         return sp;
     }
 
