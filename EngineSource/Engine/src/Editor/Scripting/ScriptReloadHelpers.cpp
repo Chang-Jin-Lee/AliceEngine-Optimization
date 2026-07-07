@@ -190,7 +190,12 @@ namespace Alice
 		path exePath = exePathW;
 		path exeDir = exePath.parent_path();
 		path projectRoot = exeDir.parent_path().parent_path().parent_path(); // build/bin/Debug → 프로젝트 루트
-		path scriptsRoot = projectRoot / "ScriptsBuild";
+
+		// 모노레포 구조는 EngineSource/ScriptsBuild, 구(원본) 구조는 루트/ScriptsBuild
+		path scriptsRoot = projectRoot / "EngineSource" / "ScriptsBuild";
+		if (!exists(scriptsRoot / "CMakeLists.txt"))
+			scriptsRoot = projectRoot / "ScriptsBuild";
+
 		path scriptsCMakePath = scriptsRoot / "CMakeLists.txt";
 		path scriptsBuildDir = scriptsRoot / "build";
 
@@ -208,22 +213,25 @@ namespace Alice
 #endif
 
 		// ----------------------------------------------------------------------
-		// 1: Configure 명령어 (cmd.exe /C는 ExecuteCommandWithConsole에서 처리)
+		// 1: Configure (이미 구성된 빌드 트리가 있으면 건너뛰어 Play 시간을 줄인다.
+		//    스크립트 파일 추가/삭제는 GLOB의 CONFIGURE_DEPENDS가 빌드 시점에 감지한다.)
 		// ----------------------------------------------------------------------
-		std::wstring cmdConfig = L"cmake -S \"";
-		cmdConfig += scriptsRoot.wstring();
-		cmdConfig += L"\" -B \"";
-		cmdConfig += scriptsBuildDir.wstring();
-		cmdConfig += L"\"";
-
-		// Configure 실행
-		int configResult = ExecuteCommandWithConsole(cmdConfig);
-		if (configResult != 0)
+		if (!exists(scriptsBuildDir / "CMakeCache.txt"))
 		{
-			ALICE_LOG_ERRORF("Reload Scripts: CMake Configure failed (exit code: %d).", configResult);
-			// 실패 시에만 pause 실행 (사용자가 에러를 볼 수 있도록)
-			ExecuteCommandWithConsole(L"pause");
-			return false;
+			std::wstring cmdConfig = L"cmake -S \"";
+			cmdConfig += scriptsRoot.wstring();
+			cmdConfig += L"\" -B \"";
+			cmdConfig += scriptsBuildDir.wstring();
+			cmdConfig += L"\"";
+
+			int configResult = ExecuteCommandWithConsole(cmdConfig);
+			if (configResult != 0)
+			{
+				ALICE_LOG_ERRORF("Reload Scripts: CMake Configure failed (exit code: %d).", configResult);
+				// 실패 시에만 pause 실행 (사용자가 에러를 볼 수 있도록)
+				ExecuteCommandWithConsole(L"pause");
+				return false;
+			}
 		}
 
 		// ----------------------------------------------------------------------
@@ -245,8 +253,11 @@ namespace Alice
 			return false;
 		}
 
-		// 4) ScriptsBuild/build/<Config>/AliceScripts.dll 을 실행 파일 옆으로 복사
-		path builtDll = scriptsBuildDir / path(kConfig) / "AliceScripts.dll";
+		// 4) 중간 출력(bin/<Config>)의 AliceScripts.dll 을 실행 파일 옆으로 복사
+		//    (구 구조는 build/<Config>/ 바로 아래에 출력했으므로 함께 탐색)
+		path builtDll = scriptsBuildDir / "bin" / path(kConfig) / "AliceScripts.dll";
+		if (!exists(builtDll))
+			builtDll = scriptsBuildDir / path(kConfig) / "AliceScripts.dll";
 		if (!exists(builtDll))
 		{
 			ALICE_LOG_ERRORF("Reload Scripts: built DLL not found: \"%s\"",
@@ -254,25 +265,32 @@ namespace Alice
 			return false;
 		}
 
-		// RTTR shared DLL도 같이 복사해 둡니다. (스크립트 RTTR 등록이 엔진에서 보이려면 필수)
-		// - ScriptsBuild는 자체적으로 rttr_core.dll을 빌드합니다.
-		// - dll 폴더에 하나만 존재하면, EXE/DLL이 같은 registry를 공유합니다.
+		// RTTR shared DLL은 dll 폴더에 하나만 존재해야 EXE/스크립트가 registry를 공유합니다.
+		// 엔진 빌드가 이미 복사해 두므로, 없을 때만 ScriptsBuild 산출물에서 채워 넣습니다.
+		// (이미 로드되어 잠긴 파일을 덮어쓰려다 매번 경고가 찍히는 것도 방지)
 		{
 			std::error_code ecMk;
 			const path dllDir = exeDir / "dll";
 			create_directories(dllDir, ecMk);
 
-			path builtRttr = scriptsBuildDir / path(kConfig) / "rttr_core.dll";
-			if (exists(builtRttr))
+			const wchar_t* rttrName = (wcscmp(kConfig, L"Debug") == 0) ? L"rttr_core_d.dll" : L"rttr_core.dll";
+			if (!exists(dllDir / rttrName))
 			{
-				std::error_code ecRttr;
-				copy_file(builtRttr, dllDir / "rttr_core.dll",
-					copy_options::overwrite_existing,
-					ecRttr);
-				if (ecRttr)
+				path builtRttr = scriptsBuildDir / "Engine" / "ThirdParty" / "rttr" / "bin" / path(kConfig) / rttrName;
+				if (!exists(builtRttr))
+					builtRttr = scriptsBuildDir / path(kConfig) / rttrName;
+
+				if (exists(builtRttr))
 				{
-					ALICE_LOG_WARN("Reload Scripts: failed to copy rttr_core.dll (%s)",
-						ecRttr.message().c_str());
+					std::error_code ecRttr;
+					copy_file(builtRttr, dllDir / rttrName,
+						copy_options::overwrite_existing,
+						ecRttr);
+					if (ecRttr)
+					{
+						ALICE_LOG_WARN("Reload Scripts: failed to copy %ls (%s)",
+							rttrName, ecRttr.message().c_str());
+					}
 				}
 			}
 		}

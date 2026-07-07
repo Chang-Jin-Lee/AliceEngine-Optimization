@@ -92,7 +92,7 @@ namespace Alice
         bool EnsureInstanceBufferCapacity(std::size_t requiredCount);
 
         bool CreateSkyboxResources();
-        bool CreateIblResources(const std::string& iblDir = "Bridge",  const std::string& iblName = "bridge", const std::string& iblSuffix = "HDR");
+        bool CreateIblResources(const std::string& iblDir = "Bridge",  const std::string& iblName = "bridgeEnv", const std::string& iblSuffix = "HDR");
         bool CreateSkinnedResources();
         bool CreateToneMappingResources();
 
@@ -341,7 +341,7 @@ namespace Alice
 
         /// IBL 세트를 변경합니다 (Bridge/Indoor/Sample)
         /// - 씬 전환 시 호출하여 환경에 맞는 IBL을 로드합니다.
-        bool SetIblSet(const std::string& iblDir = "Bridge", const std::string& iblName = "bridge", const std::string& iblSuffix = "HDR");
+        bool SetIblSet(const std::string& iblDir = "Bridge", const std::string& iblName = "bridgeEnv", const std::string& iblSuffix = "HDR");
 
         /// 스카이박스 활성화/비활성화를 설정합니다.
         /// - enabled가 false이면 IBL도 함께 비활성화됩니다.

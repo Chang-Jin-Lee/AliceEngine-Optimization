@@ -1192,8 +1192,8 @@ namespace Alice
 				renderer.SetSkyboxEnabled(true);
 				switch (m_skyboxChoice)
 				{
-				case 1: renderer.SetIblSet("Bridge", "bridge", iblSuffix); break;
-				case 2: renderer.SetIblSet("Indoor", "indoor", iblSuffix); break;
+				case 1: renderer.SetIblSet("Bridge", "bridgeEnv", iblSuffix); break;
+				case 2: renderer.SetIblSet("Indoor", "indoorEnv", iblSuffix); break;
 				case 3: renderer.SetIblSet("Sample", "BakerSample", iblSuffix); break;
 				case 4: renderer.SetIblSet("darkenv", "darkenvDiffuseHDR", iblSuffix); break;
 				case 5:

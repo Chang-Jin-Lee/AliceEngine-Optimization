@@ -689,13 +689,8 @@ if(MSVC)
             "/DELAYLOAD:PhysXCommon_64.dll"
             "/DELAYLOAD:PhysX_64.dll"
             "/DELAYLOAD:PhysXCooking_64.dll"
-            "/DELAYLOAD:zlib1.dll"
-            "/DELAYLOAD:zlibd1.dll"
-            "/DELAYLOAD:quazip.dll"
-            "/DELAYLOAD:pugixml.dll"
-            "/DELAYLOAD:poly2tri.dll"
-            "/DELAYLOAD:kubazip.dll"
-            "/DELAYLOAD:minizip.dll"
+            # zlib1/quazip/pugixml/poly2tri/kubazip/minizip 등은 exe가 직접 import하지
+            # 않고(assimp의 의존성) LNK4199로 무시되므로 DELAYLOAD 목록에서 제외한다.
         )
     endforeach()
 
@@ -712,6 +707,29 @@ endif()
 # [Post-Build] DLL 복사
 # ==========================================
 
+# 런타임에 실제로 import되는 DLL만 config별로 복사한다.
+# (Launch.exe / assimp / AliceScripts.dll의 import를 dumpbin /DEPENDENTS 로 확인한 최소 집합)
+set(ALICE_VCPKG_BIN_REL "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/bin")
+set(ALICE_VCPKG_BIN_DBG "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/debug/bin")
+
+# assimp 본체 + assimp가 import하는 의존성
+set(ALICE_ASSIMP_DLLS_RELEASE
+    "${ALICE_VCPKG_BIN_REL}/assimp-vc143-mt.dll"
+    "${ALICE_VCPKG_BIN_REL}/zlib1.dll"
+    "${ALICE_VCPKG_BIN_REL}/minizip.dll"
+    "${ALICE_VCPKG_BIN_REL}/poly2tri.dll"
+    "${ALICE_VCPKG_BIN_REL}/kubazip.dll"
+    "${ALICE_VCPKG_BIN_REL}/pugixml.dll"
+)
+set(ALICE_ASSIMP_DLLS_DEBUG
+    "${ALICE_VCPKG_BIN_DBG}/assimp-vc143-mtd.dll"
+    "${ALICE_VCPKG_BIN_DBG}/zlibd1.dll"
+    "${ALICE_VCPKG_BIN_DBG}/minizip.dll"
+    "${ALICE_VCPKG_BIN_DBG}/poly2tri.dll"
+    "${ALICE_VCPKG_BIN_DBG}/kubazip.dll"
+    "${ALICE_VCPKG_BIN_DBG}/pugixml.dll"
+)
+
 # Launch와 AlicePlayer 타겟 모두에 DLL 복사 수행
 foreach(target Launch AlicePlayer)
     add_custom_command(TARGET ${target} POST_BUILD
@@ -720,43 +738,10 @@ foreach(target Launch AlicePlayer)
         # RTTR shared 스크립트 DLL과 registry 공유
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "$<TARGET_FILE:rttr_core>" "$<TARGET_FILE_DIR:${target}>/dll/$<TARGET_FILE_NAME:rttr_core>"
-
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/zlib1.dll"       "$<TARGET_FILE_DIR:${target}>/dll/zlib1.dll"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/zlibd1.dll"      "$<TARGET_FILE_DIR:${target}>/dll/zlibd1.dll"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/quazip.dll"      "$<TARGET_FILE_DIR:${target}>/dll/quazip.dll"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/pugixml.dll"     "$<TARGET_FILE_DIR:${target}>/dll/pugixml.dll"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/poly2tri.dll"    "$<TARGET_FILE_DIR:${target}>/dll/poly2tri.dll"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/kubazip.dll"      "$<TARGET_FILE_DIR:${target}>/dll/kubazip.dll"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${THIRDPARTY_3DMODEL_DIR}/minizip.dll"      "$<TARGET_FILE_DIR:${target}>/dll/minizip.dll"
-
-        # vcpkg Assimp DLL + 의존성 (minizipd/zd — assimp가 직접 링크)
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/debug/bin/assimp-vc143-mtd.dll"
-            "$<TARGET_FILE_DIR:${target}>/dll/assimp-vc143-mtd.dll"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/bin/assimp-vc143-mt.dll"
-            "$<TARGET_FILE_DIR:${target}>/dll/assimp-vc143-mt.dll"
-        # assimp Debug 의존성 (zd.dll, minizipd.dll)
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/debug/bin/zd.dll"
-            "$<TARGET_FILE_DIR:${target}>/dll/zd.dll"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/debug/bin/minizipd.dll"
-            "$<TARGET_FILE_DIR:${target}>/dll/minizipd.dll"
-        # assimp Release 의존성 (z.dll, minizip.dll)
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/bin/z.dll"
-            "$<TARGET_FILE_DIR:${target}>/dll/z.dll"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/bin/minizip.dll"
-            "$<TARGET_FILE_DIR:${target}>/dll/minizip.dll"
+            "$<IF:$<CONFIG:Debug>,${ALICE_ASSIMP_DLLS_DEBUG},${ALICE_ASSIMP_DLLS_RELEASE}>"
+            "$<TARGET_FILE_DIR:${target}>/dll"
+        COMMAND_EXPAND_LISTS
     )
 endforeach()
 
@@ -827,12 +812,11 @@ if(WIN32)
         add_custom_command(TARGET ${t} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory
                 "$<TARGET_FILE_DIR:${t}>/dll"
+            # fmod.dll은 항상 필요(Release 엔진/스크립트가 import), fmodL.dll(로깅 빌드)은 Debug 전용
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${FMOD_LIB_DIR}/fmod.dll"
-                "$<TARGET_FILE_DIR:${t}>/dll/fmod.dll"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${FMOD_LIB_DIR}/fmodL.dll"
-                "$<TARGET_FILE_DIR:${t}>/dll/fmodL.dll"
+                "$<IF:$<CONFIG:Debug>,${FMOD_LIB_DIR}/fmod.dll;${FMOD_LIB_DIR}/fmodL.dll,${FMOD_LIB_DIR}/fmod.dll>"
+                "$<TARGET_FILE_DIR:${t}>/dll"
+            COMMAND_EXPAND_LISTS
             VERBATIM
         )
     endforeach()

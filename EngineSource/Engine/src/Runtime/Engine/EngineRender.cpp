@@ -853,7 +853,7 @@ namespace Alice
 		// 현재는 기본적으로 "Bridge" IBL 세트를 사용합니다.
 		// 향후 씬 파일에 IBL 세트 정보를 추가하면 여기서 읽어올 수 있습니다.
 		const std::string iblSuffix = (m_skyboxResolution == 1) ? "MDR" : "HDR";
-		m_forwardRenderSystem->SetIblSet("Bridge", "bridge", iblSuffix);
+		m_forwardRenderSystem->SetIblSet("Bridge", "bridgeEnv", iblSuffix);
 	}
 
 }
