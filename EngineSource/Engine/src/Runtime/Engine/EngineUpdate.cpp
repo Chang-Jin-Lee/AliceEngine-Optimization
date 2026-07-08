@@ -94,6 +94,10 @@ namespace Alice
 			// 씬 로드/전환 시 UI 시간(gTime.x) 리셋 → DieLine 등 시간 기반 쉐이더가 다시 정상 재생되도록
 			m_aliceUIRenderer.ResetTime();
 
+			// 새 씬은 새로운 스킨드메시 키를 들여올 수 있으므로,
+			// 온디맨드 임포트 시도 캐시를 초기화해 이번 씬에서 다시 시도할 수 있게 한다.
+			m_onDemandMeshAttempted.clear();
+
 			sceneChangedThisFrame = true;
 			m_skipPhysicsNextFrame = true;
 		}

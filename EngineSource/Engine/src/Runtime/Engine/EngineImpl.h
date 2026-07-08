@@ -206,6 +206,10 @@ namespace Alice
 		std::unordered_set<EntityId>    m_cameraIDsScratch;
 		std::unordered_map<std::string, std::shared_ptr<const std::vector<std::uint8_t>>> m_preloadedBlobs;
 
+		// 온디맨드 스킨드메시 임포트를 시도한 키 기록.
+		// 키 불일치/임포트 실패 시 매 프레임 재임포트(시작 지연·프리즈의 원인)를 차단한다.
+		std::unordered_set<std::string> m_onDemandMeshAttempted;
+
 		bool m_animUpdatedThisFrame = false;
 
 		// =========================

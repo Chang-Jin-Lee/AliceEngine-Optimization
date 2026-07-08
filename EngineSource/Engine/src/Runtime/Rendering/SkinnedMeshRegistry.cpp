@@ -58,9 +58,21 @@ namespace Alice
         // 3. 결과 확인 (meshAssetPath가 meshKey와 일치해야 함)
         if (result.meshAssetPath != meshKey)
         {
-            ALICE_LOG_WARN("[SkinnedMeshRegistry] LoadFromFbxAsset: meshAssetPath mismatch. expected=\"%s\" got=\"%s\"", 
+            ALICE_LOG_WARN("[SkinnedMeshRegistry] LoadFromFbxAsset: meshAssetPath mismatch. expected=\"%s\" got=\"%s\"",
                           meshKey.c_str(), result.meshAssetPath.c_str());
-            // 경고만 하고 계속 진행 (meshAssetPath로 등록되었을 수 있음)
+
+            // 근본 수정: 임포터가 실제로 등록한 키(result.meshAssetPath)의 GPU 데이터를
+            // 요청 키(meshKey)로도 별칭 등록한다. 이렇게 하면 호출부의 Has(meshKey) 검사가
+            // 매 프레임 재임포트를 유발하지 않고 즉시 통과한다.
+            if (!Has(meshKey))
+            {
+                if (auto existing = Find(result.meshAssetPath))
+                {
+                    Register(meshKey, existing);
+                    ALICE_LOG_INFO("[SkinnedMeshRegistry] LoadFromFbxAsset: Aliased requested key=\"%s\" -> registered key=\"%s\"",
+                                  meshKey.c_str(), result.meshAssetPath.c_str());
+                }
+            }
         }
 
         // 4. 등록 확인

@@ -398,6 +398,11 @@ namespace Alice
 
 			if (!m_skinnedMeshRegistry.Has(comp.meshAssetPath) && !comp.instanceAssetPath.empty())
 			{
+				if (m_onDemandMeshAttempted.count(comp.meshAssetPath) != 0)
+					continue; // 이미 시도한 키 — 매 프레임 재임포트 금지
+
+				m_onDemandMeshAttempted.insert(comp.meshAssetPath);
+
 				ALICE_LOG_INFO("[Engine] On-demand loading mesh: meshKey=\"%s\" instanceAssetPath=\"%s\"",
 					comp.meshAssetPath.c_str(), comp.instanceAssetPath.c_str());
 
@@ -405,6 +410,12 @@ namespace Alice
 					comp.meshAssetPath, comp.instanceAssetPath,
 					m_resourceManager, importer, device
 				);
+
+				if (!m_skinnedMeshRegistry.Has(comp.meshAssetPath))
+				{
+					ALICE_LOG_WARN("[Engine] On-demand mesh key mismatch: requested=\"%s\" was not registered by import. (1회만 시도)",
+						comp.meshAssetPath.c_str());
+				}
 			}
 		}
 	}
