@@ -160,6 +160,13 @@ namespace Alice
 		{
 			m_shadingMode = static_cast<Impl::ShadingMode>(shadingMode);
 		}
+
+		if (m_editorCore.ConsumeDirectSceneLoadFlag())
+		{
+			// File>Open 등 비-Play 직접 씬 로드는 커밋 경로(EngineUpdate.cpp)를 타지 않으므로,
+			// 새 씬 로드 시 온디맨드 임포트 시도 기록을 리셋해, 수정된 애셋이 재시도되도록 한다.
+			m_onDemandMeshAttempted.clear();
+		}
 	}
 
 	void Engine::Impl::RenderEditorDebugBuild()

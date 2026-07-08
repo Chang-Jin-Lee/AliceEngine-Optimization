@@ -342,6 +342,16 @@ namespace Alice
 		/// Default PostProcess Settings를 가져옵니다 (PostProcessVolumeSystem에서 사용)
 		const PostProcessSettings& GetDefaultPostProcessSettings() const { return m_defaultPostProcessSettings; }
 
+		/// File>Open 등 비-Play 직접 씬 로드가 발생했는지 확인하고 플래그를 소비(리셋)합니다.
+		/// Engine::Impl이 매 프레임 DrawEditorUI 이후 호출해, 온디맨드 스킨드메시 임포트
+		/// 시도 캐시(m_onDemandMeshAttempted)를 리셋할지 판단하는 데 사용합니다.
+		bool ConsumeDirectSceneLoadFlag()
+		{
+			const bool result = m_directSceneLoadOccurred;
+			m_directSceneLoadOccurred = false;
+			return result;
+		}
+
 	private:
 		void DrawEngineLogo();
 		/// 씬을 로드한 뒤, World 에 존재하는 SkinnedMeshComponent 들이
@@ -435,6 +445,9 @@ namespace Alice
 		SkinnedMeshRegistry* m_skinnedRegistry = nullptr;
 		InputSystem* m_inputSystem = nullptr;
 		UIRenderer* m_aliceUIRenderer = nullptr;
+
+		// EnsureSkinnedMeshesRegistered()가 호출될 때(=비-Play 직접 씬 로드 성공 시) true로 설정됩니다.
+		bool m_directSceneLoadOccurred = false;
 
 		bool               m_scriptBuilded = false;
 

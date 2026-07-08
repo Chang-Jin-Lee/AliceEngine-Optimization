@@ -12,6 +12,10 @@ namespace Alice
 {
 	void EditorCore::EnsureSkinnedMeshesRegistered(World& world)
 	{
+		// 이 함수는 File>Open 등 비-Play 직접 씬 로드가 성공했을 때만 호출된다.
+		// 새 씬 로드 시 온디맨드 임포트 시도 기록을 리셋해, 수정된 애셋이 재시도되도록 한다.
+		m_directSceneLoadOccurred = true;
+
 		if (!m_skinnedRegistry || !m_renderDevice || world.GetComponents<SkinnedMeshComponent>().empty())
 			return;
 
