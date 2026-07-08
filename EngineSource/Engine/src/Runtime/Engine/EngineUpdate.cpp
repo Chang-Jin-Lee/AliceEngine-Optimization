@@ -60,7 +60,12 @@ namespace Alice
 
 	bool Engine::Impl::UpdateShouldUpdateFromScene() const
 	{
-		return (!m_editorMode || m_isPlaying);
+		if (!m_editorMode)
+			return true;
+		if (!m_isPlaying)
+			return false;
+		// 일시정지 중에는 Step 버튼이 준 한 프레임만 진행한다.
+		return !m_isPaused || m_stepOneFrame;
 	}
 
 	void Engine::Impl::UpdateSceneAndScript(float dt)
@@ -328,6 +333,8 @@ namespace Alice
 			static_cast<float>(m_width), static_cast<float>(m_height), m_unscaledDeltaTime);
 
 		m_prevIsPlaying = m_isPlaying;
+		// Step은 한 프레임만 진행되어야 하므로 매 프레임 말미에 소비(리셋)한다.
+		m_stepOneFrame = false;
 	}
 
 	//=========================================================

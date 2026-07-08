@@ -144,7 +144,8 @@ namespace Alice
 		m_editorCore.DrawEditorUI(
 			m_world, m_camera, *m_forwardRenderSystem, *m_deferredRenderSystem, m_sceneManager.get(),
 			m_timer.DeltaTime(), (m_timer.DeltaTime() > 0) ? (1.0f / m_timer.DeltaTime()) : 0.0f,
-			m_isPlaying, shadingMode, m_useFillLight,
+			m_isPlaying, m_isPaused, m_stepOneFrame, m_playModeSnapshot,
+			shadingMode, m_useFillLight,
 			m_selectedEntity, m_viewportPicker, m_cameraMoveSpeed,
 			m_useForwardRendering,
 			m_savedLightingParameters,

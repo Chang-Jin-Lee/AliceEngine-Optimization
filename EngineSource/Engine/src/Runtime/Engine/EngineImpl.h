@@ -110,7 +110,10 @@ namespace Alice
 		DWORD m_windowedExStyle = 0;
 
 		bool m_isRunning = false;            // 엔진 자체가 실행중인지 판단
-		bool m_isPlaying = false;            // 재생 / 일시정지 상태 (에디터 모드에서만 사용)
+		bool m_isPlaying = false;            // 재생 / 정지 상태 (에디터 모드에서만 사용)
+		bool m_isPaused = false;             // Play 중 일시정지 상태 (Unity Pause와 동일)
+		bool m_stepOneFrame = false;         // Pause 중 Step 버튼이 요청한 단일 프레임 진행 플래그 (프레임 말미에 리셋)
+		std::string m_playModeSnapshot;      // Play 진입 순간의 월드 스냅샷(JSON). Stop 시 이 값으로 월드를 복원한다.
 		bool m_editorMode = true;             // true: 에디터, false: 게임 전용
 		bool m_initCanceled = false;         // 초기화 중 사용자 종료 요청
 		bool m_debugDraw = true;

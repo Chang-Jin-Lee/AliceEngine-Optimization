@@ -340,6 +340,9 @@ namespace Alice
 		float deltaTime,
 		float fps,
 		bool& isPlaying,
+		bool& isPaused,
+		bool& stepOneFrame,
+		std::string& playModeSnapshot,
 		int& shadingMode,
 		bool& useFillLight,
 		EntityId& selectedEntity,
@@ -377,7 +380,8 @@ namespace Alice
 
 		HandleGlobalUndoRedo(world, selectedEntity, isPlaying);
 		SetupDockSpaceAndDefaultLayout();
-		DrawMainMenuBar(world, deltaTime, fps, isPlaying, selectedEntity, useForwardRendering, isDebugDraw);
+		DrawMainMenuBar(world, deltaTime, fps, isPlaying, isPaused, stepOneFrame, playModeSnapshot,
+			selectedEntity, useForwardRendering, isDebugDraw);
 
 		CacheLightingSettings(shadingMode, useFillLight, lightingParams,
 			skyboxChoice, skyboxCustomDir, skyboxCustomPrefix, skyboxResolution);
