@@ -270,6 +270,17 @@ namespace Alice
 		if (!input.IsRightButtonDown())
 			return;
 
+		// 우클릭 비행 모드 중 휠 스크롤로 이동 속도를 조절한다 (Unity 에디터와 동일).
+		{
+			const float wheel = input.GetMouseScrollDelta(); // 1노치 = ±120
+			if (wheel != 0.0f)
+			{
+				const float notches = wheel / 120.0f;
+				m_cameraMoveSpeed *= std::pow(1.1f, notches);
+				m_cameraMoveSpeed = std::clamp(m_cameraMoveSpeed, 0.1f, 100.0f);
+			}
+		}
+
 		XMVECTOR moveDir = XMVectorZero();
 
 		if (input.IsKeyDown(Keyboard::W)) moveDir = XMVectorAdd(moveDir, XMVectorSet(0, 0, 1, 0));
