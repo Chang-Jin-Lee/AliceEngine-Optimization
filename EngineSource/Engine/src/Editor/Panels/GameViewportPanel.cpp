@@ -339,8 +339,21 @@ namespace Alice
 
 			if (m_aliceUIRenderer && m_hwnd && imgSize.x > 0.0f && imgSize.y > 0.0f && sceneWidth > 0.0f && sceneHeight > 0.0f)
 			{
+				// ViewportsEnable 활성 시 GetItemRectMin()/GetMousePos()는 메인 창 클라이언트 좌표가 아니라
+				// 데스크톱 절대좌표다. Game 패널이 메인 창에 도킹돼 있으면 이 창의 뷰포트가 곧 메인 뷰포트라
+				// PlatformHandle == m_hwnd라서 문제가 없지만, Game 패널을 별도 OS 창으로 분리하면
+				// m_hwnd(캐시된 메인 창) 고정 사용 시 ScreenToClient가 엉뚱한 창 기준으로 변환되어
+				// SetScreenInputRect가 두 창의 화면 위치 차이만큼 어긋난다. 현재 그려지고 있는 Game 창의
+				// 실제 HWND(GetWindowViewport()->PlatformHandle)를 사용해 도킹/분리 양쪽을 모두 정확히 처리한다.
+				HWND targetHwnd = m_hwnd;
+				if (ImGuiViewport* gameViewport = ImGui::GetWindowViewport())
+				{
+					if (HWND viewportHwnd = static_cast<HWND>(gameViewport->PlatformHandle))
+						targetHwnd = viewportHwnd;
+				}
+
 				POINT p = { static_cast<LONG>(imgMin.x), static_cast<LONG>(imgMin.y) };
-				::ScreenToClient(m_hwnd, &p);
+				::ScreenToClient(targetHwnd, &p);
 				m_aliceUIRenderer->SetScreenInputRect(
 					static_cast<float>(p.x),
 					static_cast<float>(p.y),
