@@ -39,7 +39,8 @@ namespace Alice
 		}
 		else
 		{
-			UpdateEditorFreeCam(dt);
+			// 에디터 자유 카메라는 게임 시간 정지(StopDeltaTime)의 영향을 받지 않아야 한다.
+			UpdateEditorFreeCam(m_unscaledDeltaTime);
 		}
 
 		UpdateApplyFinalCameraLookAt();
@@ -123,6 +124,16 @@ namespace Alice
 			m_skipPhysicsNextFrame = true;
 			m_physAccum = 0.0f;
 			m_aliceUIRenderer.ResetTime();
+			// 이전 세션이 남긴 게임 시간 정지 상태로 Play가 시작되지 않게 한다.
+			m_stopGameDeltaTime = false;
+		}
+
+		// Stop 시: ESC 일시정지 메뉴 등 게임 스크립트가 걸어둔 시간 정지가
+		// 에디터로 새어 들어와 카메라/시뮬레이션이 굳지 않도록 해제한다.
+		const bool playJustStopped = (m_editorMode && !m_isPlaying && m_prevIsPlaying);
+		if (playJustStopped)
+		{
+			m_stopGameDeltaTime = false;
 		}
 	}
 
