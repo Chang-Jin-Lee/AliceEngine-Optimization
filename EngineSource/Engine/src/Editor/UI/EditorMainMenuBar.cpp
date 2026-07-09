@@ -1,6 +1,7 @@
 #include "Editor/Core/EditorCore.h"
 #include "Editor/Core/EditorCommands.h"
 #include "Editor/Core/EditorUIState.h"
+#include "Editor/Core/EditorUndoRedo.h"
 #include "Editor/Scripting/ScriptReloadHelpers.h"
 
 #include "Runtime/Resources/ResourceManager.h"
@@ -109,6 +110,7 @@ namespace Alice
 					{
 						selectedEntity = InvalidEntityId;
 						EnsureSkinnedMeshesRegistered(world);
+						ClearUndoStack(); // 월드 리로드로 기존 EntityId가 무효화되므로 Undo 스택도 초기화
 					}
 					else
 					{
