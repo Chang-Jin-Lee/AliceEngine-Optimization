@@ -20,6 +20,8 @@
 
 // 표준 라이브러리
 #include <filesystem>
+#include <functional>
+#include <vector>
 #include <cfloat>      // FLT_MAX
 #include <algorithm>   // std::max
 #include <cmath>       // std::fabsf
@@ -65,6 +67,7 @@
 // 문자열 변환 / ImGui 래퍼
 #include "Runtime/Foundation/StringUtils.h"
 #include "Runtime/Foundation/ImGuiEx.h"
+#include "Runtime/Scripting/ScriptDomain.h"
 #include "Runtime/Scripting/ScriptHotReload.h"
 #include "Runtime/Resources/SceneFile.h"
 #include "Runtime/Foundation/ThreadSafety.h"
@@ -107,11 +110,17 @@ namespace Alice
 		DWORD m_windowedExStyle = 0;
 
 		bool m_isRunning = false;            // 엔진 자체가 실행중인지 판단
-		bool m_isPlaying = false;            // 재생 / 일시정지 상태 (에디터 모드에서만 사용)
+		bool m_isPlaying = false;            // 재생 / 정지 상태 (에디터 모드에서만 사용)
+		bool m_isPaused = false;             // Play 중 일시정지 상태 (Unity Pause와 동일)
+		bool m_stepOneFrame = false;         // Pause 중 Step 버튼이 요청한 단일 프레임 진행 플래그 (프레임 말미에 리셋)
+		std::string m_playModeSnapshot;      // Play 진입 순간의 월드 스냅샷(JSON). Stop 시 이 값으로 월드를 복원한다.
 		bool m_editorMode = true;             // true: 에디터, false: 게임 전용
 		bool m_initCanceled = false;         // 초기화 중 사용자 종료 요청
 		bool m_debugDraw = true;
 		EntityId m_selectedEntity{ InvalidEntityId }; // 현재 선택된 엔티티 (하이러키)
+
+		// 에디터 모드에서 탐색기 드래그&드롭 파일을 처리할 핸들러 (에디터가 등록)
+		std::function<void(const std::vector<std::filesystem::path>&)> m_dropFilesHandler;
 
 		World          m_world;
 		UIRenderer     m_aliceUIRenderer;
@@ -199,6 +208,10 @@ namespace Alice
 		std::vector<SkinnedDrawCommand> m_skinnedDrawCommands;
 		std::unordered_set<EntityId>    m_cameraIDsScratch;
 		std::unordered_map<std::string, std::shared_ptr<const std::vector<std::uint8_t>>> m_preloadedBlobs;
+
+		// 온디맨드 스킨드메시 임포트를 시도한 키 기록.
+		// 키 불일치/임포트 실패 시 매 프레임 재임포트(시작 지연·프리즈의 원인)를 차단한다.
+		std::unordered_set<std::string> m_onDemandMeshAttempted;
 
 		bool m_animUpdatedThisFrame = false;
 

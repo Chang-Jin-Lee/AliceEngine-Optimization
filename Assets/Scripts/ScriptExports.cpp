@@ -1,7 +1,11 @@
 ﻿#include "Runtime/Scripting/IScript.h"
 #include "Runtime/Scripting/ScriptFactory.h"
+#include "Runtime/Scripting/ScriptInstanceTracker.h"
 #include "Runtime/Foundation/Logger.h"
 #include "Runtime/Resources/Prefab.h"
+
+#include <algorithm>
+#include <cstring>
 
 // 동적 스크립트 DLL이 내보내는 간단한 C API 입니다.
 // - 엔진 쪽에서 GetProcAddress 로 이 함수들을 찾아서
@@ -52,6 +56,27 @@ extern "C"
     {
         Alice::Prefab::SetDefaultWorld(nullptr);
         Alice::Prefab::SetDefaultResources(nullptr);
+    }
+
+    __declspec(dllexport) int Alice_GetAliveScriptCount()
+    {
+        return static_cast<int>(Alice::ScriptInstanceTracker::AliveCount());
+    }
+
+    __declspec(dllexport) bool Alice_GetAliveScriptName(int index, char* outName, int maxLen)
+    {
+        if (!outName || maxLen <= 0)
+            return false;
+
+        auto names = Alice::ScriptInstanceTracker::AliveNames();
+        if (index < 0 || index >= static_cast<int>(names.size()))
+            return false;
+
+        const std::string& n = names[static_cast<std::size_t>(index)];
+        const std::size_t copyLen = (std::min)(n.size(), static_cast<std::size_t>(maxLen - 1));
+        std::memcpy(outName, n.data(), copyLen);
+        outName[copyLen] = '\0';
+        return true;
     }
 }
 

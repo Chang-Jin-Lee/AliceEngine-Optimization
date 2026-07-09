@@ -5,6 +5,9 @@
 
 /build
 /ScriptsBuild/build/*
+/EngineSource/ScriptsBuild/build/
+# 에디터 실행 시 루트에 생성되는 로컬 설정
+/EngineSettings.json
 # User-specific files
 *.rsuser
 *.suo
@@ -510,6 +513,16 @@ Resource/Textures/EgoWeapon_Animaition/EgoWeapon_Animaition_D_0.png
 Resource/Textures/EGOweapon_Blade/EGOweapon_Blade_D_0.png
 /Assets/VFX
 /Resource/VFX
+
+# 대용량 스카이박스 원본 (원본 프로젝트에서 로컬 복사, git 제외)
+Resource/Skybox/Bridge/
+Resource/Skybox/Indoor/
+Resource/Textures/TutorialFloor/
+Resource/Textures/TutorialWallback/
+Resource/Textures/TutorialWallfront/
+Resource/Textures/TutorialWallleft/
+Resource/Textures/TutorialWallright/
+Resource/Textures/Tutorial_Ceiling/
 
 Resource/Textures/dooranimation/dooranimation_D_9.png
 Resource/Textures/dooranimation/dooranimation_D_8.png

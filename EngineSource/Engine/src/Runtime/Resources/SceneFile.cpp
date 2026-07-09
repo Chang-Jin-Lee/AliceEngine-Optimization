@@ -1846,7 +1846,8 @@ namespace Alice
                 ALICE_LOG_ERRORF("[SceneFile] LoadFromJsonString: JSON parse failed.");
                 return false;
             }
-            world.Clear();
+            // world.Clear()는 LoadFromRoot 내부에서 entities 배열 구조 검증 이후에 수행된다.
+            // 여기서 미리 Clear하면 검증 실패 시에도 월드가 이미 비워진 채로 남는다 (데이터 손실).
             return LoadFromRoot(world, root);
         }
 

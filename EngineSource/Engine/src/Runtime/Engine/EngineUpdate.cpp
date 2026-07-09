@@ -39,7 +39,8 @@ namespace Alice
 		}
 		else
 		{
-			UpdateEditorFreeCam(dt);
+			// 에디터 자유 카메라는 게임 시간 정지(StopDeltaTime)의 영향을 받지 않아야 한다.
+			UpdateEditorFreeCam(m_unscaledDeltaTime);
 		}
 
 		UpdateApplyFinalCameraLookAt();
@@ -60,7 +61,12 @@ namespace Alice
 
 	bool Engine::Impl::UpdateShouldUpdateFromScene() const
 	{
-		return (!m_editorMode || m_isPlaying);
+		if (!m_editorMode)
+			return true;
+		if (!m_isPlaying)
+			return false;
+		// 일시정지 중에는 Step 버튼이 준 한 프레임만 진행한다.
+		return !m_isPaused || m_stepOneFrame;
 	}
 
 	void Engine::Impl::UpdateSceneAndScript(float dt)
@@ -94,6 +100,10 @@ namespace Alice
 			// 씬 로드/전환 시 UI 시간(gTime.x) 리셋 → DieLine 등 시간 기반 쉐이더가 다시 정상 재생되도록
 			m_aliceUIRenderer.ResetTime();
 
+			// 새 씬은 새로운 스킨드메시 키를 들여올 수 있으므로,
+			// 온디맨드 임포트 시도 캐시를 초기화해 이번 씬에서 다시 시도할 수 있게 한다.
+			m_onDemandMeshAttempted.clear();
+
 			sceneChangedThisFrame = true;
 			m_skipPhysicsNextFrame = true;
 		}
@@ -114,6 +124,16 @@ namespace Alice
 			m_skipPhysicsNextFrame = true;
 			m_physAccum = 0.0f;
 			m_aliceUIRenderer.ResetTime();
+			// 이전 세션이 남긴 게임 시간 정지 상태로 Play가 시작되지 않게 한다.
+			m_stopGameDeltaTime = false;
+		}
+
+		// Stop 시: ESC 일시정지 메뉴 등 게임 스크립트가 걸어둔 시간 정지가
+		// 에디터로 새어 들어와 카메라/시뮬레이션이 굳지 않도록 해제한다.
+		const bool playJustStopped = (m_editorMode && !m_isPlaying && m_prevIsPlaying);
+		if (playJustStopped)
+		{
+			m_stopGameDeltaTime = false;
 		}
 	}
 
@@ -266,6 +286,17 @@ namespace Alice
 		if (!input.IsRightButtonDown())
 			return;
 
+		// 우클릭 비행 모드 중 휠 스크롤로 이동 속도를 조절한다 (Unity 에디터와 동일).
+		{
+			const float wheel = input.GetMouseScrollDelta(); // 1노치 = ±120
+			if (wheel != 0.0f)
+			{
+				const float notches = wheel / 120.0f;
+				m_cameraMoveSpeed *= std::pow(1.1f, notches);
+				m_cameraMoveSpeed = std::clamp(m_cameraMoveSpeed, 0.1f, 100.0f);
+			}
+		}
+
 		XMVECTOR moveDir = XMVectorZero();
 
 		if (input.IsKeyDown(Keyboard::W)) moveDir = XMVectorAdd(moveDir, XMVectorSet(0, 0, 1, 0));
@@ -313,6 +344,8 @@ namespace Alice
 			static_cast<float>(m_width), static_cast<float>(m_height), m_unscaledDeltaTime);
 
 		m_prevIsPlaying = m_isPlaying;
+		// Step은 한 프레임만 진행되어야 하므로 매 프레임 말미에 소비(리셋)한다.
+		m_stepOneFrame = false;
 	}
 
 	//=========================================================

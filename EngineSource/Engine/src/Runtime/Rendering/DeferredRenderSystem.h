@@ -54,6 +54,10 @@ namespace Alice
         /// - 경로가 비거나 로딩 실패 시 false 반환.
         bool PreloadTexture(const std::string& path);
 
+        /// 실패(nullptr)로 캐시된 텍스처 항목만 제거합니다.
+        /// 에디터에서 애셋을 새로 임포트한 뒤 재시도할 수 있게 합니다.
+        void ClearFailedTextures();
+
         /// 디퍼드 렌더링을 수행합니다.
         /// @param world ECS 월드
         /// @param camera 카메라
@@ -111,7 +115,7 @@ namespace Alice
         const DirectX::XMFLOAT3& GetLastCameraPos() const { return m_lastCameraPos; }
 
         /// IBL 세트를 변경합니다.
-        bool SetIblSet(const std::string& iblDir = "Bridge", const std::string& iblName = "bridge", const std::string& iblSuffix = "HDR");
+        bool SetIblSet(const std::string& iblDir = "Bridge", const std::string& iblName = "bridgeEnv", const std::string& iblSuffix = "HDR");
 
         /// 스카이박스 활성화/비활성화를 설정합니다.
         void SetSkyboxEnabled(bool enabled);
@@ -243,7 +247,7 @@ namespace Alice
         bool CreateDepthStencilStates();
         bool CreateInstanceBuffer(std::uint32_t initialCapacity);
         bool EnsureInstanceBufferCapacity(std::size_t requiredCount);
-        bool CreateIblResources(const std::string& iblDir = "Bridge", const std::string& iblName = "bridge", const std::string& iblSuffix = "HDR");
+        bool CreateIblResources(const std::string& iblDir = "Bridge", const std::string& iblName = "bridgeEnv", const std::string& iblSuffix = "HDR");
         bool CreateShadowMapResources();
         bool CreateLocalShadowResources();
         bool CreateToneMappingResources(const std::uint32_t& width, const std::uint32_t& height);

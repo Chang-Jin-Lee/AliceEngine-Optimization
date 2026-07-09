@@ -3,6 +3,7 @@
 
 #include "Runtime/Resources/ResourceManager.h"
 #include "Runtime/Foundation/Logger.h"
+#include "Runtime/Scripting/ScriptDomain.h"
 #include "Runtime/Scripting/ScriptHotReload.h"
 
 #include "ThirdParty/json/json.hpp"
@@ -779,7 +780,10 @@ namespace Alice
 					// Release 에디터에서는 빌드 전에 Play 중지 + 스크립트 언로드로 파일 잠금 해제
 					if (m_isPlayingPtr && *m_isPlayingPtr)
 						*m_isPlayingPtr = false;
-					ScriptHotReload_Unload();
+					if (m_worldPtr) // BuildGameWindow가 World 접근자를 이미 가지고 있는지 확인
+						ScriptDomain::Unload(*m_worldPtr);
+					else
+						ScriptHotReload_Unload();
 #endif
 
 					// 1) 빌드 설정 파일 저장 (JSON)

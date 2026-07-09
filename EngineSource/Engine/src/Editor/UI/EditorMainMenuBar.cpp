@@ -1,9 +1,11 @@
 #include "Editor/Core/EditorCore.h"
 #include "Editor/Core/EditorCommands.h"
 #include "Editor/Core/EditorUIState.h"
+#include "Editor/Core/EditorUndoRedo.h"
 #include "Editor/Scripting/ScriptReloadHelpers.h"
 
 #include "Runtime/Resources/ResourceManager.h"
+#include "Runtime/Resources/SceneFile.h"
 #include "Runtime/Importing/FbxImporter.h"
 #include "Runtime/Importing/FbxAsset.h"
 #include "Runtime/Importing/FbxModel.h"
@@ -35,6 +37,9 @@ namespace Alice
 		float deltaTime,
 		float fps,
 		bool& isPlaying,
+		bool& isPaused,
+		bool& stepOneFrame,
+		std::string& playModeSnapshot,
 		EntityId& selectedEntity,
 		bool& useForwardRendering,
 		bool& isDebugDraw)
@@ -45,7 +50,7 @@ namespace Alice
 		ImGui::Text("AliceRenderer");
 		ImGui::Separator();
 
-		// Play / Stop 토글 버튼
+		// Play / Pause·Resume / Step / Stop 버튼 (Unity 스타일)
 		if (!isPlaying)
 		{
 			if (ImGui::Button("Play"))
@@ -63,15 +68,56 @@ namespace Alice
 				else
 				{
 					ALICE_LOG_INFO("Play button: Script reload succeeded. Starting game...");
+
+					// Unity처럼: Play 순간의 월드를 스냅샷 → Stop 시 이 상태로 복원한다.
+					std::string snapshot;
+					if (SceneFile::SaveToJsonString(world, snapshot))
+						playModeSnapshot = std::move(snapshot);
+					else
+					{
+						playModeSnapshot.clear();
+						ALICE_LOG_WARN("Play snapshot failed. Stop will not restore the scene.");
+					}
+
+					isPaused = false;
+					stepOneFrame = false;
 					isPlaying = true;
 				}
 			}
 		}
 		else
 		{
+			if (ImGui::Button(isPaused ? "Resume" : "Pause"))
+				isPaused = !isPaused;
+
+			ImGui::SameLine();
+			ImGui::BeginDisabled(!isPaused);
+			if (ImGui::Button("Step"))
+				stepOneFrame = true; // 다음 프레임 한 번만 UpdateShouldUpdateFromScene()을 통과시킴
+			ImGui::EndDisabled();
+
+			ImGui::SameLine();
 			if (ImGui::Button("Stop"))
 			{
 				isPlaying = false;
+				isPaused = false;
+				stepOneFrame = false;
+
+				// Play 스냅샷이 있으면 그 시점의 월드로 복원한다 (Unity의 Stop과 동일).
+				if (!playModeSnapshot.empty())
+				{
+					if (SceneFile::LoadFromJsonString(world, playModeSnapshot))
+					{
+						selectedEntity = InvalidEntityId;
+						EnsureSkinnedMeshesRegistered(world);
+						ClearUndoStack(); // 월드 리로드로 기존 EntityId가 무효화되므로 Undo 스택도 초기화
+					}
+					else
+					{
+						ALICE_LOG_ERRORF("Stop: Play snapshot restore failed. Scene left in Play-end state.");
+					}
+					playModeSnapshot.clear();
+				}
 			}
 		}
 

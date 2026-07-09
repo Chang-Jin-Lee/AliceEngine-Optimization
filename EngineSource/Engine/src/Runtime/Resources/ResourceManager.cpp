@@ -218,6 +218,12 @@ namespace Alice
         {
             if (m_gameMode)
             {
+                {
+                    std::lock_guard<std::mutex> lock(m_cacheMutex);
+                    if (auto it = m_chunkPathCache.find(s); it != m_chunkPathCache.end())
+                        return it->second;
+                }
+
                 const std::string rest = s.substr(std::string_view("Assets/").size());
                 auto path = Chunk0PathForMetasRel(rest);
                 std::error_code ec;
@@ -227,8 +233,11 @@ namespace Alice
                     auto legacyPath = Chunk0PathFromFileId(MetasDir(), legacyId);
                     ec.clear();
                     if (std::filesystem::exists(legacyPath, ec))
-                        return legacyPath;
+                        path = legacyPath;
                 }
+
+                std::lock_guard<std::mutex> lock(m_cacheMutex);
+                m_chunkPathCache[s] = path;
                 return path;
             }
             return (m_rootDir / p).lexically_normal();
@@ -244,6 +253,12 @@ namespace Alice
         {
             if (m_gameMode)
             {
+                {
+                    std::lock_guard<std::mutex> lock(m_cacheMutex);
+                    if (auto it = m_chunkPathCache.find(s); it != m_chunkPathCache.end())
+                        return it->second;
+                }
+
                 const std::string rest = s.substr(std::string_view("Resource/").size());
                 auto path = Chunk0PathForResourceRel(rest);
                 std::error_code ec;
@@ -253,8 +268,11 @@ namespace Alice
                     auto legacyPath = Chunk0PathFromFileId(CookedDir(), legacyId);
                     ec.clear();
                     if (std::filesystem::exists(legacyPath, ec))
-                        return legacyPath;
+                        path = legacyPath;
                 }
+
+                std::lock_guard<std::mutex> lock(m_cacheMutex);
+                m_chunkPathCache[s] = path;
                 return path;
             }
             return (m_rootDir / p).lexically_normal();
@@ -273,8 +291,62 @@ namespace Alice
 
     void ResourceManager::Clear()
     {
-        // 아직 구체적인 리소스는 없으므로 빈 구현입니다.
-        // 이후 텍스처/메시/셰이더 등을 추가할 때 이곳에서 정리합니다.
+        std::lock_guard<std::mutex> lock(m_cacheMutex);
+        m_blobCache.clear();
+        m_pathToHash.clear();
+        m_missingPaths.clear();
+        m_lruList.clear();
+        m_lruIndex.clear();
+        m_lruBytes = 0;
+        m_chunkPathCache.clear();
+    }
+
+    void ResourceManager::TouchLru(std::uint64_t hash,
+                                   const std::shared_ptr<const std::vector<std::uint8_t>>& blob) const
+    {
+        // 주의: 호출자가 m_cacheMutex를 이미 잠갔다고 가정한다.
+        if (auto it = m_lruIndex.find(hash); it != m_lruIndex.end())
+        {
+            m_lruList.splice(m_lruList.begin(), m_lruList, it->second); // 앞으로 이동
+            return;
+        }
+
+        m_lruList.emplace_front(hash, blob);
+        m_lruIndex[hash] = m_lruList.begin();
+        m_lruBytes += blob->size();
+
+        while (m_lruBytes > m_lruCapacityBytes && !m_lruList.empty())
+        {
+            auto& back = m_lruList.back();
+            m_lruBytes -= back.second->size();
+            m_lruIndex.erase(back.first);
+            m_lruList.pop_back();
+        }
+    }
+
+    std::shared_ptr<const std::vector<std::uint8_t>> ResourceManager::MarkMissing(const std::string& logicalKey) const
+    {
+        bool firstTime = false;
+        {
+            std::lock_guard<std::mutex> lock(m_cacheMutex);
+            firstTime = m_missingPaths.insert(logicalKey).second;
+        }
+        if (firstTime)
+            ALICE_LOG_WARN("ResourceManager: load failed (cached as missing, will not retry): \"%s\"", logicalKey.c_str());
+        return nullptr;
+    }
+
+    void ResourceManager::ClearNegativeCache()
+    {
+        {
+            std::lock_guard<std::mutex> lock(m_cacheMutex);
+            m_missingPaths.clear();
+            m_lruList.clear();
+            m_lruIndex.clear();
+            m_lruBytes = 0;
+        }
+        if (m_onNegativeCacheCleared)
+            m_onNegativeCacheCleared();
     }
 
     bool ResourceManager::LoadBinary(const std::filesystem::path& path,
@@ -328,9 +400,14 @@ namespace Alice
                 if (auto it2 = m_blobCache.find(h); it2 != m_blobCache.end())
                 {
                     if (auto sp = it2->second.lock())
+                    {
+                        TouchLru(h, sp);
                         return sp;
+                    }
                 }
             }
+            if (m_missingPaths.count(logicalKey) != 0)
+                return nullptr; // 이미 실패한 경로 — 디스크 접근 없이 즉시 반환
         }
 
         // 1) gameMode: Resource는 청크 스토어에서 로드
@@ -347,9 +424,10 @@ namespace Alice
                     std::lock_guard<std::mutex> lock(m_cacheMutex);
                     m_blobCache[h] = sp;
                     m_pathToHash[logicalKey] = h;
+                    TouchLru(h, sp);
                     return sp;
                 }
-                return nullptr;
+                return MarkMissing(logicalKey);
             }
             if (StartsWith(s, "Resource/"))
             {
@@ -364,11 +442,12 @@ namespace Alice
                     std::lock_guard<std::mutex> lock(m_cacheMutex);
                     m_blobCache[h] = sp;
                     m_pathToHash[logicalKey] = h;
+                    TouchLru(h, sp);
                     return sp;
                 }
-                
+
                 ALICE_LOG_ERRORF("ResourceManager: Chunk not found for \"%s\"", s.c_str());
-                return nullptr;
+                return MarkMissing(logicalKey);
             }
 
             // 그 외 Cooked 경로는 단일 .alice 파일(암호화)로 로드
@@ -378,36 +457,39 @@ namespace Alice
             {
                 std::vector<std::uint8_t> data;
                 if (!LoadBinary(resolved, data, true))
-                    return nullptr;
+                    return MarkMissing(logicalKey);
                 auto sp = std::make_shared<std::vector<std::uint8_t>>(std::move(data));
                 const auto h = ComputeBufferHashSampled(*sp);
                 std::lock_guard<std::mutex> lock(m_cacheMutex);
                 m_blobCache[h] = sp;
                 m_pathToHash[logicalKey] = h;
+                TouchLru(h, sp);
                 return sp;
             }
 
             // 마지막 폴백: 그대로 파일 로드(개발 편의)
             std::vector<std::uint8_t> data;
             if (!LoadBinary(Resolve(normalized), data, false))
-                return nullptr;
+                return MarkMissing(logicalKey);
             auto sp = std::make_shared<std::vector<std::uint8_t>>(std::move(data));
             const auto h = ComputeBufferHashSampled(*sp);
             std::lock_guard<std::mutex> lock(m_cacheMutex);
             m_blobCache[h] = sp;
             m_pathToHash[logicalKey] = h;
+            TouchLru(h, sp);
             return sp;
         }
 
         // 2) editorMode: 원본 파일을 그대로 로드
         std::vector<std::uint8_t> data;
         if (!LoadBinary(Resolve(normalized), data, false))
-            return nullptr;
+            return MarkMissing(logicalKey);
         auto sp = std::make_shared<std::vector<std::uint8_t>>(std::move(data));
         const auto h = ComputeBufferHashSampled(*sp);
         std::lock_guard<std::mutex> lock(m_cacheMutex);
         m_blobCache[h] = sp;
         m_pathToHash[logicalKey] = h;
+        TouchLru(h, sp);
         return sp;
     }
 
@@ -763,6 +845,21 @@ namespace Alice
         }
         if (chunkBytes < 4096) chunkBytes = 4096;
 
+        // 증분 쿠킹: 이전 매니페스트를 읽어 변경 없는 파일은 재암호화를 건너뛴다.
+        nlohmann::json prevManifest;
+        const fs::path cookManifestPath = cookedDirAbs / "CookManifest.json";
+        {
+            std::ifstream mfs(cookManifestPath);
+            if (mfs.is_open())
+            {
+                try { mfs >> prevManifest; }
+                catch (...) { prevManifest = nlohmann::json::object(); }
+            }
+        }
+        if (!prevManifest.is_object()) prevManifest = nlohmann::json::object();
+        nlohmann::json newManifest = nlohmann::json::object();
+        std::size_t skippedCount = 0;
+
         struct ChunkHeader
         {
             char     magic[4];      // "ALIC"
@@ -801,6 +898,43 @@ namespace Alice
             const fs::path outDir = cookedDirAbs / "Chunks" / hexStr.substr(0, 2) / hexStr;
             fs::create_directories(outDir, ec);
             ec.clear();
+
+            // 변경 판정: size+mtime이 매니페스트와 같고 c0000.alice가 존재하면 스킵
+            std::uint64_t srcSize = 0;
+            long long srcMtime = 0;
+            {
+                std::error_code sec;
+                srcSize = static_cast<std::uint64_t>(fs::file_size(inPath, sec));
+                if (sec) srcSize = 0;
+                sec.clear();
+                const auto t = fs::last_write_time(inPath, sec);
+                if (!sec)
+                    srcMtime = static_cast<long long>(t.time_since_epoch().count());
+            }
+
+            if (prevManifest.contains(relStr) && prevManifest[relStr].is_object())
+            {
+                const auto& e = prevManifest[relStr];
+                if (e.value("size", std::uint64_t(0)) == srcSize &&
+                    e.value("mtime", 0ll) == srcMtime &&
+                    e.value("chunkBytes", std::uint64_t(0)) == static_cast<std::uint64_t>(chunkBytes) &&
+                    fs::exists(outDir / "c0000.alice", ec))
+                {
+                    ec.clear();
+                    // chunkCount는 저장값을 신뢰하지 않고 size로부터 재계산한다.
+                    // (손상된 값이 Manifest.alice/ValidateGameData를 오염시키는 것 방지)
+                    const std::uint32_t recomputedChunks =
+                        static_cast<std::uint32_t>((srcSize + chunkBytes - 1) / chunkBytes);
+                    manifestList.push_back({ fileId, recomputedChunks });
+                    newManifest[relStr] = e;
+                    newManifest[relStr]["chunkCount"] = recomputedChunks;
+                    newManifest[relStr]["chunkBytes"] = static_cast<std::uint64_t>(chunkBytes);
+                    ++skippedCount;
+                    ++fileCount;
+                    continue;
+                }
+                ec.clear();
+            }
 
             // 파일 읽기
             std::vector<std::uint8_t> data;
@@ -855,6 +989,16 @@ namespace Alice
                 ALICE_LOG_INFO("  ChunkOut: \"%s\" payload=%u", outPath.string().c_str(), hdr.payloadSize);
             }
 
+            char hexBuf[17] = {};
+            std::snprintf(hexBuf, sizeof(hexBuf), "%016llx", static_cast<unsigned long long>(fileId));
+            newManifest[relStr] = {
+                { "size", originalSize },
+                { "mtime", srcMtime },
+                { "chunkCount", chunkCount },
+                { "chunkBytes", static_cast<std::uint64_t>(chunkBytes) },
+                { "fileId", std::string(hexBuf) }
+            };
+
             ++fileCount;
         }
 
@@ -874,6 +1018,35 @@ namespace Alice
 
             ALICE_LOG_INFO("CookResourceToChunkStore: Manifest saved. entries=%zu", manifestList.size());
         }
+
+        // 소스에서 삭제된 파일의 청크 디렉터리 제거 (이전 매니페스트에만 있는 항목)
+        for (auto it = prevManifest.begin(); it != prevManifest.end(); ++it)
+        {
+            if (newManifest.contains(it.key()))
+                continue;
+            if (!it.value().is_object())
+                continue;
+            const std::string hexStr2 = it.value().value("fileId", "");
+            const bool validHex = hexStr2.size() == 16 &&
+                std::all_of(hexStr2.begin(), hexStr2.end(),
+                            [](unsigned char c) { return std::isxdigit(c) != 0; });
+            if (!validHex)
+                continue; // 변조/손상된 fileId는 절대 경로로 사용하지 않는다
+            const fs::path orphanDir = cookedDirAbs / "Chunks" / hexStr2.substr(0, 2) / hexStr2;
+            std::error_code rec;
+            const auto removed = fs::remove_all(orphanDir, rec);
+            if (!rec && removed > 0)
+                ALICE_LOG_INFO("CookResourceToChunkStore: removed orphan chunks for \"%s\"", it.key().c_str());
+        }
+
+        // 새 매니페스트 저장 (평문 JSON — 쿠킹 메타데이터일 뿐 게임 데이터가 아님)
+        {
+            std::ofstream mfs(cookManifestPath, std::ios::trunc);
+            if (mfs.is_open())
+                mfs << newManifest.dump(1);
+        }
+
+        ALICE_LOG_INFO("CookResourceToChunkStore: incremental skip=%zu / total=%zu", skippedCount, fileCount);
 
         ALICE_LOG_INFO("CookResourceToChunkStore: cooked %zu files into \"%s/Chunks\"",
                        fileCount, cookedDirAbs.string().c_str());

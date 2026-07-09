@@ -29,7 +29,11 @@ namespace Alice
     public:
         RTTR_ENABLE()
     public:
-        virtual ~IScript() = default;
+        IScript();
+        virtual ~IScript();
+
+        IScript(const IScript&) = delete;
+        IScript& operator=(const IScript&) = delete;
 
         /// 스크립트 이름 (디버깅용, typeid로 자동 추출)
         /// - typeid를 사용하여 실제 클래스 이름을 자동으로 반환합니다.

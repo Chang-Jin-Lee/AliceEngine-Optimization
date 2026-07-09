@@ -572,6 +572,11 @@ namespace Alice
 
     void ComputeEffectSystem::Resize(std::uint32_t width, std::uint32_t height)
     {
+        // 창 최소화/뷰포트 미배치 시 0 크기가 들어오면 기존 리소스를 유지한다.
+        // (0 크기로 CreateTexture2D가 실패하면 리소스가 파괴된 채 복구되지 않음)
+        if (width == 0 || height == 0)
+            return;
+
         if (m_width == width && m_height == height)
             return;
 

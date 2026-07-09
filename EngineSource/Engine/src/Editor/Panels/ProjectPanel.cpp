@@ -6,7 +6,12 @@
 
 #include "imgui.h"
 
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
+#include <system_error>
+#include <utility>
+#include <vector>
 
 namespace Alice
 {
@@ -69,7 +74,79 @@ namespace Alice
 			std::filesystem::create_directories(assetsRoot);
 		}
 
-		DrawDirectoryNode(world, selectedEntity, assetsRoot);
+		static char s_searchBuf[128] = {};
+
+		// 검색 결과 캐시: 검색어가 바뀔 때만 디렉터리를 다시 순회한다 (매 프레임 순회 방지)
+		static std::string s_lastSearch;
+		static std::vector<std::pair<std::string, std::filesystem::path>> s_searchResults; // (파일명, 전체 경로)
+		static bool s_forceRescan = false;
+
+		if (ImGui::Button("Refresh"))
+		{
+			ResourceManager::Get().ClearNegativeCache();
+			s_forceRescan = true;
+		}
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(-1.0f);
+		ImGui::InputTextWithHint("##ProjectSearch", "Search assets...", s_searchBuf, sizeof(s_searchBuf));
+
+		const std::string search = s_searchBuf;
+		if (search.empty())
+		{
+			DrawDirectoryNode(world, selectedEntity, assetsRoot);
+		}
+		else
+		{
+			// 부분일치(대소문자 무시) 평면 목록
+			std::string needle = search;
+			std::transform(needle.begin(), needle.end(), needle.begin(),
+			               [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+			// 검색어가 바뀌었거나 새로고침이 눌렸을 때만 디렉터리를 순회한다.
+			if (needle != s_lastSearch || s_forceRescan)
+			{
+				s_searchResults.clear();
+
+				std::error_code ec;
+				for (std::filesystem::recursive_directory_iterator it(assetsRoot, ec), end;
+				     it != end && s_searchResults.size() < 200; it.increment(ec))
+				{
+					if (ec) { ec.clear(); continue; }
+					if (!it->is_regular_file(ec) || ec) { ec.clear(); continue; }
+
+					std::string name = it->path().filename().string();
+					std::string lower = name;
+					std::transform(lower.begin(), lower.end(), lower.begin(),
+					               [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+					if (lower.find(needle) == std::string::npos)
+						continue;
+
+					s_searchResults.emplace_back(std::move(name), it->path());
+				}
+
+				s_lastSearch = needle;
+				s_forceRescan = false;
+			}
+
+			// 렌더링은 캐시된 결과만 사용하고 파일 시스템에 접근하지 않는다.
+			for (size_t i = 0; i < s_searchResults.size(); ++i)
+			{
+				const auto& [name, path] = s_searchResults[i];
+
+				ImGui::PushID(static_cast<int>(i));
+				if (ImGui::Selectable(name.c_str()))
+				{
+					// 기존 트리의 파일 클릭과 동일한 동작이 필요하면
+					// DrawDirectoryNode 내부의 클릭 처리 함수를 재사용한다.
+					// 최소 구현: 선택만 표시.
+				}
+				if (ImGui::IsItemHovered())
+					ImGui::SetTooltip("%s", path.string().c_str());
+				ImGui::PopID();
+			}
+			if (s_searchResults.empty())
+				ImGui::TextDisabled("No results.");
+		}
 
 		ImGui::End();
 	}

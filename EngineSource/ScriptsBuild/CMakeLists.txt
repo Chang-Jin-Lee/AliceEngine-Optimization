@@ -186,10 +186,22 @@ endif()
 
 set_target_properties(AliceScripts PROPERTIES
     OUTPUT_NAME "AliceScripts"
-    # 엔진이 로드하는 위치(build/bin/{Config}/dll/)로 직접 출력
-    # → AliceUserScripts.sln 빌드만 하면 즉시 핫리로드 가능
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${ALICE_ROOT}/build/bin/Debug/dll"
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${ALICE_ROOT}/build/bin/Release/dll"
+    # 엔진이 로드 중인 build/bin/{Config}/dll/ 에 "직접" 출력하면
+    # 에디터가 켜진 상태(DLL 잠김)에서 링크가 실패해 Play가 막힌다.
+    # → 중간 폴더로 출력하고, 아래 POST_BUILD에서 잠겨 있지 않을 때만 복사한다.
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/bin/Debug"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release"
+)
+
+# 에디터가 꺼져 있을 때는 빌드만으로 즉시 핫리로드 위치에 반영되도록 시도 복사.
+# 대상이 잠겨 있으면(에디터 실행 중) 조용히 건너뛰고, 에디터의 Reload Scripts가
+# DLL 언로드 후 중간 폴더에서 복사해 간다.
+add_custom_command(TARGET AliceScripts POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+        -DSRC=$<TARGET_FILE:AliceScripts>
+        -DDST_DIR=${ALICE_ROOT}/build/bin/$<CONFIG>/dll
+        -P "${CMAKE_CURRENT_LIST_DIR}/cmake/TryCopyDll.cmake"
+    VERBATIM
 )
 
 # Debug 빌드: PDB 이름을 (CMake configure 시점 기준) 매번 바꿔서 잠금 문제를 회피합니다.

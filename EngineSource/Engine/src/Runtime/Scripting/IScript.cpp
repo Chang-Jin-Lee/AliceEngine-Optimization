@@ -4,10 +4,21 @@
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Resources/Prefab.h"
 #include "Runtime/Resources/ResourceManager.h"
+#include "Runtime/Scripting/ScriptInstanceTracker.h"
 
 namespace Alice
 {
     // === IScript 기본 헬퍼 구현 ===
+
+    IScript::IScript()
+    {
+        ScriptInstanceTracker::OnCreated(this);
+    }
+
+    IScript::~IScript()
+    {
+        ScriptInstanceTracker::OnDestroyed(this);
+    }
 
     void IScript::SetContext(World* world, EntityId entity)
     {

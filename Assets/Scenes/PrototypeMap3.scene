@@ -1,0 +1,2807 @@
+{
+    "entities": [
+        {
+            "Camera": {
+                "FOV": 60.0,
+                "Far Plane": 1000.0,
+                "Near Plane": 0.10000000149011612,
+                "aspectOverride": 0.0,
+                "primary": true,
+                "useAspectOverride": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 15.0,
+                    "z": -35.0
+                },
+                "rotation": {
+                    "x": 0.6108652353286743,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "10001",
+            "name": "MainCamera"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/door_animation/door_animation_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/door_animation_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 0.289000004529953,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 1.4131379165695184
+            },
+            "SkinnedMesh": {
+                "boneCount": 3,
+                "instanceAssetPath": "Assets/Fbx/door_animation.fbxasset",
+                "meshAssetPath": "door_animation"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -25.0
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": -3.141592502593994,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "4243483917547329205",
+            "name": "Door"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/lattice_left/lattice_left_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/lattice_left_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/lattice_left.fbxasset",
+                "meshAssetPath": "lattice_left"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -13.938711166381836,
+                    "y": 0.0,
+                    "z": -2.4019603729248047
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "1083114627640142784",
+            "guid": "16456579912363176458",
+            "name": "Lattice_left"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/lattice_right/lattice_right_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/lattice_right_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 0.08799999952316284,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/lattice_right.fbxasset",
+                "meshAssetPath": "lattice_right"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 14.0,
+                    "y": 0.001041322946548462,
+                    "z": -0.1854456067085266
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "1083114627640142784",
+            "guid": "1045924062597275803",
+            "name": "Lattice_right"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/candledisk_lright/candledisk_lright_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/candledisk_lright_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/candledisk_lright.fbxasset",
+                "meshAssetPath": "candledisk_lright"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -13.699999809265137,
+                    "y": 0.0,
+                    "z": -2.200000047683716
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "6337040323150835969",
+            "guid": "18135582198892525525",
+            "name": "CandlesLeftSide"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/candledisk_lright/candledisk_lright_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/candledisk_lright_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/candledisk_lright.fbxasset",
+                "meshAssetPath": "candledisk_lright"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 13.699999809265137,
+                    "y": 0.0,
+                    "z": 2.200000047683716
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": -3.141592502593994,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "6337040323150835969",
+            "guid": "13775144865563066327",
+            "name": "CandlesRightSide"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.20000000298023224,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "14017268743757842871",
+            "guid": "6337040323150835969",
+            "name": "Candles"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "14017268743757842871",
+            "guid": "1083114627640142784",
+            "name": "Lattices"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "14017268743757842871",
+            "guid": "11174884080031122622",
+            "name": "Walls"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "14017268743757842871",
+            "name": "Objects"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "14017268743757842871",
+            "guid": "12178483042834025133",
+            "name": "Columns"
+        },
+        {
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "14017268743757842871",
+            "guid": "7579856587036732226",
+            "name": "Pillars"
+        },
+        {
+            "DebugDrawBox": {
+                "boundsMax": {
+                    "x": 5.0,
+                    "y": 5.0,
+                    "z": 5.0
+                },
+                "boundsMin": {
+                    "x": -5.0,
+                    "y": -5.0,
+                    "z": -5.0
+                },
+                "color": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 1.0,
+                    "z": 0.0
+                },
+                "depthTest": false,
+                "enabled": false
+            },
+            "PostProcessVolume": {
+                "blendRadius": 0.0,
+                "blendWeight": 1.0,
+                "boxSize": {
+                    "x": 10.0,
+                    "y": 10.0,
+                    "z": 10.0
+                },
+                "priority": 0,
+                "referenceObjectName": "",
+                "settings": {
+                    "bOverride_BloomDownsample": true,
+                    "bOverride_BloomGaussianIntensity": true,
+                    "bOverride_BloomIntensity": true,
+                    "bOverride_BloomKnee": true,
+                    "bOverride_BloomRadius": true,
+                    "bOverride_BloomThreshold": true,
+                    "bOverride_ColorGradingContrast": false,
+                    "bOverride_ColorGradingGain": false,
+                    "bOverride_ColorGradingGamma": false,
+                    "bOverride_ColorGradingSaturation": false,
+                    "bOverride_EmissiveBloomIntensity": false,
+                    "bOverride_Exposure": true,
+                    "bOverride_ImpactBlurCenterX": false,
+                    "bOverride_ImpactBlurCenterY": false,
+                    "bOverride_ImpactBlurIntensity": false,
+                    "bOverride_ImpactBlurRadius": false,
+                    "bOverride_MaxHDRNits": false,
+                    "bOverride_SplitAmount": false,
+                    "bOverride_SplitAngleDeg": false,
+                    "bOverride_SplitFeather": false,
+                    "bOverride_SplitFxColorA": false,
+                    "bOverride_SplitFxColorB": false,
+                    "bOverride_SplitFxIntensity": false,
+                    "bOverride_SplitFxSpeed": false,
+                    "bOverride_SplitFxTimeSec": false,
+                    "bOverride_SplitFxWidth": false,
+                    "bOverride_SplitLineOffset": false,
+                    "bloomDownsample": 4,
+                    "bloomGaussianIntensity": 1.0,
+                    "bloomIntensity": 0.722000002861023,
+                    "bloomKnee": 1.0,
+                    "bloomRadius": 1.0,
+                    "bloomThreshold": 5.0,
+                    "contrast": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "emissiveBloomIntensity": 1.0,
+                    "exposure": -0.15000000596046448,
+                    "gain": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "gamma": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "impactBlurCenterX": 0.5,
+                    "impactBlurCenterY": 0.5,
+                    "impactBlurIntensity": 0.0,
+                    "impactBlurRadius": 0.25,
+                    "maxHDRNits": 1631.0,
+                    "saturation": {
+                        "x": 0.050193071365356445,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "splitAmount": 0.0,
+                    "splitAngleDeg": 0.0,
+                    "splitFeather": 0.0010000000474974513,
+                    "splitFxColorA": {
+                        "x": 2.799999952316284,
+                        "y": 1.2000000476837158,
+                        "z": 0.44999998807907104
+                    },
+                    "splitFxColorB": {
+                        "x": 0.10000000149011612,
+                        "y": 1.0499999523162842,
+                        "z": 0.949999988079071
+                    },
+                    "splitFxIntensity": 0.0,
+                    "splitFxSpeed": 30.0,
+                    "splitFxTimeSec": 0.0,
+                    "splitFxWidth": 0.009999999776482582,
+                    "splitLineOffset": 0.0
+                },
+                "shape": "Box",
+                "unbound": true,
+                "useReferenceObject": false
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0003711879253387451,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "14017268743757842871",
+            "guid": "9796815844290391592",
+            "name": "PostProcessVolume"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Floor/Floor_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 0.6299999952316284,
+                "assetPath": "Assets/Materials/Floor_0.mat",
+                "color": {
+                    "x": 0.4517374634742737,
+                    "y": 0.4517374634742737,
+                    "z": 0.4517374634742737
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 0.6000000238418579,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20999999344348907,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Floor.fbxasset",
+                "meshAssetPath": "Floor"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -3.2036764423537534e-06,
+                    "y": 0.0,
+                    "z": 2.0
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": -3.141592502593994,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "11174884080031122622",
+            "guid": "18039359480411788712",
+            "name": "ground"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Ceiling/Ceiling_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Ceiling_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Ceiling.fbxasset",
+                "meshAssetPath": "Ceiling"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "11174884080031122622",
+            "guid": "5262849478989718897",
+            "name": "Celing"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/pillar_combined/pillar_combined_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/pillar_combined_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/pillar_combined.fbxasset",
+                "meshAssetPath": "pillar_combined"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 7.0,
+                    "y": 0.0,
+                    "z": 14.0
+                },
+                "rotation": {
+                    "x": 0.01745329238474369,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "7579856587036732226",
+            "guid": "4406104330678111948",
+            "name": "Pillar1"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/pillar_combined/pillar_combined_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/pillar_combined_0.mat",
+                "color": {
+                    "x": 0.9459459185600281,
+                    "y": 0.9459459185600281,
+                    "z": 0.9459459185600281
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.531000018119812,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 1.0,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 1.0,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/pillar_combined.fbxasset",
+                "meshAssetPath": "pillar_combined"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -7.0,
+                    "y": 0.0,
+                    "z": 14.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "7579856587036732226",
+            "guid": "11452570767235718814",
+            "name": "PIllar2"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/pillar_combined/pillar_combined_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/pillar_combined_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/pillar_combined.fbxasset",
+                "meshAssetPath": "pillar_combined"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -7.0,
+                    "y": 0.0,
+                    "z": -14.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "7579856587036732226",
+            "guid": "8966599959307978255",
+            "name": "Pillar3"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/pillar_combined/pillar_combined_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/pillar_combined_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/pillar_combined.fbxasset",
+                "meshAssetPath": "pillar_combined"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 7.0,
+                    "y": 0.0,
+                    "z": -14.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "7579856587036732226",
+            "guid": "782786845806405294",
+            "name": "Pillar4"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Columnside/Columnside_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Columnside_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 5.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Columnside.fbxasset",
+                "meshAssetPath": "Columnside"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -14.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "12178483042834025133",
+            "guid": "13810117213043297275",
+            "name": "ColumnsLeft"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Columnside/Columnside_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Columnside_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Columnside.fbxasset",
+                "meshAssetPath": "Columnside"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 14.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "12178483042834025133",
+            "guid": "8106537454369324329",
+            "name": "ColumnsRight"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Wallleft/Wallleft_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Wallleft_0.mat",
+                "color": {
+                    "x": 1.0,
+                    "y": 0.7699944972991943,
+                    "z": 0.5714285373687744
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Wallleft.fbxasset",
+                "meshAssetPath": "Wallleft"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -14.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "11174884080031122622",
+            "guid": "11502935000902207527",
+            "name": "LeftWall"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Column/Column_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Column_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Column.fbxasset",
+                "meshAssetPath": "Column"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 3.0,
+                    "y": 0.0,
+                    "z": -26.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "12178483042834025133",
+            "guid": "7495705371231573929",
+            "name": "Column0"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Column/Column_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Column_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Column.fbxasset",
+                "meshAssetPath": "Column"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -3.0,
+                    "y": 0.0,
+                    "z": -26.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "12178483042834025133",
+            "guid": "11246616313584515385",
+            "name": "Column1"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Column/Column_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Column_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Column.fbxasset",
+                "meshAssetPath": "Column"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 3.0,
+                    "y": 0.0,
+                    "z": 26.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "12178483042834025133",
+            "guid": "4059176769535395291",
+            "name": "Column2"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Column/Column_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Column_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Column.fbxasset",
+                "meshAssetPath": "Column"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -3.0,
+                    "y": 0.0,
+                    "z": 26.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "12178483042834025133",
+            "guid": "9282713051257213787",
+            "name": "Column3"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/WallDecoback/WallDecoback_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/WallDecoback_0.mat",
+                "color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/WallDecoback.fbxasset",
+                "meshAssetPath": "WallDecoback"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -25.899999618530273
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 3.1415927410125732,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "6337040323150835969",
+            "guid": "11840468274311789283",
+            "name": "WallDecoBack"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/WallDecofront/WallDecofront_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/WallDecofront_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.031000018119812,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.6439999938011169,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/WallDecofront.fbxasset",
+                "meshAssetPath": "WallDecofront"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 25.88945960998535
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": -3.115412712097168,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "6337040323150835969",
+            "guid": "4351914737113957559",
+            "name": "WallDecoFront"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Wallright/Wallright_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Wallright_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Wallright.fbxasset",
+                "meshAssetPath": "Wallright"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 14.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "11174884080031122622",
+            "guid": "4586848638729388310",
+            "name": "RightWall"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Wallfront/Wallfront_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Wallfront_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Wallfront.fbxasset",
+                "meshAssetPath": "Wallfront"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 26.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.01745329238474369,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "11174884080031122622",
+            "guid": "14652613575844964968",
+            "name": "FrontWall"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Wallback/Wallback_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Wallback_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 1.0,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Wallback.fbxasset",
+                "meshAssetPath": "Wallback"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -26.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "11174884080031122622",
+            "guid": "15786066831220701982",
+            "name": "BackWall"
+        },
+        {
+            "SpotLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 0.7705882787704468,
+                    "z": 0.6486486196517944
+                },
+                "enabled": false,
+                "innerAngleDeg": 0.0,
+                "intensity": 7.0,
+                "outerAngleDeg": 89.0,
+                "range": 200.0
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": -75.23699951171875,
+                    "y": 3.692903995513916,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 1.5707963705062866,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "1218006319938424668",
+            "name": "Spot Light"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack_0.mat",
+                "color": {
+                    "x": 0.6486486196517944,
+                    "y": 0.6285647749900818,
+                    "z": 0.5710111260414124
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.019999999552965164,
+                "roughness": 0.5,
+                "shadingMode": 3,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.335999995470047,
+                "toonPbrCut2": 0.5139999985694885,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.4053160115153016
+            },
+            "SkinnedMesh": {
+                "boneCount": 345,
+                "instanceAssetPath": "Assets/Fbx/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack.fbxasset",
+                "meshAssetPath": "Tia_Animaition_Run,Rolling,IDLE,Turn,Attack"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -1.8314673900604248
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 1.5707963705062866,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "4561163280468548929"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 0.5299999713897705,
+                "assetPath": "Assets/Materials/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack_0.mat",
+                "color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.1100000143051147,
+                "envSpecularStrength": 1.2400000095367432,
+                "metalness": 0.0,
+                "normalStrength": 0.4580000042915344,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.003000000026077032,
+                "roughness": 0.0,
+                "shadingMode": 7,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.40700000524520874,
+                "toonPbrCut2": 0.6700000166893005,
+                "toonPbrCut3": 0.9340000152587891,
+                "toonPbrLevel1": 0.0,
+                "toonPbrLevel1Alpha": 0.0,
+                "toonPbrLevel2": 0.4779999852180481,
+                "toonPbrLevel2Alpha": 0.8080000281333923,
+                "toonPbrLevel3": 0.0,
+                "toonPbrLevel3Alpha": 0.6179999709129333,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 0.35499998927116394,
+                "toonSelfShadowStrength": 0.9629999995231628,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.9520558733889015
+            },
+            "SkinnedMesh": {
+                "boneCount": 345,
+                "instanceAssetPath": "Assets/Fbx/Tia_Animaition_Run,Rolling,IDLE,Turn,Attack.fbxasset",
+                "meshAssetPath": "Tia_Animaition_Run,Rolling,IDLE,Turn,Attack"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.9798438549041748
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 1.5707963705062866,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "5395832799453991528"
+        },
+        {
+            "SpotLight": {
+                "castShadow": false,
+                "color": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "enabled": true,
+                "innerAngleDeg": 15.0,
+                "intensity": 1.5,
+                "outerAngleDeg": 30.0,
+                "range": 15.0
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 3.4926819801330566,
+                    "y": 1.7247315645217896,
+                    "z": 0.3679731488227844
+                },
+                "rotation": {
+                    "x": -0.0,
+                    "y": -1.9078441858291626,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "13150058093154699845",
+            "name": "Spot Light"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "Resource/Textures/candledisk_onfloor/candledisk_onfloor_D_0.png",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/candledisk_onfloor_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/candledisk_onfloor.fbxasset",
+                "meshAssetPath": "candledisk_onfloor"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": -0.16576552391052246,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "_parentGuid": "6337040323150835969",
+            "guid": "16152509364114543641",
+            "name": "CandlesOnFloor"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Floor_2c5a00d8_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Floor_2c5a00d8.fbxasset",
+                "meshAssetPath": "Floor_2c5a00d8"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "3383508564772301250"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Wallleft_a2cef029_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Wallleft_a2cef029.fbxasset",
+                "meshAssetPath": "Wallleft_a2cef029"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "5693159000158739344"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/Wallright_300ba513_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/Wallright_300ba513.fbxasset",
+                "meshAssetPath": "Wallright_300ba513"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "16289588967738257986"
+        },
+        {
+            "Material": {
+                "albedoTexturePath": "",
+                "alpha": 1.0,
+                "ambientOcclusion": 1.0,
+                "assetPath": "Assets/Materials/WallDecofront_5dc70259_0.mat",
+                "color": {
+                    "x": 0.699999988079071,
+                    "y": 0.699999988079071,
+                    "z": 0.699999988079071
+                },
+                "emissiveBloom": 1.0,
+                "emissiveColor": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "emissiveIntensity": 0.0,
+                "emissiveTexturePath": "",
+                "envDiffuseStrength": 1.0,
+                "envSpecularStrength": 1.0,
+                "metalness": 0.0,
+                "normalStrength": 1.0,
+                "outlineColor": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "outlineWidth": 0.0,
+                "roughness": 0.5,
+                "shadingMode": -1,
+                "shadowStrength": 1.0,
+                "toonPbrBlur": false,
+                "toonPbrCut1": 0.20000000298023224,
+                "toonPbrCut2": 0.5,
+                "toonPbrCut3": 0.949999988079071,
+                "toonPbrLevel1": 0.10000000149011612,
+                "toonPbrLevel1Alpha": 1.0,
+                "toonPbrLevel2": 0.4000000059604645,
+                "toonPbrLevel2Alpha": 1.0,
+                "toonPbrLevel3": 0.699999988079071,
+                "toonPbrLevel3Alpha": 1.0,
+                "toonPbrRampIntensity": 0.0,
+                "toonPbrStrength": 1.0,
+                "toonSelfShadowStrength": 1.0,
+                "transparent": false
+            },
+            "SkinnedAnimation": {
+                "clipIndex": 0,
+                "playing": true,
+                "speed": 1.0,
+                "timeSec": 0.0
+            },
+            "SkinnedMesh": {
+                "boneCount": 1,
+                "instanceAssetPath": "Assets/Fbx/WallDecofront_5dc70259.fbxasset",
+                "meshAssetPath": "WallDecofront_5dc70259"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                },
+                "visible": true
+            },
+            "guid": "8041182737021870616"
+        }
+    ],
+    "sceneName": "PrototypeMap",
+    "version": 1
+}

@@ -144,7 +144,8 @@ namespace Alice
 		m_editorCore.DrawEditorUI(
 			m_world, m_camera, *m_forwardRenderSystem, *m_deferredRenderSystem, m_sceneManager.get(),
 			m_timer.DeltaTime(), (m_timer.DeltaTime() > 0) ? (1.0f / m_timer.DeltaTime()) : 0.0f,
-			m_isPlaying, shadingMode, m_useFillLight,
+			m_isPlaying, m_isPaused, m_stepOneFrame, m_playModeSnapshot,
+			shadingMode, m_useFillLight,
 			m_selectedEntity, m_viewportPicker, m_cameraMoveSpeed,
 			m_useForwardRendering,
 			m_savedLightingParameters,
@@ -159,6 +160,13 @@ namespace Alice
 		if (static_cast<Impl::ShadingMode>(shadingMode) != m_shadingMode)
 		{
 			m_shadingMode = static_cast<Impl::ShadingMode>(shadingMode);
+		}
+
+		if (m_editorCore.ConsumeDirectSceneLoadFlag())
+		{
+			// File>Open 등 비-Play 직접 씬 로드는 커밋 경로(EngineUpdate.cpp)를 타지 않으므로,
+			// 새 씬 로드 시 온디맨드 임포트 시도 기록을 리셋해, 수정된 애셋이 재시도되도록 한다.
+			m_onDemandMeshAttempted.clear();
 		}
 	}
 
@@ -398,6 +406,11 @@ namespace Alice
 
 			if (!m_skinnedMeshRegistry.Has(comp.meshAssetPath) && !comp.instanceAssetPath.empty())
 			{
+				if (m_onDemandMeshAttempted.count(comp.meshAssetPath) != 0)
+					continue; // 이미 시도한 키 — 매 프레임 재임포트 금지
+
+				m_onDemandMeshAttempted.insert(comp.meshAssetPath);
+
 				ALICE_LOG_INFO("[Engine] On-demand loading mesh: meshKey=\"%s\" instanceAssetPath=\"%s\"",
 					comp.meshAssetPath.c_str(), comp.instanceAssetPath.c_str());
 
@@ -405,6 +418,12 @@ namespace Alice
 					comp.meshAssetPath, comp.instanceAssetPath,
 					m_resourceManager, importer, device
 				);
+
+				if (!m_skinnedMeshRegistry.Has(comp.meshAssetPath))
+				{
+					ALICE_LOG_WARN("[Engine] On-demand mesh key mismatch: requested=\"%s\" was not registered by import. (1회만 시도)",
+						comp.meshAssetPath.c_str());
+				}
 			}
 		}
 	}
@@ -853,7 +872,7 @@ namespace Alice
 		// 현재는 기본적으로 "Bridge" IBL 세트를 사용합니다.
 		// 향후 씬 파일에 IBL 세트 정보를 추가하면 여기서 읽어올 수 있습니다.
 		const std::string iblSuffix = (m_skyboxResolution == 1) ? "MDR" : "HDR";
-		m_forwardRenderSystem->SetIblSet("Bridge", "bridge", iblSuffix);
+		m_forwardRenderSystem->SetIblSet("Bridge", "bridgeEnv", iblSuffix);
 	}
 
 }

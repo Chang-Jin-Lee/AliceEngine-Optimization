@@ -1,5 +1,7 @@
 #include "Runtime/Engine/EngineImpl.h"
 
+#include <shellapi.h>
+
 namespace Alice
 {
 	namespace
@@ -44,6 +46,9 @@ namespace Alice
 		);
 
 		if (!m_hWnd) return false;
+
+		if (m_editorMode)
+			DragAcceptFiles(m_hWnd, TRUE);
 
 		ShowWindow(m_hWnd, nCmdShow);
 		UpdateWindow(m_hWnd);
@@ -189,6 +194,25 @@ namespace Alice
 			m_isRunning = false;
 			PostQuitMessage(0);
 			return 0;
+
+		case WM_DROPFILES:
+		{
+			HDROP drop = reinterpret_cast<HDROP>(wParam);
+			const UINT count = DragQueryFileW(drop, 0xFFFFFFFF, nullptr, 0);
+			std::vector<std::filesystem::path> files;
+			files.reserve(count);
+			for (UINT i = 0; i < count; ++i)
+			{
+				wchar_t buf[MAX_PATH] = {};
+				if (DragQueryFileW(drop, i, buf, MAX_PATH) > 0)
+					files.emplace_back(buf);
+			}
+			DragFinish(drop);
+
+			if (m_dropFilesHandler && !files.empty())
+				m_dropFilesHandler(files);
+			return 0;
+		}
 
 		case WM_INPUT:
 			// Raw Input 처리

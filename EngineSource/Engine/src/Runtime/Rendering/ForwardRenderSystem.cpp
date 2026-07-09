@@ -1047,7 +1047,9 @@ namespace Alice
 
         if (!srv)
         {
-            ALICE_LOG_WARN("[ForwardRenderSystem] Texture load FAILED: \"%s\"", path.c_str());
+            // 실패도 캐시해 매 드로우 재시도를 차단한다. (경고는 이 1회만)
+            m_textureCache.emplace(path, nullptr);
+            ALICE_LOG_WARN("[ForwardRenderSystem] Texture load FAILED (cached, will not retry): \"%s\"", path.c_str());
             return nullptr;
         }
 
@@ -1055,6 +1057,17 @@ namespace Alice
         ALICE_LOG_INFO("[ForwardRenderSystem] Texture loaded: \"%s\"", path.c_str());
 
         return srv.Get();
+    }
+
+    void ForwardRenderSystem::ClearFailedTextures()
+    {
+        for (auto it = m_textureCache.begin(); it != m_textureCache.end();)
+        {
+            if (!it->second.Get())
+                it = m_textureCache.erase(it);
+            else
+                ++it;
+        }
     }
 
     bool ForwardRenderSystem::PreloadTexture(const std::string& path)
