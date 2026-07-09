@@ -160,6 +160,14 @@ namespace Alice
 
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // 패널을 별도 OS 창으로 분리 가능
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			// 분리 창에서는 반투명/라운딩이 OS 창 경계와 어긋나 보이므로 보정
+			ImGuiStyle& style = ImGui::GetStyle();
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
 
 		// 폰트 아틀라스를 모두 지우고, 한글/일본어를 포함한 폰트를 기본 폰트로 사용합니다.
 		io.Fonts->Clear();
@@ -272,6 +280,13 @@ namespace Alice
 
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+		// 멀티 뷰포트: 메인 창 밖으로 분리된 패널들을 갱신/렌더
+		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+		}
 	}
 
 	void EditorCore::StartEngineLogoOverlay(ResourceManager& resources,
