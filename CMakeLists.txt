@@ -720,19 +720,41 @@ endif()
 set(ALICE_VCPKG_BIN_REL "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/bin")
 set(ALICE_VCPKG_BIN_DBG "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/debug/bin")
 
+# vcpkg 포트 버전에 따라 zlib/minizip의 DLL 파일명이 다르다.
+#   zlib    : 구버전 zlib1.dll / zlibd1.dll,  신버전 z.dll / zd.dll
+#   minizip : Release는 minizip.dll, Debug는 minizipd.dll 또는 minizip.dll
+# 이름이 하나라도 틀리면 copy_if_different가 exit 1을 반환하고,
+# MSBuild POST_BUILD 체인이 그 자리에서 중단되어 뒤따르는 PhysX/FMOD 복사까지
+# 통째로 건너뛴다(→ 실행 시 PhysXFoundation_64.dll delay-load 실패).
+# 따라서 하드코딩 대신 실제 존재하는 파일명을 골라 쓴다.
+function(alice_find_dll OUT_VAR DIR)
+    foreach(candidate IN LISTS ARGN)
+        if(EXISTS "${DIR}/${candidate}")
+            set(${OUT_VAR} "${DIR}/${candidate}" PARENT_SCOPE)
+            return()
+        endif()
+    endforeach()
+    message(FATAL_ERROR "[Alice] DLL을 찾을 수 없습니다: ${DIR} 에 [${ARGN}] 중 하나가 있어야 합니다.")
+endfunction()
+
+alice_find_dll(ALICE_ZLIB_DLL_REL    "${ALICE_VCPKG_BIN_REL}" z.dll  zlib1.dll)
+alice_find_dll(ALICE_ZLIB_DLL_DBG    "${ALICE_VCPKG_BIN_DBG}" zd.dll zlibd1.dll)
+alice_find_dll(ALICE_MINIZIP_DLL_REL "${ALICE_VCPKG_BIN_REL}" minizip.dll)
+alice_find_dll(ALICE_MINIZIP_DLL_DBG "${ALICE_VCPKG_BIN_DBG}" minizipd.dll minizip.dll)
+
 # assimp 본체 + assimp가 import하는 의존성
 set(ALICE_ASSIMP_DLLS_RELEASE
     "${ALICE_VCPKG_BIN_REL}/assimp-vc143-mt.dll"
-    "${ALICE_VCPKG_BIN_REL}/zlib1.dll"
-    "${ALICE_VCPKG_BIN_REL}/minizip.dll"
+    "${ALICE_ZLIB_DLL_REL}"
+    "${ALICE_MINIZIP_DLL_REL}"
     "${ALICE_VCPKG_BIN_REL}/poly2tri.dll"
     "${ALICE_VCPKG_BIN_REL}/kubazip.dll"
     "${ALICE_VCPKG_BIN_REL}/pugixml.dll"
 )
 set(ALICE_ASSIMP_DLLS_DEBUG
     "${ALICE_VCPKG_BIN_DBG}/assimp-vc143-mtd.dll"
-    "${ALICE_VCPKG_BIN_DBG}/zlibd1.dll"
-    "${ALICE_VCPKG_BIN_DBG}/minizip.dll"
+    "${ALICE_ZLIB_DLL_DBG}"
+    "${ALICE_MINIZIP_DLL_DBG}"
     "${ALICE_VCPKG_BIN_DBG}/poly2tri.dll"
     "${ALICE_VCPKG_BIN_DBG}/kubazip.dll"
     "${ALICE_VCPKG_BIN_DBG}/pugixml.dll"
