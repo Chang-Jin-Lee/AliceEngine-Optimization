@@ -52,7 +52,7 @@
 - Produces: `Alice::RenderFrameCounters` with `Reset()`, `RecordDraw(bool instanced)`, and `RecordBoneCbUpload(std::uint64_t bytes)`.
 - Produces: CTest target `RenderMetricsTests` and test name `render_metrics_contracts`.
 
-- [ ] **Step 1: Add a failing timestamp conversion test**
+- [x] **Step 1: Add a failing timestamp conversion test**
 
 ```cpp
 #include "Runtime/Rendering/Metrics/GpuProfiler.h"
@@ -104,7 +104,7 @@ int main()
 }
 ```
 
-- [ ] **Step 2: Register and run the failing test target**
+- [x] **Step 2: Register and run the failing test target**
 
 Add the four metric files to `ENGINE_SOURCES`/`ENGINE_HEADERS`, create each `.cpp` as an otherwise empty translation unit that includes its matching header, then add:
 
@@ -132,7 +132,7 @@ cmake --build build --config Release --target RenderMetricsTests
 
 Expected: compilation fails because the declared contracts have no implementation.
 
-- [ ] **Step 3: Add the minimal CPU-only contracts**
+- [x] **Step 3: Add the minimal CPU-only contracts**
 
 Declare `TryTimestampMilliseconds` in `GpuProfiler.h`. Define `RenderFrameCounters` in `RenderStats.h` with these exact fields:
 
@@ -145,7 +145,7 @@ std::uint64_t boneCbBytesUploaded = 0;
 
 Implement reset by value-initializing `*this`, count every draw in `RecordDraw`, count the instanced subset when requested, and increment map count plus bytes in `RecordBoneCbUpload`.
 
-- [ ] **Step 4: Run the CPU-only tests**
+- [x] **Step 4: Run the CPU-only tests**
 
 Run:
 
@@ -172,29 +172,29 @@ Expected: build succeeds and `render_metrics_contracts` passes.
 - Produces: `GpuProfiler::{Initialize,Shutdown,SetEnabled,IsEnabled,BeginFrame,BeginScope,EndScope,EndFrame,Resolve,ScopeMs,LastFrameDisjoint,ResolvedFrameSerial,DiscardedFrameCount,FrameOutcome}`; engine integration calls `BeginFrame(std::uint64_t frameSerial)`.
 - Produces: `ScopedGpuProfile` and `ALICE_GPU_SCOPE(profiler, scope)`.
 
-- [ ] **Step 1: Extend the failing tests for invalid scopes and initial state**
+- [x] **Step 1: Extend the failing tests for invalid scopes and initial state**
 
 Add assertions that a default `GpuProfiler` is disabled, reports zero milliseconds for every valid scope, has no resolved frame serial, and preserves `outMs` only on successful timestamp conversion.
 
-- [ ] **Step 2: Run the tests and confirm the new API is absent**
+- [x] **Step 2: Run the tests and confirm the new API is absent**
 
 Run the Task 1 build command. Expected: compile failure naming the missing `GpuProfiler` API.
 
-- [ ] **Step 3: Implement fixed query storage and initialization**
+- [x] **Step 3: Implement fixed query storage and initialization**
 
 Use `static constexpr std::size_t kBufferedFrames = 4` and a `FrameQueries` containing one `ID3D11Query` disjoint query plus begin/end timestamp pairs for every scope. Create every query in `Initialize`; on any failure call `Shutdown()` and return `false`. Retain the immediate context with `ComPtr`, reset all values in `Shutdown`, and do not allocate in frame methods.
 
-- [ ] **Step 4: Implement issue rules and RAII closure**
+- [x] **Step 4: Implement issue rules and RAII closure**
 
-`BeginFrame(frameSerial)` chooses the next free ring slot, stores the engine-provided serial, begins disjoint, emits the Frame begin timestamp, and clears per-scope used/active flags. If all four slots are still pending, it skips that frame without overwriting data. `BeginScope` rejects `Frame`, `Count`, a second use, and inactive frames; `EndScope` only emits when its matching begin succeeded. `EndFrame` closes any still-active scope with a warning, emits Frame end, ends disjoint, and marks the slot pending.
+`BeginFrame(frameSerial)` chooses the next free ring slot, stores the engine-provided serial, begins disjoint, emits the Frame begin timestamp, and clears per-scope used/active flags. If all four slots are still pending, it skips that frame without overwriting data. `BeginScope` rejects `Frame`, `Count`, a second use, inactive frames, and a user scope opened while another user scope is active; `EndScope` only emits when its matching begin succeeded. `EndFrame` closes any still-active scope with a warning, emits Frame end, ends disjoint, and marks the slot pending.
 
 `ScopedGpuProfile` stores the profiler pointer only when `BeginScope` succeeds and calls `EndScope` in its destructor. The macro must generate a unique local variable using `__LINE__`.
 
-- [ ] **Step 5: Implement non-blocking resolve and disjoint discard**
+- [x] **Step 5: Implement non-blocking resolve and disjoint discard**
 
 Poll pending slots oldest-first with `D3D11_ASYNC_GETDATA_DONOTFLUSH`. If disjoint data, any used timestamp, or any end timestamp returns `S_FALSE`, leave that slot pending and return. If the disjoint result is true or frequency zero, increment the discarded count, mark that serial's outcome `Discarded`, mark the last frame disjoint, clear the slot, and publish no scope values. Otherwise convert every used scope, mark that serial's outcome `Valid`, and atomically publish one complete scope array plus its frame serial. Keep the most recent four serial outcomes in fixed storage so `RenderStats` can gate the matching pipeline query.
 
-- [ ] **Step 6: Run tests and compile the engine target**
+- [x] **Step 6: Run tests and compile the engine target**
 
 Run:
 
@@ -220,27 +220,27 @@ Expected: tests pass and `Engine` compiles without new warnings.
 - Produces: `RenderStatsSnapshot` fields `frameSerial`, counter fields, `iaPrimitives`, `vsInvocations`, `psInvocations`, `cPrimitives`, `cpuFrameMs`, `presentMs`, `vramUsedMB`, `vramBudgetMB`, `workingSetMB`, and `pipelineStatsValid`.
 - Produces: `RenderStats::{Initialize,Shutdown,SetEnabled,IsEnabled,BeginFrame,EndFrame,Resolve,Latest,RecordBoneCbUpload,Draw,DrawIndexed,DrawInstanced,DrawIndexedInstanced}` where `BeginFrame(std::uint64_t frameSerial, double presentMs)` uses the engine serial and `Resolve(const GpuProfiler&)` publishes only GPU-valid frame serials.
 
-- [ ] **Step 1: Add failing disabled/reset and snapshot tests**
+- [x] **Step 1: Add failing disabled/reset and snapshot tests**
 
-Exercise a default `RenderStats` without a D3D device: disabled recording must not change counters; enabling, beginning a frame, recording two draws and one bone upload, and ending a frame must retain the CPU counters in the pending frame. Add a test-only `LatestCpuCountersForTesting()` const accessor under `#if defined(ALICE_METRICS_TESTING)` so production code does not expose incomplete frames.
+Exercise a default `RenderStats` without a D3D device: disabled recording must not change counters; enabling, beginning a frame, recording two draws and one bone upload, and ending a CPU-only frame must publish the complete non-pipeline snapshot through `Latest()`. Add a deterministic ring-state test proving all terminal GPU outcomes are latched before the four-record outcome cache can be overwritten.
 
-- [ ] **Step 2: Run the tests and verify failure**
+- [x] **Step 2: Run the tests and verify failure**
 
 Compile `RenderMetricsTests` with `ALICE_METRICS_TESTING=1`. Expected: compile failure until the RenderStats API exists.
 
-- [ ] **Step 3: Implement fixed pipeline-statistics ring**
+- [x] **Step 3: Implement fixed pipeline-statistics ring**
 
-Create four `D3D11_QUERY_PIPELINE_STATISTICS` queries during `Initialize`. `BeginFrame(frameSerial, presentMs)` resets the current counters, stores the engine-provided serial, records QPC start and present interval, and begins the current query; if all four slots are pending it skips without overwriting. `EndFrame` records QPC duration, ends the query, captures memory, stores all CPU values in that ring slot, and marks it pending. `Resolve(const GpuProfiler&)` checks the matching serial through `GpuProfiler::FrameOutcome`: `Pending`/`Unavailable` waits, `Discarded` clears the stats slot without publishing, and `Valid` polls with `DONOTFLUSH`, maps `IAPrimitives`, `VSInvocations`, `PSInvocations`, and `CPrimitives`, then publishes the entire stored snapshot.
+Create four `D3D11_QUERY_PIPELINE_STATISTICS` queries during `Initialize`. `BeginFrame(frameSerial, presentMs)` resets the current counters, stores the engine-provided serial, records QPC start and present interval, and begins the current query; if all four slots are pending it skips without overwriting. `EndFrame` records QPC duration, ends the query, captures memory, stores all CPU values in that ring slot, and marks it pending. Without an initialized D3D query it publishes a CPU-only snapshot immediately. `Resolve(const GpuProfiler&)` first latches `Valid`/`Discarded` outcomes for every pending stats slot before the profiler's four-record outcome cache can be reused, then polls only the oldest GPU-valid pipeline query with `DONOTFLUSH`. It maps `IAPrimitives`, `VSInvocations`, `PSInvocations`, and `CPrimitives`, then publishes the entire stored snapshot.
 
-- [ ] **Step 4: Implement memory collection without per-frame COM discovery**
+- [x] **Step 4: Implement memory collection without per-frame COM discovery**
 
 During `Initialize`, obtain and retain `IDXGIAdapter3` through `IDXGIDevice::GetAdapter`. During `EndFrame`, call `QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, ...)` and convert `CurrentUsage`/`Budget` to MiB. Use `GetProcessMemoryInfo(GetCurrentProcess(), ...)` for working set. A missing `IDXGIAdapter3` leaves only VRAM fields at zero and does not fail initialization. Link `psapi` for `Launch`, `AlicePlayer`, and `RenderMetricsTests`.
 
-- [ ] **Step 5: Implement centralized Draw wrappers**
+- [x] **Step 5: Implement centralized Draw wrappers**
 
 Every wrapper records exactly one draw when enabled and always forwards the original arguments to `ID3D11DeviceContext`. The two instanced wrappers pass `true` to `RecordDraw`; `Draw` and `DrawIndexed` pass `false`. `RecordBoneCbUpload` updates only after a successful Map.
 
-- [ ] **Step 6: Run tests and build**
+- [x] **Step 6: Run tests and build**
 
 Run:
 
@@ -274,29 +274,29 @@ Expected: test passes, all targets link with `psapi`, and no new warnings appear
 - Produces: engine-owned `GpuProfiler m_gpuProfiler`, `RenderStats m_renderStats`, default-true `bool m_metricsEnabled`, and monotonically increasing `std::uint64_t m_renderFrameSerial`.
 - Produces: `SetRenderStats(RenderStats*)` on the four listed render systems.
 
-- [ ] **Step 1: Add engine-owned services and initialize them after D3D device creation**
+- [x] **Step 1: Add engine-owned services and initialize them after D3D device creation**
 
 Include both metric headers in `EngineImpl.h`. In `InitializeRenderDevice`, after successful device creation, set enabled state on both services and initialize them with `GetDevice()`/`GetImmediateContext()`. Treat query initialization failure as engine initialization failure with a precise log. In `Engine::Shutdown`, call both `Shutdown()` methods before subsystem members and the render device are destroyed.
 
-- [ ] **Step 2: Wrap the frame and nine named render passes**
+- [x] **Step 2: Wrap the frame and nine named render passes**
 
 In `RenderFrame`, increment `m_renderFrameSerial`, call `SetEnabled(m_metricsEnabled)` on both services, then pass that serial to both `BeginFrame` calls before `RenderBeginFrame`. Wrap `RenderMainPass`, `RenderCameraPreview`, `RenderComputeEffects`, `RenderParticleOverlayComposite`, `RenderDebugOverlayComposite`, `RenderGameModeToneMappingAndUI`, `RenderOverlayEffects`, and conditional `RenderEditorDraw` with `ALICE_GPU_SCOPE`. End the GPU/stats frames before `RenderEndFrame`, then call `m_gpuProfiler.Resolve()` followed by `m_renderStats.Resolve(m_gpuProfiler)` after Present returns so a disjoint GPU frame cannot publish pipeline statistics.
 
-`GpuScope::Frame` is emitted by `GpuProfiler::BeginFrame`/`EndFrame`; it is not wrapped by the macro.
+`GpuScope::Frame` is emitted by `GpuProfiler::BeginFrame`/`EndFrame`; it is not wrapped by the macro. The `MainPass` scope starts before `RenderBeginFrame` so swap-chain target setup and draw-list preparation GPU submissions are included in the named-scope sum.
 
-- [ ] **Step 3: Inject RenderStats into the four systems**
+- [x] **Step 3: Inject RenderStats into the four systems**
 
 Add a forward declaration, `SetRenderStats(RenderStats*)`, and nullable member to each header. Immediately after construction in `InitializeRenderSystems`, pass `&m_renderStats` to forward, deferred, Unity VFX mesh, and trail systems.
 
-- [ ] **Step 4: Route every direct Draw call in the four named systems**
+- [x] **Step 4: Route every direct Draw call in the four named systems**
 
 Replace each live `m_context->Draw*` call in the four `.cpp` files with the matching `m_renderStats->Draw*` wrapper. Preserve the exact original argument order. For defensive standalone use, if the pointer is null, call the original context method. Do not count commented-out calls.
 
-- [ ] **Step 5: Record successful bone constant-buffer uploads**
+- [x] **Step 5: Record successful bone constant-buffer uploads**
 
 In forward and deferred `UpdateBonesCB`, after a successful Map and before Unmap, call `RecordBoneCbUpload(sizeof(CBBones))`. Failed Map calls record neither count nor bytes. The expected upload size is `sizeof(CBBones) == 65,488` bytes.
 
-- [ ] **Step 6: Build all targets and run contract tests**
+- [x] **Step 6: Build all targets and run contract tests**
 
 Run:
 
@@ -320,29 +320,29 @@ Expected: all requested targets build and the contract test passes.
 - Consumes: `GpuProfiler::ScopeMs`, `GpuProfiler::LastFrameDisjoint`, and `RenderStats::Latest`.
 - Produces: checked completion boxes and a single 001 implementation commit.
 
-- [ ] **Step 1: Capture a clean baseline build result**
+- [x] **Step 1: Capture a clean baseline build result**
 
 Run `Build.bat` and save the terminal summary outside the repository working tree. Record warning/error counts from the command output; do not invent counts.
 
-- [ ] **Step 2: Add bounded diagnostic logging and run the editor**
+- [x] **Step 2: Add bounded diagnostic logging and run the editor**
 
-For one local verification build only, log every 120th resolved frame: Frame GPU ms, the sum of eight pass ms values, draw calls, bone upload bytes, CPU ms, Present ms, VRAM, and working set. Start `build/bin/Launch.exe`, allow at least 240 rendered frames, close it, and retain the generated engine log as evidence outside tracked files.
+For one local verification build only, log a bounded sample window containing Frame GPU ms, the sum of eight pass ms values, draw calls, bone upload bytes, CPU ms, Present ms, VRAM, and working set. Start `build/bin/Release/Launch.exe`, allow at least 240 rendered frames, close it, and retain the generated engine log as evidence outside tracked files.
 
 Expected: Frame GPU ms and drawCalls are non-zero, and `passSum / frameGpuMs` is in `[0.8, 1.2]`.
 
-- [ ] **Step 3: Exercise the disjoint discard branch**
+- [x] **Step 3: Exercise the disjoint discard branch**
 
 For one local test build, force the local copy of resolved `D3D11_QUERY_DATA_TIMESTAMP_DISJOINT::Disjoint` to `TRUE` immediately before the discard condition. Run until at least one pending slot resolves and confirm `DiscardedFrameCount()` increments while the previously published scope values remain unchanged. Revert the forced value before the next build.
 
-- [ ] **Step 4: Compare enabled and disabled overhead**
+- [x] **Step 4: Compare enabled and disabled overhead**
 
 Run two Release editor samples over the same scene and fixed 600-frame observation window, first with `m_metricsEnabled = true`, then with a local uncommitted `false`. Compute the arithmetic mean of engine-produced `presentMs` values. Require `abs(enabledMean - disabledMean) / disabledMean <= 0.03`, then restore the default `true`.
 
-- [ ] **Step 5: Remove diagnostics and verify the final diff**
+- [x] **Step 5: Remove diagnostics and verify the final diff**
 
 Remove temporary logging and forced test edits. Use `rg` and `git diff --check` to confirm there is no diagnostic log, forced disjoint assignment, `Sleep`, or busy loop in the implementation. Confirm the only unrelated working-tree entries are the pre-existing user FBX/texture assets.
 
-- [ ] **Step 6: Run final verification**
+- [x] **Step 6: Run final verification**
 
 Run:
 
@@ -353,7 +353,7 @@ ctest --test-dir build -C Release -R render_metrics_contracts --output-on-failur
 
 Expected: Build.bat succeeds without a warning-count increase and the test passes.
 
-- [ ] **Step 7: Mark 001 complete and commit only scoped files**
+- [x] **Step 7: Mark 001 complete and commit only scoped files**
 
 Mark the six completion conditions in `Docs/backlog/001-render-metrics.md` as checked, update this plan's completed steps, inspect `git diff --cached`, and commit without the user's untracked assets:
 

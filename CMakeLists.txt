@@ -183,6 +183,8 @@ set(ENGINE_SOURCES
 
     # 렌더링 계층
     ${ALICE_SRC_DIR}/Runtime/Rendering/Camera.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/GpuProfiler.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/RenderStats.cpp
     ${ALICE_SRC_DIR}/Runtime/Rendering/D3D11/D3D11RenderDevice.cpp
     ${ALICE_SRC_DIR}/Runtime/Rendering/ForwardRenderSystem.cpp
     ${ALICE_SRC_DIR}/Runtime/Rendering/DeferredRenderSystem.cpp
@@ -322,6 +324,8 @@ set(ENGINE_HEADERS
 
     # 렌더링 계층
     ${ALICE_SRC_DIR}/Runtime/Rendering/Camera.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/GpuProfiler.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/RenderStats.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/ForwardRenderSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/DeferredRenderSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/SkinnedMeshRegistry.h
@@ -412,6 +416,23 @@ add_library(Engine STATIC
     ${ENGINE_SOURCES}
     ${ENGINE_HEADERS}
 )
+
+include(CTest)
+if(BUILD_TESTING)
+    add_executable(RenderMetricsTests
+        EngineSource/Engine/tests/RenderMetricsTests.cpp
+        ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/GpuProfiler.cpp
+        ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/RenderStats.cpp
+        ${ALICE_SRC_DIR}/Runtime/Foundation/Logger.cpp
+    )
+    target_include_directories(RenderMetricsTests PRIVATE ${ALICE_SRC_DIR})
+    target_compile_definitions(RenderMetricsTests PRIVATE
+        NOMINMAX
+        ALICE_METRICS_TESTING=1
+    )
+    target_link_libraries(RenderMetricsTests PRIVATE d3d11 dxgi psapi)
+    add_test(NAME render_metrics_contracts COMMAND RenderMetricsTests)
+endif()
 
 # [설정] Engine에 RTTR 연결 (PUBLIC: 엔진을 쓰는 프로젝트도 RTTR 사용 가능)
 target_link_libraries(Engine PUBLIC RTTR::Core)
@@ -676,6 +697,7 @@ foreach(target Launch AlicePlayer)
             dxgi
             dxguid
             d3dcompiler
+            psapi
             directxtk
             directxtex
             $<$<CONFIG:Debug>:assimp-vc143-mtd>

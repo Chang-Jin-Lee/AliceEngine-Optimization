@@ -1094,6 +1094,23 @@ namespace Alice
 			ALICE_LOG_ERRORF("Engine::Initialize: RenderDevice failed.");
 			return false;
 		}
+
+		if (!m_gpuProfiler.Initialize(
+				m_renderDevice->GetDevice(), m_renderDevice->GetImmediateContext()))
+		{
+			ALICE_LOG_ERRORF("Engine::Initialize: GPU profiler query initialization failed.");
+			return false;
+		}
+		if (!m_renderStats.Initialize(
+				m_renderDevice->GetDevice(), m_renderDevice->GetImmediateContext()))
+		{
+			m_gpuProfiler.Shutdown();
+			ALICE_LOG_ERRORF("Engine::Initialize: render statistics query initialization failed.");
+			return false;
+		}
+
+		m_gpuProfiler.SetEnabled(m_metricsEnabled);
+		m_renderStats.SetEnabled(m_metricsEnabled);
 		return true;
 	}
 
@@ -1157,6 +1174,7 @@ namespace Alice
 	bool Engine::Impl::InitializeRenderSystems()
 	{
 		m_forwardRenderSystem = std::make_unique<ForwardRenderSystem>(*m_renderDevice);
+		m_forwardRenderSystem->SetRenderStats(&m_renderStats);
 		m_forwardRenderSystem->SetResourceManager(&m_resourceManager);
 		m_forwardRenderSystem->SetSkinnedMeshRegistry(&m_skinnedMeshRegistry);
 
@@ -1169,6 +1187,7 @@ namespace Alice
 		}
 
 		m_deferredRenderSystem = std::make_unique<DeferredRenderSystem>(*m_renderDevice);
+		m_deferredRenderSystem->SetRenderStats(&m_renderStats);
 		m_deferredRenderSystem->SetResourceManager(&m_resourceManager);
 		m_deferredRenderSystem->SetSkinnedMeshRegistry(&m_skinnedMeshRegistry);
 
@@ -1234,10 +1253,12 @@ namespace Alice
 		}
 
 		m_trailRenderSystem = std::make_unique<TrailEffectRenderSystem>(*m_renderDevice);
+		m_trailRenderSystem->SetRenderStats(&m_renderStats);
 		m_trailRenderSystem->SetResourceManager(&m_resourceManager);
 		if (!m_trailRenderSystem->Initialize()) return false;
 
 		m_unityVfxMeshRenderSystem = std::make_unique<UnityVfxMeshRenderSystem>(*m_renderDevice);
+		m_unityVfxMeshRenderSystem->SetRenderStats(&m_renderStats);
 		if (!m_unityVfxMeshRenderSystem->Initialize())
 		{
 			ALICE_LOG_ERRORF("m_unityVfxMeshRenderSystem->Initialize(): fail...");

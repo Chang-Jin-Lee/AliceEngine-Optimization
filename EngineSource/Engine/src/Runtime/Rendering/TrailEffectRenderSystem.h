@@ -13,6 +13,7 @@
 namespace Alice
 {
 	class ResourceManager;
+	class RenderStats;
 	
 	/// 검기 이펙트 시스템 (트레일 리본 렌더링)
 	class TrailEffectRenderSystem
@@ -27,6 +28,7 @@ namespace Alice
 
 		/// 리소스 매니저를 주입합니다.
 		void SetResourceManager(ResourceManager* resources) { m_resources = resources; }
+		void SetRenderStats(RenderStats* stats) { m_renderStats = stats; }
 
 		/// World에서 SwordEffectComponent를 가진 모든 엔티티를 렌더링합니다.
 		void Render(const World& world, const Camera& camera);
@@ -65,10 +67,12 @@ namespace Alice
 		bool EnsureVertexBufferSize(std::size_t vertexCount);
 		bool LoadTexture();
 		bool CreateDefaultTexture(); // 텍스처 로드 실패 시 기본 1x1 흰색 텍스처 생성
+		void IssueDraw(UINT vertexCount, UINT startVertexLocation);
 
 	private:
 		ID3D11RenderDevice& m_renderDevice;
 		ResourceManager* m_resources{ nullptr };
+		RenderStats* m_renderStats{ nullptr };
 
 		Microsoft::WRL::ComPtr<ID3D11Device>        m_device;
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;

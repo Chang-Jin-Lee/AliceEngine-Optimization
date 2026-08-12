@@ -25,6 +25,7 @@ namespace Alice
     class World;
     class Camera;
     struct ID3D11RenderDevice;
+    class RenderStats;
 
     /// Unity VFX effect.json 중 Mesh/Billboard Renderer 노드를 단순 언릿 렌더링
     /// - Compute 파티클이 아닌 "Mesh/Billboard" 타입을 빠르게 시각화하는 용도
@@ -36,6 +37,7 @@ namespace Alice
         bool Initialize();
         void Render(const World& world, const Camera& camera, float dtSec);
         bool PreloadEffect(const std::string& effectPath);
+        void SetRenderStats(RenderStats* stats) { m_renderStats = stats; }
 
     private:
         struct MeshGpu
@@ -351,8 +353,11 @@ namespace Alice
         bool EnsureMeshLoaded(const std::string& path, MeshGpu& outMesh);
         bool EnsureMaterialLoaded(const std::string& effectBaseDir, const std::string& path, MaterialGpu& outMat);
         const EffectCache* GetEffectCache(const std::string& effectPath);
+        void IssueDraw(UINT vertexCount, UINT startVertexLocation);
+        void IssueDrawIndexed(UINT indexCount, UINT startIndexLocation, INT baseVertexLocation);
 
         ID3D11RenderDevice& m_renderDevice;
+        RenderStats* m_renderStats{ nullptr };
         Microsoft::WRL::ComPtr<ID3D11Device> m_device;
         Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;
 

@@ -8,6 +8,8 @@
 #include "Runtime/Rendering/EffectSystem.h"
 #include "Runtime/Rendering/TrailEffectRenderSystem.h"
 #include "Runtime/Rendering/UnityVfxMeshRenderSystem.h"
+#include "Runtime/Rendering/Metrics/GpuProfiler.h"
+#include "Runtime/Rendering/Metrics/RenderStats.h"
 
 // ImGui
 #include "imgui.h"
@@ -175,6 +177,10 @@ namespace Alice
 		float             m_cameraMouseSensitivity = 0.0025f; // 마우스 감도 (라디안/픽셀)
 
 		std::unique_ptr<ID3D11RenderDevice>  m_renderDevice;
+		GpuProfiler m_gpuProfiler;
+		RenderStats m_renderStats;
+		bool m_metricsEnabled = true;
+		std::uint64_t m_renderFrameSerial = 0;
 		std::unique_ptr<ForwardRenderSystem> m_forwardRenderSystem;
 		std::unique_ptr<DeferredRenderSystem> m_deferredRenderSystem;
 		std::unique_ptr<class DebugDrawSystem> m_debugDrawSystem;

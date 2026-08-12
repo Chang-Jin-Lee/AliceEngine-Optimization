@@ -6,6 +6,7 @@
 #include "Runtime/Resources/ResourceManager.h"
 #include "Runtime/Rendering/Camera.h"
 #include "Runtime/Rendering/D3D11/ID3D11RenderDevice.h"
+#include "Runtime/Rendering/Metrics/RenderStats.h"
 #include "Runtime/Foundation/Logger.h"
 
 #include "ThirdParty/json/json.hpp"
@@ -499,6 +500,23 @@ namespace Alice
     {
         m_device = m_renderDevice.GetDevice();
         m_context = m_renderDevice.GetImmediateContext();
+    }
+
+    void UnityVfxMeshRenderSystem::IssueDraw(UINT vertexCount, UINT startVertexLocation)
+    {
+        if (m_renderStats)
+            m_renderStats->Draw(m_context.Get(), vertexCount, startVertexLocation);
+        else
+            m_context.Get()->Draw(vertexCount, startVertexLocation);
+    }
+
+    void UnityVfxMeshRenderSystem::IssueDrawIndexed(
+        UINT indexCount, UINT startIndexLocation, INT baseVertexLocation)
+    {
+        if (m_renderStats)
+            m_renderStats->DrawIndexed(m_context.Get(), indexCount, startIndexLocation, baseVertexLocation);
+        else
+            m_context.Get()->DrawIndexed(indexCount, startIndexLocation, baseVertexLocation);
     }
 
     bool UnityVfxMeshRenderSystem::Initialize()
@@ -1181,7 +1199,7 @@ namespace Alice
                             UINT offset = 0;
                             ID3D11Buffer* vb = m_billboardVB.Get();
                             m_context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-                            m_context->Draw(static_cast<UINT>(verts.size()), 0);
+                            IssueDraw(static_cast<UINT>(verts.size()), 0);
 
                             BindParticlePipeline();
                         }
@@ -1250,7 +1268,7 @@ namespace Alice
                         ID3D11Buffer* ib = mesh.ib.Get();
                         m_context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
                         m_context->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
-                        m_context->DrawIndexed(mesh.indexCount, 0, 0);
+                        IssueDrawIndexed(mesh.indexCount, 0, 0);
                     }
                 }
 
@@ -1372,7 +1390,7 @@ namespace Alice
                                 UINT offset = 0;
                                 ID3D11Buffer* vb = m_trailVB.Get();
                                 m_context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-                                m_context->Draw(static_cast<UINT>(verts.size()), 0);
+                                IssueDraw(static_cast<UINT>(verts.size()), 0);
                             }
                         }
 

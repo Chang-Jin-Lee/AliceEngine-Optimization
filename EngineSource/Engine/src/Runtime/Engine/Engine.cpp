@@ -28,6 +28,10 @@ namespace Alice
 		pImpl->SavePvdSettings(exeDir);
 		pImpl->SaveLightingSettings(exeDir);
 
+		// D3D11 query/context references must be released before the render device.
+		pImpl->m_renderStats.Shutdown();
+		pImpl->m_gpuProfiler.Shutdown();
+
 		// 1) 게임 루프/시스템이 물리 월드 참조 못 하게 먼저 끊기
 		if (pImpl->m_physicsSystem)
 		{

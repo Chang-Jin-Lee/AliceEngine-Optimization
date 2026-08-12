@@ -49,34 +49,73 @@ namespace Alice
 
 		if (!RenderValidateRenderSystems()) return;
 
-		RenderBeginFrame();
+		const std::uint64_t frameSerial = ++m_renderFrameSerial;
+		m_gpuProfiler.SetEnabled(m_metricsEnabled);
+		m_renderStats.SetEnabled(m_metricsEnabled);
+		const bool gpuMetricsFrame = m_gpuProfiler.BeginFrame(frameSerial);
+		const bool renderStatsFrame = gpuMetricsFrame &&
+			m_renderStats.BeginFrame(frameSerial, static_cast<double>(m_timer.DeltaTime()) * 1000.0);
 
-		if (m_editorMode)
 		{
-			RenderEditorUI();
-			RenderEditorDebugBuild();
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::MainPass);
+			// Attribute frame-target setup and any GPU work submitted while preparing
+			// the draw list to MainPass so the named scopes cover the whole GPU frame.
+			RenderBeginFrame();
+
+			if (m_editorMode)
+			{
+				RenderEditorUI();
+				RenderEditorDebugBuild();
+			}
+
+			RenderEnsureAnimationIfNotUpdated();
+			RenderBuildSkinnedDrawList();
+			RenderOnDemandSkinnedMeshLoading();
+
+			// Update에서 애니메이션이 안 돈 프레임을 Render에서 보정하므로, 오디오 위치도 그 이후가 안전
+			RenderAudioUpdate();
+
+			RenderMainPass();
 		}
-
-		RenderEnsureAnimationIfNotUpdated();
-		RenderBuildSkinnedDrawList();
-		RenderOnDemandSkinnedMeshLoading();
-
-		// Update에서 애니메이션이 안 돈 프레임을 Render에서 보정하므로, 오디오 위치도 그 이후가 안전
-		RenderAudioUpdate();
-
-		RenderMainPass();
-		RenderCameraPreview();
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::CameraPreview);
+			RenderCameraPreview();
+		}
 		RenderUnbindDepthOnly();
 
-		RenderComputeEffects();
-		RenderParticleOverlayComposite();
-		RenderDebugOverlayComposite();
-		RenderGameModeToneMappingAndUI();
-		RenderOverlayEffects();
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::ComputeEffects);
+			RenderComputeEffects();
+		}
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::ParticleOverlay);
+			RenderParticleOverlayComposite();
+		}
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::DebugOverlay);
+			RenderDebugOverlayComposite();
+		}
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::ToneMapAndUI);
+			RenderGameModeToneMappingAndUI();
+		}
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::OverlayEffects);
+			RenderOverlayEffects();
+		}
 		if (m_editorMode)
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::EditorDraw);
 			RenderEditorDraw();
+		}
 
+		if (gpuMetricsFrame)
+			m_gpuProfiler.EndFrame();
+		if (renderStatsFrame)
+			m_renderStats.EndFrame();
 		RenderEndFrame();
+		m_gpuProfiler.Resolve();
+		m_renderStats.Resolve(m_gpuProfiler);
 	}
 
 	// =========================

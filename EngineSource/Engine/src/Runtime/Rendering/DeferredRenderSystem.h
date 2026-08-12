@@ -28,6 +28,7 @@ namespace Alice
     class DebugDrawSystem;
     class TrailEffectRenderSystem;
     class UIRenderer;
+    class RenderStats;
     /// 디퍼드 렌더링 시스템입니다.
     /// - G-Buffer 패스: 지오메트리 정보를 G-Buffer에 렌더링
     /// - Deferred Light 패스: G-Buffer를 읽어서 조명 계산
@@ -49,6 +50,8 @@ namespace Alice
 
         /// 스키닝 메시 레지스트리를 주입합니다.
         void SetSkinnedMeshRegistry(SkinnedMeshRegistry* registry) { m_skinnedRegistry = registry; }
+
+        void SetRenderStats(RenderStats* stats) { m_renderStats = stats; }
 
         /// 텍스처를 미리 로드하여 캐시에 보관합니다.
         /// - 경로가 비거나 로딩 실패 시 false 반환.
@@ -333,11 +336,20 @@ namespace Alice
         
         // 텍스처 로딩
         ID3D11ShaderResourceView* GetOrCreateTexture(const std::string& path);
+
+        void IssueDrawIndexed(UINT indexCount, UINT startIndexLocation, INT baseVertexLocation);
+        void IssueDrawIndexedInstanced(
+            UINT indexCountPerInstance,
+            UINT instanceCount,
+            UINT startIndexLocation,
+            INT baseVertexLocation,
+            UINT startInstanceLocation);
         
     private:
         ID3D11RenderDevice& m_renderDevice;
         ResourceManager*     m_resources { nullptr };
         SkinnedMeshRegistry* m_skinnedRegistry { nullptr };
+        RenderStats*         m_renderStats { nullptr };
         class TrailEffectRenderSystem* m_trailRenderSystem { nullptr };
 
         Microsoft::WRL::ComPtr<ID3D11Device>           m_device;

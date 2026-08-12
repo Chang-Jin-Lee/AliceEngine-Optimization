@@ -1,5 +1,6 @@
 #include "Runtime/Rendering/DeferredRenderSystem.h"
 #include "Runtime/Rendering/DebugDrawSystem.h"
+#include "Runtime/Rendering/Metrics/RenderStats.h"
 #include "Runtime/Rendering/PostProcessSettings.h"
 
 #include <d3dcompiler.h>
@@ -437,6 +438,43 @@ namespace Alice
     {
         m_device = renderDevice.GetDevice();
         m_context = renderDevice.GetImmediateContext();
+    }
+
+    void DeferredRenderSystem::IssueDrawIndexed(
+        UINT indexCount, UINT startIndexLocation, INT baseVertexLocation)
+    {
+        if (m_renderStats)
+            m_renderStats->DrawIndexed(m_context.Get(), indexCount, startIndexLocation, baseVertexLocation);
+        else
+            m_context.Get()->DrawIndexed(indexCount, startIndexLocation, baseVertexLocation);
+    }
+
+    void DeferredRenderSystem::IssueDrawIndexedInstanced(
+        UINT indexCountPerInstance,
+        UINT instanceCount,
+        UINT startIndexLocation,
+        INT baseVertexLocation,
+        UINT startInstanceLocation)
+    {
+        if (m_renderStats)
+        {
+            m_renderStats->DrawIndexedInstanced(
+                m_context.Get(),
+                indexCountPerInstance,
+                instanceCount,
+                startIndexLocation,
+                baseVertexLocation,
+                startInstanceLocation);
+        }
+        else
+        {
+            m_context.Get()->DrawIndexedInstanced(
+                indexCountPerInstance,
+                instanceCount,
+                startIndexLocation,
+                baseVertexLocation,
+                startInstanceLocation);
+        }
     }
 
     bool DeferredRenderSystem::Initialize(std::uint32_t width, std::uint32_t height)
@@ -2488,7 +2526,7 @@ namespace Alice
                                   1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(),
                                   0.0f, 1.0f, 1.0f, 1.0f,
                                   XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
-                m_context->DrawIndexed(m_cubeIndexCount, 0, 0);
+                IssueDrawIndexed(m_cubeIndexCount, 0, 0);
             }
 
             if (!staticInstancedItems.empty() && m_shadowInstancedVS && m_shadowInstancedInputLayout)
@@ -2535,7 +2573,7 @@ namespace Alice
                                                   1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(),
                                                   0.0f, 1.0f, 1.0f, 1.0f,
                                                   XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
-                                m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
+                                IssueDrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
                                                                 currentKey.startIndex, currentKey.baseVertex, 0);
                             }
 
@@ -2568,7 +2606,7 @@ namespace Alice
                                           1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(),
                                           0.0f, 1.0f, 1.0f, 1.0f,
                                           XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
-                        m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
+                        IssueDrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
                                                         currentKey.startIndex, currentKey.baseVertex, 0);
                     }
                 }
@@ -2668,7 +2706,7 @@ namespace Alice
                 UpdatePerObjectCB(cmd.world, lightView, lightProj, XMFLOAT4(1, 1, 1, 1), 1.0f, 0.0f, 1.0f, false, false, 0,
                                   1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(),
                                   0.0f, 1.0f, 1.0f, 1.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
-                m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
+                IssueDrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
             }
 
             // 2-2) 인스턴싱 배치 렌더링
@@ -2721,7 +2759,7 @@ namespace Alice
                                                   0.0f, 1.0f, 1.0f, 1.0f,
                                                   XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
 
-                                m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(), currentKey.startIndex, currentKey.baseVertex, 0);
+                                IssueDrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(), currentKey.startIndex, currentKey.baseVertex, 0);
                             }
 
                             currentKey = item.key;
@@ -2754,7 +2792,7 @@ namespace Alice
                                           1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(),
                                           0.0f, 1.0f, 1.0f, 1.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
 
-                        m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(), currentKey.startIndex, currentKey.baseVertex, 0);
+                        IssueDrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(), currentKey.startIndex, currentKey.baseVertex, 0);
                     }
                 }
             }
@@ -2957,7 +2995,7 @@ namespace Alice
                     UpdatePerObjectCB(worldM, lightView, lightProj, XMFLOAT4(1, 1, 1, 1), 1.0f, 0.0f, 1.0f, false, false, 0,
                                       1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(),
                                       0.0f, 1.0f, 1.0f, 1.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
-                    m_context->DrawIndexed(m_cubeIndexCount, 0, 0);
+                    IssueDrawIndexed(m_cubeIndexCount, 0, 0);
                 }
             }
 
@@ -2993,7 +3031,7 @@ namespace Alice
                     UpdatePerObjectCB(cmd.world, lightView, lightProj, XMFLOAT4(1, 1, 1, 1), 1.0f, 0.0f, 1.0f, false, false, 0,
                                       1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(),
                                       0.0f, 1.0f, 1.0f, 1.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
-                    m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
+                    IssueDrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
                 }
             }
         };
@@ -3841,7 +3879,7 @@ namespace Alice
                               envDiffuseStrength, envSpecularStrength,
                               outlineColor, outlineWidth,
                               emissiveColor, emissiveIntensity, emissiveBloom, useEmissiveTex);
-            m_context->DrawIndexed(m_cubeIndexCount, 0, 0);
+            IssueDrawIndexed(m_cubeIndexCount, 0, 0);
         }
 
         // 정적 메시 인스턴싱 배치 렌더링 (outline 없는 오브젝트만)
@@ -3893,7 +3931,7 @@ namespace Alice
                                               currentKey.emissiveColor, currentKey.emissiveIntensity, currentKey.emissiveBloom,
                                               (currentKey.useEmissiveTexture != 0));
 
-                            m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
+                            IssueDrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
                                                             currentKey.startIndex, currentKey.baseVertex, 0);
                         }
 
@@ -3932,7 +3970,7 @@ namespace Alice
                                       currentKey.emissiveColor, currentKey.emissiveIntensity, currentKey.emissiveBloom,
                                       (currentKey.useEmissiveTexture != 0));
 
-                    m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
+                    IssueDrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
                                                     currentKey.startIndex, currentKey.baseVertex, 0);
                 }
             }
@@ -4109,7 +4147,7 @@ namespace Alice
                                           cmd.outlineColor, 0.0f,
                                           cmd.emissiveColor, cmd.emissiveIntensity, cmd.emissiveBloom,
                                           (emissive != nullptr));
-                        m_context->DrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
+                        IssueDrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
 
                         // Pass 2. Toon Geometry Outline (노멀 익스트루전 + Front Cull)
                         if (objectShadingMode == 3 && cmd.outlineWidth > 0.0f)
@@ -4127,7 +4165,7 @@ namespace Alice
                                               cmd.outlineColor, cmd.outlineWidth,
                                               XMFLOAT3(1.0f, 1.0f, 1.0f), 0.0f, 0.0f,
                                               false);
-                            m_context->DrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
+                            IssueDrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
                             m_context->RSSetState(m_rasterizerState.Get());
                             m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
                         }
@@ -4149,7 +4187,7 @@ namespace Alice
                                       cmd.outlineColor, 0.0f,
                                       cmd.emissiveColor, cmd.emissiveIntensity, cmd.emissiveBloom,
                                       (emissive != nullptr));
-                    m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
+                    IssueDrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
 
                     // Pass 2. Toon Geometry Outline (노멀 익스트루전 + Front Cull)
                     if (objectShadingMode == 3 && cmd.outlineWidth > 0.0f)
@@ -4167,7 +4205,7 @@ namespace Alice
                                           cmd.outlineColor, cmd.outlineWidth,
                                           XMFLOAT3(1.0f, 1.0f, 1.0f), 0.0f, 0.0f,
                                           false);
-                        m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
+                        IssueDrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
                         m_context->RSSetState(m_rasterizerState.Get());
                         m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
                     }
@@ -4222,7 +4260,7 @@ namespace Alice
                                                   currentKey.emissiveColor, currentKey.emissiveIntensity, currentKey.emissiveBloom,
                                                   (currentKey.useEmissiveTexture != 0));
 
-                                m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
+                                IssueDrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
                                                                 currentKey.startIndex, currentKey.baseVertex, 0);
                             }
 
@@ -4261,7 +4299,7 @@ namespace Alice
                                           currentKey.emissiveColor, currentKey.emissiveIntensity, currentKey.emissiveBloom,
                                           (currentKey.useEmissiveTexture != 0));
 
-                        m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
+                        IssueDrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(),
                                                         currentKey.startIndex, currentKey.baseVertex, 0);
                     }
                 }
@@ -4370,7 +4408,7 @@ namespace Alice
                                               1.0f, 1.0f,
                                               DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
 
-                            m_context->DrawIndexed(sub.indexCount, sub.startIndex, cameraMesh->baseVertex);
+                            IssueDrawIndexed(sub.indexCount, sub.startIndex, cameraMesh->baseVertex);
                         }
                     }
                     else
@@ -4385,7 +4423,7 @@ namespace Alice
                                           1.0f, 1.0f,
                                           DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
 
-                        m_context->DrawIndexed(cameraMesh->indexCount, cameraMesh->startIndex, cameraMesh->baseVertex);
+                        IssueDrawIndexed(cameraMesh->indexCount, cameraMesh->startIndex, cameraMesh->baseVertex);
                     }
                 }
             }
@@ -4530,7 +4568,7 @@ namespace Alice
             ID3D11ShaderResourceView* srvs[] = { decalSrv, m_sceneDepthSRV.Get() };
             m_context->PSSetShaderResources(0, 2, srvs);
 
-            m_context->DrawIndexed(m_cubeIndexCount, 0, 0);
+            IssueDrawIndexed(m_cubeIndexCount, 0, 0);
         }
 
         ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
@@ -4665,7 +4703,7 @@ namespace Alice
 
         m_context->VSSetShader(m_quadVS.Get(), nullptr, 0);
         m_context->PSSetShader(m_deferredLightPS.Get(), nullptr, 0);
-        m_context->DrawIndexed(m_quadIndexCount, 0, 0);
+        IssueDrawIndexed(m_quadIndexCount, 0, 0);
 
         // 리소스 해제
         ID3D11ShaderResourceView* nullSRVs[15] = { nullptr };
@@ -4870,7 +4908,7 @@ namespace Alice
                                           batchKey.envDiffuseStrength, batchKey.envSpecularStrength,
                                           DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
 
-                        m_context->DrawIndexedInstanced(batchKey.indexCount, (UINT)batchInstances.size(),
+                        IssueDrawIndexedInstanced(batchKey.indexCount, (UINT)batchInstances.size(),
                                                         batchKey.startIndex, batchKey.baseVertex, 0);
                     }
 
@@ -4924,7 +4962,7 @@ namespace Alice
                                       batchKey.envDiffuseStrength, batchKey.envSpecularStrength,
                                       DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
 
-                    m_context->DrawIndexedInstanced(batchKey.indexCount, (UINT)batchInstances.size(),
+                    IssueDrawIndexedInstanced(batchKey.indexCount, (UINT)batchInstances.size(),
                                                     batchKey.startIndex, batchKey.baseVertex, 0);
                 }
 
@@ -4966,7 +5004,7 @@ namespace Alice
                                       cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                                       cmd.envDiffuseStrength, cmd.envSpecularStrength,
                                       outlineColor, 0.0f);
-                    m_context->DrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
+                    IssueDrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
                     
                     // Pass 2. 아웃라인 (Toon 모드에서만 활성)
                     if (outlineWidth > 0.0f && objectShadingMode == 3)
@@ -4977,7 +5015,7 @@ namespace Alice
                                           cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                                           cmd.envDiffuseStrength, cmd.envSpecularStrength,
                                           outlineColor, outlineWidth);
-                        m_context->DrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
+                        IssueDrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
                         m_context->RSSetState(m_rasterizerState.Get());
                     }
                 }
@@ -4994,7 +5032,7 @@ namespace Alice
                                   cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                                   cmd.envDiffuseStrength, cmd.envSpecularStrength,
                                   outlineColor, 0.0f);
-                m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
+                IssueDrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
                 
                 // [Pass 2] 아웃라인 (Toon 모드에서만 활성)
                 if (outlineWidth > 0.0f && objectShadingMode == 3)
@@ -5005,7 +5043,7 @@ namespace Alice
                                       cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                                       cmd.envDiffuseStrength, cmd.envSpecularStrength,
                                       outlineColor, outlineWidth);
-                    m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
+                    IssueDrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
                     m_context->RSSetState(m_rasterizerState.Get());
                 }
             }
@@ -5043,7 +5081,7 @@ namespace Alice
                                   batchKey.envDiffuseStrength, batchKey.envSpecularStrength,
                                   DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
 
-                m_context->DrawIndexedInstanced(batchKey.indexCount, (UINT)batchInstances.size(),
+                IssueDrawIndexedInstanced(batchKey.indexCount, (UINT)batchInstances.size(),
                                                 batchKey.startIndex, batchKey.baseVertex, 0);
             }
 
@@ -5134,7 +5172,7 @@ namespace Alice
         m_context->PSSetShaderResources(0, 1, &srv);
         m_context->PSSetSamplers(0, 1, &sam);
 
-        m_context->DrawIndexed(36, 0, 0);
+        IssueDrawIndexed(36, 0, 0);
     }
 
     void DeferredRenderSystem::UpdatePerObjectCB(const DirectX::XMMATRIX& world,
@@ -5481,6 +5519,9 @@ namespace Alice
 
         for (std::uint32_t i = 0; i < cb->boneCount; ++i)
             cb->bones[i] = XMMatrixTranspose(XMLoadFloat4x4(&boneMatrices[i]));
+
+        if (m_renderStats)
+            m_renderStats->RecordBoneCbUpload(sizeof(CBBones));
 
         m_context->Unmap(m_cbBones.Get(), 0);
         m_context->VSSetConstantBuffers(2, 1, m_cbBones.GetAddressOf());
@@ -5980,7 +6021,7 @@ namespace Alice
 
         m_context->VSSetShader(m_quadVS.Get(), nullptr, 0);
         m_context->PSSetShader(m_toneMappingPS.Get(), nullptr, 0);
-        m_context->DrawIndexed(m_quadIndexCount, 0, 0);
+        IssueDrawIndexed(m_quadIndexCount, 0, 0);
 
         // 리소스 해제
         ID3D11ShaderResourceView* nullSRV = nullptr;
@@ -6037,7 +6078,7 @@ namespace Alice
         
         m_context->VSSetShader(m_quadVS.Get(), nullptr, 0);
         m_context->PSSetShader(m_particleOverlayPS.Get(), nullptr, 0);
-        m_context->DrawIndexed(m_quadIndexCount, 0, 0);
+        IssueDrawIndexed(m_quadIndexCount, 0, 0);
         
         // 리소스 해제
         ID3D11ShaderResourceView* nullSRV = nullptr;
@@ -6178,7 +6219,7 @@ namespace Alice
 			m_context->PSSetSamplers(0, 1, &sampler);
 			m_context->PSSetConstantBuffers(3, 1, &cbBloom);
 			m_context->PSSetShader(m_bloomBrightPassPS.Get(), nullptr, 0);
-			m_context->DrawIndexed(m_quadIndexCount, 0, 0);
+			IssueDrawIndexed(m_quadIndexCount, 0, 0);
 
 			m_context->PSSetShaderResources(0, 8, nullSRVs);
 		}
@@ -6225,7 +6266,7 @@ namespace Alice
 			m_context->PSSetShaderResources(0, 1, &inputSRV);
 			m_context->PSSetConstantBuffers(3, 1, &cbBloom);
 			m_context->PSSetShader(m_bloomDownsamplePS.Get(), nullptr, 0);
-			m_context->DrawIndexed(m_quadIndexCount, 0, 0);
+			IssueDrawIndexed(m_quadIndexCount, 0, 0);
 
 			m_context->PSSetShaderResources(0, 8, nullSRVs);
 		//}
@@ -6274,7 +6315,7 @@ namespace Alice
 				m_context->PSSetShaderResources(0, 1, &inputSRV);
 				m_context->PSSetConstantBuffers(3, 1, &cbBloom);
 				m_context->PSSetShader(m_bloomBlurPassPS_H.Get(), nullptr, 0);
-				m_context->DrawIndexed(m_quadIndexCount, 0, 0);
+				IssueDrawIndexed(m_quadIndexCount, 0, 0);
 				
 				m_context->PSSetShaderResources(0, 8, nullSRVs);
 				
@@ -6290,7 +6331,7 @@ namespace Alice
 				m_context->PSSetShaderResources(0, 1, &inputSRV);
 				m_context->PSSetConstantBuffers(3, 1, &cbBloom);
 				m_context->PSSetShader(m_bloomBlurPassPS_V.Get(), nullptr, 0);
-				m_context->DrawIndexed(m_quadIndexCount, 0, 0);
+				IssueDrawIndexed(m_quadIndexCount, 0, 0);
 				
 				m_context->PSSetShaderResources(0, 8, nullSRVs);
 				
@@ -6353,7 +6394,7 @@ namespace Alice
 			m_context->PSSetShaderResources(0, 1, &lowResSRV);
 			m_context->PSSetConstantBuffers(3, 1, &cbBloom);
 			m_context->PSSetShader(m_bloomUpsamplePS.Get(), nullptr, 0);
-			m_context->DrawIndexed(m_quadIndexCount, 0, 0);
+			IssueDrawIndexed(m_quadIndexCount, 0, 0);
 
 			m_context->PSSetShaderResources(0, 8, nullSRVs);
 		}
@@ -6446,7 +6487,7 @@ namespace Alice
 			m_context->PSSetConstantBuffers(2, 1, &cbPostProcess);
 			m_context->PSSetConstantBuffers(3, 1, &cbBloom);
 			m_context->PSSetShader(m_bloomCompositePS.Get(), nullptr, 0);
-			m_context->DrawIndexed(m_quadIndexCount, 0, 0);
+			IssueDrawIndexed(m_quadIndexCount, 0, 0);
 
 			// [중요] SRV 언바인드 (다음 패스에서 RTV로 사용할 수 있도록)
 			ID3D11ShaderResourceView* nullSRVs2[2] = { nullptr, nullptr };
