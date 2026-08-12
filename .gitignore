@@ -8,6 +8,8 @@
 /EngineSource/ScriptsBuild/build/
 # 에디터 실행 시 루트에 생성되는 로컬 설정
 /EngineSettings.json
+# 벤치 산출물 (CSV, 프레임 PNG, 인코딩 영상). Bench/*.json 카메라 테이크는 커밋한다
+/Artifacts/
 # User-specific files
 *.rsuser
 *.suo
