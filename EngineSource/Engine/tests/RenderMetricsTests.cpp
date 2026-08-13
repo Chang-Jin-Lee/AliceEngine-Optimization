@@ -1,5 +1,6 @@
 #include "Runtime/Rendering/Metrics/GpuProfiler.h"
 #include "Runtime/Rendering/Metrics/RenderStats.h"
+#include "Editor/Panels/MetricsOverlay.h"
 
 #include <cmath>
 #include <cstdint>
@@ -107,7 +108,10 @@ int main()
     Check(gateStats.SeedPendingFrameForTesting(12), "discarded stats frame must be seeded");
     Check(gateStats.SeedPendingFrameForTesting(13), "pending stats frame must be seeded");
 
-    gateProfiler.SetFrameOutcomeForTesting(10, Alice::GpuFrameOutcome::Valid);
+    std::array<double, Alice::GpuProfiler::kScopeCount> frame10Scopes{};
+    frame10Scopes[static_cast<std::size_t>(Alice::GpuScope::Frame)] = 10.25;
+    frame10Scopes[static_cast<std::size_t>(Alice::GpuScope::MainPass)] = 8.5;
+    gateProfiler.SetResolvedScopesForTesting(10, frame10Scopes);
     gateProfiler.SetFrameOutcomeForTesting(11, Alice::GpuFrameOutcome::Valid);
     gateProfiler.SetFrameOutcomeForTesting(12, Alice::GpuFrameOutcome::Discarded);
     gateProfiler.SetFrameOutcomeForTesting(13, Alice::GpuFrameOutcome::Pending);
@@ -120,12 +124,70 @@ int main()
     gateProfiler.SetFrameOutcomeForTesting(16, Alice::GpuFrameOutcome::Pending);
     Check(gateStats.GpuValidatedForTesting(10),
         "the oldest valid GPU outcome must be latched while pipeline data is delayed");
+    Check(gateStats.GpuScopesValidForTesting(10) &&
+        std::abs(gateStats.GpuScopeMsForTesting(10, Alice::GpuScope::Frame) - 10.25) < 0.000001,
+        "a stats slot must retain the GPU scopes from its matching frame serial");
     Check(gateStats.GpuValidatedForTesting(11),
         "all valid GPU outcomes must be latched before the outcome ring is overwritten");
     Check(!gateStats.PendingForTesting(12),
         "a discarded GPU outcome must release its matching stats slot");
     Check(gateStats.PendingForTesting(13) && !gateStats.GpuValidatedForTesting(13),
         "a non-terminal GPU outcome must remain pending without validation");
+
+    Alice::MetricsHistory history;
+    for (int value = 1; value <= 241; ++value)
+        history.Push(static_cast<float>(value));
+    Check(history.Count() == Alice::MetricsHistory::kCapacity,
+        "metrics history must retain exactly 240 samples");
+    Check(history.ValueAtOldest(0) == 2.0f && history.ValueAtOldest(239) == 241.0f,
+        "metrics history must preserve chronological order after wrapping");
+
+    Alice::MetricsHistory summaryHistory;
+    for (int value = 1; value <= 200; ++value)
+        summaryHistory.Push(static_cast<float>(value));
+    const Alice::MetricsSummary summary = summaryHistory.CalculateSummary();
+    Check(summary.minimum == 1.0f && summary.maximum == 200.0f,
+        "metrics summary must report exact extrema");
+    Check(std::abs(summary.average - 100.5) < 0.000001,
+        "metrics summary must report the arithmetic mean");
+    Check(std::abs(summary.onePercentLow - 199.5) < 0.000001,
+        "1% low must be the mean of the slowest ceil(1%) frame times");
+
+    Alice::MetricsOverlay frameOverlay;
+    Alice::GpuProfiler frameProfiler;
+    Alice::RenderStatsSnapshot frameSnapshot{};
+    frameSnapshot.frameSerial = 1;
+    frameSnapshot.presentMs = 10.0;
+    frameSnapshot.gpuScopesValid = true;
+    frameSnapshot.gpuScopeMilliseconds[
+        static_cast<std::size_t>(Alice::GpuScope::Frame)] = 7.0;
+    std::array<double, Alice::GpuProfiler::kScopeCount> newerScopes{};
+    newerScopes[static_cast<std::size_t>(Alice::GpuScope::Frame)] = 99.0;
+    frameProfiler.SetResolvedScopesForTesting(99, newerScopes);
+    frameOverlay.Update(frameSnapshot, frameProfiler);
+    Check(std::abs(frameOverlay.ScopeMsForTesting(Alice::GpuScope::Frame) - 7.0) < 0.000001,
+        "the overlay must display GPU scopes coherent with the stats snapshot serial");
+    frameOverlay.Update(frameSnapshot, frameProfiler);
+    frameOverlay.Update(frameSnapshot, frameProfiler);
+    Check(frameOverlay.History().Count() == 3,
+        "metrics history must advance once per rendered frame while queries remain unresolved");
+    Check(frameOverlay.History().ValueAtOldest(2) == 10.0f,
+        "unresolved frames must repeat the most recent valid present time");
+
+    frameSnapshot.frameSerial = 2;
+    frameSnapshot.presentMs = 20.0;
+    frameOverlay.Update(frameSnapshot, frameProfiler);
+    Check(frameOverlay.History().Count() == 4 &&
+        frameOverlay.History().ValueAtOldest(3) == 20.0f,
+        "a newly resolved frame must replace the repeated value on that render frame");
+
+    const std::uint64_t overlayNanoseconds =
+        Alice::MetricsOverlay::MeasureAverageRenderNanosecondsForTesting(10'000);
+    Check(overlayNanoseconds > 0, "metrics overlay render benchmark must execute");
+    Check(overlayNanoseconds < 500'000,
+        "metrics overlay CPU submission must stay below 0.5 ms per frame");
+    std::cout << "metrics overlay average CPU submission: "
+        << overlayNanoseconds << " ns\n";
 
     return failures == 0 ? 0 : 1;
 }

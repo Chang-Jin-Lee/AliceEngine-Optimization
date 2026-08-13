@@ -4,6 +4,7 @@
 
 #include "Runtime/Engine/Engine.h"
 #include "Runtime/Foundation/Logger.h"
+#include "imgui_impl_win32.h"
 
 static void ConfigureDllSearchPath()
 {
@@ -21,6 +22,7 @@ static void ConfigureDllSearchPath()
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow)
 {
+    ImGui_ImplWin32_EnableDpiAwareness();
     ConfigureDllSearchPath();
     Alice::Logger::Initialize();
 

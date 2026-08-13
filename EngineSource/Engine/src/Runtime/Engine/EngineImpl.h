@@ -10,6 +10,7 @@
 #include "Runtime/Rendering/UnityVfxMeshRenderSystem.h"
 #include "Runtime/Rendering/Metrics/GpuProfiler.h"
 #include "Runtime/Rendering/Metrics/RenderStats.h"
+#include "Editor/Panels/MetricsOverlay.h"
 
 // ImGui
 #include "imgui.h"
@@ -179,6 +180,7 @@ namespace Alice
 		std::unique_ptr<ID3D11RenderDevice>  m_renderDevice;
 		GpuProfiler m_gpuProfiler;
 		RenderStats m_renderStats;
+		MetricsOverlay m_metricsOverlay;
 		bool m_metricsEnabled = true;
 		std::uint64_t m_renderFrameSerial = 0;
 		std::unique_ptr<ForwardRenderSystem> m_forwardRenderSystem;

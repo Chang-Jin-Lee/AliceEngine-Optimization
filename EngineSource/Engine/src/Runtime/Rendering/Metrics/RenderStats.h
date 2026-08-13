@@ -7,6 +7,8 @@
 #include <dxgi1_4.h>
 #include <wrl/client.h>
 
+#include "Runtime/Rendering/Metrics/GpuProfiler.h"
+
 namespace Alice
 {
     struct RenderFrameCounters
@@ -47,10 +49,10 @@ namespace Alice
         double vramUsedMB = 0.0;
         double vramBudgetMB = 0.0;
         double workingSetMB = 0.0;
+        std::array<double, GpuProfiler::kScopeCount> gpuScopeMilliseconds{};
         bool pipelineStatsValid = false;
+        bool gpuScopesValid = false;
     };
-
-    class GpuProfiler;
 
     class RenderStats
     {
@@ -103,6 +105,9 @@ namespace Alice
         void LatchGpuOutcomesForTesting(const GpuProfiler& gpuProfiler) noexcept;
         bool PendingForTesting(std::uint64_t frameSerial) const noexcept;
         bool GpuValidatedForTesting(std::uint64_t frameSerial) const noexcept;
+        bool GpuScopesValidForTesting(std::uint64_t frameSerial) const noexcept;
+        double GpuScopeMsForTesting(
+            std::uint64_t frameSerial, GpuScope scope) const noexcept;
 #endif
 
     private:

@@ -61,6 +61,7 @@ namespace Alice
 			// Attribute frame-target setup and any GPU work submitted while preparing
 			// the draw list to MainPass so the named scopes cover the whole GPU frame.
 			RenderBeginFrame();
+			m_editorCore.BeginFrame();
 
 			if (m_editorMode)
 			{
@@ -99,11 +100,18 @@ namespace Alice
 			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::ToneMapAndUI);
 			RenderGameModeToneMappingAndUI();
 		}
+
 		{
 			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::OverlayEffects);
 			RenderOverlayEffects();
 		}
-		if (m_editorMode)
+
+		m_metricsOverlay.Render(MetricsOverlayRuntimeState{
+			false,
+			true,
+			m_width,
+			m_height
+		});
 		{
 			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::EditorDraw);
 			RenderEditorDraw();
@@ -116,6 +124,7 @@ namespace Alice
 		RenderEndFrame();
 		m_gpuProfiler.Resolve();
 		m_renderStats.Resolve(m_gpuProfiler);
+		m_metricsOverlay.Update(m_renderStats.Latest(), m_gpuProfiler);
 	}
 
 	// =========================
@@ -176,8 +185,6 @@ namespace Alice
 	void Engine::Impl::RenderEditorUI()
 	{
 		if (!m_editorMode) return;
-
-		m_editorCore.BeginFrame();
 
 		int shadingMode = static_cast<int>(m_shadingMode);
 		m_editorCore.DrawEditorUI(
@@ -813,9 +820,6 @@ namespace Alice
 
 	void Engine::Impl::RenderEditorDraw()
 	{
-		if (!m_editorMode)
-			return;
-
 		if (m_renderDevice)
 		{
 			auto* ctx = m_renderDevice->GetImmediateContext();

@@ -69,6 +69,9 @@ namespace Alice
         std::uint64_t ResolvedFrameSerial() const noexcept { return m_resolvedFrameSerial; }
         std::uint64_t DiscardedFrameCount() const noexcept { return m_discardedFrameCount; }
         GpuFrameOutcome FrameOutcome(std::uint64_t frameSerial) const noexcept;
+        bool TryFrameScopes(
+            std::uint64_t frameSerial,
+            std::array<double, kScopeCount>& outScopes) const noexcept;
 
 #if defined(ALICE_METRICS_TESTING)
         void BeginFrameForTesting(std::uint64_t frameSerial) noexcept;
@@ -78,6 +81,14 @@ namespace Alice
             std::uint64_t frameSerial, GpuFrameOutcome outcome) noexcept
         {
             PublishOutcome(frameSerial, outcome);
+        }
+        void SetResolvedScopesForTesting(
+            std::uint64_t frameSerial,
+            const std::array<double, kScopeCount>& scopes) noexcept
+        {
+            m_scopeMilliseconds = scopes;
+            m_resolvedFrameSerial = frameSerial;
+            PublishOutcome(frameSerial, GpuFrameOutcome::Valid);
         }
 #endif
 
@@ -104,6 +115,8 @@ namespace Alice
         {
             std::uint64_t frameSerial = 0;
             GpuFrameOutcome outcome = GpuFrameOutcome::Unavailable;
+            std::array<double, kScopeCount> scopeMilliseconds{};
+            bool scopesValid = false;
         };
 
         static bool IsUserScope(GpuScope scope) noexcept;

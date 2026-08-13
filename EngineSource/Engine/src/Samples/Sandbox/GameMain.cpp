@@ -4,6 +4,7 @@
 
 #include "Runtime/Engine/Engine.h"
 #include "Runtime/Foundation/Logger.h"
+#include "imgui_impl_win32.h"
 
 static void ConfigureDllSearchPath()
 {
@@ -24,6 +25,7 @@ static void ConfigureDllSearchPath()
 //   뷰포트에 보이던 게임 화면만 전체 창으로 실행합니다.
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow)
 {
+    ImGui_ImplWin32_EnableDpiAwareness();
     ConfigureDllSearchPath();
 
     // 공용 로거 초기화

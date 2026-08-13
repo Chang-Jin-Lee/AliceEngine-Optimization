@@ -149,7 +149,7 @@ namespace Alice
 		Shutdown();
 	}
 
-	bool EditorCore::Initialize(HWND hwnd, ID3D11RenderDevice& renderDevice)
+	bool EditorCore::Initialize(HWND hwnd, ID3D11RenderDevice& renderDevice, bool editorMode)
 	{
 		if (m_initialized)
 			return true;
@@ -159,8 +159,11 @@ namespace Alice
 		ImGui::StyleColorsDark();
 
 		ImGuiIO& io = ImGui::GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // 패널을 별도 OS 창으로 분리 가능
+		if (editorMode)
+		{
+			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // 패널을 별도 OS 창으로 분리 가능
+		}
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			// 분리 창에서는 반투명/라운딩이 OS 창 경계와 어긋나 보이므로 보정
@@ -176,22 +179,38 @@ namespace Alice
 		baseConfig.MergeMode = false;
 		const std::wstring fontKr =
 			ResourceManager::Get().Resolve("Resource/Fonts/NotoSansKR-Regular.ttf").wstring();
-		io.FontDefault = io.Fonts->AddFontFromFileTTF(
-			Utf8FromWString(fontKr).c_str(),
-			18.0f,
-			&baseConfig,
-			io.Fonts->GetGlyphRangesKorean());
+		const bool hasLooseFontFiles = editorMode && std::filesystem::exists(fontKr);
+		if (hasLooseFontFiles)
+		{
+			io.FontDefault = io.Fonts->AddFontFromFileTTF(
+				Utf8FromWString(fontKr).c_str(),
+				18.0f,
+				&baseConfig,
+				io.Fonts->GetGlyphRangesKorean());
+		}
+		else
+		{
+			// Packaged game resources live in chunk stores and have no loose font path.
+			// The metrics HUD only needs ASCII, so keep game-mode ImGui initialization safe.
+			io.FontDefault = io.Fonts->AddFontDefault(&baseConfig);
+		}
 
-		ImFontConfig jpConfig{};
-		jpConfig.MergeMode = true;
-		jpConfig.PixelSnapH = true;
-		const std::wstring fontJp =
-			ResourceManager::Get().Resolve("Resource/Fonts/meiryo.ttc").wstring();
-		io.Fonts->AddFontFromFileTTF(
-			Utf8FromWString(fontJp).c_str(),
-			18.0f,
-			&jpConfig,
-			io.Fonts->GetGlyphRangesJapanese());
+		if (hasLooseFontFiles)
+		{
+			ImFontConfig jpConfig{};
+			jpConfig.MergeMode = true;
+			jpConfig.PixelSnapH = true;
+			const std::wstring fontJp =
+				ResourceManager::Get().Resolve("Resource/Fonts/meiryo.ttc").wstring();
+			if (std::filesystem::exists(fontJp))
+			{
+				io.Fonts->AddFontFromFileTTF(
+					Utf8FromWString(fontJp).c_str(),
+					18.0f,
+					&jpConfig,
+					io.Fonts->GetGlyphRangesJapanese());
+			}
+		}
 
 		m_hwnd = hwnd;
 		m_renderDevice = &renderDevice;

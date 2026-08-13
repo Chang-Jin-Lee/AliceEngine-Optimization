@@ -289,6 +289,21 @@ namespace Alice
         return record.frameSerial == frameSerial ? record.outcome : GpuFrameOutcome::Unavailable;
     }
 
+    bool GpuProfiler::TryFrameScopes(
+        std::uint64_t frameSerial,
+        std::array<double, kScopeCount>& outScopes) const noexcept
+    {
+        const OutcomeRecord& record = m_outcomes[frameSerial % kBufferedFrames];
+        if (record.frameSerial != frameSerial ||
+            record.outcome != GpuFrameOutcome::Valid || !record.scopesValid)
+        {
+            return false;
+        }
+
+        outScopes = record.scopeMilliseconds;
+        return true;
+    }
+
     bool GpuProfiler::IsUserScope(GpuScope scope) noexcept
     {
         const std::size_t index = ScopeIndex(scope);
@@ -330,6 +345,11 @@ namespace Alice
         OutcomeRecord& record = m_outcomes[frameSerial % kBufferedFrames];
         record.frameSerial = frameSerial;
         record.outcome = outcome;
+        record.scopesValid = outcome == GpuFrameOutcome::Valid;
+        if (record.scopesValid)
+            record.scopeMilliseconds = m_scopeMilliseconds;
+        else
+            record.scopeMilliseconds.fill(0.0);
     }
 
     void GpuProfiler::DiscardSlot(FrameQueries& frame, bool disjoint) noexcept

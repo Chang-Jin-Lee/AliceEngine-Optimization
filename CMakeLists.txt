@@ -119,6 +119,7 @@ set(ENGINE_SOURCES
     ${ALICE_SRC_DIR}/Editor/Panels/GameViewportPanel.cpp
     ${ALICE_SRC_DIR}/Editor/Panels/CameraPanel.cpp
     ${ALICE_SRC_DIR}/Editor/Panels/LightingPanel.cpp
+    ${ALICE_SRC_DIR}/Editor/Panels/MetricsOverlay.cpp
     ${ALICE_SRC_DIR}/Editor/Tools/PvdSettingsWindow.cpp
     ${ALICE_SRC_DIR}/Editor/Tools/BuildGameWindow.cpp
     ${ALICE_SRC_DIR}/Editor/Tools/Blueprint/AnimBlueprintEditor.cpp
@@ -326,6 +327,7 @@ set(ENGINE_HEADERS
     ${ALICE_SRC_DIR}/Runtime/Rendering/Camera.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/GpuProfiler.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/RenderStats.h
+    ${ALICE_SRC_DIR}/Editor/Panels/MetricsOverlay.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/ForwardRenderSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/DeferredRenderSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/SkinnedMeshRegistry.h
@@ -421,6 +423,7 @@ include(CTest)
 if(BUILD_TESTING)
     add_executable(RenderMetricsTests
         EngineSource/Engine/tests/RenderMetricsTests.cpp
+        ${ALICE_SRC_DIR}/Editor/Panels/MetricsOverlay.cpp
         ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/GpuProfiler.cpp
         ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/RenderStats.cpp
         ${ALICE_SRC_DIR}/Runtime/Foundation/Logger.cpp
@@ -430,7 +433,7 @@ if(BUILD_TESTING)
         NOMINMAX
         ALICE_METRICS_TESTING=1
     )
-    target_link_libraries(RenderMetricsTests PRIVATE d3d11 dxgi psapi)
+    target_link_libraries(RenderMetricsTests PRIVATE imgui d3d11 dxgi psapi)
     add_test(NAME render_metrics_contracts COMMAND RenderMetricsTests)
 endif()
 

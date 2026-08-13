@@ -264,7 +264,11 @@ namespace Alice
             const GpuFrameOutcome outcome =
                 gpuProfiler.FrameOutcome(frame.snapshot.frameSerial);
             if (outcome == GpuFrameOutcome::Valid)
-                frame.gpuValidated = true;
+            {
+                frame.snapshot.gpuScopesValid = gpuProfiler.TryFrameScopes(
+                    frame.snapshot.frameSerial, frame.snapshot.gpuScopeMilliseconds);
+                frame.gpuValidated = frame.snapshot.gpuScopesValid;
+            }
             else if (outcome == GpuFrameOutcome::Discarded)
                 frame.pending = false;
         }
@@ -309,6 +313,31 @@ namespace Alice
                 return frame.gpuValidated;
         }
         return false;
+    }
+
+    bool RenderStats::GpuScopesValidForTesting(std::uint64_t frameSerial) const noexcept
+    {
+        for (const FrameSlot& frame : m_frames)
+        {
+            if (frame.snapshot.frameSerial == frameSerial)
+                return frame.snapshot.gpuScopesValid;
+        }
+        return false;
+    }
+
+    double RenderStats::GpuScopeMsForTesting(
+        std::uint64_t frameSerial, GpuScope scope) const noexcept
+    {
+        const std::size_t scopeIndex = static_cast<std::size_t>(scope);
+        if (scopeIndex >= GpuProfiler::kScopeCount)
+            return 0.0;
+
+        for (const FrameSlot& frame : m_frames)
+        {
+            if (frame.snapshot.frameSerial == frameSerial)
+                return frame.snapshot.gpuScopeMilliseconds[scopeIndex];
+        }
+        return 0.0;
     }
 #endif
 

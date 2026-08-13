@@ -1116,18 +1116,19 @@ namespace Alice
 
 	bool Engine::Impl::InitializeEditorCoreIfNeeded()
 	{
-		if (!m_editorMode) return true;
-
 		m_editorCore.SetSkinnedMeshRegistry(&m_skinnedMeshRegistry);
 		m_editorCore.SetInputSystem(&m_inputSystem);
 
-		if (!m_editorCore.Initialize(m_hWnd, *m_renderDevice))
+		if (!m_editorCore.Initialize(m_hWnd, *m_renderDevice, m_editorMode))
 			return false;
 
-		m_editorCore.SetEngineLogoHoldUntilRelease(true);
-		m_editorCore.StartEngineLogoOverlay(m_resourceManager, "Resource/Icon/EngineBanner.png");
-		if (!RenderStartupLogoFrames(0.7f))
-			return false;
+		if (m_editorMode)
+		{
+			m_editorCore.SetEngineLogoHoldUntilRelease(true);
+			m_editorCore.StartEngineLogoOverlay(m_resourceManager, "Resource/Icon/EngineBanner.png");
+			if (!RenderStartupLogoFrames(0.7f))
+				return false;
+		}
 
 		return true;
 	}
@@ -1296,7 +1297,7 @@ namespace Alice
 
 		if (m_forwardRenderSystem)  m_forwardRenderSystem->SetUIRenderer(&m_aliceUIRenderer);
 		if (m_deferredRenderSystem) m_deferredRenderSystem->SetUIRenderer(&m_aliceUIRenderer);
-		if (m_editorMode)          m_editorCore.SetAliceUIRenderer(&m_aliceUIRenderer);
+		m_editorCore.SetAliceUIRenderer(&m_aliceUIRenderer);
 
 		if (m_editorMode)
 		{

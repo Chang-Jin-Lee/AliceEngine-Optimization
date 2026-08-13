@@ -56,6 +56,8 @@ namespace Alice
 		m_gameDeltaTime = m_stopGameDeltaTime ? 0.0f : m_unscaledDeltaTime;
 		outDt = m_gameDeltaTime;
 		m_inputSystem.Update(m_unscaledDeltaTime);
+		if (m_inputSystem.IsKeyPressed(DirectX::Keyboard::Keys::F9))
+			m_metricsOverlay.ToggleVisible();
 		m_animUpdatedThisFrame = false;
 	}
 
