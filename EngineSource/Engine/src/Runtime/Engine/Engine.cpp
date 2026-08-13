@@ -4,10 +4,11 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 namespace Alice
 {
-	Engine::Engine(bool editorMode) : pImpl(std::make_unique<Impl>())
+	Engine::Engine(bool editorMode, CommandLineOptions options) : pImpl(std::make_unique<Impl>())
 	{
 		pImpl->m_editorMode = editorMode;
 		pImpl->m_scriptSystem.SetEditorMode(editorMode);
+		pImpl->m_commandLine = std::move(options);
 	}
 
 	Engine::~Engine()
@@ -89,9 +90,12 @@ namespace Alice
 			pImpl->RenderFrame();
 		}
 
+		pImpl->FinalizeBenchSession();
 		// 종료할때 정리
 		pImpl->m_scriptSystem.OnApplicationQuit(pImpl->m_world);
-		return static_cast<int>(msg.wParam);
+		return pImpl->m_benchExitCode != 0
+			? pImpl->m_benchExitCode
+			: static_cast<int>(msg.wParam);
 	}
 
 	void Engine::StopDeltaTime(bool stop)

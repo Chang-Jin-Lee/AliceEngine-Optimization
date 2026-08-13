@@ -5,6 +5,8 @@
 #include <Windows.h>
 
 #include <cstdint>
+#include <filesystem>
+#include <string>
 
 namespace Alice
 {
@@ -30,6 +32,13 @@ namespace Alice
 
         /// 한 프레임의 렌더링을 종료하고 화면에 표시합니다.
         virtual void EndFrame() = 0;
+
+        virtual void SetVsyncEnabled(bool enabled) = 0;
+        virtual bool IsVsyncEnabled() const = 0;
+        virtual bool CaptureBackBufferPng(
+            const std::filesystem::path& path, std::string& outError) = 0;
+        virtual std::string GetAdapterName() const = 0;
+        virtual std::string GetDriverVersion() const = 0;
     };
 }
 

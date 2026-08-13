@@ -11,6 +11,8 @@
 #include "Runtime/Rendering/Metrics/GpuProfiler.h"
 #include "Runtime/Rendering/Metrics/RenderStats.h"
 #include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
+#include "Runtime/Engine/CommandLineOptions.h"
+#include "Runtime/Engine/BenchCameraTake.h"
 #include "Editor/Panels/MetricsOverlay.h"
 
 // ImGui
@@ -31,6 +33,7 @@
 #include <cmath>       // std::fabsf
 #include <memory>
 #include <fstream>
+#include <map>
 #include <sstream>
 #include "ThirdParty/json/json.hpp"
 
@@ -82,6 +85,7 @@
 #include <dxgi1_3.h>
 #include <unordered_set>
 #include <unordered_map>
+#include <array>
 
 #include "Runtime/Importing/FbxModel.h"
 
@@ -107,6 +111,19 @@ namespace Alice
 
 		std::uint32_t m_width = 1600;
 		std::uint32_t m_height = 900;
+		CommandLineOptions m_commandLine{};
+		BenchCameraTake m_replayTake{};
+		BenchCameraRecorder m_cameraRecorder{};
+		std::ofstream m_benchCsv{};
+		std::string m_benchSceneName;
+		double m_benchElapsedSeconds = 0.0;
+		double m_recordElapsedSeconds = 0.0;
+		std::size_t m_replayFrameIndex = 0;
+		std::uint64_t m_lastCsvFrameSerial = 0;
+		std::uint64_t m_benchRenderedFrames = 0;
+		bool m_benchFinalized = false;
+		int m_benchExitCode = 0;
+		std::map<std::uint64_t, double> m_benchFrameTimes{};
 
 		bool m_borderlessFullscreen = false;
 		RECT m_windowedRect{ 0,0,0,0 };
@@ -249,6 +266,8 @@ namespace Alice
 		bool InitializePreloadAndLoadingScreen(const std::filesystem::path& exeDir);
 		void InitializeCameraAndScriptHotReload();
 		bool InitializeScene(const std::filesystem::path& exeDir);
+		bool InitializeBenchSession();
+		void FinalizeBenchSession();
 		bool InitializePhysicsSystemAndWorldCallbacks();
 		void InitializePostLoadBindings(Engine& owner);
 		void SavePvdSettings(const std::filesystem::path& exeDir);
@@ -271,6 +290,7 @@ namespace Alice
 		void UpdateEditorFreeCam(float dt);
 		void UpdateApplyFinalCameraLookAt();
 		void UpdateUI(float dt);
+		void UpdateBenchCamera();
 		void UpdateHandlePlayStartReset();
 		float UpdateResolvePhysicsDelta(float dt);
 
@@ -305,6 +325,9 @@ namespace Alice
 		void RenderOverlayEffects();
 		void RenderEditorDraw();
 		void RenderEndFrame();
+		void RenderBenchFrameCapture();
+		void RenderBenchMetrics();
+		std::filesystem::path ResolveBenchFramePath(std::uint64_t frameIndex) const;
 		void EnsureSkinnedMeshesRegisteredForWorld();
 		void TrimVideoMemory();
 		void SetUseForwardRendering(bool useForward);

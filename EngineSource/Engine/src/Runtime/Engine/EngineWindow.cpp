@@ -33,13 +33,16 @@ namespace Alice
 
 		// ============================================= 실제 윈도우 크기 계산 =============================================
 		// Client Size -> Window Size
+		const DWORD windowStyle = m_commandLine.benchRequested
+			? (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU)
+			: WS_OVERLAPPEDWINDOW;
 		RECT rc = { 0, 0, static_cast<LONG>(m_width), static_cast<LONG>(m_height) };
-		AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+		AdjustWindowRect(&rc, windowStyle, FALSE);
 
 		// ============================================= 윈도우 생성 =============================================
 		// Engine 포인터 전달
 		m_hWnd = CreateWindowExW(
-			0, kWindowClassName, L"AliceRenderer", WS_OVERLAPPEDWINDOW,
+			0, kWindowClassName, L"AliceRenderer", windowStyle,
 			CW_USEDEFAULT, CW_USEDEFAULT,
 			rc.right - rc.left, rc.bottom - rc.top, // 계산된 너비/높이 바로 사용
 			nullptr, nullptr, m_hInstance, &owner
@@ -89,7 +92,7 @@ namespace Alice
 
 	void Engine::Impl::ToggleBorderlessFullscreen()
 	{
-		if (!m_hWnd)
+		if (!m_hWnd || m_commandLine.benchRequested)
 			return;
 
 		if (!m_borderlessFullscreen)
@@ -148,6 +151,9 @@ namespace Alice
 		switch (message)
 		{
 		case WM_SIZE:
+			// Bench backbuffer dimensions are part of the measurement contract.
+			if (m_commandLine.benchRequested)
+				return 0;
 			if (wParam == SIZE_MINIMIZED)
 			{
 				ReleaseMouseLockOnDeactivate();
@@ -179,12 +185,23 @@ namespace Alice
 		case WM_SYSKEYDOWN:
 			if (wParam == VK_RETURN && (HIWORD(lParam) & KF_ALTDOWN))
 			{
+				if (m_commandLine.benchRequested)
+					return 0;
 				ToggleBorderlessFullscreen();
 				if (m_inputSystem.IsCursorLocked())
 				{
 					m_inputSystem.SetCursorLocked(true);
 				}
 				return 0;
+			}
+			break;
+
+		case WM_SYSCOMMAND:
+			if (m_commandLine.benchRequested)
+			{
+				const WPARAM command = wParam & 0xfff0;
+				if (command == SC_SIZE || command == SC_MINIMIZE || command == SC_MAXIMIZE)
+					return 0;
 			}
 			break;
 

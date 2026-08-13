@@ -33,7 +33,10 @@ namespace Alice
 				UpdateAnimationAndSockets(dt);
 				UpdateCombat(dt);
 
-				UpdateCameraSystems(dt);
+				// Replay owns the complete camera state. Running CameraSystem here would
+				// let live mouse/wheel input mutate ECS camera state and render workload.
+				if (m_commandLine.cameraReplay.empty())
+					UpdateCameraSystems(dt);
 				UpdateSyncPrimaryCameraFromWorld();
 			}
 		}
@@ -45,6 +48,7 @@ namespace Alice
 
 		UpdateApplyFinalCameraLookAt();
 		UpdateUI(dt);
+		UpdateBenchCamera();
 	}
 
 	// =========================
@@ -53,7 +57,10 @@ namespace Alice
 	{
 		m_timer.Tick();
 		m_unscaledDeltaTime = m_timer.DeltaTime();
-		m_gameDeltaTime = m_stopGameDeltaTime ? 0.0f : m_unscaledDeltaTime;
+		const float simulationDelta = !m_commandLine.cameraReplay.empty()
+			? static_cast<float>(m_replayTake.fixedDeltaSeconds)
+			: m_unscaledDeltaTime;
+		m_gameDeltaTime = m_stopGameDeltaTime ? 0.0f : simulationDelta;
 		outDt = m_gameDeltaTime;
 		m_inputSystem.Update(m_unscaledDeltaTime);
 		if (m_inputSystem.IsKeyPressed(DirectX::Keyboard::Keys::F9))
@@ -68,6 +75,8 @@ namespace Alice
 
 	bool Engine::Impl::UpdateShouldUpdateFromScene() const
 	{
+		if (!m_commandLine.cameraReplay.empty())
+			return true;
 		if (!m_editorMode)
 			return true;
 		if (!m_isPlaying)
@@ -282,8 +291,8 @@ namespace Alice
 					const XMVECTOR newCamPos = XMVectorSubtract(targetPosV, XMVectorScale(camForward, focusDistance));
 					XMStoreFloat3(&m_cameraPosition, newCamPos);
 				}
-				else
-				{
+		else if (m_commandLine.cameraReplay.empty())
+		{
 					// 선택 엔티티가 이미 삭제된 경우 선택 상태 정리
 					m_selectedEntity = InvalidEntityId;
 				}
@@ -323,9 +332,40 @@ namespace Alice
 				XMVectorAdd(currentPos, XMVectorScale(worldDir, m_cameraMoveSpeed * dt)));
 		}
 
-		const POINT mouseDelta = input.GetMouseDelta();
-		m_cameraYawRadians += mouseDelta.x * m_cameraMouseSensitivity;
-		m_cameraPitchRadians += mouseDelta.y * m_cameraMouseSensitivity;
+		if (m_commandLine.cameraReplay.empty())
+		{
+			const POINT mouseDelta = input.GetMouseDelta();
+			m_cameraYawRadians += mouseDelta.x * m_cameraMouseSensitivity;
+			m_cameraPitchRadians += mouseDelta.y * m_cameraMouseSensitivity;
+		}
+	}
+
+	void Engine::Impl::UpdateBenchCamera()
+	{
+		if (!m_commandLine.cameraReplay.empty())
+		{
+			CameraTakeFrame frame{};
+			if (!m_replayTake.FrameAt(m_replayFrameIndex, frame))
+				return;
+			m_camera.SetPerspective(
+				frame.fovY,
+				static_cast<float>(m_width) / static_cast<float>((std::max)(m_height, 1u)),
+				m_camera.GetNearPlane(), m_camera.GetFarPlane());
+			m_camera.SetPosition(frame.position);
+			m_camera.SetRotation(frame.rotation);
+			m_cameraPosition = frame.position;
+			const DirectX::XMFLOAT3 rotation = m_camera.GetRotation();
+			m_cameraPitchRadians = rotation.x;
+			m_cameraYawRadians = rotation.y;
+		}
+
+		if (!m_commandLine.cameraRecord.empty())
+		{
+			m_recordElapsedSeconds += static_cast<double>(m_unscaledDeltaTime);
+			m_cameraRecorder.AddSample(m_recordElapsedSeconds, CameraTakeFrame{
+				m_camera.GetPosition(), m_camera.GetRotationQuat(), m_camera.GetFovYRadians()
+			});
+		}
 	}
 
 	void Engine::Impl::UpdateApplyFinalCameraLookAt()

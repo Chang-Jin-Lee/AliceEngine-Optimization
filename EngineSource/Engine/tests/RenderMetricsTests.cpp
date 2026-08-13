@@ -3,6 +3,8 @@
 #include "Editor/Panels/MetricsOverlay.h"
 #include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
 #include "Runtime/Rendering/ShaderCode/DeferredShader.h"
+#include "Runtime/Engine/CommandLineOptions.h"
+#include "Runtime/Engine/BenchCameraTake.h"
 
 #include <cmath>
 #include <cstdint>
@@ -25,6 +27,87 @@ namespace
 
 int main()
 {
+    Alice::CommandLineOptions options{};
+    std::string optionError;
+    Check(Alice::ParseCommandLineOptions({}, options, optionError),
+        "empty command line must preserve normal launch behavior");
+    Check(!options.benchRequested && options.vsyncEnabled &&
+        options.width == 1920 && options.height == 1080 &&
+        options.warmupSeconds == 5.0 && options.frameStride == 1,
+        "bench option defaults must match the documented capture contract");
+
+    const std::vector<std::wstring> benchArgs{
+        L"--scene=#01PrototypeMap.scene", L"--camera-replay=Bench/take.json",
+        L"--legacy", L"--vsync=off", L"--duration=15", L"--warmup=5",
+        L"--csv=Artifacts/bench.csv", L"--width=1280", L"--height=720"
+    };
+    Check(Alice::ParseCommandLineOptions(benchArgs, options, optionError),
+        "documented benchmark arguments must parse");
+    Check(options.benchRequested && options.legacy && !options.vsyncEnabled &&
+        options.scene == std::filesystem::path("Assets/Scenes/#01PrototypeMap.scene") &&
+        options.cameraReplay == std::filesystem::path("Bench/take.json") &&
+        options.csvPath == std::filesystem::path("Artifacts/bench.csv") &&
+        options.durationSeconds == 15.0 && options.width == 1280 && options.height == 720,
+        "parsed benchmark arguments must retain their exact values");
+    Check(!Alice::ParseCommandLineOptions(
+        { L"--camera-record=a.json", L"--camera-replay=b.json" }, options, optionError),
+        "record and replay must be mutually exclusive");
+    Check(!Alice::ParseCommandLineOptions(
+        { L"--csv=a.csv", L"--frames=%06d.png" }, options, optionError),
+        "measurement CSV and PNG capture must be separate runs");
+    Check(!Alice::ParseCommandLineOptions({ L"--frame-stride=0" }, options, optionError),
+        "frame stride zero must be rejected");
+    Check(!Alice::ParseCommandLineOptions({ L"--vsync=maybe" }, options, optionError),
+        "unknown vsync values must be rejected");
+    Check(Alice::ParseCommandLineOptions(
+        { L"--frames=Artifacts/%06d.png", L"--frame-stride=3" }, options, optionError) &&
+        options.framePattern == L"Artifacts/%06d.png" && options.frameStride == 3,
+        "documented PNG capture arguments must parse");
+    Check(!Alice::ParseCommandLineOptions(
+        { L"--camera-record=Bench/take.json" }, options, optionError),
+        "camera recording must require an explicit reproducible scene");
+    Check(Alice::ParseCommandLineOptions(
+        { L"--scene=Nested/Dense.scene", L"--camera-record=Bench/take.json" },
+        options, optionError) &&
+        options.scene == std::filesystem::path("Assets/Scenes/Nested/Dense.scene"),
+        "recording must preserve the complete logical scene path");
+
+    Alice::BenchCameraRecorder recorder;
+    Alice::CameraTakeFrame camera0{};
+    camera0.position = { 0.0f, 0.0f, 0.0f };
+    camera0.rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
+    camera0.fovY = 0.7f;
+    Alice::CameraTakeFrame camera1 = camera0;
+    camera1.position = { 2.0f, 4.0f, 6.0f };
+    camera1.rotation = { 0.0f, 1.0f, 0.0f, 0.0f };
+    camera1.fovY = 0.9f;
+    recorder.AddSample(0.0, camera0);
+    recorder.AddSample(2.0, camera1);
+    const Alice::BenchCameraTake resampled = recorder.BuildTake("Dense.scene", 1.0);
+    Check(resampled.frames.size() == 3 && resampled.FrameCount() == 3,
+        "camera samples must resample onto inclusive fixed-delta slots");
+    Check(std::abs(resampled.frames[1].position.x - 1.0f) < 0.0001f &&
+        std::abs(resampled.frames[1].fovY - 0.8f) < 0.0001f,
+        "camera position and FOV must interpolate at fixed slots");
+    Check(std::abs(std::abs(resampled.frames[1].rotation.y) - 0.7071067f) < 0.0001f &&
+        std::abs(std::abs(resampled.frames[1].rotation.w) - 0.7071067f) < 0.0001f,
+        "camera rotation must use quaternion slerp at fixed slots");
+    const std::string takeJson = Alice::SerializeBenchCameraTake(resampled);
+    Alice::BenchCameraTake roundTrip{};
+    std::string takeError;
+    Check(Alice::DeserializeBenchCameraTake(takeJson, roundTrip, takeError) &&
+        roundTrip.FrameCount() == resampled.FrameCount(),
+        "camera take JSON must round-trip without losing frames");
+    Check(!Alice::DeserializeBenchCameraTake(
+        R"({"version":1,"scene":"Dense.scene","fixedDeltaSeconds":0.016,"frameCount":0,"frames":[]})",
+        roundTrip, takeError),
+        "camera takes without replay frames must be rejected");
+    Alice::CameraTakeFrame replayFrame{};
+    Check(roundTrip.FrameAt(2, replayFrame) &&
+        std::abs(replayFrame.position.z - 6.0f) < 0.0001f &&
+        !roundTrip.FrameAt(3, replayFrame),
+        "camera replay must use exact frame indices and stop at frameCount");
+
     Alice::LegacyPathFlags& legacy = Alice::LegacyPathFlags::Get();
     Check(!legacy.AnyEnabled(), "legacy path flags must default to current behavior");
     legacy.SetAll(true);

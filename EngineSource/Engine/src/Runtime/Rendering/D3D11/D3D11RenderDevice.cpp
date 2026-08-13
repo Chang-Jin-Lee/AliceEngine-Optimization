@@ -5,6 +5,8 @@
 #include <dxgi1_3.h>
 #include <dxgi1_6.h>
 #include <comdef.h>
+#include <DirectXTK/ScreenGrab.h>
+#include <wincodec.h>
 
 namespace Alice
 {
@@ -195,8 +197,82 @@ namespace Alice
 
     void D3D11RenderDevice::EndFrame()
     {
-        // vsync를 1로 두어 화면 주사율에 맞춰 표시합니다.
-        if (m_swapChain) m_swapChain->Present(1, 0);
+        if (m_swapChain) m_swapChain->Present(m_vsyncEnabled ? 1u : 0u, 0);
+    }
+
+    bool D3D11RenderDevice::CaptureBackBufferPng(
+        const std::filesystem::path& path, std::string& outError)
+    {
+        outError.clear();
+        if (!m_swapChain || !m_immediateContext)
+        {
+            outError = "render device has no swap chain";
+            return false;
+        }
+
+        std::error_code directoryError;
+        if (!path.parent_path().empty())
+            std::filesystem::create_directories(path.parent_path(), directoryError);
+        if (directoryError)
+        {
+            outError = "could not create PNG directory: " + directoryError.message();
+            return false;
+        }
+
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
+        HRESULT hr = m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf()));
+        if (SUCCEEDED(hr))
+        {
+            hr = DirectX::SaveWICTextureToFile(
+                m_immediateContext.Get(), backBuffer.Get(),
+                GUID_ContainerFormatPng, path.c_str());
+        }
+        if (FAILED(hr))
+        {
+            char buffer[96]{};
+            sprintf_s(buffer, "PNG capture failed (HRESULT 0x%08X)",
+                static_cast<unsigned int>(hr));
+            outError = buffer;
+            return false;
+        }
+        return true;
+    }
+
+    std::string D3D11RenderDevice::GetAdapterName() const
+    {
+        Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
+        Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
+        DXGI_ADAPTER_DESC description{};
+        if (!m_device || FAILED(m_device.As(&dxgiDevice)) ||
+            FAILED(dxgiDevice->GetAdapter(adapter.GetAddressOf())) ||
+            FAILED(adapter->GetDesc(&description)))
+            return "unavailable";
+
+        const int characters = static_cast<int>(wcsnlen_s(description.Description, 128));
+        const int bytes = WideCharToMultiByte(
+            CP_UTF8, 0, description.Description, characters, nullptr, 0, nullptr, nullptr);
+        if (bytes <= 0) return "unavailable";
+        std::string name(static_cast<std::size_t>(bytes), '\0');
+        WideCharToMultiByte(
+            CP_UTF8, 0, description.Description, characters,
+            name.data(), bytes, nullptr, nullptr);
+        return name;
+    }
+
+    std::string D3D11RenderDevice::GetDriverVersion() const
+    {
+        Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
+        Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
+        LARGE_INTEGER version{};
+        if (!m_device || FAILED(m_device.As(&dxgiDevice)) ||
+            FAILED(dxgiDevice->GetAdapter(adapter.GetAddressOf())) ||
+            FAILED(adapter->CheckInterfaceSupport(__uuidof(IDXGIDevice), &version)))
+            return "unavailable";
+
+        const auto high = static_cast<std::uint32_t>(version.HighPart);
+        const auto low = static_cast<std::uint32_t>(version.LowPart);
+        return std::to_string(HIWORD(high)) + '.' + std::to_string(LOWORD(high)) + '.' +
+            std::to_string(HIWORD(low)) + '.' + std::to_string(LOWORD(low));
     }
 
     bool D3D11RenderDevice::CreateRenderTarget()

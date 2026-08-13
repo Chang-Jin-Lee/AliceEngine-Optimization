@@ -4,6 +4,7 @@
 
 #include "Runtime/Engine/Engine.h"
 #include "Runtime/Foundation/Logger.h"
+#include "Runtime/Engine/CommandLineOptions.h"
 #include "imgui_impl_win32.h"
 
 static void ConfigureDllSearchPath()
@@ -31,12 +32,23 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow)
     // 공용 로거 초기화
     Alice::Logger::Initialize();
 
+    Alice::CommandLineOptions options{};
+    std::string optionError;
+    if (!Alice::ParseProcessCommandLine(options, optionError))
+    {
+        MessageBoxA(nullptr, optionError.c_str(), "AliceGame command line", MB_OK | MB_ICONERROR);
+        Alice::Logger::Shutdown();
+        return -1;
+    }
+
+    const bool benchRequested = options.benchRequested;
     // editorMode=false → 게임 전용 모드
-    Alice::Engine engine(false);
+    Alice::Engine engine(false, std::move(options));
 
     if (!engine.Initialize(hInstance, nCmdShow))
     {
-        MessageBoxW(nullptr, L"엔진 초기화에 실패했습니다.", L"AliceGame", MB_OK | MB_ICONERROR);
+        if (!benchRequested)
+            MessageBoxW(nullptr, L"엔진 초기화에 실패했습니다.", L"AliceGame", MB_OK | MB_ICONERROR);
         Alice::Logger::Shutdown();
         return -1;
     }

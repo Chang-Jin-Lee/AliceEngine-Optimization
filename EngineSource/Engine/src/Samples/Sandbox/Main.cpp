@@ -4,6 +4,7 @@
 
 #include "Runtime/Engine/Engine.h"
 #include "Runtime/Foundation/Logger.h"
+#include "Runtime/Engine/CommandLineOptions.h"
 #include "imgui_impl_win32.h"
 
 static void ConfigureDllSearchPath()
@@ -26,10 +27,21 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow)
     ConfigureDllSearchPath();
     Alice::Logger::Initialize();
 
-    Alice::Engine engine;
+    Alice::CommandLineOptions options{};
+    std::string optionError;
+    if (!Alice::ParseProcessCommandLine(options, optionError))
+    {
+        MessageBoxA(nullptr, optionError.c_str(), "AliceRenderer command line", MB_OK | MB_ICONERROR);
+        Alice::Logger::Shutdown();
+        return -1;
+    }
+
+    const bool benchRequested = options.benchRequested;
+    Alice::Engine engine(true, std::move(options));
     if (!engine.Initialize(hInstance, nCmdShow))
     {
-        MessageBoxW(nullptr, L"Failed to initialize engine.", L"AliceRenderer", MB_OK | MB_ICONERROR);
+        if (!benchRequested)
+            MessageBoxW(nullptr, L"Failed to initialize engine.", L"AliceRenderer", MB_OK | MB_ICONERROR);
         Alice::Logger::Shutdown();
         return -1;
     }

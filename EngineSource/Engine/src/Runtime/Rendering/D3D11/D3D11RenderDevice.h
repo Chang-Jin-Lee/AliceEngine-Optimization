@@ -23,6 +23,12 @@ namespace Alice
         void Resize(std::uint32_t width, std::uint32_t height) override;
         void BeginFrame(const float clearColor[4]) override;
         void EndFrame() override;
+        void SetVsyncEnabled(bool enabled) override { m_vsyncEnabled = enabled; }
+        bool IsVsyncEnabled() const override { return m_vsyncEnabled; }
+        bool CaptureBackBufferPng(
+            const std::filesystem::path& path, std::string& outError) override;
+        std::string GetAdapterName() const override;
+        std::string GetDriverVersion() const override;
 
         ID3D11Device* GetDevice() override { return m_device.Get(); }
         ID3D11DeviceContext* GetImmediateContext() override { return m_immediateContext.Get(); }
@@ -49,6 +55,7 @@ namespace Alice
         std::uint32_t m_height = 0;
         DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM; // 기본값: LDR
         float m_maxHDRNits = 100.0f; // 기본값: SDR
+        bool m_vsyncEnabled = true;
 
         /// 백버퍼로부터 렌더 타깃 뷰를 생성합니다.
         bool CreateRenderTarget();

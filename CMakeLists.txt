@@ -99,6 +99,8 @@ set(ENGINE_SOURCES
     ${ALICE_SRC_DIR}/Runtime/Engine/EngineRender.cpp
     ${ALICE_SRC_DIR}/Runtime/Engine/EnginePhysics.cpp
     ${ALICE_SRC_DIR}/Runtime/Engine/EngineWindow.cpp
+    ${ALICE_SRC_DIR}/Runtime/Engine/CommandLineOptions.cpp
+    ${ALICE_SRC_DIR}/Runtime/Engine/BenchCameraTake.cpp
     ${ALICE_SRC_DIR}/Editor/Core/ViewportPicker.cpp
     ${ALICE_SRC_DIR}/Editor/Core/EditorCore.cpp
     ${ALICE_SRC_DIR}/Editor/Core/EditorUndoRedo.cpp
@@ -429,6 +431,8 @@ if(BUILD_TESTING)
         ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/GpuProfiler.cpp
         ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/RenderStats.cpp
         ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/LegacyPathFlags.cpp
+        ${ALICE_SRC_DIR}/Runtime/Engine/CommandLineOptions.cpp
+        ${ALICE_SRC_DIR}/Runtime/Engine/BenchCameraTake.cpp
         ${ALICE_SRC_DIR}/Runtime/Foundation/Logger.cpp
     )
     target_include_directories(RenderMetricsTests PRIVATE ${ALICE_SRC_DIR})
@@ -436,7 +440,7 @@ if(BUILD_TESTING)
         NOMINMAX
         ALICE_METRICS_TESTING=1
     )
-    target_link_libraries(RenderMetricsTests PRIVATE imgui d3d11 dxgi psapi)
+    target_link_libraries(RenderMetricsTests PRIVATE imgui d3d11 dxgi psapi shell32)
     add_test(NAME render_metrics_contracts COMMAND RenderMetricsTests)
 endif()
 
@@ -706,6 +710,7 @@ foreach(target Launch AlicePlayer)
             psapi
             directxtk
             directxtex
+            shell32
             $<$<CONFIG:Debug>:assimp-vc143-mtd>
             $<$<CONFIG:Release>:assimp-vc143-mt>
     )
