@@ -186,6 +186,7 @@ set(ENGINE_SOURCES
     ${ALICE_SRC_DIR}/Runtime/Rendering/Camera.cpp
     ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/GpuProfiler.cpp
     ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/RenderStats.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/LegacyPathFlags.cpp
     ${ALICE_SRC_DIR}/Runtime/Rendering/D3D11/D3D11RenderDevice.cpp
     ${ALICE_SRC_DIR}/Runtime/Rendering/ForwardRenderSystem.cpp
     ${ALICE_SRC_DIR}/Runtime/Rendering/DeferredRenderSystem.cpp
@@ -327,6 +328,7 @@ set(ENGINE_HEADERS
     ${ALICE_SRC_DIR}/Runtime/Rendering/Camera.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/GpuProfiler.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/RenderStats.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/LegacyPathFlags.h
     ${ALICE_SRC_DIR}/Editor/Panels/MetricsOverlay.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/ForwardRenderSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/DeferredRenderSystem.h
@@ -426,6 +428,7 @@ if(BUILD_TESTING)
         ${ALICE_SRC_DIR}/Editor/Panels/MetricsOverlay.cpp
         ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/GpuProfiler.cpp
         ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/RenderStats.cpp
+        ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/LegacyPathFlags.cpp
         ${ALICE_SRC_DIR}/Runtime/Foundation/Logger.cpp
     )
     target_include_directories(RenderMetricsTests PRIVATE ${ALICE_SRC_DIR})

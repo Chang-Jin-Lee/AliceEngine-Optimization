@@ -86,6 +86,72 @@ VSOutput main(VSInput input)
 }
 )";
 
+        // Static-mesh outline shell. This deliberately remains separate from
+        // GBufferVS because the first G-buffer pass stores outline metadata but
+        // must not move the original surface.
+        inline static const char* GBufferOutlineVS = R"(
+cbuffer CBPerObject : register(b0)
+{
+    float4x4 gWorld;
+    float4x4 gView;
+    float4x4 gProj;
+    float4   gMaterialColor;
+    float    gRoughness;
+    float    gMetalness;
+    int      gUseTexture;
+    int      gEnableNormalMap;
+    int      gShadingMode;
+    int      gPad0;
+    float2   gPad1;
+    float    gNormalStrength;
+    float    gAmbientOcclusion;
+    float    gEnvDiffuseStrength;
+    float    gEnvSpecularStrength;
+    float4   gToonPbrCuts;
+    float4   gToonPbrLevels;
+    float4   gToonPbrAlphas;
+    float    gToonPbrRampIntensity;
+    float    gToonSelfShadowStrength;
+    float2   gPadOutline;
+    float3   gOutlineColor;
+    float    gOutlineWidth;
+};
+
+struct VSInput
+{
+    float3 Position : POSITION;
+    float3 Normal   : NORMAL;
+    float3 Tangent  : TANGENT;
+    float3 Binormal : BINORMAL;
+    float2 TexCoord : TEXCOORD0;
+};
+
+struct VSOutput
+{
+    float4 Position : SV_POSITION;
+    float3 WorldPos : TEXCOORD0;
+    float3 Normal   : TEXCOORD1;
+    float2 TexCoord : TEXCOORD2;
+    float3 TangentW : TEXCOORD3;
+    float3 BitanW   : TEXCOORD4;
+};
+
+VSOutput main(VSInput input)
+{
+    VSOutput output;
+    float3 normalW = normalize(mul(float4(input.Normal, 0.0f), gWorld).xyz);
+    float3 posOffset = input.Normal * gOutlineWidth;
+    float4 posW = mul(float4(input.Position + posOffset, 1.0f), gWorld);
+    output.Position = mul(mul(posW, gView), gProj);
+    output.WorldPos = posW.xyz;
+    output.Normal = normalW;
+    output.TangentW = normalize(mul(float4(input.Tangent, 0.0f), gWorld).xyz);
+    output.BitanW = normalize(mul(float4(input.Binormal, 0.0f), gWorld).xyz);
+    output.TexCoord = input.TexCoord;
+    return output;
+}
+)";
+
         // G-Buffer Instanced Vertex Shader (정적 메시 인스턴싱)
         inline static const char* GBufferInstancedVS = R"(
 cbuffer CBPerObject : register(b0)

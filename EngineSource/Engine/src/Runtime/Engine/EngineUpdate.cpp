@@ -58,6 +58,11 @@ namespace Alice
 		m_inputSystem.Update(m_unscaledDeltaTime);
 		if (m_inputSystem.IsKeyPressed(DirectX::Keyboard::Keys::F9))
 			m_metricsOverlay.ToggleVisible();
+		if (m_inputSystem.IsKeyPressed(DirectX::Keyboard::Keys::F10))
+		{
+			auto& legacy = LegacyPathFlags::Get();
+			legacy.SetAll(!legacy.AnyEnabled());
+		}
 		m_animUpdatedThisFrame = false;
 	}
 

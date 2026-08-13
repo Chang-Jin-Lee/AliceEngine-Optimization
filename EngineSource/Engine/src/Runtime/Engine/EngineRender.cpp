@@ -107,7 +107,7 @@ namespace Alice
 		}
 
 		m_metricsOverlay.Render(MetricsOverlayRuntimeState{
-			false,
+			LegacyPathFlags::Get().AnyEnabled(),
 			true,
 			m_width,
 			m_height

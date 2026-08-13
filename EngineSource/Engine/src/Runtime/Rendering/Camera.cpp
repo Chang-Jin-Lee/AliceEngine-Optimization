@@ -1,5 +1,6 @@
 #include "Runtime/Rendering/Camera.h"
 #include "Runtime/Rendering/CullingTuning.h"
+#include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
 
 #include <cmath>
 #include <algorithm>
@@ -68,12 +69,19 @@ namespace Alice
 
     XMMATRIX Camera::GetViewMatrix() const
     {
+        // OPTIMIZATION_REPORT P07: the legacy path rebuilt this matrix at every call.
+        if (LegacyPathFlags::Get().noCameraMatrixCache)
+            return XMMatrixLookAtLH(XMLoadFloat3(&m_position), XMLoadFloat3(&m_target), XMLoadFloat3(&m_up));
         if (m_viewDirty) RebuildView();
         return XMLoadFloat4x4(&m_cachedView);
     }
 
     XMMATRIX Camera::GetProjectionMatrix() const
     {
+        // OPTIMIZATION_REPORT P07: the legacy path rebuilt this matrix at every call.
+        if (LegacyPathFlags::Get().noCameraMatrixCache)
+            return XMMatrixPerspectiveFovLH(
+                m_fovYRadians, std::max(0.1f, m_aspectRatio), m_nearPlane, m_farPlane);
         if (m_projDirty) RebuildProj();
         return XMLoadFloat4x4(&m_cachedProj);
     }

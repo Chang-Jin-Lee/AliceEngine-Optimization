@@ -7,6 +7,7 @@
 #include "Runtime/Rendering/Camera.h"
 #include "Runtime/Rendering/D3D11/ID3D11RenderDevice.h"
 #include "Runtime/Rendering/Metrics/RenderStats.h"
+#include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
 #include "Runtime/Foundation/Logger.h"
 
 #include "ThirdParty/json/json.hpp"
@@ -1028,8 +1029,49 @@ namespace Alice
                     if (!m_billboardVS || !m_billboardLayout)
                         continue;
 
+                    const bool legacyPerParticle = LegacyPathFlags::Get().perParticleDrawCall;
                     std::vector<VertexPTC> verts;
-                    verts.reserve(rt.particles.size() * 6);
+                    if (!legacyPerParticle)
+                        verts.reserve(rt.particles.size() * 6);
+
+                    auto drawBillboards = [&](const std::vector<VertexPTC>& drawVerts)
+                    {
+                        if (drawVerts.empty() || !EnsureBillboardVertexBuffer(drawVerts.size()))
+                            return;
+
+                        D3D11_MAPPED_SUBRESOURCE mapped = {};
+                        if (FAILED(m_context->Map(m_billboardVB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+                            return;
+
+                        std::memcpy(mapped.pData, drawVerts.data(), drawVerts.size() * sizeof(VertexPTC));
+                        m_context->Unmap(m_billboardVB.Get(), 0);
+
+                        CBPerObject cb{};
+                        cb.world = XMMatrixIdentity();
+                        cb.viewProj = XMMatrixTranspose(viewProj);
+                        cb.color = matColor;
+                        cb.uvParams = XMFLOAT4(1.0f, 1.0f, 0.0f, 0.0f);
+                        cb.customParams = XMFLOAT4(dissolve, noiseStrength, rampStrength, timeSec);
+                        cb.uvAnim = XMFLOAT4(uvScroll.x, uvScroll.y, 0.0f, 0.0f);
+
+                        m_context->UpdateSubresource(m_cbPerObject.Get(), 0, nullptr, &cb, 0, 0);
+                        ID3D11Buffer* cbuffers[] = { m_cbPerObject.Get() };
+                        m_context->VSSetConstantBuffers(0, 1, cbuffers);
+                        m_context->PSSetConstantBuffers(0, 1, cbuffers);
+
+                        m_context->IASetInputLayout(m_billboardLayout.Get());
+                        m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                        m_context->VSSetShader(m_billboardVS.Get(), nullptr, 0);
+                        m_context->PSSetShader(m_ps.Get(), nullptr, 0);
+
+                        UINT stride = sizeof(VertexPTC);
+                        UINT offset = 0;
+                        ID3D11Buffer* vb = m_billboardVB.Get();
+                        m_context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+                        IssueDraw(static_cast<UINT>(drawVerts.size()), 0);
+
+                        BindParticlePipeline();
+                    };
 
                     const XMFLOAT2 baseUv[4] =
                     {
@@ -1061,6 +1103,9 @@ namespace Alice
 
                     for (const Particle& p : rt.particles)
                     {
+                        // OPTIMIZATION_REPORT P05: the legacy path allocated and submitted one vector per particle.
+                        std::vector<VertexPTC> legacyParticleVerts;
+                        std::vector<VertexPTC>& outputVerts = legacyPerParticle ? legacyParticleVerts : verts;
                         XMVECTOR worldPos = XMLoadFloat3(&p.pos);
                         if (def.space == SimulationSpace::Local)
                             worldPos = XMVector3TransformCoord(worldPos, entityWorld);
@@ -1165,45 +1210,15 @@ namespace Alice
                             XMFLOAT2 uv(
                                 baseUv[qi].x * uvScale.x + uvOffset.x,
                                 baseUv[qi].y * uvScale.y + uvOffset.y);
-                            verts.push_back({ cPos[qi], uv, color });
+                            outputVerts.push_back({ cPos[qi], uv, color });
                         }
+
+                        if (legacyPerParticle)
+                            drawBillboards(legacyParticleVerts);
                     }
 
-                    if (!verts.empty() && EnsureBillboardVertexBuffer(verts.size()))
-                    {
-                        D3D11_MAPPED_SUBRESOURCE mapped = {};
-                        if (SUCCEEDED(m_context->Map(m_billboardVB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
-                        {
-                            std::memcpy(mapped.pData, verts.data(), verts.size() * sizeof(VertexPTC));
-                            m_context->Unmap(m_billboardVB.Get(), 0);
-
-                            CBPerObject cb{};
-                            cb.world = XMMatrixIdentity();
-                            cb.viewProj = XMMatrixTranspose(viewProj);
-                            cb.color = matColor;
-                            cb.uvParams = XMFLOAT4(1.0f, 1.0f, 0.0f, 0.0f);
-                            cb.customParams = XMFLOAT4(dissolve, noiseStrength, rampStrength, timeSec);
-                            cb.uvAnim = XMFLOAT4(uvScroll.x, uvScroll.y, 0.0f, 0.0f);
-
-                            m_context->UpdateSubresource(m_cbPerObject.Get(), 0, nullptr, &cb, 0, 0);
-                            ID3D11Buffer* cbuffers[] = { m_cbPerObject.Get() };
-                            m_context->VSSetConstantBuffers(0, 1, cbuffers);
-                            m_context->PSSetConstantBuffers(0, 1, cbuffers);
-
-                            m_context->IASetInputLayout(m_billboardLayout.Get());
-                            m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-                            m_context->VSSetShader(m_billboardVS.Get(), nullptr, 0);
-                            m_context->PSSetShader(m_ps.Get(), nullptr, 0);
-
-                            UINT stride = sizeof(VertexPTC);
-                            UINT offset = 0;
-                            ID3D11Buffer* vb = m_billboardVB.Get();
-                            m_context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-                            IssueDraw(static_cast<UINT>(verts.size()), 0);
-
-                            BindParticlePipeline();
-                        }
-                    }
+                    if (!legacyPerParticle)
+                        drawBillboards(verts);
                 }
                 else
                 {

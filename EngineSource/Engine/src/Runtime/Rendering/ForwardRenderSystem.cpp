@@ -1,6 +1,7 @@
 #include "Runtime/Rendering/ForwardRenderSystem.h"
 #include "Runtime/Rendering/DebugDrawSystem.h"
 #include "Runtime/Rendering/Metrics/RenderStats.h"
+#include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
 #include "Runtime/Rendering/PostProcessSettings.h"
 
 #include <d3dcompiler.h>
@@ -322,6 +323,9 @@ namespace Alice
         // 본 없는(Identity 1개) FBX 여부 판단
         bool IsRigidSkinnedCommand(const SkinnedDrawCommand& cmd)
         {
+            // RenderDoc record: the legacy path kept rigid/static imports on the skinning path.
+            if (LegacyPathFlags::Get().staticMeshThroughSkinning)
+                return false;
             if (!cmd.bones || cmd.boneCount != 1)
                 return false;
 
@@ -1175,11 +1179,20 @@ namespace Alice
         auto* cb = reinterpret_cast<CBBones*>(mapped.pData);
         cb->boneCount = (std::min)(boneCount, (uint32_t)MaxBones);
 
-        for (std::uint32_t i = 0; i < cb->boneCount; ++i)
-            cb->bones[i] = XMMatrixTranspose(XMLoadFloat4x4(&boneMatrices[i]));
+        const bool legacyFullBuffer = LegacyPathFlags::Get().fullBoneConstantBuffer;
+        const std::uint32_t matricesToWrite =
+            LegacyPathDetail::BoneMatricesToWrite(boneCount, legacyFullBuffer);
+        for (std::uint32_t i = 0; i < matricesToWrite; ++i)
+        {
+            // OPTIMIZATION_REPORT P01: the legacy path rewrites all 1023 matrices.
+            cb->bones[i] = i < cb->boneCount
+                ? XMMatrixTranspose(XMLoadFloat4x4(&boneMatrices[i]))
+                : XMMatrixIdentity();
+        }
 
         if (m_renderStats)
-            m_renderStats->RecordBoneCbUpload(sizeof(CBBones));
+            m_renderStats->RecordBoneCbUpload(
+                LegacyPathDetail::BoneUploadBytes(boneCount, legacyFullBuffer));
 
         m_context->Unmap(m_cbBones.Get(), 0);
         m_context->VSSetConstantBuffers(2, 1, m_cbBones.GetAddressOf());
@@ -1866,9 +1879,24 @@ namespace Alice
 
     XMMATRIX ForwardRenderSystem::BuildWorldMatrix(const World& world, EntityId entityId, const TransformComponent& transform) const
     {
-        // c.txt 참조: 부모부터 루트까지 로컬 행렬을 스택에 쌓고, 루트에서 자식으로 내려가면서 행렬 곱하기
-        std::vector<XMMATRIX> matrixStack;
         EntityId currentId = entityId;
+
+        if (!LegacyPathFlags::Get().heapAllocWorldMatrix)
+        {
+            XMMATRIX worldMatrix = XMMatrixIdentity();
+            while (currentId != InvalidEntityId)
+            {
+                const TransformComponent* t = world.GetComponent<TransformComponent>(currentId);
+                if (!t)
+                    break;
+                worldMatrix = worldMatrix * BuildWorldMatrix(*t);
+                currentId = t->parent;
+            }
+            return worldMatrix;
+        }
+
+        // OPTIMIZATION_REPORT P02: preserve the former heap-backed parent stack.
+        std::vector<XMMATRIX> matrixStack;
         
         // 부모부터 루트까지 로컬 행렬을 스택에 쌓음
         while (currentId != InvalidEntityId)
@@ -2298,6 +2326,9 @@ namespace Alice
             // 아웃라인 파라미터
             XMFLOAT3 outlineColor = mat ? mat->outlineColor : XMFLOAT3(0.0f, 0.0f, 0.0f);
             float outlineWidth = mat ? mat->outlineWidth : 0.0f;
+            // RenderDoc record: the legacy material default forced an outline pass.
+            if (LegacyPathFlags::Get().outlineOnByDefault && outlineWidth <= 0.0f)
+                outlineWidth = 0.01f;
 
             // Rasterizer State (Culling)
             bool flipped = XMVectorGetX(XMMatrixDeterminant(worldM)) < 0.0f;

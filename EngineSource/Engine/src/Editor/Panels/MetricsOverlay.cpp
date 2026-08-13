@@ -1,6 +1,7 @@
 #include "Editor/Panels/MetricsOverlay.h"
 
 #include "imgui.h"
+#include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
 
 #include <algorithm>
 #include <chrono>
@@ -200,6 +201,23 @@ namespace Alice
             runtimeState.width,
             runtimeState.height,
             static_cast<unsigned long long>(m_lastDiscardedFrameCount));
+
+        if (ImGui::CollapsingHeader("Legacy paths"))
+        {
+            LegacyPathFlags& legacy = LegacyPathFlags::Get();
+            bool allEnabled = legacy.AllEnabled();
+            if (ImGui::Checkbox("All legacy paths (F10)", &allEnabled))
+                legacy.SetAll(allEnabled);
+            ImGui::Checkbox("P01 full bone constant buffer", &legacy.fullBoneConstantBuffer);
+            ImGui::Checkbox("P04 copy palette every frame", &legacy.copyPaletteEveryFrame);
+            ImGui::Checkbox("P07 no camera matrix cache", &legacy.noCameraMatrixCache);
+            ImGui::Checkbox("P03 animate when not playing", &legacy.animateWhenNotPlaying);
+            ImGui::Checkbox("P02 heap world-matrix chain", &legacy.heapAllocWorldMatrix);
+            ImGui::Checkbox("P05 per-particle draws", &legacy.perParticleDrawCall);
+            ImGui::Checkbox("RenderDoc static through skinning", &legacy.staticMeshThroughSkinning);
+            ImGui::Checkbox("RenderDoc outline default", &legacy.outlineOnByDefault);
+            ImGui::Checkbox("RenderDoc opaque transparent pass", &legacy.opaqueInTransparentPass);
+        }
 
         ImGui::End();
     }

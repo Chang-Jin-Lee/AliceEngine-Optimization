@@ -10,6 +10,7 @@
 #include "Runtime/Rendering/UnityVfxMeshRenderSystem.h"
 #include "Runtime/Rendering/Metrics/GpuProfiler.h"
 #include "Runtime/Rendering/Metrics/RenderStats.h"
+#include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
 #include "Editor/Panels/MetricsOverlay.h"
 
 // ImGui

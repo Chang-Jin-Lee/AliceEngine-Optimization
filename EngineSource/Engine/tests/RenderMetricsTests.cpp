@@ -1,9 +1,12 @@
 #include "Runtime/Rendering/Metrics/GpuProfiler.h"
 #include "Runtime/Rendering/Metrics/RenderStats.h"
 #include "Editor/Panels/MetricsOverlay.h"
+#include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
+#include "Runtime/Rendering/ShaderCode/DeferredShader.h"
 
 #include <cmath>
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 
 namespace
@@ -22,6 +25,40 @@ namespace
 
 int main()
 {
+    Alice::LegacyPathFlags& legacy = Alice::LegacyPathFlags::Get();
+    Check(!legacy.AnyEnabled(), "legacy path flags must default to current behavior");
+    legacy.SetAll(true);
+    Check(legacy.fullBoneConstantBuffer && legacy.copyPaletteEveryFrame &&
+        legacy.noCameraMatrixCache && legacy.animateWhenNotPlaying &&
+        legacy.heapAllocWorldMatrix && legacy.perParticleDrawCall &&
+        legacy.staticMeshThroughSkinning && legacy.outlineOnByDefault &&
+        legacy.opaqueInTransparentPass,
+        "SetAll(true) must enable every documented legacy path");
+    Check(legacy.AnyEnabled(), "AnyEnabled must report an enabled legacy path");
+    Check(legacy.AllEnabled(), "AllEnabled must report when every legacy path is enabled");
+    legacy.SetAll(false);
+    Check(!legacy.AnyEnabled(), "SetAll(false) must restore the current path");
+    legacy.fullBoneConstantBuffer = true;
+    Check(legacy.AnyEnabled() && !legacy.AllEnabled(),
+        "a partial legacy selection must not appear as all paths enabled");
+    legacy.SetAll(false);
+    Check(Alice::LegacyPathDetail::BoneMatricesToWrite(3, false) == 3,
+        "the current bone upload path must touch only the active palette");
+    Check(Alice::LegacyPathDetail::BoneMatricesToWrite(3, true) == 1023,
+        "the P01 legacy path must touch the full 1023-matrix constant buffer");
+    Check(Alice::LegacyPathDetail::BoneUploadBytes(3, false) <
+        Alice::LegacyPathDetail::BoneUploadBytes(3, true),
+        "P01 legacy accounting must report more written bytes than current");
+    Check(!Alice::LegacyPathDetail::ShouldEvaluateAnimation(false, true, false, false),
+        "P03 current path must skip a stable stopped pose");
+    Check(Alice::LegacyPathDetail::ShouldEvaluateAnimation(false, true, true, false),
+        "P03 current path must reevaluate a changed stopped pose");
+    Check(Alice::LegacyPathDetail::ShouldEvaluateAnimation(false, true, false, true),
+        "P03 legacy path must reevaluate a stable stopped pose");
+    Check(std::strstr(Alice::DeferredShader::GBufferOutlineVS,
+        "input.Normal * gOutlineWidth") != nullptr,
+        "the deferred static outline shader must extrude vertices by outline width");
+
     double ms = -1.0;
     Check(Alice::MetricsDetail::TryTimestampMilliseconds(100, 3100, 1'000'000, false, ms),
         "valid timestamp range must resolve");

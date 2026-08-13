@@ -373,6 +373,7 @@ namespace Alice
 
         // ==== G-Buffer 셰이더 ====
         Microsoft::WRL::ComPtr<ID3D11VertexShader>      m_gBufferVS;
+        Microsoft::WRL::ComPtr<ID3D11VertexShader>      m_gBufferOutlineVS;
         Microsoft::WRL::ComPtr<ID3D11PixelShader>      m_gBufferPS;
         Microsoft::WRL::ComPtr<ID3D11InputLayout>      m_gBufferInputLayout;
         Microsoft::WRL::ComPtr<ID3D11VertexShader>      m_gBufferInstancedVS;
