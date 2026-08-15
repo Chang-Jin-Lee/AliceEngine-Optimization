@@ -152,8 +152,10 @@ Git 컨벤션·LFS·서브모듈을 운영해 협업 충돌을 줄이고, 전투
 ### 요구사항
 
 - Windows 10/11
-- Visual Studio 2022 (C++ 데스크톱 개발 워크로드)
-- CMake 3.20+ (없으면 Build.bat이 winget으로 자동 설치)
+- Visual Studio 2019 / 2022 / 2026 (C++ 데스크톱 개발 워크로드)
+  - 여러 버전이 깔려 있으면 `Build.bat`이 실행 시 어느 것으로 빌드할지 물어봅니다.
+  - 묻지 않고 지정하려면 `Build.bat 2026` 처럼 연도나 목록 번호를 인자로 넘기면 됩니다.
+- CMake 3.20+ (없으면 Build.bat이 선택한 VS의 번들을 쓰거나 winget으로 자동 설치)
 - Git (서브모듈 포함)
 - vcpkg (`C:\vcpkg` 또는 `D:\vcpkg`, 또는 `VCPKG_ROOT` 환경변수)
 
@@ -165,14 +167,18 @@ Build.bat
 
 1. Git 서브모듈 업데이트
 2. vcpkg로 라이브러리 설치 (DirectXTK, DirectXTex, Assimp, PhysX)
-3. CMake로 VS 솔루션 생성 → `build/AliceRenderer.sln`
+3. Visual Studio 선택 (설치된 것이 하나면 자동)
+4. CMake로 VS 솔루션 생성 → `build/AliceRenderer.sln*`
 
 ### 솔루션 구성
 
 | 솔루션 | 용도 |
 |---|---|
-| `build/AliceRenderer.sln` | 에디터(`Launch`) / 게임(`AlicePlayer`) 빌드 |
-| `EngineSource/ScriptsBuild/build/AliceUserScripts.sln` | 게임 스크립트 핫리로드 DLL 빌드 |
+| `build/AliceRenderer.sln*` | 에디터(`Launch`) / 게임(`AlicePlayer`) 빌드 |
+| `EngineSource/ScriptsBuild/build/AliceUserScripts.sln*` | 게임 스크립트 핫리로드 DLL 빌드 |
+
+솔루션 확장자는 빌드에 쓴 Visual Studio를 따라갑니다. 2022는 `.sln`, 2026은 새 XML 포맷인
+`.slnx`를 생성합니다. `Build.bat`이 마지막에 실제 생성된 파일 경로를 출력하니 그대로 열면 됩니다.
 
 ---
 
