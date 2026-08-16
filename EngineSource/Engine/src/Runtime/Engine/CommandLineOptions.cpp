@@ -136,6 +136,13 @@ namespace Alice
                 else if (value == L"off") options.vsyncEnabled = false;
                 else return fail(arg, "expected on or off");
             }
+            else if (StartsWith(arg, L"--debug-draw="))
+            {
+                const auto value = valueAfter(L"--debug-draw=");
+                if (value == L"on") options.debugDraw = true;
+                else if (value == L"off") options.debugDraw = false;
+                else return fail(arg, "expected on or off");
+            }
             else if (StartsWith(arg, L"--duration="))
             {
                 if (!ParseDouble(valueAfter(L"--duration="), 0.0, options.durationSeconds))

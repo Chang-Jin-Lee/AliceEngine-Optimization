@@ -1102,6 +1102,7 @@ namespace Alice
 			return false;
 		}
 		m_renderDevice->SetVsyncEnabled(m_commandLine.vsyncEnabled);
+		m_debugDraw = m_commandLine.debugDraw;
 
 		if (!m_gpuProfiler.Initialize(
 				m_renderDevice->GetDevice(), m_renderDevice->GetImmediateContext()))
