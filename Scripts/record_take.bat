@@ -2,62 +2,71 @@
 setlocal EnableExtensions
 
 REM ================================================================
-REM 004 - 카메라 테이크 녹화 (사람이 직접 날아서 1회 녹화)
+REM 004 - Camera take recording (a human flies it once)
 REM
-REM 이 테이크 하나를 legacy / current 두 실행이 똑같이 재생하므로
-REM 두 영상의 장면이 프레임 단위로 같아진다. 손으로 두 번 날면
-REM 구간이 달라져서 "조건이 다른데 비교가 되냐"는 반박을 막을 수 없다.
+REM One take is replayed by both the legacy and the current run, so the
+REM two videos show the same frames. Flying by hand twice would give two
+REM different paths and the comparison would not hold up.
+REM
+REM ASCII only on purpose: cmd reads .bat in the OEM codepage, and
+REM non-ASCII text here breaks line parsing on some machines.
 REM ================================================================
 
 set "REPO=%~dp0.."
 set "EXE=%REPO%\build\bin\Release\Launch.exe"
-REM 타일이 가장 밀집한 씬. 렌더독 기록의 원본 장면은
-REM DuellumCycli/PrototypeDungeon.scene 이지만 씬과 애셋이 어긋나 있어
-REM (타일 메시가 20000단위인데 격자 간격은 2) 촬영에는 이 씬을 쓴다.
-set "SCENE=#01PrototypeMap.scene"
 set "TAKE=%REPO%\Bench\take01.json"
 
+REM Densest tile scene. The original RenderDoc scene is
+REM DuellumCycli/PrototypeDungeon.scene, but its tile mesh is 20000 units
+REM while the grid spacing is 2, so scene and assets have drifted apart.
+set "SCENE=#01PrototypeMap.scene"
+
 if not exist "%EXE%" (
-    echo [FAIL] Release 빌드가 없습니다: %EXE%
-    echo        Build.bat 실행 후 솔루션에서 Release ^> Launch 를 빌드하십시오.
+    echo [FAIL] Release build not found: %EXE%
+    echo        Run Build.bat, then build Release ^> Launch in the solution.
     pause
     exit /b 1
 )
 
+if not exist "%REPO%\Bench" mkdir "%REPO%\Bench"
+
 echo ========================================================
-echo  카메라 테이크 녹화
+echo  Camera take recording
 echo ========================================================
 echo.
-echo   씬   : %SCENE%   ^(타일 407 / 벽 552 / 엔티티 1142^)
-echo   출력 : %TAKE%
+echo   scene  : %SCENE%   (tiles 407 / walls 552 / entities 1142)
+echo   output : %TAKE%
 echo.
-echo   [조작]
-echo    - 우클릭 드래그로 시선, WASD 로 이동, 휠로 이동속도 조절
-echo    - 타일이 많이 보이는 구간을 15초 정도 날아 주십시오
-echo    - 앞 5초는 워밍업으로 버려지므로 시작은 천천히
-echo    - 다 날았으면 창을 닫으면 저장됩니다
+echo   Controls
+echo    - right-drag to look, WASD to move, wheel to change speed
+echo    - fly around the dense tile area for about 20 seconds
+echo    - the first 5 seconds are warmup and get discarded, so start slow
+echo    - close the window when done; the take is saved on exit
 echo.
-echo   씬 로딩에 30초 이상 걸립니다. 멈춘 것처럼 보여도 기다리십시오.
+echo   Scene loading takes 30+ seconds. It is not frozen.
 echo.
-echo  아무 키나 누르면 시작합니다.
+echo  Press any key to start.
 pause >nul
 
-REM 출력은 절대 경로로 넘긴다. 상대 경로는 exe 작업 디렉터리 기준이라
-REM 저장소의 Bench\ 가 아니라 build 폴더 안에 떨어진다.
+REM Output goes through an absolute path. A relative path would resolve
+REM against the exe working directory and land under build\, not Bench\.
+REM The exe itself is called by full path too: with
+REM NoDefaultCurrentDirectoryInExePath set, cmd does not search the
+REM current directory and a bare "Launch.exe" fails with exit 9009.
 pushd "%REPO%\build\bin\Release"
-Launch.exe --scene=%SCENE% --camera-record="%TAKE%" --vsync=off --debug-draw=off
+"%EXE%" --scene=%SCENE% --camera-record="%TAKE%" --vsync=off --debug-draw=off
 set "EL=%errorlevel%"
 popd
 
 echo.
 if exist "%TAKE%" (
-    echo [OK] 저장됨: %TAKE%
-    for %%A in ("%TAKE%") do echo      크기: %%~zA bytes
+    echo [OK] saved: %TAKE%
+    for %%A in ("%TAKE%") do echo      size: %%~zA bytes
     echo.
-    echo  다음: Scripts\run_bench.bat 으로 A/B 캡처를 진행하십시오.
+    echo  Next: run Scripts\run_bench.bat for the A/B capture.
 ) else (
-    echo [FAIL] 테이크가 저장되지 않았습니다. exit=%EL%
-    echo        build\bin\Release\Logs\ 의 최신 로그에서 [Bench] 줄을 확인하십시오.
+    echo [FAIL] take was not saved. exit=%EL%
+    echo        Check the newest log in build\bin\Release\Logs\ for [Bench] lines.
 )
 echo.
 pause
