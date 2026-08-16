@@ -55,6 +55,67 @@ namespace Alice
 			return ta == tb;
 		}
 
+		// cmake 실행 파일 경로를 구합니다.
+		// PATH에만 의존하면 Visual Studio를 재설치하거나 standalone CMake 없이 VS 번들
+		// CMake만 쓰는 환경에서 Reload Scripts가 통째로 실패한다('cmake'를 찾을 수 없음).
+		// Build.bat과 같은 순서로 탐색한다: PATH → VS 번들 → 기본 설치 경로.
+		// 반환값은 커맨드라인에 그대로 붙일 수 있도록 필요하면 따옴표로 감싼 문자열이다.
+		std::wstring ResolveCMakeCommand()
+		{
+			namespace fs = std::filesystem;
+
+			// 1) PATH에 있으면 그대로 쓴다.
+			{
+				wchar_t found[MAX_PATH] = {};
+				const DWORD length = ::SearchPathW(
+					nullptr, L"cmake.exe", nullptr, MAX_PATH, found, nullptr);
+				if (length > 0 && length < MAX_PATH)
+					return L"cmake";
+			}
+
+			// 2) Visual Studio 번들 CMake (C++ CMake 도구 워크로드).
+			//    설치 루트는 버전/에디션마다 다르므로 디렉터리를 훑는다.
+			const wchar_t* kVsRoots[] = {
+				L"C:/Program Files/Microsoft Visual Studio",
+				L"C:/Program Files (x86)/Microsoft Visual Studio",
+			};
+			const fs::path kVsSuffix =
+				fs::path("Common7") / "IDE" / "CommonExtensions" / "Microsoft" /
+				"CMake" / "CMake" / "bin" / "cmake.exe";
+
+			for (const wchar_t* root : kVsRoots)
+			{
+				std::error_code ec;
+				if (!fs::is_directory(root, ec) || ec) { ec.clear(); continue; }
+				// <root>/<버전>/<에디션>/Common7/... 구조라 두 단계를 내려간다.
+				for (fs::directory_iterator vit(root, ec), vend; vit != vend; vit.increment(ec))
+				{
+					if (ec) { ec.clear(); continue; }
+					if (!vit->is_directory(ec) || ec) { ec.clear(); continue; }
+					for (fs::directory_iterator eit(vit->path(), ec), eend; eit != eend; eit.increment(ec))
+					{
+						if (ec) { ec.clear(); continue; }
+						if (!eit->is_directory(ec) || ec) { ec.clear(); continue; }
+						fs::path candidate = eit->path() / kVsSuffix;
+						if (fs::exists(candidate, ec) && !ec)
+							return L"\"" + candidate.make_preferred().wstring() + L"\"";
+						ec.clear();
+					}
+				}
+			}
+
+			// 3) standalone CMake 기본 설치 위치.
+			{
+				std::error_code ec;
+				fs::path standalone = L"C:/Program Files/CMake/bin/cmake.exe";
+				if (fs::exists(standalone, ec) && !ec)
+					return L"\"" + standalone.make_preferred().wstring() + L"\"";
+			}
+
+			// 못 찾으면 빈 문자열. 호출부에서 안내 메시지를 남긴다.
+			return std::wstring();
+		}
+
 		// 명령어를 실행하고 Exit Code를 반환하는 함수임
 		int ExecuteCommandWithConsole(const std::wstring& command)
 		{
@@ -198,9 +259,19 @@ namespace Alice
 		// ----------------------------------------------------------------------
 		if (needBuild)
 		{
+			const std::wstring cmakeExe = ResolveCMakeCommand();
+			if (cmakeExe.empty())
+			{
+				ALICE_LOG_ERRORF(
+					"Reload Scripts: cmake not found. Install CMake, or install the "
+					"\"C++ CMake tools for Windows\" component in Visual Studio, "
+					"or add cmake to PATH.");
+				return false;
+			}
+
 			if (!exists(scriptsBuildDir / "CMakeCache.txt"))
 			{
-				std::wstring cmdConfig = L"cmake -S \"";
+				std::wstring cmdConfig = cmakeExe + L" -S \"";
 				cmdConfig += scriptsRoot.wstring();
 				cmdConfig += L"\" -B \"";
 				cmdConfig += scriptsBuildDir.wstring();
@@ -219,7 +290,7 @@ namespace Alice
 			// ----------------------------------------------------------------------
 			// 2: Build 명령어 (cmd.exe /C는 ExecuteCommandWithConsole에서 처리)
 			// ----------------------------------------------------------------------
-			std::wstring cmdBuild = L"cmake --build \"";
+			std::wstring cmdBuild = cmakeExe + L" --build \"";
 			cmdBuild += scriptsBuildDir.wstring();
 			cmdBuild += L"\" --config ";
 			cmdBuild += kConfig;
