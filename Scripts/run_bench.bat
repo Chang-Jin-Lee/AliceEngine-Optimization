@@ -32,7 +32,9 @@ if not exist "%TAKE%" (
     exit /b 1
 )
 
-set "COMMON=--camera-replay=%TAKE% --vsync=off --width=1920 --height=1080 --warmup=5 --duration=15"
+REM --debug-draw=off : 에디터 디버그 와이어프레임은 화면을 가리고 드로우콜에도 얹힌다.
+REM legacy/current 양쪽에 동일하게 적용되므로 A/B 비교는 왜곡되지 않는다.
+set "COMMON=--camera-replay=%TAKE% --vsync=off --debug-draw=off --width=1920 --height=1080 --warmup=5 --duration=15"
 
 if not exist "%OUT%" mkdir "%OUT%"
 

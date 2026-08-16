@@ -11,6 +11,9 @@ REM ================================================================
 
 set "REPO=%~dp0.."
 set "EXE=%REPO%\build\bin\Release\Launch.exe"
+REM 타일이 가장 밀집한 씬. 렌더독 기록의 원본 장면은
+REM DuellumCycli/PrototypeDungeon.scene 이지만 씬과 애셋이 어긋나 있어
+REM (타일 메시가 20000단위인데 격자 간격은 2) 촬영에는 이 씬을 쓴다.
 set "SCENE=#01PrototypeMap.scene"
 set "TAKE=%REPO%\Bench\take01.json"
 
@@ -42,7 +45,7 @@ pause >nul
 REM 출력은 절대 경로로 넘긴다. 상대 경로는 exe 작업 디렉터리 기준이라
 REM 저장소의 Bench\ 가 아니라 build 폴더 안에 떨어진다.
 pushd "%REPO%\build\bin\Release"
-Launch.exe --scene=%SCENE% --camera-record="%TAKE%" --vsync=off
+Launch.exe --scene=%SCENE% --camera-record="%TAKE%" --vsync=off --debug-draw=off
 set "EL=%errorlevel%"
 popd
 
