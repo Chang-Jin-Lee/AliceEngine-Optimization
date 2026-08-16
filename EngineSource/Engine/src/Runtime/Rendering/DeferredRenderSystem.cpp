@@ -33,6 +33,7 @@
 #include "Runtime/Rendering/Components/RectLightComponent.h"
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
 #include "Runtime/Rendering/CullingTuning.h"
+#include "Runtime/Rendering/ShadowCulling.h"
 #include "Runtime/Rendering/ShaderCode/CommonShaderCode.h"
 #include "Runtime/Rendering/ShaderCode/DeferredShader.h"
 #include "Runtime/Rendering/TrailEffectRenderSystem.h"
@@ -2442,8 +2443,19 @@ namespace Alice
         // Depth-only: PS none
         m_context->PSSetShader(nullptr, nullptr, 0);
 
-        // 프러스텀 컬링을 위한 카메라 절두체 계산 (성능 확보를 위해 카메라 프러스텀 사용)
-        BoundingFrustum cameraFrustum = camera.GetWorldFrustum();
+        // [그림자 캐스터 컬링] 기준은 카메라가 아니라 이 빛의 섀도우맵 범위다.
+        // 카메라 프러스텀으로 걸러내면 화면 밖 물체가 섀도우맵에서 빠져,
+        // 실내에서 이동해 벽이 시야를 벗어나는 순간 그 벽의 그림자가 사라지고
+        // 화면이 갑자기 밝아진다.
+        const ShadowCulling::OrthoVolume shadowVolume{ r, nearZ, farZ };
+        auto castsIntoShadowMap = [&lightView, &shadowVolume](const BoundingSphere& worldBounds)
+        {
+            XMFLOAT3 centerLs{};
+            XMStoreFloat3(&centerLs,
+                XMVector3TransformCoord(XMLoadFloat3(&worldBounds.Center), lightView));
+            return ShadowCulling::IntersectsShadowVolume(
+                centerLs.x, centerLs.y, centerLs.z, worldBounds.Radius, shadowVolume);
+        };
 
         // 1) Static meshes (cube)
         if (m_cubeVB && m_cubeIB && m_shadowInputLayout && m_shadowVS && m_cubeIndexCount > 0)
@@ -2501,7 +2513,7 @@ namespace Alice
 
                 XMMATRIX worldM = BuildWorldMatrix(world, id, tr);
 
-                // [프러스텀 컬링] 카메라 시야 밖 오브젝트는 건너뛰기
+                // [그림자 볼륨 컬링] 이 빛의 섀도우맵에 담기지 않는 것만 건너뛴다
                 const BoundingSphere bounds = BuildSphereFromLocalAabb(
                     worldM,
                     XMFLOAT3(-CullingTuning::StaticMeshLocalBoundsExtent,
@@ -2510,9 +2522,9 @@ namespace Alice
                     XMFLOAT3(CullingTuning::StaticMeshLocalBoundsExtent,
                              CullingTuning::StaticMeshLocalBoundsExtent,
                              CullingTuning::StaticMeshLocalBoundsExtent));
-                if (cameraFrustum.Contains(bounds) == DISJOINT)
+                if (!castsIntoShadowMap(bounds))
                 {
-                    continue; // 화면에 보이지 않으면 렌더링하지 않음
+                    continue;
                 }
 
                 const bool flipped = XMVectorGetX(XMMatrixDeterminant(worldM)) < 0.0f;
@@ -2685,9 +2697,9 @@ namespace Alice
                     (m_skinnedRegistry && !cmd.meshKey.empty()) ? m_skinnedRegistry->Find(cmd.meshKey) : nullptr;
 
                 const BoundingSphere bounds = BuildSkinnedCullingSphere(cmd.world, mesh.get());
-                if (cameraFrustum.Contains(bounds) == DISJOINT)
+                if (!castsIntoShadowMap(bounds))
                 {
-                    continue; // 화면에 보이지 않으면 렌더링하지 않음
+                    continue;
                 }
 
                 // 본 1개 + Identity인 경우만 인스턴싱 대상으로 처리

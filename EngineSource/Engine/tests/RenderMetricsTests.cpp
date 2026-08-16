@@ -2,6 +2,7 @@
 #include "Runtime/Rendering/Metrics/RenderStats.h"
 #include "Editor/Panels/MetricsOverlay.h"
 #include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
+#include "Runtime/Rendering/ShadowCulling.h"
 #include "Runtime/Rendering/ShaderCode/DeferredShader.h"
 #include "Runtime/Engine/CommandLineOptions.h"
 #include "Runtime/Engine/BenchCameraTake.h"
@@ -300,6 +301,38 @@ int main()
     Check(frameOverlay.History().Count() == 4 &&
         frameOverlay.History().ValueAtOldest(3) == 20.0f,
         "a newly resolved frame must replace the repeated value on that render frame");
+
+    // --- 방향광 그림자 캐스터 컬링 ---
+    // 카메라 프러스텀으로 캐스터를 버리면 화면 밖 물체의 그림자가 사라진다.
+    // 판정 기준이 라이트 볼륨이라는 것을 여기서 고정한다.
+    {
+        using Alice::ShadowCulling::IntersectsShadowVolume;
+        const Alice::ShadowCulling::OrthoVolume volume{ 50.0f, 0.01f, 300.0f };
+
+        Check(IntersectsShadowVolume(0.0f, 0.0f, 150.0f, 1.0f, volume),
+            "a caster inside the shadow volume must be drawn");
+
+        // 이번 수정의 회귀 케이스: 카메라 뒤에 있어도 라이트 볼륨 안이면 그림자를 남겨야 한다.
+        Check(IntersectsShadowVolume(-45.0f, 0.0f, 20.0f, 2.0f, volume),
+            "a caster behind the camera must still be drawn when it sits inside the light volume");
+
+        Check(!IntersectsShadowVolume(500.0f, 0.0f, 150.0f, 1.0f, volume),
+            "a caster far outside the volume in X must be culled");
+        Check(!IntersectsShadowVolume(0.0f, -500.0f, 150.0f, 1.0f, volume),
+            "a caster far outside the volume in Y must be culled");
+        Check(!IntersectsShadowVolume(0.0f, 0.0f, 400.0f, 1.0f, volume),
+            "a caster beyond farZ must be culled");
+        Check(!IntersectsShadowVolume(0.0f, 0.0f, -50.0f, 1.0f, volume),
+            "a caster before nearZ must be culled");
+
+        // 경계에 걸친 물체는 반지름만큼 부풀린 판정에 걸려 살아남아야 한다.
+        Check(IntersectsShadowVolume(53.0f, 0.0f, 150.0f, 5.0f, volume),
+            "a caster straddling the volume edge must be kept, not culled");
+        Check(!IntersectsShadowVolume(53.0f, 0.0f, 150.0f, 1.0f, volume),
+            "a caster clear of the edge by more than its radius must be culled");
+        Check(IntersectsShadowVolume(0.0f, 0.0f, 302.0f, 5.0f, volume),
+            "a caster straddling farZ must be kept");
+    }
 
     const std::uint64_t overlayNanoseconds =
         Alice::MetricsOverlay::MeasureAverageRenderNanosecondsForTesting(10'000);
