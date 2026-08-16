@@ -10,6 +10,9 @@
 /EngineSettings.json
 # 벤치 산출물 (CSV, 프레임 PNG, 인코딩 영상). Bench/*.json 카메라 테이크는 커밋한다
 /Artifacts/
+
+# 에디터 창 배치 (로컬 환경마다 다름)
+/imgui.ini
 # Codex/에이전트의 격리 구현 작업공간
 /.worktrees/
 # User-specific files

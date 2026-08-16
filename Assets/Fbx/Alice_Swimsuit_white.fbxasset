@@ -1,0 +1,19 @@
+{
+    "materials": [
+        "Assets/Materials/Alice_Swimsuit_white_0.mat",
+        "Assets/Materials/Alice_Swimsuit_white_1.mat",
+        "Assets/Materials/Alice_Swimsuit_white_2.mat",
+        "Assets/Materials/Alice_Swimsuit_white_3.mat",
+        "Assets/Materials/Alice_Swimsuit_white_4.mat",
+        "Assets/Materials/Alice_Swimsuit_white_5.mat",
+        "Assets/Materials/Alice_Swimsuit_white_6.mat",
+        "Assets/Materials/Alice_Swimsuit_white_7.mat",
+        "Assets/Materials/Alice_Swimsuit_white_8.mat",
+        "Assets/Materials/Alice_Swimsuit_white_9.mat",
+        "Assets/Materials/Alice_Swimsuit_white_10.mat",
+        "Assets/Materials/Alice_Swimsuit_white_11.mat",
+        "Assets/Materials/Alice_Swimsuit_white_12.mat"
+    ],
+    "mesh": "Alice_Swimsuit_white",
+    "source_fbx": "Resource/fbx/Alice_Swimsuit_white.fbx"
+}
