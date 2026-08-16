@@ -26,6 +26,7 @@ namespace Alice
     class ResourceManager;
     class DebugDrawSystem;
     class UIRenderer;
+    class RenderStats;
     /// 간단한 Forward 렌더 시스템입니다.
     /// - 큐브 1개를 그려서 Phong / Blinn-Phong 라이트를 확인할 수 있습니다.
     /// - World의 TransformComponent를 읽어와 월드 행렬을 구성합니다.
@@ -47,6 +48,8 @@ namespace Alice
 
         /// 스키닝 메시 메타데이터(서브셋/스켈레톤)를 조회하기 위한 레지스트리를 주입합니다.
         void SetSkinnedMeshRegistry(SkinnedMeshRegistry* registry) { m_skinnedRegistry = registry; }
+
+        void SetRenderStats(RenderStats* stats) { m_renderStats = stats; }
 
         /// 텍스처를 미리 로드하여 캐시에 보관합니다.
         /// - 경로가 비거나 로딩 실패 시 false 반환.
@@ -145,12 +148,21 @@ namespace Alice
         bool IsValidPipeline() const;
         void RestoreBackBuffer();
 
+        void IssueDrawIndexed(UINT indexCount, UINT startIndexLocation, INT baseVertexLocation);
+        void IssueDrawIndexedInstanced(
+            UINT indexCountPerInstance,
+            UINT instanceCount,
+            UINT startIndexLocation,
+            INT baseVertexLocation,
+            UINT startInstanceLocation);
+
         ID3D11ShaderResourceView* GetOrCreateTexture(const std::string& path);
 
     private:
         ID3D11RenderDevice& m_renderDevice;
         ResourceManager*     m_resources { nullptr };
         SkinnedMeshRegistry* m_skinnedRegistry { nullptr };
+        RenderStats*         m_renderStats { nullptr };
 
         Microsoft::WRL::ComPtr<ID3D11Device>           m_device;
         Microsoft::WRL::ComPtr<ID3D11DeviceContext>    m_context;

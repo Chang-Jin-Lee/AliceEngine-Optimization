@@ -7,6 +7,7 @@
 #include "Runtime/Rendering/Components/PostProcessVolumeComponent.h"
 #include "Runtime/Rendering/Components/MaterialComponent.h"
 #include "Runtime/Rendering/Components/CameraComponent.h"
+#include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
 #include "Runtime/Rendering/Components/PointLightComponent.h"
 #include "Runtime/Rendering/Components/SpotLightComponent.h"
 #include "Runtime/Rendering/Components/RectLightComponent.h"
@@ -446,8 +447,24 @@ namespace Alice {
 		// 내부 헬퍼 함수 (SetParent 등에서 사용)
 		inline DirectX::XMMATRIX ComputeWorldMatrix_Internal(const World& world, EntityId entityId)
 		{
-			std::vector<DirectX::XMMATRIX> matrixStack;
 			EntityId currentId = entityId;
+			DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixIdentity();
+
+			if (!LegacyPathFlags::Get().heapAllocWorldMatrix)
+			{
+				while (currentId != InvalidEntityId)
+				{
+					const TransformComponent* t = world.GetComponent<TransformComponent>(currentId);
+					if (!t)
+						break;
+					worldMatrix = worldMatrix * BuildLocalMatrix(*t);
+					currentId = t->parent;
+				}
+				return worldMatrix;
+			}
+
+			// OPTIMIZATION_REPORT P02: preserve the former heap-backed parent stack.
+			std::vector<DirectX::XMMATRIX> matrixStack;
 
 			while (currentId != InvalidEntityId)
 			{
@@ -464,7 +481,6 @@ namespace Alice {
 				}
 			}
 
-			DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixIdentity();
 			for (const auto& m : matrixStack)
 			{
 				worldMatrix = worldMatrix * m;

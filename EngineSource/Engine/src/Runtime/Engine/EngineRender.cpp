@@ -2,6 +2,8 @@
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Rendering/Components/CameraComponent.h"
 
+#include <iomanip>
+
 namespace Alice
 {
 	namespace
@@ -49,34 +51,104 @@ namespace Alice
 
 		if (!RenderValidateRenderSystems()) return;
 
-		RenderBeginFrame();
+		const std::uint64_t frameSerial = ++m_renderFrameSerial;
+		if (m_benchCsv)
+			m_benchFrameTimes.emplace(frameSerial, m_benchElapsedSeconds);
+		m_gpuProfiler.SetEnabled(m_metricsEnabled);
+		m_renderStats.SetEnabled(m_metricsEnabled);
+		const bool gpuMetricsFrame = m_gpuProfiler.BeginFrame(frameSerial);
+		const bool renderStatsFrame = gpuMetricsFrame &&
+			m_renderStats.BeginFrame(frameSerial, static_cast<double>(m_timer.DeltaTime()) * 1000.0);
 
-		if (m_editorMode)
 		{
-			RenderEditorUI();
-			RenderEditorDebugBuild();
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::MainPass);
+			// Attribute frame-target setup and any GPU work submitted while preparing
+			// the draw list to MainPass so the named scopes cover the whole GPU frame.
+			RenderBeginFrame();
+			m_editorCore.BeginFrame();
+
+			if (m_editorMode)
+			{
+				RenderEditorUI();
+				RenderEditorDebugBuild();
+			}
+
+			RenderEnsureAnimationIfNotUpdated();
+			RenderBuildSkinnedDrawList();
+			RenderOnDemandSkinnedMeshLoading();
+
+			// Update에서 애니메이션이 안 돈 프레임을 Render에서 보정하므로, 오디오 위치도 그 이후가 안전
+			RenderAudioUpdate();
+
+			RenderMainPass();
 		}
-
-		RenderEnsureAnimationIfNotUpdated();
-		RenderBuildSkinnedDrawList();
-		RenderOnDemandSkinnedMeshLoading();
-
-		// Update에서 애니메이션이 안 돈 프레임을 Render에서 보정하므로, 오디오 위치도 그 이후가 안전
-		RenderAudioUpdate();
-
-		RenderMainPass();
-		RenderCameraPreview();
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::CameraPreview);
+			RenderCameraPreview();
+		}
 		RenderUnbindDepthOnly();
 
-		RenderComputeEffects();
-		RenderParticleOverlayComposite();
-		RenderDebugOverlayComposite();
-		RenderGameModeToneMappingAndUI();
-		RenderOverlayEffects();
-		if (m_editorMode)
-			RenderEditorDraw();
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::ComputeEffects);
+			RenderComputeEffects();
+		}
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::ParticleOverlay);
+			RenderParticleOverlayComposite();
+		}
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::DebugOverlay);
+			RenderDebugOverlayComposite();
+		}
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::ToneMapAndUI);
+			RenderGameModeToneMappingAndUI();
+		}
 
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::OverlayEffects);
+			RenderOverlayEffects();
+		}
+
+		m_metricsOverlay.Render(MetricsOverlayRuntimeState{
+			LegacyPathFlags::Get().AnyEnabled(),
+			m_renderDevice->IsVsyncEnabled(),
+			m_width,
+			m_height
+		});
+		{
+			ALICE_GPU_SCOPE(m_gpuProfiler, GpuScope::EditorDraw);
+			RenderEditorDraw();
+		}
+		RenderBenchFrameCapture();
+
+		if (gpuMetricsFrame)
+			m_gpuProfiler.EndFrame();
+		if (renderStatsFrame)
+			m_renderStats.EndFrame();
 		RenderEndFrame();
+		m_gpuProfiler.Resolve();
+		m_renderStats.Resolve(m_gpuProfiler);
+		m_metricsOverlay.Update(m_renderStats.Latest(), m_gpuProfiler);
+		RenderBenchMetrics();
+
+		if (m_commandLine.benchRequested)
+		{
+			++m_benchRenderedFrames;
+			m_benchElapsedSeconds += !m_commandLine.cameraReplay.empty()
+				? m_replayTake.fixedDeltaSeconds
+				: static_cast<double>(m_unscaledDeltaTime);
+
+			if (!m_commandLine.cameraReplay.empty())
+				++m_replayFrameIndex;
+
+			const bool replayComplete = !m_commandLine.cameraReplay.empty() &&
+				m_replayFrameIndex >= m_replayTake.FrameCount();
+			const bool durationComplete = m_commandLine.durationSeconds > 0.0 &&
+				m_benchElapsedSeconds >= m_commandLine.durationSeconds;
+			if (replayComplete || durationComplete)
+				PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
+		}
 	}
 
 	// =========================
@@ -137,8 +209,6 @@ namespace Alice
 	void Engine::Impl::RenderEditorUI()
 	{
 		if (!m_editorMode) return;
-
-		m_editorCore.BeginFrame();
 
 		int shadingMode = static_cast<int>(m_shadingMode);
 		m_editorCore.DrawEditorUI(
@@ -774,9 +844,6 @@ namespace Alice
 
 	void Engine::Impl::RenderEditorDraw()
 	{
-		if (!m_editorMode)
-			return;
-
 		if (m_renderDevice)
 		{
 			auto* ctx = m_renderDevice->GetImmediateContext();
@@ -802,6 +869,95 @@ namespace Alice
 	void Engine::Impl::RenderEndFrame()
 	{
 		m_renderDevice->EndFrame();
+	}
+
+	void Engine::Impl::RenderBenchFrameCapture()
+	{
+		if (m_commandLine.framePattern.empty() ||
+			m_benchRenderedFrames % m_commandLine.frameStride != 0)
+			return;
+
+		const std::filesystem::path output = ResolveBenchFramePath(m_benchRenderedFrames);
+		std::string captureError;
+		if (!m_renderDevice->CaptureBackBufferPng(output, captureError))
+		{
+			ALICE_LOG_ERRORF("[Bench] %s", captureError.c_str());
+			m_commandLine.framePattern.clear();
+			m_benchExitCode = 1;
+			PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
+		}
+	}
+
+	std::filesystem::path Engine::Impl::ResolveBenchFramePath(std::uint64_t frameIndex) const
+	{
+		const std::wstring& pattern = m_commandLine.framePattern;
+		const std::size_t percent = pattern.find(L'%');
+		const std::size_t conversion = pattern.find(L'd', percent);
+		if (percent == std::wstring::npos || conversion == std::wstring::npos)
+			return {};
+
+		std::uint32_t width = 0;
+		std::size_t digit = percent + 1;
+		if (digit < conversion && pattern[digit] == L'0') ++digit;
+		for (; digit < conversion; ++digit)
+			width = width * 10u + static_cast<std::uint32_t>(pattern[digit] - L'0');
+
+		std::wostringstream number;
+		if (width > 0) number << std::setw(width) << std::setfill(L'0');
+		number << frameIndex;
+		return pattern.substr(0, percent) + number.str() + pattern.substr(conversion + 1);
+	}
+
+	void Engine::Impl::RenderBenchMetrics()
+	{
+		if (!m_benchCsv.is_open())
+			return;
+		if (!m_benchCsv)
+		{
+			ALICE_LOG_ERRORF("[Bench] CSV write failed: %s",
+				m_commandLine.csvPath.string().c_str());
+			m_benchExitCode = 1;
+			PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
+			return;
+		}
+
+		const RenderStatsSnapshot& stats = m_renderStats.Latest();
+		if (stats.frameSerial == 0 || stats.frameSerial == m_lastCsvFrameSerial ||
+			!stats.pipelineStatsValid || !stats.gpuScopesValid)
+			return;
+		const auto frameTime = m_benchFrameTimes.find(stats.frameSerial);
+		if (frameTime == m_benchFrameTimes.end())
+			return;
+
+		m_lastCsvFrameSerial = stats.frameSerial;
+		const double elapsedSeconds = frameTime->second;
+		m_benchFrameTimes.erase(
+			m_benchFrameTimes.begin(), m_benchFrameTimes.upper_bound(stats.frameSerial));
+		if (elapsedSeconds < m_commandLine.warmupSeconds)
+			return;
+		auto scope = [&](GpuScope value)
+		{
+			return stats.gpuScopeMilliseconds[static_cast<std::size_t>(value)];
+		};
+		m_benchCsv << std::fixed << std::setprecision(6)
+			<< stats.frameSerial << ',' << stats.presentMs << ',' << stats.cpuFrameMs << ','
+			<< scope(GpuScope::Frame) << ',' << scope(GpuScope::MainPass) << ','
+			<< scope(GpuScope::CameraPreview) << ',' << scope(GpuScope::ComputeEffects) << ','
+			<< scope(GpuScope::ParticleOverlay) << ',' << scope(GpuScope::DebugOverlay) << ','
+			<< scope(GpuScope::ToneMapAndUI) << ',' << scope(GpuScope::OverlayEffects) << ','
+			<< stats.drawCalls << ',' << stats.instancedDrawCalls << ','
+			<< stats.iaPrimitives << ',' << stats.vsInvocations << ',' << stats.psInvocations << ','
+			<< stats.cPrimitives << ',' << stats.boneCbMapCount << ','
+			<< stats.boneCbBytesUploaded << ',' << stats.vramUsedMB << ','
+			<< stats.workingSetMB << '\n';
+		if (!m_benchCsv)
+		{
+			ALICE_LOG_ERRORF("[Bench] CSV row write failed at frame %llu: %s",
+				static_cast<unsigned long long>(stats.frameSerial),
+				m_commandLine.csvPath.string().c_str());
+			m_benchExitCode = 1;
+			PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
+		}
 	}
 
 	void Engine::Impl::EnsureSkinnedMeshesRegisteredForWorld()

@@ -99,6 +99,8 @@ set(ENGINE_SOURCES
     ${ALICE_SRC_DIR}/Runtime/Engine/EngineRender.cpp
     ${ALICE_SRC_DIR}/Runtime/Engine/EnginePhysics.cpp
     ${ALICE_SRC_DIR}/Runtime/Engine/EngineWindow.cpp
+    ${ALICE_SRC_DIR}/Runtime/Engine/CommandLineOptions.cpp
+    ${ALICE_SRC_DIR}/Runtime/Engine/BenchCameraTake.cpp
     ${ALICE_SRC_DIR}/Editor/Core/ViewportPicker.cpp
     ${ALICE_SRC_DIR}/Editor/Core/EditorCore.cpp
     ${ALICE_SRC_DIR}/Editor/Core/EditorUndoRedo.cpp
@@ -119,6 +121,7 @@ set(ENGINE_SOURCES
     ${ALICE_SRC_DIR}/Editor/Panels/GameViewportPanel.cpp
     ${ALICE_SRC_DIR}/Editor/Panels/CameraPanel.cpp
     ${ALICE_SRC_DIR}/Editor/Panels/LightingPanel.cpp
+    ${ALICE_SRC_DIR}/Editor/Panels/MetricsOverlay.cpp
     ${ALICE_SRC_DIR}/Editor/Tools/PvdSettingsWindow.cpp
     ${ALICE_SRC_DIR}/Editor/Tools/BuildGameWindow.cpp
     ${ALICE_SRC_DIR}/Editor/Tools/Blueprint/AnimBlueprintEditor.cpp
@@ -183,6 +186,9 @@ set(ENGINE_SOURCES
 
     # 렌더링 계층
     ${ALICE_SRC_DIR}/Runtime/Rendering/Camera.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/GpuProfiler.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/RenderStats.cpp
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/LegacyPathFlags.cpp
     ${ALICE_SRC_DIR}/Runtime/Rendering/D3D11/D3D11RenderDevice.cpp
     ${ALICE_SRC_DIR}/Runtime/Rendering/ForwardRenderSystem.cpp
     ${ALICE_SRC_DIR}/Runtime/Rendering/DeferredRenderSystem.cpp
@@ -322,6 +328,10 @@ set(ENGINE_HEADERS
 
     # 렌더링 계층
     ${ALICE_SRC_DIR}/Runtime/Rendering/Camera.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/GpuProfiler.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/RenderStats.h
+    ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/LegacyPathFlags.h
+    ${ALICE_SRC_DIR}/Editor/Panels/MetricsOverlay.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/ForwardRenderSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/DeferredRenderSystem.h
     ${ALICE_SRC_DIR}/Runtime/Rendering/SkinnedMeshRegistry.h
@@ -412,6 +422,27 @@ add_library(Engine STATIC
     ${ENGINE_SOURCES}
     ${ENGINE_HEADERS}
 )
+
+include(CTest)
+if(BUILD_TESTING)
+    add_executable(RenderMetricsTests
+        EngineSource/Engine/tests/RenderMetricsTests.cpp
+        ${ALICE_SRC_DIR}/Editor/Panels/MetricsOverlay.cpp
+        ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/GpuProfiler.cpp
+        ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/RenderStats.cpp
+        ${ALICE_SRC_DIR}/Runtime/Rendering/Metrics/LegacyPathFlags.cpp
+        ${ALICE_SRC_DIR}/Runtime/Engine/CommandLineOptions.cpp
+        ${ALICE_SRC_DIR}/Runtime/Engine/BenchCameraTake.cpp
+        ${ALICE_SRC_DIR}/Runtime/Foundation/Logger.cpp
+    )
+    target_include_directories(RenderMetricsTests PRIVATE ${ALICE_SRC_DIR})
+    target_compile_definitions(RenderMetricsTests PRIVATE
+        NOMINMAX
+        ALICE_METRICS_TESTING=1
+    )
+    target_link_libraries(RenderMetricsTests PRIVATE imgui d3d11 dxgi psapi shell32)
+    add_test(NAME render_metrics_contracts COMMAND RenderMetricsTests)
+endif()
 
 # [설정] Engine에 RTTR 연결 (PUBLIC: 엔진을 쓰는 프로젝트도 RTTR 사용 가능)
 target_link_libraries(Engine PUBLIC RTTR::Core)
@@ -676,8 +707,10 @@ foreach(target Launch AlicePlayer)
             dxgi
             dxguid
             d3dcompiler
+            psapi
             directxtk
             directxtex
+            shell32
             $<$<CONFIG:Debug>:assimp-vc143-mtd>
             $<$<CONFIG:Release>:assimp-vc143-mt>
     )

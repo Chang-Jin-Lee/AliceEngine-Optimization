@@ -11,6 +11,7 @@
 #include "Runtime/Importing/FbxModel.h"
 #include "Runtime/Importing/FbxAnimation.h"
 #include "Runtime/Foundation/Logger.h"
+#include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
 #include "Runtime/Gameplay/Animation/AdvancedAnimationComponent.h"
 #include "Runtime/Gameplay/Sockets/SocketComponent.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
@@ -111,15 +112,32 @@ namespace Alice
                     animComp->timeSec = std::fmod(animComp->timeSec, clipDur);
                 }
 
-                rt.anim.SetCurrentIndex(animComp->clipIndex);
-                rt.anim.SetTimeSec(animComp->timeSec);
+                const bool poseInputsChanged =
+                    rt.lastClipIndex != animComp->clipIndex ||
+                    rt.lastTimeSec != animComp->timeSec;
+                const bool evaluatePose = LegacyPathDetail::ShouldEvaluateAnimation(
+                    animComp->playing, rt.poseEvaluated, poseInputsChanged,
+                    LegacyPathFlags::Get().animateWhenNotPlaying);
 
-                // 팔레트 계산(전치 없음: ForwardRenderSystem에서 전치해서 업로드)
-                rt.anim.BuildCurrentPaletteFloat4x4(animComp->palette);
-				for (auto& mat : animComp->palette) {
-					DirectX::XMMATRIX m = DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&mat));
-					DirectX::XMStoreFloat4x4(&mat, m);
-				}
+                // OPTIMIZATION_REPORT P03: the current path skips only pose evaluation;
+                // socket world output still follows a moving entity/parent transform.
+                if (evaluatePose)
+                {
+                    rt.anim.SetCurrentIndex(animComp->clipIndex);
+                    rt.anim.SetTimeSec(animComp->timeSec);
+
+                    // 팔레트 계산(전치 없음: ForwardRenderSystem에서 전치해서 업로드)
+                    rt.anim.BuildCurrentPaletteFloat4x4(animComp->palette);
+					for (auto& mat : animComp->palette)
+                    {
+						DirectX::XMMATRIX m = DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&mat));
+						DirectX::XMStoreFloat4x4(&mat, m);
+                    }
+
+                    rt.poseEvaluated = true;
+                    rt.lastClipIndex = animComp->clipIndex;
+                    rt.lastTimeSec = animComp->timeSec;
+                }
 
                 // SocketComponent.sockets[].world 갱신 (SkinnedAnimation 사용 엔티티)
                 if (auto* sockets = world.GetComponent<SocketComponent>(entityId))
@@ -130,7 +148,8 @@ namespace Alice
                         if (world.GetComponent<TransformComponent>(entityId))
                             worldRow = world.ComputeWorldMatrix(entityId);
 
-                        rt.anim.EvaluateGlobalsAtFull(animComp->clipIndex, animComp->timeSec, rt.globals);
+                        if (evaluatePose || rt.globals.empty())
+                            rt.anim.EvaluateGlobalsAtFull(animComp->clipIndex, animComp->timeSec, rt.globals);
                         if (!rt.globals.empty())
                         {
                             const auto& nodeIndexOfName = mesh->sourceModel->GetNodeIndexOfName();
@@ -179,6 +198,9 @@ namespace Alice
             std::string meshKey;
             FbxAnimation anim;
             std::vector<DirectX::XMFLOAT4X4> globals;
+            bool poseEvaluated{ false };
+            int lastClipIndex{ -1 };
+            double lastTimeSec{ 0.0 };
         };
 
         SkinnedMeshRegistry& m_registry;

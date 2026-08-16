@@ -1,5 +1,7 @@
 #include "Runtime/Rendering/ForwardRenderSystem.h"
 #include "Runtime/Rendering/DebugDrawSystem.h"
+#include "Runtime/Rendering/Metrics/RenderStats.h"
+#include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
 #include "Runtime/Rendering/PostProcessSettings.h"
 
 #include <d3dcompiler.h>
@@ -321,6 +323,9 @@ namespace Alice
         // 본 없는(Identity 1개) FBX 여부 판단
         bool IsRigidSkinnedCommand(const SkinnedDrawCommand& cmd)
         {
+            // RenderDoc record: the legacy path kept rigid/static imports on the skinning path.
+            if (LegacyPathFlags::Get().staticMeshThroughSkinning)
+                return false;
             if (!cmd.bones || cmd.boneCount != 1)
                 return false;
 
@@ -334,6 +339,43 @@ namespace Alice
     {
         m_device  = m_renderDevice.GetDevice();
         m_context = m_renderDevice.GetImmediateContext();
+    }
+
+    void ForwardRenderSystem::IssueDrawIndexed(
+        UINT indexCount, UINT startIndexLocation, INT baseVertexLocation)
+    {
+        if (m_renderStats)
+            m_renderStats->DrawIndexed(m_context.Get(), indexCount, startIndexLocation, baseVertexLocation);
+        else
+            m_context.Get()->DrawIndexed(indexCount, startIndexLocation, baseVertexLocation);
+    }
+
+    void ForwardRenderSystem::IssueDrawIndexedInstanced(
+        UINT indexCountPerInstance,
+        UINT instanceCount,
+        UINT startIndexLocation,
+        INT baseVertexLocation,
+        UINT startInstanceLocation)
+    {
+        if (m_renderStats)
+        {
+            m_renderStats->DrawIndexedInstanced(
+                m_context.Get(),
+                indexCountPerInstance,
+                instanceCount,
+                startIndexLocation,
+                baseVertexLocation,
+                startInstanceLocation);
+        }
+        else
+        {
+            m_context.Get()->DrawIndexedInstanced(
+                indexCountPerInstance,
+                instanceCount,
+                startIndexLocation,
+                baseVertexLocation,
+                startInstanceLocation);
+        }
     }
 
     bool ForwardRenderSystem::Initialize(std::uint32_t width, std::uint32_t height)
@@ -1137,8 +1179,20 @@ namespace Alice
         auto* cb = reinterpret_cast<CBBones*>(mapped.pData);
         cb->boneCount = (std::min)(boneCount, (uint32_t)MaxBones);
 
-        for (std::uint32_t i = 0; i < cb->boneCount; ++i)
-            cb->bones[i] = XMMatrixTranspose(XMLoadFloat4x4(&boneMatrices[i]));
+        const bool legacyFullBuffer = LegacyPathFlags::Get().fullBoneConstantBuffer;
+        const std::uint32_t matricesToWrite =
+            LegacyPathDetail::BoneMatricesToWrite(boneCount, legacyFullBuffer);
+        for (std::uint32_t i = 0; i < matricesToWrite; ++i)
+        {
+            // OPTIMIZATION_REPORT P01: the legacy path rewrites all 1023 matrices.
+            cb->bones[i] = i < cb->boneCount
+                ? XMMatrixTranspose(XMLoadFloat4x4(&boneMatrices[i]))
+                : XMMatrixIdentity();
+        }
+
+        if (m_renderStats)
+            m_renderStats->RecordBoneCbUpload(
+                LegacyPathDetail::BoneUploadBytes(boneCount, legacyFullBuffer));
 
         m_context->Unmap(m_cbBones.Get(), 0);
         m_context->VSSetConstantBuffers(2, 1, m_cbBones.GetAddressOf());
@@ -1417,7 +1471,7 @@ namespace Alice
         m_context->PSSetShaderResources(0, 1, &srv);
         m_context->PSSetSamplers(0, 1, &sam);
 
-        m_context->DrawIndexed(m_indexCount, 0, 0);
+        IssueDrawIndexed(m_indexCount, 0, 0);
 
         // 상태 복원 및 릴리즈
         m_context->OMSetDepthStencilState(pDS, ref);
@@ -1591,7 +1645,7 @@ namespace Alice
                                           batchKey.envDiffuseStrength, batchKey.envSpecularStrength,
                                           XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
 
-                        m_context->DrawIndexedInstanced(batchKey.indexCount, (UINT)batchInstances.size(),
+                        IssueDrawIndexedInstanced(batchKey.indexCount, (UINT)batchInstances.size(),
                                                         batchKey.startIndex, batchKey.baseVertex, 0);
                     }
 
@@ -1655,7 +1709,7 @@ namespace Alice
                                       batchKey.envDiffuseStrength, batchKey.envSpecularStrength,
                                       XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
 
-                    m_context->DrawIndexedInstanced(batchKey.indexCount, (UINT)batchInstances.size(),
+                    IssueDrawIndexedInstanced(batchKey.indexCount, (UINT)batchInstances.size(),
                                                     batchKey.startIndex, batchKey.baseVertex, 0);
                 }
 
@@ -1701,7 +1755,7 @@ namespace Alice
                         objectShadingMode, cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                         cmd.envDiffuseStrength, cmd.envSpecularStrength,
                         outlineColor, 0.0f);
-                    m_context->DrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
+                    IssueDrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
                     
                     // [Pass 2] 아웃라인
                     if (outlineWidth > 0.0f)
@@ -1712,7 +1766,7 @@ namespace Alice
                             objectShadingMode, cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                             cmd.envDiffuseStrength, cmd.envSpecularStrength,
                             outlineColor, outlineWidth);
-                        m_context->DrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
+                        IssueDrawIndexed(sub.indexCount, sub.startIndex, cmd.baseVertex);
                         // 상태 복구
                         m_context->RSSetState(isPositiveDet ? m_rasterizerStateReversed.Get() : m_rasterizerState.Get());
                     }
@@ -1733,7 +1787,7 @@ namespace Alice
                     objectShadingMode, cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                     cmd.envDiffuseStrength, cmd.envSpecularStrength,
                     outlineColor, 0.0f);
-                m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
+                IssueDrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
                 
                 // [Pass 2] 아웃라인
                 if (outlineWidth > 0.0f)
@@ -1744,7 +1798,7 @@ namespace Alice
                         objectShadingMode, cmd.normalStrength, cmd.toonPbrCuts, cmd.toonPbrLevels, cmd.toonPbrAlphas, cmd.toonPbrRampIntensity, cmd.toonSelfShadowStrength,
                         cmd.envDiffuseStrength, cmd.envSpecularStrength,
                         outlineColor, outlineWidth);
-                    m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
+                    IssueDrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
                     // 상태 복구
                     m_context->RSSetState(isPositiveDet ? m_rasterizerStateReversed.Get() : m_rasterizerState.Get());
                 }
@@ -1793,7 +1847,7 @@ namespace Alice
                                   batchKey.envDiffuseStrength, batchKey.envSpecularStrength,
                                   XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
 
-                m_context->DrawIndexedInstanced(batchKey.indexCount, (UINT)batchInstances.size(),
+                IssueDrawIndexedInstanced(batchKey.indexCount, (UINT)batchInstances.size(),
                                                 batchKey.startIndex, batchKey.baseVertex, 0);
             }
 
@@ -1825,9 +1879,24 @@ namespace Alice
 
     XMMATRIX ForwardRenderSystem::BuildWorldMatrix(const World& world, EntityId entityId, const TransformComponent& transform) const
     {
-        // c.txt 참조: 부모부터 루트까지 로컬 행렬을 스택에 쌓고, 루트에서 자식으로 내려가면서 행렬 곱하기
-        std::vector<XMMATRIX> matrixStack;
         EntityId currentId = entityId;
+
+        if (!LegacyPathFlags::Get().heapAllocWorldMatrix)
+        {
+            XMMATRIX worldMatrix = XMMatrixIdentity();
+            while (currentId != InvalidEntityId)
+            {
+                const TransformComponent* t = world.GetComponent<TransformComponent>(currentId);
+                if (!t)
+                    break;
+                worldMatrix = worldMatrix * BuildWorldMatrix(*t);
+                currentId = t->parent;
+            }
+            return worldMatrix;
+        }
+
+        // OPTIMIZATION_REPORT P02: preserve the former heap-backed parent stack.
+        std::vector<XMMATRIX> matrixStack;
         
         // 부모부터 루트까지 로컬 행렬을 스택에 쌓음
         while (currentId != InvalidEntityId)
@@ -2059,7 +2128,7 @@ namespace Alice
                                       1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(),
                                       0.0f, 1.0f, 1.0f, 1.0f,
                                       XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
-                    m_context->DrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
+                    IssueDrawIndexed(cmd.indexCount, cmd.startIndex, cmd.baseVertex);
                 }
 
                 if (!instancedItems.empty())
@@ -2103,7 +2172,7 @@ namespace Alice
                                                       1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(),
                                                       0.0f, 1.0f, 1.0f, 1.0f,
                                                       XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
-                                    m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(), currentKey.startIndex, currentKey.baseVertex, 0);
+                                    IssueDrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(), currentKey.startIndex, currentKey.baseVertex, 0);
                                 }
 
                                 currentKey = item.key;
@@ -2133,7 +2202,7 @@ namespace Alice
                                               1.0f, DefaultToonPbrCuts(), DefaultToonPbrLevels(), DefaultToonPbrAlphas(),
                                               0.0f, 1.0f, 1.0f, 1.0f,
                                               XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f);
-                            m_context->DrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(), currentKey.startIndex, currentKey.baseVertex, 0);
+                            IssueDrawIndexedInstanced(currentKey.indexCount, (UINT)batchInstances.size(), currentKey.startIndex, currentKey.baseVertex, 0);
                         }
 
                         // 파이프라인 복구
@@ -2257,6 +2326,9 @@ namespace Alice
             // 아웃라인 파라미터
             XMFLOAT3 outlineColor = mat ? mat->outlineColor : XMFLOAT3(0.0f, 0.0f, 0.0f);
             float outlineWidth = mat ? mat->outlineWidth : 0.0f;
+            // RenderDoc record: the legacy material default forced an outline pass.
+            if (LegacyPathFlags::Get().outlineOnByDefault && outlineWidth <= 0.0f)
+                outlineWidth = 0.01f;
 
             // Rasterizer State (Culling)
             bool flipped = XMVectorGetX(XMMatrixDeterminant(worldM)) < 0.0f;
@@ -2279,7 +2351,7 @@ namespace Alice
                               objectShadingMode, normalStrength, toonCuts, toonLevels, toonAlphas, toonRampIntensity, toonSelfShadowStrength,
                               envDiffuseStrength, envSpecularStrength,
                               outlineColor, 0.0f);
-            m_context->DrawIndexed(m_indexCount, 0, 0);
+            IssueDrawIndexed(m_indexCount, 0, 0);
 
             // [Pass 2] 아웃라인 그리기 (설정된 경우만)
             if (outlineWidth > 0.0f)
@@ -2291,7 +2363,7 @@ namespace Alice
                                   objectShadingMode, normalStrength, toonCuts, toonLevels, toonAlphas, toonRampIntensity, toonSelfShadowStrength,
                                   envDiffuseStrength, envSpecularStrength,
                                   outlineColor, outlineWidth);
-                m_context->DrawIndexed(m_indexCount, 0, 0);
+                IssueDrawIndexed(m_indexCount, 0, 0);
                 
                 // 상태 복구
                 if (originalRS) m_context->RSSetState(originalRS);
@@ -2944,7 +3016,7 @@ namespace Alice
 
         m_context->VSSetShader(m_quadVS.Get(), nullptr, 0);
         m_context->PSSetShader(m_toneMappingPS.Get(), nullptr, 0);
-        m_context->DrawIndexed(m_quadIndexCount, 0, 0);
+        IssueDrawIndexed(m_quadIndexCount, 0, 0);
 
         // 리소스 해제
         ID3D11ShaderResourceView* nullSRV = nullptr;
@@ -3096,7 +3168,7 @@ namespace Alice
 
         m_context->VSSetShader(m_quadVS.Get(), nullptr, 0);
         m_context->PSSetShader(m_particleOverlayPS.Get(), nullptr, 0);
-        m_context->DrawIndexed(m_quadIndexCount, 0, 0);
+        IssueDrawIndexed(m_quadIndexCount, 0, 0);
 
         // 리소스 해제
         ID3D11ShaderResourceView* nullSRV = nullptr;

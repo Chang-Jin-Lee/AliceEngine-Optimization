@@ -17,6 +17,7 @@
 #include "Runtime/Gameplay/Sockets/SocketComponent.h"
 #include "Runtime/ECS/World.h"
 #include "Runtime/Rendering/SkinnedMeshRegistry.h"
+#include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
 #include "Runtime/Importing/FbxModel.h"
 
 namespace Alice
@@ -93,6 +94,84 @@ namespace Alice
                 }
             }
         }
+
+        void HashBytes(std::uint64_t& hash, const void* data, std::size_t size)
+        {
+            const auto* bytes = static_cast<const unsigned char*>(data);
+            for (std::size_t i = 0; i < size; ++i)
+            {
+                hash ^= bytes[i];
+                hash *= 1099511628211ull;
+            }
+        }
+
+        template <typename T>
+        void HashValue(std::uint64_t& hash, const T& value)
+        {
+            HashBytes(hash, &value, sizeof(value));
+        }
+
+        void HashString(std::uint64_t& hash, const std::string& value)
+        {
+            HashBytes(hash, value.data(), value.size());
+            const unsigned char terminator = 0xff;
+            HashBytes(hash, &terminator, 1);
+        }
+
+        std::uint64_t AdvancedPoseSignature(const AdvancedAnimationComponent& comp)
+        {
+            std::uint64_t hash = 1469598103934665603ull;
+            auto hashLayer = [&](const AdvancedAnimLayer& layer)
+            {
+                HashValue(hash, layer.enabled);
+                HashString(hash, layer.clipA);
+                HashString(hash, layer.clipB);
+                HashValue(hash, layer.timeA);
+                HashValue(hash, layer.timeB);
+                HashValue(hash, layer.blend01);
+                HashValue(hash, layer.layerAlpha);
+            };
+            hashLayer(comp.base);
+            hashLayer(comp.upper);
+            HashValue(hash, comp.rootMotionUnlock);
+            HashValue(hash, comp.rootBoneLock);
+            HashValue(hash, comp.rootMotionDriveCct);
+            HashString(hash, comp.rootBoneName);
+            HashValue(hash, comp.additive.enabled);
+            HashString(hash, comp.additive.clip);
+            HashString(hash, comp.additive.refClip);
+            HashValue(hash, comp.additive.time);
+            HashValue(hash, comp.additive.alpha);
+            HashValue(hash, comp.procedural.strength);
+            HashValue(hash, comp.procedural.seed);
+            HashValue(hash, comp.procedural.timeSec);
+            HashValue(hash, comp.aim.enabled);
+            HashValue(hash, comp.aim.yawRad);
+            HashValue(hash, comp.aim.pitchRad);
+            HashValue(hash, comp.aim.weight);
+            HashValue(hash, comp.ik.enabled);
+            HashString(hash, comp.ik.tipBone);
+            HashValue(hash, comp.ik.chainLength);
+            HashValue(hash, comp.ik.targetMS);
+            HashValue(hash, comp.ik.weight);
+            for (const AdvancedAnimIK& ik : comp.ikChains)
+            {
+                HashValue(hash, ik.enabled);
+                HashString(hash, ik.tipBone);
+                HashValue(hash, ik.chainLength);
+                HashValue(hash, ik.targetMS);
+                HashValue(hash, ik.weight);
+            }
+            return hash;
+        }
+
+        std::uint64_t SimplePoseSignature(const SkinnedAnimationComponent& comp)
+        {
+            std::uint64_t hash = 1469598103934665603ull;
+            HashValue(hash, comp.clipIndex);
+            HashValue(hash, comp.timeSec);
+            return hash;
+        }
     }
 
     AdvancedAnimSystem::Runtime::Runtime()
@@ -110,6 +189,10 @@ namespace Alice
         rmPrevClip = std::move(other.rmPrevClip);
         rmHasPrevTimeA = other.rmHasPrevTimeA;
         rmPrevTimeA = other.rmPrevTimeA;
+        poseEvaluated = other.poseEvaluated;
+        wasPlaying = other.wasPlaying;
+        lastPoseSignature = other.lastPoseSignature;
+        legacyPalette = std::move(other.legacyPalette);
         animator = other.animator;
         initialized = other.initialized;
         other.animator = nullptr;
@@ -118,6 +201,9 @@ namespace Alice
         other.rmHasPrevClip = false;
         other.rmHasPrevTimeA = false;
         other.rmPrevTimeA = 0.0f;
+        other.poseEvaluated = false;
+        other.wasPlaying = false;
+        other.lastPoseSignature = 0;
     }
 
     AdvancedAnimSystem::Runtime& AdvancedAnimSystem::Runtime::operator=(Runtime&& other) noexcept
@@ -132,6 +218,10 @@ namespace Alice
         rmPrevClip = std::move(other.rmPrevClip);
         rmHasPrevTimeA = other.rmHasPrevTimeA;
         rmPrevTimeA = other.rmPrevTimeA;
+        poseEvaluated = other.poseEvaluated;
+        wasPlaying = other.wasPlaying;
+        lastPoseSignature = other.lastPoseSignature;
+        legacyPalette = std::move(other.legacyPalette);
         animator = other.animator;
         initialized = other.initialized;
         other.animator = nullptr;
@@ -140,6 +230,9 @@ namespace Alice
         other.rmHasPrevClip = false;
         other.rmHasPrevTimeA = false;
         other.rmPrevTimeA = 0.0f;
+        other.poseEvaluated = false;
+        other.wasPlaying = false;
+        other.lastPoseSignature = 0;
         return *this;
     }
 
@@ -194,6 +287,10 @@ namespace Alice
         rt.meshKey = skinned.meshAssetPath;
         rt.mesh = mesh;
         rt.clipIndexByName.clear();
+        rt.poseEvaluated = false;
+        rt.wasPlaying = false;
+        rt.lastPoseSignature = 0;
+        rt.legacyPalette.clear();
 
         const auto& names = mesh->sourceModel->GetAnimationNames();
         const aiScene* scene = mesh->sourceModel->GetScenePtr();
@@ -397,6 +494,15 @@ namespace Alice
         const aiAnimation* upperB = ResolveClip(rt, animComp.upper.clipB);
         const aiAnimation* additiveA = ResolveClip(rt, animComp.additive.clip);
         const aiAnimation* additiveRef = ResolveClip(rt, animComp.additive.refClip);
+
+        const bool legacyAnimateWhenStopped = LegacyPathFlags::Get().animateWhenNotPlaying;
+        const bool compareStoppedInputs = !animComp.playing && rt.poseEvaluated &&
+            !rt.wasPlaying && !legacyAnimateWhenStopped;
+        const bool poseInputsChanged = compareStoppedInputs &&
+            rt.lastPoseSignature != AdvancedPoseSignature(animComp);
+        const bool evaluatePose = LegacyPathDetail::ShouldEvaluateAnimation(
+            animComp.playing, rt.poseEvaluated, poseInputsChanged || rt.wasPlaying,
+            legacyAnimateWhenStopped);
 
         // ------------------------------
         // Time advance & Notify Check
@@ -655,7 +761,15 @@ namespace Alice
         // ------------------------------
         // Evaluate
         // ------------------------------
-        rt.animator->Update(d);
+        // OPTIMIZATION_REPORT P03: the legacy path reevaluated even a stable stopped pose.
+        if (evaluatePose)
+        {
+            rt.animator->Update(d);
+            rt.poseEvaluated = true;
+            if (!animComp.playing && !legacyAnimateWhenStopped)
+                rt.lastPoseSignature = AdvancedPoseSignature(animComp);
+        }
+        rt.wasPlaying = animComp.playing;
 
         // ------------------------------
         // Apply root motion to transform (optional)
@@ -708,7 +822,7 @@ namespace Alice
         // ------------------------------
         // Bone global cache (row-major)
         // ------------------------------
-        if (mesh->sourceModel)
+        if (evaluatePose && mesh->sourceModel)
         {
             const auto& boneNames = mesh->sourceModel->GetBoneNames();
             if (!boneNames.empty())
@@ -755,13 +869,29 @@ namespace Alice
             return;
         }
 
-        animComp.palette.resize(finals.size());
-        for (size_t i = 0; i < finals.size(); ++i)
+        auto writePalette = [&](std::vector<DirectX::XMFLOAT4X4>& target)
         {
-            // AdvancedAnimator는 Column-Major 행렬을 생성하므로
-            // Row-Major로 변환하여 저장 (렌더링 시스템에서 GPU 업로드 시 전치 적용)
-            DirectX::XMMATRIX rowMajor = DirectX::XMMatrixTranspose(finals[i]);
-            DirectX::XMStoreFloat4x4(&animComp.palette[i], rowMajor);
+            target.resize(finals.size());
+            for (size_t i = 0; i < finals.size(); ++i)
+            {
+                DirectX::XMMATRIX rowMajor = DirectX::XMMatrixTranspose(finals[i]);
+                DirectX::XMStoreFloat4x4(&target[i], rowMajor);
+            }
+        };
+
+        const bool copyPaletteEveryFrame = LegacyPathFlags::Get().copyPaletteEveryFrame;
+        if (evaluatePose || copyPaletteEveryFrame || animComp.palette.empty())
+        {
+            if (copyPaletteEveryFrame)
+            {
+                // OPTIMIZATION_REPORT P04: preserve the former full palette assignment.
+                writePalette(rt.legacyPalette);
+                animComp.palette = rt.legacyPalette;
+            }
+            else
+            {
+                writePalette(animComp.palette);
+            }
         }
 
         skinned.boneMatrices = animComp.palette.data();
@@ -864,6 +994,15 @@ namespace Alice
             animComp.timeSec = static_cast<double>(time);
         }
 
+        const bool legacyAnimateWhenStopped = LegacyPathFlags::Get().animateWhenNotPlaying;
+        const bool compareStoppedInputs = !animComp.playing && rt.poseEvaluated &&
+            !rt.wasPlaying && !legacyAnimateWhenStopped;
+        const bool poseInputsChanged = compareStoppedInputs &&
+            rt.lastPoseSignature != SimplePoseSignature(animComp);
+        const bool evaluatePose = LegacyPathDetail::ShouldEvaluateAnimation(
+            animComp.playing, rt.poseEvaluated, poseInputsChanged || rt.wasPlaying,
+            legacyAnimateWhenStopped);
+
         // 4. 애니메이터 업데이트 (Simple Mode)
         // AdvancedAnimator 내부에서 EvaluateLikeFbxAnimation을 호출하도록 유도
         // (blend01 = 0.0f, animA == animB 이면 내부적으로 단일 클립 평가로 빠짐)
@@ -876,7 +1015,15 @@ namespace Alice
         d.base.timeB = (float)animComp.timeSec;
         d.base.blend01 = 0.0f;             // 블렌딩 없음
 
-        rt.animator->Update(d);
+        // OPTIMIZATION_REPORT P03: the legacy path reevaluated even a stable stopped pose.
+        if (evaluatePose)
+        {
+            rt.animator->Update(d);
+            rt.poseEvaluated = true;
+            if (!animComp.playing && !legacyAnimateWhenStopped)
+                rt.lastPoseSignature = SimplePoseSignature(animComp);
+        }
+        rt.wasPlaying = animComp.playing;
 
         // 5. 결과 행렬 가져오기
         const auto& finals = rt.animator->GetFinalTransforms();
@@ -892,17 +1039,29 @@ namespace Alice
 
         // 6. GPU 전송을 위해 포맷 변환 (Column-Major -> Row-Major)
         // 메모리 재할당 최소화
-        if (animComp.palette.size() != finals.size())
+        auto writePalette = [&](std::vector<DirectX::XMFLOAT4X4>& target)
         {
-            animComp.palette.resize(finals.size());
-        }
+            target.resize(finals.size());
+            for (size_t i = 0; i < finals.size(); ++i)
+            {
+                DirectX::XMMATRIX rowMajor = DirectX::XMMatrixTranspose(finals[i]);
+                DirectX::XMStoreFloat4x4(&target[i], rowMajor);
+            }
+        };
 
-        // 람다 없이 직접 루프 사용
-        size_t count = finals.size();
-        for (size_t i = 0; i < count; ++i)
+        const bool copyPaletteEveryFrame = LegacyPathFlags::Get().copyPaletteEveryFrame;
+        if (evaluatePose || copyPaletteEveryFrame || animComp.palette.empty())
         {
-            DirectX::XMMATRIX rowMajor = DirectX::XMMatrixTranspose(finals[i]);
-            DirectX::XMStoreFloat4x4(&animComp.palette[i], rowMajor);
+            if (copyPaletteEveryFrame)
+            {
+                // OPTIMIZATION_REPORT P04: preserve the former full palette assignment.
+                writePalette(rt.legacyPalette);
+                animComp.palette = rt.legacyPalette;
+            }
+            else
+            {
+                writePalette(animComp.palette);
+            }
         }
 
         // 컴포넌트에 데이터 연결

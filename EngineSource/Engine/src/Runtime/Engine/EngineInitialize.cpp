@@ -860,6 +860,12 @@ namespace Alice
 		const std::filesystem::path exeDir = InitializeResolveExeDir();
 		ApplyEditorModeFromExeName(exeDir);
 		InitializeDllSearchPath(exeDir);
+		if (m_commandLine.benchRequested)
+		{
+			m_width = m_commandLine.width;
+			m_height = m_commandLine.height;
+		}
+		LegacyPathFlags::Get().SetAll(m_commandLine.legacy);
 
 		if (!InitializeConfigureResourceManagers(exeDir)) return false;
 		if (!InitializeValidateGameDataIfNeeded()) return false;
@@ -916,6 +922,7 @@ namespace Alice
 		if (!InitializePhysicsSystemAndWorldCallbacks()) return false;
 
 		InitializePostLoadBindings(owner);
+		if (!InitializeBenchSession()) return false;
 		ALICE_LOG_INFO("Engine::Initialize: Success (Entities: %zu)",
 			m_world.GetComponents<TransformComponent>().size());
 
@@ -1094,23 +1101,42 @@ namespace Alice
 			ALICE_LOG_ERRORF("Engine::Initialize: RenderDevice failed.");
 			return false;
 		}
+		m_renderDevice->SetVsyncEnabled(m_commandLine.vsyncEnabled);
+
+		if (!m_gpuProfiler.Initialize(
+				m_renderDevice->GetDevice(), m_renderDevice->GetImmediateContext()))
+		{
+			ALICE_LOG_ERRORF("Engine::Initialize: GPU profiler query initialization failed.");
+			return false;
+		}
+		if (!m_renderStats.Initialize(
+				m_renderDevice->GetDevice(), m_renderDevice->GetImmediateContext()))
+		{
+			m_gpuProfiler.Shutdown();
+			ALICE_LOG_ERRORF("Engine::Initialize: render statistics query initialization failed.");
+			return false;
+		}
+
+		m_gpuProfiler.SetEnabled(m_metricsEnabled);
+		m_renderStats.SetEnabled(m_metricsEnabled);
 		return true;
 	}
 
 	bool Engine::Impl::InitializeEditorCoreIfNeeded()
 	{
-		if (!m_editorMode) return true;
-
 		m_editorCore.SetSkinnedMeshRegistry(&m_skinnedMeshRegistry);
 		m_editorCore.SetInputSystem(&m_inputSystem);
 
-		if (!m_editorCore.Initialize(m_hWnd, *m_renderDevice))
+		if (!m_editorCore.Initialize(m_hWnd, *m_renderDevice, m_editorMode))
 			return false;
 
-		m_editorCore.SetEngineLogoHoldUntilRelease(true);
-		m_editorCore.StartEngineLogoOverlay(m_resourceManager, "Resource/Icon/EngineBanner.png");
-		if (!RenderStartupLogoFrames(0.7f))
-			return false;
+		if (m_editorMode)
+		{
+			m_editorCore.SetEngineLogoHoldUntilRelease(true);
+			m_editorCore.StartEngineLogoOverlay(m_resourceManager, "Resource/Icon/EngineBanner.png");
+			if (!RenderStartupLogoFrames(0.7f))
+				return false;
+		}
 
 		return true;
 	}
@@ -1157,6 +1183,7 @@ namespace Alice
 	bool Engine::Impl::InitializeRenderSystems()
 	{
 		m_forwardRenderSystem = std::make_unique<ForwardRenderSystem>(*m_renderDevice);
+		m_forwardRenderSystem->SetRenderStats(&m_renderStats);
 		m_forwardRenderSystem->SetResourceManager(&m_resourceManager);
 		m_forwardRenderSystem->SetSkinnedMeshRegistry(&m_skinnedMeshRegistry);
 
@@ -1169,6 +1196,7 @@ namespace Alice
 		}
 
 		m_deferredRenderSystem = std::make_unique<DeferredRenderSystem>(*m_renderDevice);
+		m_deferredRenderSystem->SetRenderStats(&m_renderStats);
 		m_deferredRenderSystem->SetResourceManager(&m_resourceManager);
 		m_deferredRenderSystem->SetSkinnedMeshRegistry(&m_skinnedMeshRegistry);
 
@@ -1234,10 +1262,12 @@ namespace Alice
 		}
 
 		m_trailRenderSystem = std::make_unique<TrailEffectRenderSystem>(*m_renderDevice);
+		m_trailRenderSystem->SetRenderStats(&m_renderStats);
 		m_trailRenderSystem->SetResourceManager(&m_resourceManager);
 		if (!m_trailRenderSystem->Initialize()) return false;
 
 		m_unityVfxMeshRenderSystem = std::make_unique<UnityVfxMeshRenderSystem>(*m_renderDevice);
+		m_unityVfxMeshRenderSystem->SetRenderStats(&m_renderStats);
 		if (!m_unityVfxMeshRenderSystem->Initialize())
 		{
 			ALICE_LOG_ERRORF("m_unityVfxMeshRenderSystem->Initialize(): fail...");
@@ -1275,7 +1305,7 @@ namespace Alice
 
 		if (m_forwardRenderSystem)  m_forwardRenderSystem->SetUIRenderer(&m_aliceUIRenderer);
 		if (m_deferredRenderSystem) m_deferredRenderSystem->SetUIRenderer(&m_aliceUIRenderer);
-		if (m_editorMode)          m_editorCore.SetAliceUIRenderer(&m_aliceUIRenderer);
+		m_editorCore.SetAliceUIRenderer(&m_aliceUIRenderer);
 
 		if (m_editorMode)
 		{
@@ -1999,8 +2029,38 @@ namespace Alice
 		m_sceneManager = std::make_unique<SceneManager>(m_world, m_resourceManager);
 
 		bool isSceneLoaded = false;
+		if (!m_commandLine.cameraReplay.empty())
+		{
+			std::string takeError;
+			if (!LoadBenchCameraTake(m_commandLine.cameraReplay, m_replayTake, takeError))
+			{
+				ALICE_LOG_ERRORF("[Bench] %s", takeError.c_str());
+				return false;
+			}
+		}
 
-		if (!m_editorMode)
+		std::filesystem::path benchScene = m_commandLine.scene;
+		if (benchScene.empty() && !m_replayTake.scene.empty())
+		{
+			benchScene = std::filesystem::path(m_replayTake.scene);
+			if (!benchScene.is_absolute() &&
+				benchScene.generic_string().rfind("Assets/Scenes/", 0) != 0)
+				benchScene = std::filesystem::path("Assets/Scenes") / benchScene;
+		}
+		if (!benchScene.empty())
+		{
+			isSceneLoaded = SceneFile::LoadAuto(m_world, m_resourceManager, benchScene);
+			if (!isSceneLoaded)
+			{
+				ALICE_LOG_ERRORF("[Bench] scene load failed: %s",
+					benchScene.generic_string().c_str());
+				return false;
+			}
+			m_benchSceneName = benchScene.filename().generic_string();
+			ALICE_LOG_INFO("[Bench] loaded scene: %s", benchScene.generic_string().c_str());
+		}
+
+		if (!isSceneLoaded && !m_editorMode)
 		{
 			isSceneLoaded = LoadStartupSceneFromBuildSettings(
 				m_world, m_resourceManager, exeDir);
@@ -2081,6 +2141,144 @@ namespace Alice
 		}
 
 		return true;
+	}
+
+	bool Engine::Impl::InitializeBenchSession()
+	{
+		if (!m_commandLine.benchRequested)
+			return true;
+
+		if (m_benchSceneName.empty())
+			m_benchSceneName = m_commandLine.scene.filename().generic_string();
+
+		if (!m_commandLine.framePattern.empty())
+		{
+			const std::filesystem::path firstFrame = ResolveBenchFramePath(0);
+			std::error_code directoryError;
+			if (!firstFrame.parent_path().empty())
+				std::filesystem::create_directories(firstFrame.parent_path(), directoryError);
+			if (directoryError)
+			{
+				ALICE_LOG_ERRORF("[Bench] frame directory failed: %s",
+					directoryError.message().c_str());
+				return false;
+			}
+			const bool frameAlreadyExists = std::filesystem::exists(firstFrame);
+			std::ofstream frameProbe(firstFrame, std::ios::binary | std::ios::app);
+			if (!frameProbe)
+			{
+				ALICE_LOG_ERRORF("[Bench] frame output is not writable: %s",
+					firstFrame.string().c_str());
+				return false;
+			}
+			frameProbe.close();
+			if (!frameAlreadyExists)
+			{
+				std::error_code removeError;
+				std::filesystem::remove(firstFrame, removeError);
+			}
+		}
+
+		if (!m_commandLine.csvPath.empty())
+		{
+			std::error_code directoryError;
+			if (!m_commandLine.csvPath.parent_path().empty())
+				std::filesystem::create_directories(
+					m_commandLine.csvPath.parent_path(), directoryError);
+			if (directoryError)
+			{
+				ALICE_LOG_ERRORF("[Bench] CSV directory failed: %s",
+					directoryError.message().c_str());
+				return false;
+			}
+			m_benchCsv.open(m_commandLine.csvPath, std::ios::trunc);
+			if (!m_benchCsv)
+			{
+				ALICE_LOG_ERRORF("[Bench] CSV open failed: %s",
+					m_commandLine.csvPath.string().c_str());
+				return false;
+			}
+			m_benchCsv << "# legacy=" << (m_commandLine.legacy ? "on" : "off")
+				<< " vsync=" << (m_commandLine.vsyncEnabled ? "on" : "off")
+				<< ' ' << m_width << 'x' << m_height
+				<< " scene=" << m_benchSceneName
+				<< " take=" << (m_commandLine.cameraReplay.empty()
+					? "none" : m_commandLine.cameraReplay.generic_string())
+				<< " build="
+#if defined(_DEBUG)
+				<< "Debug"
+#else
+				<< "Release"
+#endif
+				<< " gpu=" << m_renderDevice->GetAdapterName()
+				<< " driver=" << m_renderDevice->GetDriverVersion()
+				<< " capture=metrics-only\n";
+			m_benchCsv << "frame,presentMs,cpuMs,gpuMs,gpu_MainPass,gpu_CameraPreview,"
+				"gpu_ComputeEffects,gpu_ParticleOverlay,gpu_DebugOverlay,gpu_ToneMapAndUI,"
+				"gpu_OverlayEffects,drawCalls,instancedDrawCalls,iaPrimitives,vsInvocations,"
+				"psInvocations,cPrimitives,boneCbMapCount,boneCbBytesUploaded,vramUsedMB,workingSetMB\n";
+			m_benchCsv.flush();
+			if (!m_benchCsv)
+			{
+				ALICE_LOG_ERRORF("[Bench] CSV header write failed: %s",
+					m_commandLine.csvPath.string().c_str());
+				m_benchCsv.close();
+				return false;
+			}
+		}
+
+		ALICE_LOG_INFO(
+			"[Bench] initialized legacy=%s vsync=%s size=%ux%u scene=%s replayFrames=%zu",
+			m_commandLine.legacy ? "on" : "off",
+			m_commandLine.vsyncEnabled ? "on" : "off",
+			m_width, m_height, m_benchSceneName.c_str(), m_replayTake.FrameCount());
+		if (!m_commandLine.cameraRecord.empty())
+		{
+			m_cameraRecorder.AddSample(0.0, CameraTakeFrame{
+				m_camera.GetPosition(), m_camera.GetRotationQuat(), m_camera.GetFovYRadians()
+			});
+		}
+		return true;
+	}
+
+	void Engine::Impl::FinalizeBenchSession()
+	{
+		if (m_benchFinalized) return;
+		m_benchFinalized = true;
+
+		if (!m_commandLine.cameraRecord.empty() && !m_cameraRecorder.Empty())
+		{
+			const BenchCameraTake take = m_cameraRecorder.BuildTake(
+				m_commandLine.scene.generic_string(), 1.0 / 60.0);
+			std::string takeError;
+			if (!SaveBenchCameraTake(m_commandLine.cameraRecord, take, takeError))
+			{
+				ALICE_LOG_ERRORF("[Bench] %s", takeError.c_str());
+				m_benchExitCode = 1;
+			}
+			else
+				ALICE_LOG_INFO("[Bench] saved camera take: %s (%zu frames)",
+					m_commandLine.cameraRecord.string().c_str(), take.FrameCount());
+		}
+
+		if (!m_commandLine.cameraReplay.empty())
+		{
+			const auto& p = m_camera.GetPosition();
+			ALICE_LOG_INFO("[Bench] final replay camera frame=%zu position=(%.6f,%.6f,%.6f)",
+				m_replayFrameIndex, p.x, p.y, p.z);
+		}
+		if (m_benchCsv.is_open())
+		{
+			m_benchCsv.flush();
+			const bool csvWriteSucceeded = static_cast<bool>(m_benchCsv);
+			m_benchCsv.close();
+			if (!csvWriteSucceeded || m_benchCsv.fail())
+			{
+				ALICE_LOG_ERRORF("[Bench] CSV finalization failed: %s",
+					m_commandLine.csvPath.string().c_str());
+				m_benchExitCode = 1;
+			}
+		}
 	}
 
 	bool Engine::Impl::InitializePhysicsSystemAndWorldCallbacks()

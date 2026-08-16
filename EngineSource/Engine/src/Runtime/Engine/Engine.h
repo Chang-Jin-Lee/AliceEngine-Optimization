@@ -5,6 +5,7 @@
 #include <memory>
 #include <filesystem>
 #include <Runtime/ECS/ComponentRegistry.h>
+#include "Runtime/Engine/CommandLineOptions.h"
 
 namespace Alice
 {
@@ -16,7 +17,7 @@ namespace Alice
     {
     public:
         /// \param editorMode true 이면 에디터(도킹 UI) 모드, false 이면 게임 전용 모드
-        Engine(bool editorMode = true);
+        Engine(bool editorMode = true, CommandLineOptions options = {});
         ~Engine();
         
         /// 엔진 종료 (명시적 종료 호출)

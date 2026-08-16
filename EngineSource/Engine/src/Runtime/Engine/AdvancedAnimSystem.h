@@ -3,6 +3,9 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
+
+#include <DirectXMath.h>
 
 #include "Runtime/ECS/Entity.h"
 
@@ -39,6 +42,10 @@ namespace Alice
             std::string rmPrevClip;
             bool rmHasPrevTimeA = false;
             float rmPrevTimeA = 0.0f;
+            bool poseEvaluated = false;
+            bool wasPlaying = false;
+            std::uint64_t lastPoseSignature = 0;
+            std::vector<DirectX::XMFLOAT4X4> legacyPalette;
 
             Runtime();
             Runtime(const Runtime&) = delete;

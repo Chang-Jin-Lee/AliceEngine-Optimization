@@ -141,7 +141,7 @@ namespace Alice
 		~EditorCore();
 
 		/// ImGui 컨텍스트와 백엔드(Win32 + DX11)를 초기화합니다.
-		bool Initialize(HWND hwnd, ID3D11RenderDevice& renderDevice);
+		bool Initialize(HWND hwnd, ID3D11RenderDevice& renderDevice, bool editorMode = true);
 
 		/// ImGui 리소스를 정리합니다.
 		void Shutdown();

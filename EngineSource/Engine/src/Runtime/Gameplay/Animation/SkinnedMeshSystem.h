@@ -10,6 +10,7 @@
 #include "Runtime/Rendering/ForwardRenderSystem.h"
 #include "Runtime/Rendering/SkinnedMeshRegistry.h"
 #include "Runtime/Rendering/Data/Material.h"
+#include "Runtime/Rendering/Metrics/LegacyPathFlags.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Resources/ResourceManager.h"
 
@@ -72,38 +73,44 @@ namespace Alice
                 // 월드 행렬 계산 (c.txt 참조: 부모부터 루트까지 스택에 쌓고 역순으로 곱하기)
                 using namespace DirectX;
                 
-                std::vector<XMMATRIX> matrixStack;
                 EntityId currentId = entityId;
-                
-                // 부모부터 루트까지 로컬 행렬을 스택에 쌓음
-                while (currentId != InvalidEntityId)
+
+                XMMATRIX worldM = XMMatrixIdentity();
+                if (!LegacyPathFlags::Get().heapAllocWorldMatrix)
                 {
-                    const TransformComponent* tc = world.GetComponent<TransformComponent>(currentId);
-                    if (tc && tc->enabled)
+                    while (currentId != InvalidEntityId)
                     {
+                        const TransformComponent* tc = world.GetComponent<TransformComponent>(currentId);
+                        if (!tc || !tc->enabled)
+                            break;
                         XMVECTOR scale = XMLoadFloat3(&tc->scale);
                         XMVECTOR rotation = XMLoadFloat3(&tc->rotation);
                         XMVECTOR translation = XMLoadFloat3(&tc->position);
-                        
-                        // 로컬 행렬: S * R * T 순서 (DirectXMath 행벡터 컨벤션)
-                        XMMATRIX localMatrix = XMMatrixScalingFromVector(scale) *
+                        worldM = worldM * (XMMatrixScalingFromVector(scale) *
                             XMMatrixRotationRollPitchYawFromVector(rotation) *
-                            XMMatrixTranslationFromVector(translation);
-                        
-                        matrixStack.push_back(localMatrix);
+                            XMMatrixTranslationFromVector(translation));
                         currentId = tc->parent;
                     }
-                    else
-                    {
-                        break;
-                    }
                 }
-                
-                // 행벡터 컨벤션: child * parent * ... * root 형태로 곱하기 (정순)
-                XMMATRIX worldM = XMMatrixIdentity();
-                for (const auto& m : matrixStack)  // child -> parent -> root 순서로
+                else
                 {
-                    worldM = worldM * m;  // I * child * parent * ... * root
+                    // OPTIMIZATION_REPORT P02: preserve the former heap-backed parent stack.
+                    std::vector<XMMATRIX> matrixStack;
+                    while (currentId != InvalidEntityId)
+                    {
+                        const TransformComponent* tc = world.GetComponent<TransformComponent>(currentId);
+                        if (!tc || !tc->enabled)
+                            break;
+                        XMVECTOR scale = XMLoadFloat3(&tc->scale);
+                        XMVECTOR rotation = XMLoadFloat3(&tc->rotation);
+                        XMVECTOR translation = XMLoadFloat3(&tc->position);
+                        matrixStack.push_back(XMMatrixScalingFromVector(scale) *
+                            XMMatrixRotationRollPitchYawFromVector(rotation) *
+                            XMMatrixTranslationFromVector(translation));
+                        currentId = tc->parent;
+                    }
+                    for (const auto& m : matrixStack)
+                        worldM = worldM * m;
                 }
 
                 SkinnedDrawCommand cmd = {};
@@ -195,6 +202,10 @@ namespace Alice
                 {
                     cmd.transparent = false;
                 }
+
+                // RenderDoc record: the legacy default forced an outline pass for every object.
+                if (LegacyPathFlags::Get().outlineOnByDefault && cmd.outlineWidth <= 0.0f)
+                    cmd.outlineWidth = 0.01f;
 
                 outCommands.push_back(cmd);
             }

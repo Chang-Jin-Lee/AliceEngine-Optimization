@@ -1,6 +1,7 @@
 #include "Runtime/Rendering/TrailEffectRenderSystem.h"
 #include "Runtime/Rendering/Components/TrailEffectComponent.h"
 #include "Runtime/Rendering/ShaderCode/TrailEffectShader.h"
+#include "Runtime/Rendering/Metrics/RenderStats.h"
 #include "Runtime/Resources/ResourceManager.h"
 #include "Runtime/ECS/Components/TransformComponent.h"
 #include "Runtime/Foundation/Logger.h"
@@ -20,6 +21,14 @@ namespace Alice
 	{
 		m_device = m_renderDevice.GetDevice();
 		m_context = m_renderDevice.GetImmediateContext();
+	}
+
+	void TrailEffectRenderSystem::IssueDraw(UINT vertexCount, UINT startVertexLocation)
+	{
+		if (m_renderStats)
+			m_renderStats->Draw(m_context.Get(), vertexCount, startVertexLocation);
+		else
+			m_context.Get()->Draw(vertexCount, startVertexLocation);
 	}
 
 
@@ -326,7 +335,7 @@ namespace Alice
 			m_context->PSSetConstantBuffers(1, 1, m_cbPerSwordEffectPS.GetAddressOf());
 
 			// 렌더링 (Triangle Strip: vertexCount - 2 개의 삼각형)
-			m_context->Draw((UINT)vertices.size(), 0);
+			IssueDraw((UINT)vertices.size(), 0);
 		}
 
 		// 블렌드 스테이트 복원
