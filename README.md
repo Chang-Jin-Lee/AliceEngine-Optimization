@@ -3,9 +3,15 @@
 DirectX 11 자체 엔진 [Alice Engine](https://github.com/Chang-Jin-Lee/AliceEngine)의 렌더링 병목을 다시 분석하고 고친 개인 후속 작업입니다.
 팀 프로젝트가 끝난 뒤 혼자 진행했습니다.
 
+| 최적화 이전 | 최적화 이후 |
+|:---:|:---:|
+| [![최적화 이전](https://img.youtube.com/vi/Lpzut2vAQ0I/mqdefault.jpg)](https://youtu.be/Lpzut2vAQ0I) | [![최적화 이후](https://img.youtube.com/vi/R-COueGVNMA/mqdefault.jpg)](https://youtu.be/R-COueGVNMA) |
+
+썸네일을 누르면 유튜브로 넘어갑니다. 화면 우측 상단 HUD에 프레임 시간과 패스별 GPU 시간, 드로우콜, 업로드량이 실시간으로 찍히고, 배지의 `[LEGACY ON]`과 `[CURRENT]`로 어느 경로인지 알 수 있습니다. 원본 파일은 [`Docs/media/`](Docs/media)에 있습니다.
+
 ![최적화 전후 비교](Docs/media/ab_comparison.png)
 
-같은 프레임, 같은 카메라 위치입니다. 화면은 똑같은데 GPU 시간이 51.2 ms에서 5.9 ms로 줄었습니다.
+위 두 장은 벤치 실행에서 뽑은 **같은 프레임, 같은 카메라 위치**입니다. 화면은 똑같은데 GPU 시간이 51.2 ms에서 5.9 ms로 줄었습니다.
 
 ---
 
@@ -73,17 +79,6 @@ Scripts\run_bench.bat       :: legacy / current 각 2회, CSV와 PNG 생성
 
 `run_bench.bat`이 `--vsync=off --debug-draw=off --width=1920 --height=1080`을 고정합니다.
 계측용 실행과 PNG 덤프 실행을 분리해 돌립니다. PNG 덤프가 프레임 시간을 왜곡하기 때문입니다.
-
----
-
-## 영상
-
-| 이전 | 이후 |
-|---|---|
-| [`before_legacy.mp4`](Docs/media/before_legacy.mp4) | [`after_current.mp4`](Docs/media/after_current.mp4) |
-
-화면 우측 상단 HUD에 프레임 시간과 패스별 GPU 시간, 드로우콜, 업로드량이 실시간으로 찍힙니다.
-배지의 `[LEGACY ON]`과 `[CURRENT]`로 어느 경로인지 알 수 있습니다.
 
 ---
 
