@@ -13,6 +13,17 @@
 
 # 에디터 창 배치 (로컬 환경마다 다름)
 /imgui.ini
+
+# AI 코딩 에이전트 작업 파일 (로컬 전용)
+/CLAUDE.md
+/AGENTS.md
+/GEMINI.md
+/.claude/
+/.codex/
+/.cursor/
+/.github/copilot-instructions.md
+/Docs/backlog/
+/Docs/superpowers/
 # Codex/에이전트의 격리 구현 작업공간
 /.worktrees/
 # User-specific files
