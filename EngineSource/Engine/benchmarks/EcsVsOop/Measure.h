@@ -12,27 +12,22 @@ namespace Alice::Bench
     extern std::uint64_t g_allocCount;
     extern std::uint64_t g_allocBytes;
     extern std::int64_t  g_liveBytes;
-    extern std::int64_t  g_liveAtReset;
     extern std::int64_t  g_peakLiveBytes;
-    extern std::int64_t  g_minLiveBytes; // 진단용. 자기 확인 항목 2 검증에만 쓴다.
+    extern std::int64_t  g_minLiveBytes;    // 진단용 워터마크.
+    extern bool          g_trackLiveBytes;  // 메모리 전용 패스에서만 true. 시간 패스는 항상 false.
 
+    // 시간 패스에서 재는 값. count/bytes는 평범한 정수 증가라 비용이 작아 시간 패스에서도 켜 둔다.
+    // live/peak 바이트는 여기 없다 - 그건 메모리 전용 패스(main.cpp의 MeasurePeakLiveBytes)가 잰다.
     struct AllocStats
     {
-        std::uint64_t count = 0;       // 구간 내 누적 할당 횟수
-        std::uint64_t bytes = 0;       // 구간 내 누적 요청 바이트 (churn. 실사용량이 아니다)
-        std::int64_t  peakLive = 0;    // 구간 내 최고 실점유 바이트 (_msize 기준)
-        std::int64_t  liveAtStart = 0; // 구간 시작 시점의 실점유 바이트. peakLive - liveAtStart가 순증가분이다.
+        std::uint64_t count = 0; // 구간 내 누적 할당 횟수
+        std::uint64_t bytes = 0; // 구간 내 누적 요청 바이트 (churn. 실사용량이 아니다)
     };
 
     inline void ResetAllocStats() noexcept
     {
         g_allocCount = 0;
         g_allocBytes = 0;
-        // 구간 시작 시점의 점유량이 그 구간 peak의 하한이므로, peak을 0이 아니라
-        // 현재 점유량으로 초기화한다. g_liveBytes 자체는 절대 리셋하지 않는다 -
-        // 프로세스 전체의 실제 점유량을 계속 추적해야 delete 회계가 맞는다.
-        g_liveAtReset = g_liveBytes;
-        g_peakLiveBytes = g_liveBytes;
     }
 
     inline AllocStats ReadAllocStats() noexcept
@@ -40,8 +35,6 @@ namespace Alice::Bench
         AllocStats s;
         s.count = g_allocCount;
         s.bytes = g_allocBytes;
-        s.peakLive = g_peakLiveBytes;
-        s.liveAtStart = g_liveAtReset;
         return s;
     }
 

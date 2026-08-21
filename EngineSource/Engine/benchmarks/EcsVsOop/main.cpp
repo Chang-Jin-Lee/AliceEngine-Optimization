@@ -21,7 +21,7 @@ namespace
     using Alice::BenchStats::Median;
     using Alice::BenchStats::StdDev;
 
-    constexpr int kRepeat = 11;      // 앞 2회는 워밍업으로 버린다
+    constexpr int kRepeat = 11;      // 앞 2회는 워밍업으로 버린다. Global Constraints - 바꾸지 않는다.
     constexpr int kWarmup = 2;
     constexpr int kStepsPerRun = 10; // 순회 1회 측정에 포함되는 Step 횟수
     constexpr std::size_t kRandomProbes = 100000;
@@ -58,6 +58,24 @@ namespace
         return has ? std::to_string(v) : std::string("NA");
     }
 
+    struct MinMax
+    {
+        double min = 0.0;
+        double max = 0.0;
+    };
+
+    /// 수정 12: 칸 안(9개 비워밍업 표본)의 최소/최대. stdDevMs는 칸 내부 분산만 담고
+    /// 칸과 칸 사이의 실행 간 드리프트는 담지 못하므로, 표본 자체의 극값을 CSV에 남긴다.
+    /// 짧은 구간 측정에서 OS 스케줄링 간섭은 항상 시간을 "늘리기만" 하므로(음의 방향 간섭은 없다),
+    /// minMs가 실제로 가장 편향이 적은 추정치다 - Task 9에서 median과 나란히 놓을 근거가 된다.
+    MinMax ComputeMinMax(const std::vector<double>& samples)
+    {
+        if (samples.empty())
+            return MinMax{};
+        const auto [minIt, maxIt] = std::minmax_element(samples.begin(), samples.end());
+        return MinMax{ *minIt, *maxIt };
+    }
+
     struct Row
     {
         std::string backend;
@@ -65,17 +83,46 @@ namespace
         std::size_t n = 0;
         double medianMs = 0.0;
         double stdDevMs = 0.0;
+        double minMs = 0.0;
+        double maxMs = 0.0;
         bool hasAllocStats = false;    // add 행만 true. step/random/remove는 할당을 재지 않는다.
         std::uint64_t allocCount = 0;
         std::uint64_t allocBytes = 0;      // 누적 요청 바이트 (churn). 실사용량이 아니다.
-        std::int64_t peakLiveDelta = 0;    // peakLive - liveAtStart. 이 구간에서 실제로 순증가한 점유 바이트.
+        std::int64_t peakLiveBytes = 0;    // 메모리 전용 패스(MeasurePeakLiveBytes)에서 구한 값.
         std::uint64_t workingSet = 0;
     };
 
+    /// 수정 11-b: 메모리 전용 패스. 시간을 재지 않으므로 g_trackLiveBytes를 켜서 _msize를 써도 된다.
+    /// 창(window) 안에서 백엔드를 생성-충전-파괴까지 마쳐 alloc/free 짝이 창을 넘지 않게 만든다.
+    /// 따라서 창이 닫히면 g_liveBytes는 정확히 0으로 돌아와야 한다 - 0이 아니면 new/delete
+    /// 회계에 버그가 있다는 뜻이고, 이 자기검증이 이 설계의 핵심 이점이다.
+    /// peakLiveBytes는 Add 도중(전부 살아있는 시점)에만 최댓값에 도달하므로, 파편화 유무와
+    /// 무관하게 N당 한 번만 구해 두 fragmented 행에 동일한 값을 쓴다.
+    template <typename Backend>
+    std::int64_t MeasurePeakLiveBytes(std::size_t n, std::int64_t& outResidual)
+    {
+        g_trackLiveBytes = true;
+        g_liveBytes = 0;
+        g_peakLiveBytes = 0;
+        {
+            Backend backend;
+            for (std::size_t i = 0; i < n; ++i)
+                backend.Add(static_cast<EntityId>(i + 1));
+            // peak은 이 시점(전부 살아있는 상태)에서 최대다.
+        }   // 소멸자가 전부 해제한다
+        const std::int64_t peak = g_peakLiveBytes;
+        outResidual = g_liveBytes;
+        g_trackLiveBytes = false;
+        return peak;
+    }
+
     /// 백엔드 하나를 N개 규모로 측정한다.
     /// fragmented=true면 30%를 삭제한 뒤 재삽입해 힙을 파편화시킨 상태에서 순회를 잰다.
+    /// addPeakLiveBytes는 MeasurePeakLiveBytes()가 별도 패스에서 구한 값을 그대로 받아
+    /// add 행에 채우기만 한다 - 시간 패스 안에서는 _msize를 절대 부르지 않는다(수정 11).
     template <typename Backend>
-    void MeasureBackend(const char* name, std::size_t n, bool fragmented, std::vector<Row>& out, double& outChecksum)
+    void MeasureBackend(const char* name, std::size_t n, bool fragmented, std::vector<Row>& out,
+        double& outChecksum, std::int64_t addPeakLiveBytes)
     {
         std::vector<double> addSamples;
         std::vector<double> stepSamples;
@@ -85,7 +132,6 @@ namespace
 
         std::uint64_t addAllocCount = 0;
         std::uint64_t addAllocBytes = 0;
-        std::int64_t addPeakLiveDelta = 0;
         std::uint64_t peakWorkingSet = 0;
         outChecksum = 0.0;
 
@@ -113,6 +159,9 @@ namespace
             // 자체가 힙 할당을 일으킬 수 있어서, 순서를 바꾸면 그 할당이 백엔드의 할당 수에
             // 섞여 들어간다. N=100 근처에서는 ECS 쪽 총 할당이 수십 건뿐이라 단 1건의 오차도
             // 결과를 몇 퍼센트씩 흔든다.
+            // 수정 11: g_trackLiveBytes는 여기서 절대 켜지 않는다 - _msize 호출은 할당 횟수에
+            // 비례하는 계측 비용을 만들고, 그 축이 정확히 두 백엔드가 1600배 차이 나는 축이라
+            // OOP add를 약 15% 부풀린다(라운드 1 실측: _msize 있으면 14.0ms, 없으면 12.05~12.20ms).
             {
                 ScopedTimer timer;
                 for (std::size_t i = 0; i < n; ++i)
@@ -124,7 +173,6 @@ namespace
                     addSamples.push_back(elapsed);
                     addAllocCount = a.count;
                     addAllocBytes = a.bytes;
-                    addPeakLiveDelta = a.peakLive - a.liveAtStart;
                     addAllocCountSamples.push_back(a.count);
                 }
             }
@@ -234,15 +282,24 @@ namespace
             }
         }
 
+        const MinMax addMinMax = ComputeMinMax(addSamples);
+        const MinMax stepMinMax = ComputeMinMax(stepSamples);
+        const MinMax randomMinMax = ComputeMinMax(randomSamples);
+        const MinMax removeMinMax = ComputeMinMax(removeSamples);
+
         const char* suffix = fragmented ? " (fragmented)" : "";
         out.push_back(Row{ name, std::string("add") + suffix, n,
-            Median(addSamples), StdDev(addSamples), true, addAllocCount, addAllocBytes, addPeakLiveDelta, peakWorkingSet });
+            Median(addSamples), StdDev(addSamples), addMinMax.min, addMinMax.max,
+            true, addAllocCount, addAllocBytes, addPeakLiveBytes, peakWorkingSet });
         out.push_back(Row{ name, std::string("step") + suffix, n,
-            Median(stepSamples), StdDev(stepSamples), false, 0, 0, 0, peakWorkingSet });
+            Median(stepSamples), StdDev(stepSamples), stepMinMax.min, stepMinMax.max,
+            false, 0, 0, 0, peakWorkingSet });
         out.push_back(Row{ name, std::string("random") + suffix, n,
-            Median(randomSamples), StdDev(randomSamples), false, 0, 0, 0, peakWorkingSet });
+            Median(randomSamples), StdDev(randomSamples), randomMinMax.min, randomMinMax.max,
+            false, 0, 0, 0, peakWorkingSet });
         out.push_back(Row{ name, std::string("remove") + suffix, n,
-            Median(removeSamples), StdDev(removeSamples), false, 0, 0, 0, peakWorkingSet });
+            Median(removeSamples), StdDev(removeSamples), removeMinMax.min, removeMinMax.max,
+            false, 0, 0, 0, peakWorkingSet });
     }
 
     /// 하드웨어·빌드·실행 환경 기록. Task 9 공시와 재현성 검증의 근거 자료다.
@@ -273,7 +330,7 @@ namespace
         os << "sizeof(BenchAnimation) = " << sizeof(BenchAnimation) << "\n";
         os << "-- 반복 정책 --\n";
         os << "총 " << kRepeat << "회 반복, 앞 " << kWarmup << "회 폐기, 남은 "
-           << (kRepeat - kWarmup) << "회의 중앙값(median)과 표준편차(n-1)를 쓴다.\n";
+           << (kRepeat - kWarmup) << "회의 중앙값(median)과 표준편차(n-1)를 쓴다. (Global Constraints - 고정값)\n";
         os << "-- 타이머 --\n";
         os << "QueryPerformanceFrequency() 실측값 = " << qpfFrequency << " Hz ("
            << (qpfFrequency > 0 ? (1e9 / static_cast<double>(qpfFrequency)) : 0.0) << " ns/tick)\n";
@@ -291,6 +348,32 @@ namespace
         os << "각 N, 각 fragmented 상태에서 항상 ECS를 먼저, OOP를 나중에 측정한다.\n";
         os << "-- 빌드 구성 플래그 --\n";
         os << "NDEBUG " << (kIsNdebugBuild ? "정의됨 (Release)" : "정의되지 않음 (Debug!)") << "\n";
+
+        // 수정 13: 고치지 못했거나 고칠 수 없는 관측 두 가지. 설명 못 하는 것을 숨기는 게 최악이므로
+        // 관측 사실과 가설을 그대로 남긴다. 가설은 검증되지 않았음을 명시한다.
+        os << "\n-- 설명하지 못한 관측 (수정하지 않음, 기록만 함) --\n";
+        os << "[13-a] N=50000에서 실행 간 분산이 최대 약 2배로 크다 (예: ecs remove 비파편화가\n";
+        os << "  한 실행에서는 0.2789ms, 다른 실행에서는 0.5638ms). minMs/maxMs 컬럼(수정 12)이\n";
+        os << "  이 분산을 데이터로 남긴다. 원인은 확정하지 못했지만 유력한 가설은 다음과 같다:\n";
+        os << "  스레드를 논리 프로세서 2번에 고정했는데, 이 기계는 SMT(하이퍼스레딩)가 켜져 있어\n";
+        os << "  2번과 3번이 같은 물리 P-core의 두 하드웨어 스레드다. 3번에 다른 프로세스가 올라오면\n";
+        os << "  같은 코어의 실행 자원(디코드/실행 포트/캐시 대역)을 나눠 쓰게 되어 처리량이 절반\n";
+        os << "  가까이 떨어질 수 있다. Win32에는 형제 스레드까지 예약하는 표준적인 방법이 없으므로\n";
+        os << "  이 벤치는 그 간섭을 배제하지 못한다. minMs 컬럼이 이 간섭의 영향을 가장 적게 받는\n";
+        os << "  값이다 - 짧은 구간 측정에서 스케줄링 간섭은 시간을 늘리기만 하기 때문이다.\n";
+        os << "  ComponentStorage::Remove()의 소스를 직접 읽어 확인했다: swap-and-pop이 pop_back()만\n";
+        os << "  하고 용량을 줄이지 않으므로 힙 연산(operator new/delete)을 전혀 하지 않는다. 즉 ECS\n";
+        os << "  remove의 실행 간 분산은 _msize/할당자 계측 비용으로 설명되지 않으며, 코드 결함이\n";
+        os << "  아니라 위 SMT 간섭 같은 측정 잡음일 가능성이 높다는 근거가 된다.\n";
+        os << "[13-b] random (fragmented)가 여전히 비파편화보다 약간 더 빠르다 (수정 4로 버그 규모의\n";
+        os << "  효과(-56.7%, OOP remove 기준)는 사라졌지만, random에는 작은 잔여가 남아 여러 번\n";
+        os << "  재현된다: 예) OOP N=50000 비파편화 2.4679ms -> 파편화 2.1436ms(-13.1%),\n";
+        os << "  ECS 0.1711ms -> 0.1403ms(-18.0%)). 가설(검증되지 않음): 파편화 단계가 방금\n";
+        os << "  order[cut..2*cut) 구간의 엔티티와 그 해시/인덱스 노드를 직전에 만졌으므로, 뒤따르는\n";
+        os << "  랜덤 조회가 order[] 전체를 고르게 순회할 때 이 구간을 만나면 이미 캐시/TLB에\n";
+        os << "  '뜨거운' 상태일 수 있다는 캐시 워밍 가설이다. 이 가설은 검증하지 않았다.\n";
+        os << "  같은 항목에 remove (fragmented)의 OOP 잔여(-3.2%, 3.0920ms->2.9932ms)도 기록한다 -\n";
+        os << "  표준편차(약 0.34~0.38ms, 상대 11~12%)에 비해 작아 노이즈 범위로 판단했다.\n";
         return os.str();
     }
 }
@@ -353,12 +436,28 @@ int main()
     std::vector<Row> rows;
     for (const std::size_t n : kSweep)
     {
+        // 수정 11: 메모리 전용 패스. 시간 스윕과 완전히 분리해서 돈다.
+        // 창(backend 생성-충전-파괴) 안에서 alloc/free 짝이 전부 맞아야 하므로, 창이 닫히면
+        // g_liveBytes가 정확히 0으로 돌아와야 한다 - 0이 아니면 new/delete 회계 버그다.
+        // peak은 Add 도중(전부 살아있는 시점)에만 도달하므로 fragmented 유무와 무관하게
+        // N당 한 번만 구해 두 fragmented 행에 동일한 값을 쓴다.
+        std::int64_t ecsResidual = 0;
+        std::int64_t oopResidual = 0;
+        const std::int64_t ecsPeakLiveBytes = MeasurePeakLiveBytes<EcsBackend>(n, ecsResidual);
+        const std::int64_t oopPeakLiveBytes = MeasurePeakLiveBytes<OopBackend>(n, oopResidual);
+        if (ecsResidual != 0)
+            std::printf("  경고: 메모리 패스 회계 버그 - ecs residual=%lld (N=%zu, 0이어야 한다)\n",
+                static_cast<long long>(ecsResidual), n);
+        if (oopResidual != 0)
+            std::printf("  경고: 메모리 패스 회계 버그 - oop residual=%lld (N=%zu, 0이어야 한다)\n",
+                static_cast<long long>(oopResidual), n);
+
         for (const bool fragmented : { false, true })
         {
             double ecsChecksum = 0.0;
             double oopChecksum = 0.0;
-            MeasureBackend<EcsBackend>("ecs", n, fragmented, rows, ecsChecksum);
-            MeasureBackend<OopBackend>("oop", n, fragmented, rows, oopChecksum);
+            MeasureBackend<EcsBackend>("ecs", n, fragmented, rows, ecsChecksum, ecsPeakLiveBytes);
+            MeasureBackend<OopBackend>("oop", n, fragmented, rows, oopChecksum, oopPeakLiveBytes);
 
             // 수정 8: 마지막 repeat의 최종 상태를 id 오름차순 체크섬으로 비교한다.
             // 이는 Equivalence 검증을 N=100~50000 전 구간, 파편화 유무 양쪽으로 확장하는 효과가 있고,
@@ -374,27 +473,27 @@ int main()
         std::printf("N=%zu 완료 (checksum ecs==oop 확인, fragmented 양쪽)\n", n);
     }
 
-    std::printf("\n%-6s %-22s %8s %12s %10s %12s %14s %16s\n",
-        "backend", "op", "N", "median(ms)", "sd(ms)", "allocs", "allocBytes", "peakLiveDelta");
+    std::printf("\n%-6s %-22s %8s %11s %9s %9s %9s %8s %13s %15s\n",
+        "backend", "op", "N", "median(ms)", "sd(ms)", "min(ms)", "max(ms)", "allocs", "allocBytes", "peakLiveBytes");
     for (const Row& r : rows)
     {
-        std::printf("%-6s %-22s %8zu %12.4f %10.4f %12s %14s %16s\n",
-            r.backend.c_str(), r.op.c_str(), r.n, r.medianMs, r.stdDevMs,
+        std::printf("%-6s %-22s %8zu %11.4f %9.4f %9.4f %9.4f %8s %13s %15s\n",
+            r.backend.c_str(), r.op.c_str(), r.n, r.medianMs, r.stdDevMs, r.minMs, r.maxMs,
             AllocCell(r.hasAllocStats, r.allocCount).c_str(),
             AllocCell(r.hasAllocStats, r.allocBytes).c_str(),
-            AllocCellSigned(r.hasAllocStats, r.peakLiveDelta).c_str());
+            AllocCellSigned(r.hasAllocStats, r.peakLiveBytes).c_str());
     }
 
     if (FILE* f = std::fopen("Artifacts/ecs_vs_oop.csv", "w"))
     {
-        std::fprintf(f, "backend,op,n,medianMs,stdDevMs,allocCount,allocBytes,peakLiveBytes,workingSetBytes\n");
+        std::fprintf(f, "backend,op,n,medianMs,stdDevMs,minMs,maxMs,allocCount,allocBytes,peakLiveBytes,workingSetBytes\n");
         for (const Row& r : rows)
         {
-            std::fprintf(f, "%s,%s,%zu,%.6f,%.6f,%s,%s,%s,%llu\n",
-                r.backend.c_str(), r.op.c_str(), r.n, r.medianMs, r.stdDevMs,
+            std::fprintf(f, "%s,%s,%zu,%.6f,%.6f,%.6f,%.6f,%s,%s,%s,%llu\n",
+                r.backend.c_str(), r.op.c_str(), r.n, r.medianMs, r.stdDevMs, r.minMs, r.maxMs,
                 AllocCell(r.hasAllocStats, r.allocCount).c_str(),
                 AllocCell(r.hasAllocStats, r.allocBytes).c_str(),
-                AllocCellSigned(r.hasAllocStats, r.peakLiveDelta).c_str(),
+                AllocCellSigned(r.hasAllocStats, r.peakLiveBytes).c_str(),
                 static_cast<unsigned long long>(r.workingSet));
         }
         std::fclose(f);
@@ -406,7 +505,10 @@ int main()
         return 1;
     }
 
-    // 자기 확인 2: g_liveBytes가 실행 중 한 번이라도 음수로 내려갔다면 new/delete 회계가 깨진 것이다.
+    // 자기 확인 (라운드 1): g_liveBytes가 실행 중 한 번이라도 음수로 내려갔다면 new/delete 회계가
+    // 깨진 것이다. 라운드 2의 메모리 전용 패스가 매 (N, backend)마다 residual==0을 확인하지만,
+    // 그 사이 순간적으로 음수로 내려갔다가 0으로 돌아오는 경우까지는 residual 검사로 못 잡으므로
+    // 이 워터마크를 그대로 남겨 둔다.
     std::printf("\n회계 검증: g_liveBytes 최저 관측값 = %lld (%s)\n",
         static_cast<long long>(g_minLiveBytes),
         g_minLiveBytes < 0 ? "오류: 음수로 내려감 - new/delete 회계가 깨졌다" : "정상, 음수로 내려간 적 없음");
