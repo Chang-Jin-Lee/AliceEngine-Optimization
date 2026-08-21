@@ -436,7 +436,10 @@ if(BUILD_TESTING)
         ${ALICE_SRC_DIR}/Runtime/Engine/BenchCameraTake.cpp
         ${ALICE_SRC_DIR}/Runtime/Foundation/Logger.cpp
     )
-    target_include_directories(RenderMetricsTests PRIVATE ${ALICE_SRC_DIR})
+    target_include_directories(RenderMetricsTests PRIVATE
+        ${ALICE_SRC_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/EngineSource/Engine/benchmarks
+    )
     target_compile_definitions(RenderMetricsTests PRIVATE
         NOMINMAX
         ALICE_METRICS_TESTING=1
