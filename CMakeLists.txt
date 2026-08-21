@@ -449,6 +449,7 @@ if(BUILD_TESTING)
 
     add_executable(EcsVsOopBench
         EngineSource/Engine/benchmarks/EcsVsOop/main.cpp
+        EngineSource/Engine/benchmarks/EcsVsOop/AllocCounter.cpp
     )
     target_include_directories(EcsVsOopBench PRIVATE
         ${ALICE_SRC_DIR}
