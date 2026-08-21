@@ -446,6 +446,16 @@ if(BUILD_TESTING)
     )
     target_link_libraries(RenderMetricsTests PRIVATE imgui d3d11 dxgi psapi shell32)
     add_test(NAME render_metrics_contracts COMMAND RenderMetricsTests)
+
+    add_executable(EcsVsOopBench
+        EngineSource/Engine/benchmarks/EcsVsOop/main.cpp
+    )
+    target_include_directories(EcsVsOopBench PRIVATE
+        ${ALICE_SRC_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/EngineSource/Engine/benchmarks
+    )
+    target_compile_definitions(EcsVsOopBench PRIVATE NOMINMAX)
+    target_link_libraries(EcsVsOopBench PRIVATE psapi)
 endif()
 
 # [설정] Engine에 RTTR 연결 (PUBLIC: 엔진을 쓰는 프로젝트도 RTTR 사용 가능)
