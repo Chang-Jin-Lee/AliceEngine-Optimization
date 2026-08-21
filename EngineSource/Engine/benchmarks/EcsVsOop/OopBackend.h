@@ -136,6 +136,30 @@ namespace Alice::Bench
             return &static_cast<TransformBehaviour*>(found)->data;
         }
 
+        const BenchDecal* GetDecal(EntityId id) const
+        {
+            const auto it = m_index.find(id);
+            if (it == m_index.end())
+                return nullptr;
+
+            Behaviour* found = m_objects[it->second]->Find(BehaviourKind::Decal);
+            if (found == nullptr)
+                return nullptr;
+            return &static_cast<DecalBehaviour*>(found)->data;
+        }
+
+        const BenchAnimation* GetAnimation(EntityId id) const
+        {
+            const auto it = m_index.find(id);
+            if (it == m_index.end())
+                return nullptr;
+
+            Behaviour* found = m_objects[it->second]->Find(BehaviourKind::Animation);
+            if (found == nullptr)
+                return nullptr;
+            return &static_cast<AnimationBehaviour*>(found)->data;
+        }
+
         std::size_t Size() const { return m_objects.size(); }
 
         void Clear()

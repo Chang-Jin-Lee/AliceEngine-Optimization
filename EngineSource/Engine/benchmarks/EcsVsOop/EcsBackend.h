@@ -39,6 +39,8 @@ namespace Alice::Bench
         }
 
         const BenchTransform* GetTransform(EntityId id) const { return m_transforms.Get(id); }
+        const BenchDecal*     GetDecal(EntityId id) const     { return m_decals.Get(id); }
+        const BenchAnimation* GetAnimation(EntityId id) const { return m_animations.Get(id); }
         std::size_t Size() const { return m_transforms.Size(); }
 
         void Clear()
