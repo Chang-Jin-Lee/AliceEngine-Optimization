@@ -1,0 +1,3 @@
+[isolate] backend=oop n=50000 op=step seconds=5.000
+[isolate] priorityClass=ok threadPriority=ok affinity=ok
+[isolate] stepCount=20659 elapsedMs=5000.060 componentUpdates=3098850000 (n=50000 * 3 components * stepCount)

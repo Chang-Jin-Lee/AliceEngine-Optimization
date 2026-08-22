@@ -6,6 +6,7 @@
 #include "Runtime/Rendering/ShaderCode/DeferredShader.h"
 #include "Runtime/Engine/CommandLineOptions.h"
 #include "Runtime/Engine/BenchCameraTake.h"
+#include "EcsVsOop/Stats.h"
 
 #include <cmath>
 #include <cstdint>
@@ -341,6 +342,30 @@ int main()
         "metrics overlay CPU submission must stay below 0.5 ms per frame");
     std::cout << "metrics overlay average CPU submission: "
         << overlayNanoseconds << " ns\n";
+
+    // --- 벤치 시간 표본 통계 ---
+    {
+        using Alice::BenchStats::Median;
+        using Alice::BenchStats::StdDev;
+
+        Check(std::abs(Median({ 3.0, 1.0, 2.0 }) - 2.0) < 1e-9,
+            "홀수 개 표본의 중앙값은 가운데 값이어야 한다");
+        Check(std::abs(Median({ 4.0, 1.0, 3.0, 2.0 }) - 2.5) < 1e-9,
+            "짝수 개 표본의 중앙값은 가운데 두 값의 평균이어야 한다");
+        Check(Median({}) == 0.0, "빈 표본의 중앙값은 0이어야 한다");
+        Check(std::abs(Median({ 7.0 }) - 7.0) < 1e-9, "표본이 하나면 그 값이 중앙값이다");
+
+        // {2,4,4,4,5,5,7,9}: 평균 5, 편차제곱합 32, 표본분산 32/7
+        Check(std::abs(StdDev({ 2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0 }) - 2.13808993529939) < 1e-9,
+            "표본 표준편차는 n-1로 나눠야 한다");
+        Check(StdDev({ 5.0 }) == 0.0, "표본이 하나면 표준편차는 0이다");
+        Check(StdDev({}) == 0.0, "빈 표본의 표준편차는 0이다");
+
+        std::vector<double> original{ 3.0, 1.0, 2.0 };
+        (void)Median(original);
+        Check(original[0] == 3.0 && original[1] == 1.0 && original[2] == 2.0,
+            "Median은 호출자의 벡터를 정렬하지 않아야 한다");
+    }
 
     return failures == 0 ? 0 : 1;
 }
