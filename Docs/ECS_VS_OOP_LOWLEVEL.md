@@ -209,7 +209,7 @@ CSV·env 파일을 전혀 건드리지 않는다(코드 상에서 해당 경로�
 
 ### 트레이스 채집
 
-4개 조합(ecs/oop × N=1,000/50,000) 각각에 대해 동일한 절차를 반복했다(`Artifacts/capture_pmu.ps1`):
+4개 조합(ecs/oop × N=1,000/50,000) 각각에 대해 동일한 절차를 반복했다(`Scripts/capture_pmu.ps1`):
 
 ```
 xperf -on PROC_THREAD+LOADER+CSWITCH -Pmc LLCMisses,LLCReference,InstructionRetired,UnhaltedCoreCycles CSwitch strict -f Artifacts\pmu_<tag>.etl

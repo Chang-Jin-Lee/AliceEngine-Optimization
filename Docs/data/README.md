@@ -10,6 +10,18 @@
 | `pmu_summary.csv` | 하드웨어 캐시 카운터 정규화 결과 |
 | `pmu/*_stdout.txt` | xperf 원본 출력 |
 | `pmu/*_meta.txt` | 각 트레이스의 수집 조건 |
+| `bench_legacy.csv` | 렌더링 최적화 **이전** 경로. 598프레임 |
+| `bench_current.csv` | 렌더링 최적화 **이후** 경로. 598프레임 |
+
+뒤의 두 파일은 최상위 [README](../../README.md)의 결과 표가 나온 실행이다.
+`Scripts/run_bench.bat`이 같은 카메라 테이크를 두 경로로 재생해 뽑는다. 검산해 보려면 이렇게 하면 된다.
+
+```powershell
+$d = Get-Content Docs\data\bench_current.csv | Select-Object -Skip 1 | ConvertFrom-Csv
+($d | ForEach-Object { [double]$_.gpuMs } | Measure-Object -Average).Average   # 5.88
+```
+
+`bench_legacy.csv`의 같은 계산이 51.21이다. 첫 줄은 실행 조건을 적은 주석이라 건너뛰어야 한다.
 
 `Artifacts/`는 벤치를 다시 돌리면 생성되는 작업 디렉터리입니다. gitignore되어 있습니다.
 여기 있는 파일은 문서가 인용한 그 실행의 사본이라 덮어쓰이지 않습니다.
