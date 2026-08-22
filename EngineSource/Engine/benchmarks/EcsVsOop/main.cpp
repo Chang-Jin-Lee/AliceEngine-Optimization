@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <random>
 #include <sstream>
 #include <string>
@@ -376,10 +377,140 @@ namespace
         os << "  표준편차(약 0.34~0.38ms, 상대 11~12%)에 비해 작아 노이즈 범위로 판단했다.\n";
         return os.str();
     }
+
+    // ================================================================
+    // Task 7 (Ruling 16): 격리 실행 모드.
+    //
+    // xperf 같은 ETW/PMC 트레이스는 프로세스 단위로 붙는다. 기존 main()은 한 프로세스 안에서
+    // ECS와 OOP를 둘 다(그리고 add/step/random/remove를 전부) 돌리므로, 그대로 트레이스를 뜨면
+    // 두 백엔드의 카운터가 섞인 값 하나만 나와 A/B 비교에 쓸 수 없다.
+    // 이 모드는 커맨드라인 인자가 있을 때만 진입하며, 워밍업 후 지정한 (백엔드, N, 연산) 하나만
+    // 지정한 시간 동안 반복하고 종료한다. CSV를 쓰지 않고 동등성 검증도 하지 않는다 - 트레이스
+    // 구간에 무관한 작업이 섞이지 않게 하는 것이 유일한 목적이다.
+    //
+    // 절대 조건: 인자가 없으면(argc==1) 이 모드는 전혀 관여하지 않는다. main()은 기존 경로를
+    // 완전히 그대로 실행한다 - 이 구조체/함수는 기존 MeasureBackend/MeasurePeakLiveBytes를
+    // 전혀 호출하지 않는 별도 경로다.
+    // ================================================================
+
+    struct IsolateArgs
+    {
+        bool requested = false;    // --isolate=가 하나라도 있어야 true. main()의 진입 분기 조건.
+        bool ecs = true;           // true=ecs, false=oop
+        std::size_t n = 50000;
+        std::string op = "step";   // 이 태스크에서 검증한 것은 "step"뿐이다(브리프의 핵심 케이스).
+        double seconds = 5.0;
+    };
+
+    /// `--key=value` 형태에서 prefix가 일치하면 값을 돌려주고, 아니면 nullptr.
+    const char* MatchKeyValue(const std::string& arg, const char* prefix)
+    {
+        const std::size_t len = std::strlen(prefix);
+        if (arg.compare(0, len, prefix) != 0)
+            return nullptr;
+        return arg.c_str() + len;
+    }
+
+    /// `--isolate=ecs|oop --n=<N> --op=<op> --seconds=<S>`를 파싱한다.
+    /// 인자가 없으면(argc==1) requested==false로 남아 main()의 기존 경로가 그대로 실행된다.
+    IsolateArgs ParseIsolateArgs(int argc, char** argv)
+    {
+        IsolateArgs args;
+        for (int i = 1; i < argc; ++i)
+        {
+            const std::string arg = argv[i];
+            if (const char* v = MatchKeyValue(arg, "--isolate="))
+            {
+                args.requested = true;
+                args.ecs = (std::string(v) != "oop"); // "ecs" 또는 인식 못 하는 값은 ecs로 취급, 명시적 "oop"만 oop.
+            }
+            else if (const char* v = MatchKeyValue(arg, "--n="))
+            {
+                args.n = static_cast<std::size_t>(std::strtoull(v, nullptr, 10));
+            }
+            else if (const char* v = MatchKeyValue(arg, "--op="))
+            {
+                args.op = v;
+            }
+            else if (const char* v = MatchKeyValue(arg, "--seconds="))
+            {
+                args.seconds = std::strtod(v, nullptr);
+            }
+        }
+        return args;
+    }
+
+    /// 격리 실행 본체. 하나의 백엔드 템플릿 인스턴스만 링크되도록 name/Backend를 함께 받는다 -
+    /// PMC 샘플링(-PmcProfile) 대안을 쓸 경우 MeasureBackend<EcsBackend>와 MeasureBackend<OopBackend>가
+    /// 서로 다른 심볼이듯, RunIsolate<EcsBackend>와 RunIsolate<OopBackend>도 심볼로 분리된다.
+    template <typename Backend>
+    int RunIsolate(const char* name, const IsolateArgs& args)
+    {
+        // main()의 기본 경로와 동일한 스레드 친화도/우선순위 설정 (수정 7과 같은 이유:
+        // 하이브리드 CPU에서 P-core/E-core 마이그레이션이 일어나면 카운터가 흔들린다).
+        // 기존 MeasureBackend/MeasurePeakLiveBytes를 건드리지 않기 위해 별도로 다시 호출한다.
+        const bool priorityClassOk = SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS) != 0;
+        const bool threadPriorityOk = SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST) != 0;
+        const DWORD_PTR affinity = SetThreadAffinityMask(GetCurrentThread(), static_cast<DWORD_PTR>(1) << 2);
+        const bool affinityOk = affinity != 0;
+
+        std::printf("[isolate] backend=%s n=%zu op=%s seconds=%.3f\n", name, args.n, args.op.c_str(), args.seconds);
+        std::printf("[isolate] priorityClass=%s threadPriority=%s affinity=%s\n",
+            priorityClassOk ? "ok" : "FAIL", threadPriorityOk ? "ok" : "FAIL", affinityOk ? "ok" : "FAIL");
+
+        if (args.op != "step")
+        {
+            std::printf("[isolate] 지원하지 않는 --op=%s (이 모드는 step만 구현되어 있다)\n", args.op.c_str());
+            return 1;
+        }
+
+        Backend backend;
+        for (std::size_t i = 0; i < args.n; ++i)
+            backend.Add(static_cast<EntityId>(i + 1));
+
+        // 워밍업: 캐시/TLB/페이지 폴트를 트레이스 구간 밖에서 흡수한다.
+        // (kWarmup과 같은 취지지만 이 모드 전용 상수다 - kWarmup 자체를 재사용하지 않는다.)
+        constexpr int kIsolateWarmupSteps = 5;
+        for (int w = 0; w < kIsolateWarmupSteps; ++w)
+            backend.Step(0.016f);
+
+        std::uint64_t stepCount = 0;
+        ScopedTimer timer;
+        const double budgetMs = args.seconds * 1000.0;
+        while (timer.ElapsedMs() < budgetMs)
+        {
+            backend.Step(0.016f);
+            ++stepCount;
+        }
+        const double elapsedMs = timer.ElapsedMs();
+        // Step() 1회는 N개 엔티티 각각의 Transform/Decal/Animation 3개 컴포넌트를 한 번씩 갱신한다
+        // (EcsBackend::Step, OopBackend::Step 참고) - 정규화(측정 절차 Step 4)에 쓸 분모다.
+        const std::uint64_t componentUpdates = stepCount * static_cast<std::uint64_t>(args.n) * 3ull;
+
+        std::printf("[isolate] stepCount=%llu elapsedMs=%.3f componentUpdates=%llu (n=%zu * 3 components * stepCount)\n",
+            static_cast<unsigned long long>(stepCount), elapsedMs,
+            static_cast<unsigned long long>(componentUpdates), args.n);
+
+        return 0;
+    }
+
+    int DispatchIsolate(const IsolateArgs& args)
+    {
+        return args.ecs ? RunIsolate<EcsBackend>("ecs", args) : RunIsolate<OopBackend>("oop", args);
+    }
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    // Task 7 / Ruling 16: 격리 실행 모드 진입점. 인자가 하나도 없으면(argc==1) ParseIsolateArgs가
+    // requested==false를 돌려주므로 아래 분기를 타지 않고 기존 경로가 인자 없던 시절과 완전히
+    // 동일하게 실행된다 - main()의 나머지 본문은 한 글자도 바뀌지 않았다.
+    {
+        const IsolateArgs isoArgs = ParseIsolateArgs(argc, argv);
+        if (isoArgs.requested)
+            return DispatchIsolate(isoArgs);
+    }
+
     // 수정 7: 하이브리드 CPU(P-core 8 + E-core 16)에서 스레드가 E-core로 옮겨가면 같은 코드가
     // 2배 가까이 느려진다. 스윕이 ECS 다음 OOP 순으로 도므로 마이그레이션 오차가 백엔드 차이로
     // 오인된다. main() 진입 직후, 다른 어떤 측정보다 먼저 고정한다.
