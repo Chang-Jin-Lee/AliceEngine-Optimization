@@ -86,11 +86,17 @@ namespace Alice
                 return outSrv;
             }
 
-            std::vector<std::uint8_t> data;
-            if (!resources->LoadBinaryAuto(logicalPath, data) || data.empty())
+            // 캐시된 블롭을 공유 참조로 받는다.
+            // LoadBinaryAuto는 호환용 API라 LoadSharedBinaryAuto가 준 캐시 블롭을 매 호출마다
+            // 통째로 복사한다(ResourceManager.cpp의 "호환 API: 복사"). 여기서는 바이트를 읽어
+            // SRV를 만들 뿐 보관하지 않으므로 복사할 이유가 없다.
+            // 이 프로젝트의 무압축 TGA가 40~80MB라 복사 비용이 그대로 드러난다.
+            const auto blob = resources->LoadSharedBinaryAuto(logicalPath);
+            if (!blob || blob->empty())
             {
                 return outSrv;
             }
+            const std::vector<std::uint8_t>& data = *blob;
 
             HRESULT hr = E_FAIL;
             if (IsDDSHeader(data))

@@ -72,11 +72,14 @@ namespace Alice
                 return outSrv;
             }
 
-            std::vector<std::uint8_t> data;
-            if (!resources->LoadBinaryAuto(logicalPath, data) || data.empty())
+            // 캐시된 블롭을 공유 참조로 받는다(DeferredRenderSystem의 같은 함수와 동일한 이유).
+            // LoadBinaryAuto는 호출마다 캐시 블롭 전체를 복사하는데, 여기서는 읽기만 한다.
+            const auto blob = resources->LoadSharedBinaryAuto(logicalPath);
+            if (!blob || blob->empty())
             {
                 return outSrv;
             }
+            const std::vector<std::uint8_t>& data = *blob;
 
             HRESULT hr = E_FAIL;
             if (IsDDSHeader(data))

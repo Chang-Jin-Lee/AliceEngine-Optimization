@@ -512,14 +512,15 @@ static ID3D11ShaderResourceView* LoadTextureFromMaterialRM(
 				}
 				else
 				{
-					// ResourceManager에서 원본 바이트를 읽고 텍스처 타입에 맞는 색공간으로 SRV 생성
-					std::vector<std::uint8_t> data;
-					if (rm.LoadBinaryAuto(logicalTex, data) && !data.empty())
+					// ResourceManager에서 원본 바이트를 읽고 텍스처 타입에 맞는 색공간으로 SRV 생성.
+					// 캐시 블롭을 공유 참조로 받는다 - LoadBinaryAuto는 호환 API라 매번 전체를
+					// 복사하는데, 여기서는 SRV를 만든 뒤 바이트를 버리므로 복사가 낭비다.
+					if (const auto blob = rm.LoadSharedBinaryAuto(logicalTex); blob && !blob->empty())
 					{
 						result = CreateSRVFromMemoryWithType(
 							device,
-							data.data(),
-							data.size(),
+							blob->data(),
+							blob->size(),
 							texType);
 					}
 

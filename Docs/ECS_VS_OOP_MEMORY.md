@@ -119,9 +119,9 @@ xperf로 힙을 잡을 때 두 번 막혔고 둘 다 기록해 둔다.
 
 여기서 두 가지가 나왔다. 둘 다 엔티티당 8MiB와는 별개이고, 그 자체로 고칠 값어치가 있다.
 
-### 1. `LoadBinaryAuto`가 캐시된 블롭을 매번 통째로 복사한다
+### 1. `LoadBinaryAuto`의 복사 — 고쳤지만 측정 효과는 없었다
 
-`ResourceManager.cpp:377-387`이다.
+`ResourceManager.cpp:377-387`에 이런 코드가 있다.
 
 ```cpp
 bool ResourceManager::LoadBinaryAuto(const std::filesystem::path& logicalPath,
@@ -137,13 +137,25 @@ bool ResourceManager::LoadBinaryAuto(const std::filesystem::path& logicalPath,
 }
 ```
 
-`LoadSharedBinaryAuto`는 해시 기반 블롭 캐시에서 `shared_ptr`를 제대로 돌려준다. 그런데 호환 API인
-`LoadBinaryAuto`가 그걸 받아 전체를 복사한다. 32 엔티티 실행에서 55MB짜리 복사가 24회, 합계 1.26GiB다.
-대상은 무압축 TGA로, `Resource/Textures/char/char_D_8.tga`와 `char_D_9.tga`가 40~80MB다.
+`LoadSharedBinaryAuto`는 해시 기반 블롭 캐시에서 `shared_ptr`를 돌려주는데, 호환 API인
+`LoadBinaryAuto`가 그걸 받아 전체를 복사한다. 읽기만 하는 호출자 네 곳
+(`DeferredRenderSystem.cpp`, `ForwardRenderSystem.cpp`의 텍스처 로더, `FbxMaterial.cpp`,
+`UIRenderer.cpp`)을 `LoadSharedBinaryAuto`로 바꿔 복사를 없앴다.
+소유권이 필요한 `SoundManager.cpp:475`는 그대로 뒀다. 버퍼를 맵에 보관하고 FMOD에 포인터를 넘기며,
+`FMOD_OPENMEMORY_POINT`로 전환할 계획이 주석에 남아 있기 때문이다.
 
-호출자는 `FbxMaterial.cpp:517`, `DeferredRenderSystem.cpp:90`, `ForwardRenderSystem.cpp:76`,
-`UIRenderer.cpp:527`, `SoundManager.cpp:475`다. 대부분 읽기만 하므로
-`LoadSharedBinaryAuto`가 준 `shared_ptr`를 그대로 쓰면 복사가 사라진다.
+**그런데 같은 조건으로 다시 트레이스를 떠 보니 수치가 바뀌지 않았다.**
+`_Buy_raw` 1,427.7MiB/28건, `LoadBinary` 1,264.6MiB/24건, `CreateSRVFromMemoryWithType` 7.4MiB/19건이
+수정 전과 바이트 단위로 동일했다.
+
+처음에 이 1.26GiB를 "불필요한 복사"로 읽은 것은 **오독이었다.** 그 프레임은
+`ResourceManager::LoadBinary`, 즉 파일을 캐시로 읽어들이는 함수다. 파일당 한 번씩 일어나는 정상적인
+로딩 비용이고 내 수정과 무관하다. 실제로 이 씬에서 큰 텍스처를 읽는 경로는 내가 바꾼 네 곳이 아니라
+`ResourceLoader<SRV>::Load` 쪽(`CreateTextureFromWIC` 500건)이었다.
+
+수정 자체는 유지한다. 불필요한 복사를 없앤 것은 그 자체로 옳고, 렌더링 무결성도 확인했다
+(프로토타입맵 드로우콜 6,700, 스트레스 씬 505로 수정 전과 동일). 다만 **이 수정으로 메모리나
+로딩 시간이 개선됐다고 말할 근거는 없다.**
 
 ### 2. `InputSystem::Update`가 초당 7,000회 할당한다
 

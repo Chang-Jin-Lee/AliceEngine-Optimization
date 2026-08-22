@@ -523,9 +523,12 @@ namespace Alice
 		runtime.baseSize = static_cast<float>(bakeSize);
 		runtime.atlas = std::make_unique<ImFontAtlas>();
 
-		std::vector<std::uint8_t> fontBytes;
-		if (!m_resources->LoadBinaryAuto(path, fontBytes) || fontBytes.empty())
+		// 캐시 블롭을 공유 참조로 받는다. 아래에서 ImGui 소유 버퍼로 memcpy하므로
+		// 여기서는 읽기만 한다 - LoadBinaryAuto의 전체 복사는 불필요하다.
+		const auto fontBlob = m_resources->LoadSharedBinaryAuto(path);
+		if (!fontBlob || fontBlob->empty())
 			return false;
+		const std::vector<std::uint8_t>& fontBytes = *fontBlob;
 
 		ImFontConfig cfg{};
 		cfg.MergeMode = false;
