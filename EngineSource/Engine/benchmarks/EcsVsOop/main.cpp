@@ -315,7 +315,8 @@ namespace
         os << "L2: P-core당 2MB, 총 32MB / L3: 36MB\n";
         os << "RAM: 128 GB DDR5-4800, 4 modules\n";
         os << "OS: Windows 11 Pro 10.0.26200\n";
-        os << "참고: N=50000에서도 ECS 약 4.6MB, OOP 약 16MB로 둘 다 L3(36MB) 안에 들어간다.\n";
+        os << "참고: N=50000의 실측 peakLiveBytes는 ECS 6,472,830 B(6.17 MiB), OOP 10,340,262 B(9.86 MiB)로\n"
+              "      둘 다 L3(36MB) 안에 들어간다. 즉 이 스윕은 DRAM 대역폭이 아니라 캐시 계층 국소성을 잰다.\n";
         os << "     즉 이 스윕은 DRAM 대역폭이 아니라 캐시 계층 국소성을 재는 것이다 (Task 9 공시 사항).\n";
         os << "-- 빌드 구성 (build/EcsVsOopBench.vcxproj Release|x64에서 직접 재확인) --\n";
         os << "Configuration: Release, x64, MSVC(PlatformToolset v145)\n";
