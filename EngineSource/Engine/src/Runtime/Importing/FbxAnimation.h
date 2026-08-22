@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <cstdint>
+#include <memory>
 #include <DirectXMath.h>
 
 struct ID3D11Device;
@@ -142,7 +143,12 @@ private:
 		std::vector<double> times; // seconds
 		std::vector<std::vector<DirectX::XMMATRIX>> palettes; // [timeIndex][boneIndex]
 	};
-	std::vector<PrecomputedClip> m_Precomputed; // size = num clips
+		// 구워둔 클립 데이터. 같은 메시를 쓰는 엔티티들이 값을 나눠 갖는다.
+	// 예전에는 vector로 들고 CopyPrecomputedFrom에서 통째로 깊은 복사를 했는데,
+	// palettes가 vector<vector<XMMATRIX>>라 샘플마다 할당이 하나씩 생겼다.
+	// 엔티티가 늘면 그대로 엔티티당 비용이 된다(실측 약 579회 할당, 약 8MiB).
+	// 프리컴퓨트는 구워진 뒤 읽기만 하므로 const로 공유해도 안전하다.
+	std::shared_ptr<const std::vector<PrecomputedClip>> m_Precomputed;
 };
 
 

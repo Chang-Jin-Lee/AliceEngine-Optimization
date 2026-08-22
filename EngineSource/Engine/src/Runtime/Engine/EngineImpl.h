@@ -329,6 +329,9 @@ namespace Alice
 		void RenderBenchMetrics();
 		std::filesystem::path ResolveBenchFramePath(std::uint64_t frameIndex) const;
 		void EnsureSkinnedMeshesRegisteredForWorld();
+		/// 메시별 애니메이션 프리컴퓨트를 한 번만 구워 레지스트리에 올린다.
+		/// 이미 있으면 아무것도 하지 않는다.
+		void EnsurePrecomputedAnimationForMesh(const std::string& meshKey);
 		void TrimVideoMemory();
 		void SetUseForwardRendering(bool useForward);
 		bool GetUseForwardRendering() const;

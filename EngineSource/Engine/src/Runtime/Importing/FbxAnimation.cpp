@@ -41,7 +41,7 @@ void FbxAnimation::Clear()
     m_NodePtrByIndex.clear();
     m_ParentIndexByIndex.clear();
     m_BoneNodeIndices.clear();
-    m_Precomputed.clear();
+    m_Precomputed.reset();
 }
 
 void FbxAnimation::InitMetadata(const aiScene* scene)
@@ -133,7 +133,7 @@ void FbxAnimation::SetSharedContext(
 
     // Precompute all clips to avoid per-frame evaluation
     // Default to 30 samples per second to balance memory/quality
-    if (m_Precomputed.empty() && m_Scene && m_BoneNames && m_BoneOffsets && m_GlobalInverse)
+    if ((!m_Precomputed || m_Precomputed->empty()) && m_Scene && m_BoneNames && m_BoneOffsets && m_GlobalInverse)
     {
         PrecomputeAll(m_Scene, m_NodeIndexOfName, *m_BoneNames, *m_BoneOffsets, *m_GlobalInverse, 30);
     }
@@ -339,9 +339,10 @@ void FbxAnimation::PrecomputeAll(
 	const XMFLOAT4X4& globalInverse,
 	int samplesPerSecond)
 {
-	if (!scene || boneNames.empty() || samplesPerSecond <= 0) { m_Precomputed.clear(); return; }
-	m_Precomputed.clear();
-	m_Precomputed.resize(m_Names.size());
+	if (!scene || boneNames.empty() || samplesPerSecond <= 0) { m_Precomputed.reset(); return; }
+	// 로컬에 구운 뒤 마지막에 공유 포인터로 넘긴다. 중간 상태가 밖에서 보이지 않게 하기 위함이다.
+	std::vector<PrecomputedClip> built;
+	built.resize(m_Names.size());
 
 	// Preserve current playback state while precomputing
 	int oldClip = m_Current; double oldTime = m_TimeSec; bool oldPlaying = m_Playing;
@@ -354,7 +355,7 @@ void FbxAnimation::PrecomputeAll(
 		pc.durationSec = (clipIdx < m_DurationSec.size()) ? m_DurationSec[clipIdx] : 0.0;
 		pc.sampleDt = (samplesPerSecond > 0) ? (1.0 / (double)samplesPerSecond) : 0.0;
 		pc.rigid = (m_Type == AnimType::Rigid);
-		if (pc.durationSec <= 0.0 || pc.sampleDt <= 0.0) { m_Precomputed[clipIdx] = pc; continue; }
+		if (pc.durationSec <= 0.0 || pc.sampleDt <= 0.0) { built[clipIdx] = pc; continue; }
 
 		// Build channel map for this clip
 		m_Current = (int)clipIdx;
@@ -393,8 +394,11 @@ void FbxAnimation::PrecomputeAll(
 			}
 		}
 		pc.valid = true;
-		m_Precomputed[clipIdx] = std::move(pc);
+		built[clipIdx] = std::move(pc);
 	}
+
+	// 다 구웠으면 공유 포인터로 넘긴다. 이후로는 읽기 전용이라 여러 엔티티가 같은 실체를 본다.
+	m_Precomputed = std::make_shared<const std::vector<PrecomputedClip>>(std::move(built));
 
 	// Restore playback state
 	m_Current = oldClip; m_TimeSec = oldTime; m_Playing = oldPlaying;
@@ -433,9 +437,9 @@ void FbxAnimation::UpdateAndUpload(
 	const XMFLOAT4X4* giPtr = m_GlobalInverse ? m_GlobalInverse : &globalInverse;
 
 	// Fast path: if precomputed exists for current clip, just upload (with time interpolation for smooth motion)
-	if (m_Current >= 0 && (size_t)m_Current < m_Precomputed.size())
+	if (m_Precomputed && m_Current >= 0 && (size_t)m_Current < m_Precomputed->size())
 	{
-		const auto& pc = m_Precomputed[(size_t)m_Current];
+		const auto& pc = (*m_Precomputed)[(size_t)m_Current];
 		if (pc.valid && !pc.times.empty())
 		{
 			double dur = pc.durationSec;
@@ -518,8 +522,8 @@ void FbxAnimation::BuildCurrentPaletteFloat4x4(std::vector<DirectX::XMFLOAT4X4>&
 
 	// Fast path: precomputed 팔레트 사용
 	// 1. 유효성 검사
-	if ((size_t)m_Current >= m_Precomputed.size()) return;
-	const auto& pc = m_Precomputed[(size_t)m_Current];
+	if (!m_Precomputed || (size_t)m_Current >= m_Precomputed->size()) return;
+	const auto& pc = (*m_Precomputed)[(size_t)m_Current];
 	if (!pc.valid || pc.times.empty() || pc.palettes.empty()) return;
 
 	// 2. 시간 루핑 처리 (std::fmod 사용)

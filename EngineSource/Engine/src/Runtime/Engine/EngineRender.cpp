@@ -996,7 +996,43 @@ namespace Alice
 			FbxImportResult res = importer.Import(device, srcFbx, FbxImportOptions{});
 
 			ALICE_LOG_INFO("Engine: Registered Mesh '%s' -> '%s'", comp.meshAssetPath.c_str(), res.meshAssetPath.c_str());
+
+			// 이 메시의 애니메이션을 한 번만 구워 레지스트리에 올려둔다.
+			// 이게 없으면 애니메이션 시스템들이 엔티티마다 PrecomputeAll을 돌려
+			// 모든 클립을 초당 30샘플로 다시 굽는다. 같은 메시를 쓰는 엔티티가 많을수록
+			// 그대로 엔티티당 비용이 된다(실측: 엔티티당 약 579회 할당, 약 8MiB).
+			// 프리로드 경로(EngineInitialize의 PrecomputeAnimationForMesh)는 이미 같은 일을 하는데,
+			// 온디맨드 임포트로 들어온 메시는 그 경로를 타지 않아 빠져 있었다.
+			EnsurePrecomputedAnimationForMesh(comp.meshAssetPath);
 		}
+	}
+
+	void Engine::Impl::EnsurePrecomputedAnimationForMesh(const std::string& meshKey)
+	{
+		if (meshKey.empty()) return;
+		if (m_skinnedMeshRegistry.GetPrecomputedAnimation(meshKey)) return;
+
+		const auto mesh = m_skinnedMeshRegistry.Find(meshKey);
+		if (!mesh || !mesh->sourceModel) return;
+		if (!mesh->sourceModel->HasAnimations()) return;
+		if (mesh->sourceModel->GetBoneNames().empty()) return;
+
+		auto anim = std::make_shared<::FbxAnimation>();
+		anim->InitMetadata(mesh->sourceModel->GetScenePtr());
+		anim->SetSharedContext(
+			mesh->sourceModel->GetScenePtr(),
+			mesh->sourceModel->GetNodeIndexOfName(),
+			&mesh->sourceModel->GetBoneNames(),
+			&mesh->sourceModel->GetBoneOffsets(),
+			&mesh->sourceModel->GetGlobalInverse());
+
+		const auto t = mesh->sourceModel->GetCurrentAnimationType();
+		if (t == FbxModel::AnimationType::Rigid)        anim->SetType(::FbxAnimation::AnimType::Rigid);
+		else if (t == FbxModel::AnimationType::Skinned) anim->SetType(::FbxAnimation::AnimType::Skinned);
+		else                                            anim->SetType(::FbxAnimation::AnimType::None);
+
+		m_skinnedMeshRegistry.SetPrecomputedAnimation(meshKey, anim);
+		ALICE_LOG_INFO("Engine: Precomputed animation cached for '%s'", meshKey.c_str());
 	}
 
 	void Engine::Impl::TrimVideoMemory()

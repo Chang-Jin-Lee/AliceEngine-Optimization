@@ -72,6 +72,16 @@ namespace Alice
                     rt.meshKey = skinned.meshAssetPath;
 
                     rt.anim.InitMetadata(mesh->sourceModel->GetScenePtr());
+
+                    // 메시별로 한 번 구워둔 프리컴퓨트를 재사용한다.
+                    // 이게 없으면 아래 SetSharedContext가 m_Precomputed가 비어 있는 것을 보고
+                    // PrecomputeAll을 돌려 모든 클립을 초당 30샘플로 다시 굽는다. 엔티티마다.
+                    // 같은 메시를 쓰는 엔티티가 많은 씬에서 그대로 엔티티당 비용이 된다
+                    // (실측: 엔티티당 약 579회 할당, 약 8MiB. Docs/ECS_VS_OOP_MEMORY.md 참고).
+                    // SkinnedAnimationSystem과 AnimBlueprintSystem은 이미 같은 방식을 쓰고 있다.
+                    if (auto pre = m_registry.GetPrecomputedAnimation(rt.meshKey))
+                        rt.anim.CopyPrecomputedFrom(*pre);
+
                     rt.anim.SetSharedContext(
                         mesh->sourceModel->GetScenePtr(),
                         mesh->sourceModel->GetNodeIndexOfName(),
