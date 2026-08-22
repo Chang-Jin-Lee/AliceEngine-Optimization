@@ -757,6 +757,22 @@ if(MSVC)
             "$<$<CONFIG:Debug>:/DEBUG:FASTLINK>"
         )
     endforeach()
+
+    # [진단] Release에도 PDB를 남긴다. /Zi는 디버그 정보만 별도 파일로 낼 뿐 코드 생성을 바꾸지 않는다.
+    # 다만 /DEBUG는 기본적으로 /OPT:REF와 /OPT:ICF를 끄므로, 바이너리 레이아웃을 Release 그대로
+    # 유지하려면 둘을 명시해 되돌려야 한다. 이게 없으면 참조되지 않는 코드가 남아 프로파일 결과가
+    # 실제 Release와 어긋난다.
+    # 힙 트레이스(xperf)로 할당 스택을 심볼까지 풀려면 이 PDB가 필요하다.
+    foreach(target Launch AlicePlayer Engine)
+        if(TARGET ${target})
+            target_compile_options(${target} PRIVATE "$<$<CONFIG:Release>:/Zi>")
+            target_link_options(${target} PRIVATE
+                "$<$<CONFIG:Release>:/DEBUG>"
+                "$<$<CONFIG:Release>:/OPT:REF>"
+                "$<$<CONFIG:Release>:/OPT:ICF>"
+            )
+        endif()
+    endforeach()
 endif()
 
 # ==========================================

@@ -91,18 +91,75 @@ Registered mesh key="Alice_Swimsuit_white" stride=108 indexCount=115896 subsets=
 `sourceModel`도 `shared_ptr`로 공유된다. 씬 로더의 `SkinnedMesh` 블록은 `AddComponent` 후
 필드 세 개를 대입할 뿐이다.
 
-## 못 한 것
+## 힙 트레이스
 
-xperf 힙 트레이싱을 시도했으나 `HeapAlloc` 이벤트가 잡히지 않았다(`-a heap` 출력의 `Alloc#`이 전부 0,
-힙 익스텐트 총합 4.17GB만 나왔다 — 이 값 자체는 위 측정과 부합한다).
-또 Release 빌드의 PDB가 없어(`build/bin/Release`에 `.pdb` 없음) 스택을 심볼로 풀 수도 없었다.
+Release에 PDB를 켜고(`/Zi` + `/DEBUG` + `/OPT:REF` + `/OPT:ICF`) 다시 떴다.
+`/Zi`는 디버그 정보만 별도 파일로 낼 뿐 코드 생성을 바꾸지 않는다. 다만 `/DEBUG`가 기본적으로
+`/OPT:REF`와 `/OPT:ICF`를 끄므로 둘을 명시해 되돌려야 Release와 같은 바이너리가 나온다.
 
-다음에 이어서 판다면 이 순서가 좋겠다.
+xperf로 힙을 잡을 때 두 번 막혔고 둘 다 기록해 둔다.
 
-1. Release에 PDB를 켜고(`/Zi` + `/DEBUG`) 다시 힙 트레이스를 뜬다. 8MB 단위 할당 302건의 스택이
-   바로 나올 것이다.
-2. 그게 막히면 `SkinnedMeshComponent`를 소비하는 지점을 하나씩 무력화하며 이분 탐색한다.
-   후보는 `EngineRender.cpp:342`, `:472`, `:968`과 `CameraSystem.cpp:495`, `GameObject.h:429`다.
+- `-heap`만 켜면 `-a heap`이 프로세스를 인식하지 못하고 `Alloc#`이 전부 0으로 나온다.
+  모듈 로드 정보가 없어서다. 커널 세션(`-on PROC_THREAD+LOADER`)을 따로 켜고 `xperf -merge`로
+  합쳐야 주소가 모듈로 풀린다.
+- `-symbols`는 액션 플래그가 아니라 전역 플래그다. `-a dumper -symbols`가 아니라
+  `-symbols -a dumper` 순서여야 한다.
+
+32 엔티티 씬으로 25만 건의 `HeapAlloc`을 잡아 스택의 첫 호출자별로 묶은 결과다.
+할당자 래퍼(`operator new`, `malloc` 등)는 건너뛰고 실제 호출 지점으로 집계했다.
+
+| 할당량 | 건수 | 평균 | 호출 지점 |
+|---:|---:|---:|---|
+| 2,211 MiB | 70,666 | 32 KB | `Alice::InputSystem::Update` |
+| 1,428 MiB | 28 | 53 MB | `std::vector<unsigned char>::_Buy_raw` |
+| 1,265 MiB | 24 | 55 MB | `Alice::ResourceManager::LoadBinary` |
+| 109 MiB | 3,538 | 32 KB | `FbxModel::Load` |
+| 107 MiB | 500 | 224 KB | `CreateTextureFromWIC` |
+| 77 MiB | 107,469 | 752 B | `DeferredRenderSystem::CreateShaders` |
+
+여기서 두 가지가 나왔다. 둘 다 엔티티당 8MiB와는 별개이고, 그 자체로 고칠 값어치가 있다.
+
+### 1. `LoadBinaryAuto`가 캐시된 블롭을 매번 통째로 복사한다
+
+`ResourceManager.cpp:377-387`이다.
+
+```cpp
+bool ResourceManager::LoadBinaryAuto(const std::filesystem::path& logicalPath,
+                                     std::vector<std::uint8_t>& outData) const
+{
+    outData.clear();
+    if (auto sp = LoadSharedBinaryAuto(logicalPath))
+    {
+        outData = *sp; // 호환 API: 복사
+        return true;
+    }
+    return false;
+}
+```
+
+`LoadSharedBinaryAuto`는 해시 기반 블롭 캐시에서 `shared_ptr`를 제대로 돌려준다. 그런데 호환 API인
+`LoadBinaryAuto`가 그걸 받아 전체를 복사한다. 32 엔티티 실행에서 55MB짜리 복사가 24회, 합계 1.26GiB다.
+대상은 무압축 TGA로, `Resource/Textures/char/char_D_8.tga`와 `char_D_9.tga`가 40~80MB다.
+
+호출자는 `FbxMaterial.cpp:517`, `DeferredRenderSystem.cpp:90`, `ForwardRenderSystem.cpp:76`,
+`UIRenderer.cpp:527`, `SoundManager.cpp:475`다. 대부분 읽기만 하므로
+`LoadSharedBinaryAuto`가 준 `shared_ptr`를 그대로 쓰면 복사가 사라진다.
+
+### 2. `InputSystem::Update`가 초당 7,000회 할당한다
+
+10초 실행에서 70,666회, 합계 2.2GiB다. **엔티티 수와 무관하다** — 32 엔티티 씬에서 나온 수치다.
+프레임마다 해제되므로 상주 메모리로는 안 잡히지만, 입력 처리가 프레임당 수백 회 할당할 이유는 없다.
+
+## 아직 못 찾은 것
+
+**엔티티당 8.0MiB가 어느 줄에서 나오는지는 여전히 특정하지 못했다.**
+힙 트레이스는 할당 *총량*을 보여주지 실제로 붙들고 있는 양(할당 − 해제)을 보여주지 않는다.
+위 표의 큰 항목들은 전부 에셋 로드(약 26회)이거나 프레임당 churn이라 엔티티 수에 비례하지 않는다.
+
+남은 후보는 `CreateTextureFromWIC`이다. 32 엔티티에서 500회면 엔티티당 약 15회이고,
+이 메시의 머티리얼 수가 13개라는 점과 맞아떨어진다. 다만 VRAM이 엔티티 수에 비례하지 않았으므로
+GPU 텍스처가 엔티티마다 생기는 것은 아니고, CPU 측 디코드 버퍼가 남는 형태여야 설명이 된다.
+확인하려면 할당과 해제를 짝지어 상주량을 계산하는 분석이 필요하다.
 
 ## 곁가지로 발견한 것
 
