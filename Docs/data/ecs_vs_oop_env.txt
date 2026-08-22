@@ -1,0 +1,59 @@
+=== 실행 환경 ===
+-- 하드웨어 (확보된 정보, 그대로 기록) --
+CPU: 13th Gen Intel(R) Core(TM) i9-13900KF  (Raptor Lake, P-core = Golden Cove)
+Cores/Threads: 24C/32T  (P-core 8 + E-core 16)
+L2: P-core당 2MB, 총 32MB / L3: 36MB
+RAM: 128 GB DDR5-4800, 4 modules
+OS: Windows 11 Pro 10.0.26200
+참고: N=50000에서도 ECS 약 4.6MB, OOP 약 16MB로 둘 다 L3(36MB) 안에 들어간다.
+     즉 이 스윕은 DRAM 대역폭이 아니라 캐시 계층 국소성을 재는 것이다 (Task 9 공시 사항).
+-- 빌드 구성 (build/EcsVsOopBench.vcxproj Release|x64에서 직접 재확인) --
+Configuration: Release, x64, MSVC(PlatformToolset v145)
+C++ 표준: C++20 (LanguageStandard=stdcpp20)
+최적화: /O2 (Optimization=MaxSpeed), /Ob2 (InlineFunctionExpansion=AnySuitable)
+런타임: /MD (RuntimeLibrary=MultiThreadedDLL)
+/GL 없음 (WholeProgramOptimization 미설정)
+/arch 미설정 -> x64 기본 SSE2 베이스라인 (EnableEnhancedInstructionSet 미설정)
+/fp:precise (FloatingPointModel 미설정 = MSVC 기본값)
+-- 구조체 크기 (모든 메모리 주장의 근거) --
+sizeof(BenchTransform) = 36
+sizeof(BenchDecal)     = 8
+sizeof(BenchAnimation) = 12
+-- 반복 정책 --
+총 11회 반복, 앞 2회 폐기, 남은 9회의 중앙값(median)과 표준편차(n-1)를 쓴다. (Global Constraints - 고정값)
+-- 타이머 --
+QueryPerformanceFrequency() 실측값 = 10000000 Hz (100 ns/tick)
+-- 하이브리드 CPU 대응 (P-core 8 + E-core 16) --
+스레드가 P-core에서 E-core로 마이그레이션하면 같은 코드가 2배 가까이 느려질 수 있고,
+스윕이 항상 ECS 다음 OOP 순으로 돌기 때문에 그 오차가 백엔드 차이로 오인될 수 있다.
+SetPriorityClass(HIGH_PRIORITY_CLASS): 성공
+SetThreadPriority(THREAD_PRIORITY_HIGHEST): 성공
+SetThreadAffinityMask(logical processor 2, P-core): 성공 (이전 마스크=0xffffffff)
+-- 스윕 순서 --
+각 N, 각 fragmented 상태에서 항상 ECS를 먼저, OOP를 나중에 측정한다.
+-- 빌드 구성 플래그 --
+NDEBUG 정의됨 (Release)
+
+-- 설명하지 못한 관측 (수정하지 않음, 기록만 함) --
+[13-a] N=50000에서 실행 간 분산이 최대 약 2배로 크다 (예: ecs remove 비파편화가
+  한 실행에서는 0.2789ms, 다른 실행에서는 0.5638ms). minMs/maxMs 컬럼(수정 12)이
+  이 분산을 데이터로 남긴다. 원인은 확정하지 못했지만 유력한 가설은 다음과 같다:
+  스레드를 논리 프로세서 2번에 고정했는데, 이 기계는 SMT(하이퍼스레딩)가 켜져 있어
+  2번과 3번이 같은 물리 P-core의 두 하드웨어 스레드다. 3번에 다른 프로세스가 올라오면
+  같은 코어의 실행 자원(디코드/실행 포트/캐시 대역)을 나눠 쓰게 되어 처리량이 절반
+  가까이 떨어질 수 있다. Win32에는 형제 스레드까지 예약하는 표준적인 방법이 없으므로
+  이 벤치는 그 간섭을 배제하지 못한다. minMs 컬럼이 이 간섭의 영향을 가장 적게 받는
+  값이다 - 짧은 구간 측정에서 스케줄링 간섭은 시간을 늘리기만 하기 때문이다.
+  ComponentStorage::Remove()의 소스를 직접 읽어 확인했다: swap-and-pop이 pop_back()만
+  하고 용량을 줄이지 않으므로 힙 연산(operator new/delete)을 전혀 하지 않는다. 즉 ECS
+  remove의 실행 간 분산은 _msize/할당자 계측 비용으로 설명되지 않으며, 코드 결함이
+  아니라 위 SMT 간섭 같은 측정 잡음일 가능성이 높다는 근거가 된다.
+[13-b] random (fragmented)가 여전히 비파편화보다 약간 더 빠르다 (수정 4로 버그 규모의
+  효과(-56.7%, OOP remove 기준)는 사라졌지만, random에는 작은 잔여가 남아 여러 번
+  재현된다: 예) OOP N=50000 비파편화 2.4679ms -> 파편화 2.1436ms(-13.1%),
+  ECS 0.1711ms -> 0.1403ms(-18.0%)). 가설(검증되지 않음): 파편화 단계가 방금
+  order[cut..2*cut) 구간의 엔티티와 그 해시/인덱스 노드를 직전에 만졌으므로, 뒤따르는
+  랜덤 조회가 order[] 전체를 고르게 순회할 때 이 구간을 만나면 이미 캐시/TLB에
+  '뜨거운' 상태일 수 있다는 캐시 워밍 가설이다. 이 가설은 검증하지 않았다.
+  같은 항목에 remove (fragmented)의 OOP 잔여(-3.2%, 3.0920ms->2.9932ms)도 기록한다 -
+  표준편차(약 0.34~0.38ms, 상대 11~12%)에 비해 작아 노이즈 범위로 판단했다.
