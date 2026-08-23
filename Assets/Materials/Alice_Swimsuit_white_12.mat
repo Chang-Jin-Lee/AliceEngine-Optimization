@@ -1,0 +1,46 @@
+{
+    "albedoTexturePath": "Resource/Textures/Alice_Swimsuit_white/Alice_Swimsuit_white_D_24.png",
+    "alpha": 1.0,
+    "ambientOcclusion": 1.0,
+    "assetPath": "Assets/Materials/Alice_Swimsuit_white_12.mat",
+    "color": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+    },
+    "emissiveBloom": 1.0,
+    "emissiveColor": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+    },
+    "emissiveIntensity": 0.0,
+    "emissiveTexturePath": "Resource/Textures/Alice_Swimsuit_white/Alice_Swimsuit_white_E_25.png",
+    "envDiffuseStrength": 1.0,
+    "envSpecularStrength": 1.0,
+    "metalness": 0.0,
+    "normalStrength": 1.0,
+    "outlineColor": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "outlineWidth": 0.0,
+    "roughness": 0.5,
+    "shadingMode": -1,
+    "shadowStrength": 1.0,
+    "toonPbrBlur": false,
+    "toonPbrCut1": 0.20000000298023224,
+    "toonPbrCut2": 0.5,
+    "toonPbrCut3": 0.949999988079071,
+    "toonPbrLevel1": 0.10000000149011612,
+    "toonPbrLevel1Alpha": 1.0,
+    "toonPbrLevel2": 0.4000000059604645,
+    "toonPbrLevel2Alpha": 1.0,
+    "toonPbrLevel3": 0.699999988079071,
+    "toonPbrLevel3Alpha": 1.0,
+    "toonPbrRampIntensity": 0.0,
+    "toonPbrStrength": 1.0,
+    "toonSelfShadowStrength": 1.0,
+    "transparent": false
+}

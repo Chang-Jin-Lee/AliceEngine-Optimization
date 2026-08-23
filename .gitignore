@@ -443,7 +443,10 @@ FodyWeavers.xsd
 
 Resource/fbx/Alice3DGame/
 Resource/fbx/Rapi/
-*.mat
+# *.mat 은 제외하지 않는다. 씬이 참조하는 머티리얼 애셋이라 빠지면 씬이 재현되지 않는다.
+# (씬 JSON에 값이 인라인으로 들어 있어 열리기는 하지만, .mat이 보강하는 텍스처 경로가 비어
+#  일부 텍스처가 안 붙는다. SceneFile.cpp의 "Material fallback load failed" 경고 참고.)
+# 전체 91개에 380KB 남짓이라 텍스트 애셋으로 그냥 커밋한다.
 *.alice
 Resource/Skybox/Bridge/bridgeBrdf.dds
 Resource/Skybox/Bridge/bridgeDiffuseHDR.dds
