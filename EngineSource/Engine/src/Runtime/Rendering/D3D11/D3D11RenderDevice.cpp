@@ -364,7 +364,25 @@ namespace Alice
 	bool D3D11RenderDevice::IsHDRSupported(float& outMaxNits) const
 	{
 		using Microsoft::WRL::ComPtr;
+
+		// 캐시가 살아 있으면 그대로 돌려준다.
+		// 이 함수는 GetPostProcessParams 같은 게터에서 프레임마다 불리는데, 아래 조회는
+		// DXGI 팩토리 생성 + 어댑터 열거 + 출력 열거라 cfgmgr32/devobj를 타는 장치 열거 비용이 든다
+		// (실측: 10초 실행에 그 두 DLL에서만 약 2GB 할당).
+		// 디스플레이 구성이 바뀌면 팩토리가 stale이 되고 IsCurrent()가 false가 되므로,
+		// 모니터를 새로 꽂거나 HDR을 켜고 끄는 경우도 다음 호출에서 자동으로 반영된다.
+		if (m_hdrQueried && m_hdrFactory && m_hdrFactory->IsCurrent())
+		{
+			outMaxNits = m_hdrMaxNits;
+			return m_hdrSupported;
+		}
+
+		// 여기부터는 실제 조회. 결과는 성공·실패 모두 캐시에 남긴다.
+		// 실패를 캐시하지 않으면 모니터가 없는 환경에서 프레임마다 재시도하게 된다.
 		outMaxNits = 100.0f; // 기본값(SDR) 설정. 실패 시 이 값이 유지됨.
+		m_hdrQueried   = true;
+		m_hdrSupported = false;
+		m_hdrMaxNits   = 100.0f;
 
 		ComPtr<IDXGIFactory4> factory;
 		if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&factory))))
@@ -372,6 +390,7 @@ namespace Alice
 			ALICE_LOG_ERRORF("IsHDRSupported: Factory 생성 실패");
 			return false;
 		}
+		m_hdrFactory = factory;
 
 		// 하드웨어 어댑터 탐색 (소프트웨어 렌더러 제외)
 		ComPtr<IDXGIAdapter1> adapter;
@@ -402,9 +421,13 @@ namespace Alice
 		if (bIsHDR)
 		{
 			outMaxNits = static_cast<float>(desc1.MaxLuminance);
+			// 캐시가 있으므로 이 로그는 실제로 조회가 일어난 때에만 찍힌다.
+			// 예전에는 프레임마다 찍혔다.
 			ALICE_LOG_INFO("IsHDRSupported: HDR ON (Max: %.1f)", outMaxNits);
 		}
 
+		m_hdrSupported = bIsHDR;
+		m_hdrMaxNits   = outMaxNits;
 		return bIsHDR;
 	}
 }

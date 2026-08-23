@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <wrl/client.h>
 #include <d3d11.h>
+#include <dxgi1_4.h>  // IDXGIFactory4 - HDR 조회 캐시용
 
 #include "Runtime/Rendering/D3D11/ID3D11RenderDevice.h"
 
@@ -50,6 +51,17 @@ namespace Alice
         Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
         Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthStencilState;
         Microsoft::WRL::ComPtr<ID3D11RasterizerState>  m_rasterizerState;
+
+        // HDR 조회 캐시.
+        // IsHDRSupported()는 GetPostProcessParams 같은 게터에서 프레임마다 불린다.
+        // 매번 DXGI 팩토리를 만들고 어댑터·출력을 열거하면 cfgmgr32/devobj를 타는
+        // 장치 열거 비용이 프레임마다 든다(실측: 10초 실행에 약 2GB 할당).
+        // 디스플레이 구성이 바뀌면 팩토리가 stale이 되므로 IDXGIFactory::IsCurrent()로 감지해
+        // 그때만 다시 조회한다. const 메서드에서 갱신하므로 mutable이다.
+        mutable Microsoft::WRL::ComPtr<IDXGIFactory4> m_hdrFactory;
+        mutable bool  m_hdrQueried   = false;
+        mutable bool  m_hdrSupported = false;
+        mutable float m_hdrMaxNits   = 100.0f;
 
         std::uint32_t m_width  = 0;
         std::uint32_t m_height = 0;
