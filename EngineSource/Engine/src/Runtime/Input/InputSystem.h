@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -143,7 +143,7 @@ namespace Alice
         static float NormalizeThumb(short raw, short deadZone);
 
         bool IsButtonDown(const GamepadSnapshot& snapshot, GamepadButton button) const;
-        void PollGamepads();
+        void PollGamepads(float deltaTime);
         void UpdateGamepadVibrations(float deltaTime);
         void ApplyGamepadVibrationNow(int playerIndex, float leftMotor, float rightMotor);
 
@@ -181,6 +181,14 @@ namespace Alice
         std::array<GamepadSnapshot, MaxGamepadCount> m_currGamepads{};
         std::vector<TimedVibration> m_vibrationRequests;
         std::array<std::pair<float, float>, MaxGamepadCount> m_appliedVibration{};
+
+        // 연결이 끊긴 슬롯의 재조회 유예 시간(초).
+        // XInputGetState는 비어 있는 슬롯에 대해 장치 열거를 타서 매우 비싸다.
+        // 매 프레임 4슬롯을 다 두드리면 그것만으로 프레임당 수천 건의 힙 할당이 생긴다
+        // (실측: 8초 트레이스에서 cfgmgr32/devobj 경유 88만 건).
+        // 그래서 끊긴 슬롯은 이 간격으로만 다시 확인한다. 연결된 슬롯은 매 프레임 그대로 읽는다.
+        static constexpr float kDisconnectedRetrySec = 1.0f;
+        std::array<float, MaxGamepadCount> m_disconnectedRetryTimer{};
     };
 }
 

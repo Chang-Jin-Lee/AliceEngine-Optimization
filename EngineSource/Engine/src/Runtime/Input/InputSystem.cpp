@@ -112,7 +112,7 @@ namespace Alice
             m_prevScrollWheelValue = currentScrollWheelValue;
         }
 
-        PollGamepads();
+        PollGamepads(std::max(0.0f, deltaTime));
         UpdateGamepadVibrations(std::max(0.0f, deltaTime));
     }
 
@@ -503,18 +503,41 @@ namespace Alice
         return (mask != 0) && ((snapshot.state.Gamepad.wButtons & mask) != 0);
     }
 
-    void InputSystem::PollGamepads()
+    void InputSystem::PollGamepads(float deltaTime)
     {
         m_prevGamepads = m_currGamepads;
 
         for (int i = 0; i < MaxGamepadCount; ++i)
         {
+            const std::size_t slot = static_cast<std::size_t>(i);
+            auto& dst = m_currGamepads[slot];
+
+            // 비어 있는 슬롯에 XInputGetState를 부르면 장치 열거 경로를 타서 매우 비싸다.
+            // (스택: XInputGetState -> dxgi -> DXCore -> cfgmgr32. 8초 트레이스에서 88만 건이 여기서 나왔다.)
+            // 그래서 끊긴 슬롯은 kDisconnectedRetrySec 간격으로만 다시 확인한다.
+            // 연결된 슬롯은 유예 없이 매 프레임 읽으므로 입력 지연이 생기지 않는다.
+            // 컨트롤러를 새로 꽂으면 최대 kDisconnectedRetrySec 뒤에 인식된다.
+            if (!dst.connected)
+            {
+                float& timer = m_disconnectedRetryTimer[slot];
+                timer -= deltaTime;
+                if (timer > 0.0f)
+                {
+                    dst.state = XINPUT_STATE{};
+                    continue;
+                }
+                timer = kDisconnectedRetrySec;
+            }
+
             XINPUT_STATE state{};
             const DWORD result = XInputGetState(static_cast<DWORD>(i), &state);
 
-            auto& dst = m_currGamepads[static_cast<std::size_t>(i)];
             dst.connected = (result == ERROR_SUCCESS);
             dst.state = dst.connected ? state : XINPUT_STATE{};
+
+            // 방금 끊긴 것을 확인했다면 다음 재조회까지 유예를 준다.
+            if (!dst.connected)
+                m_disconnectedRetryTimer[slot] = kDisconnectedRetrySec;
         }
     }
 
