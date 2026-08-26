@@ -708,6 +708,31 @@ set_target_properties(Launch PROPERTIES WIN32_EXECUTABLE YES)
 set_target_properties(AlicePlayer PROPERTIES WIN32_EXECUTABLE YES)
 
 # ==========================================
+# [vcpkg] assimp 이름 탐지
+# ==========================================
+# vcpkg가 만든 assimp DLL/LIB에는 빌드에 쓴 MSVC 툴셋 번호가 이름에 박힌다.
+# VS2022로 빌드하면 assimp-vc143-mt, VS2026(v145)로 다시 빌드하면 assimp-vc145-mt가 된다.
+# 이름을 소스에 박아두면 툴셋이 바뀌는 순간 링크와 DLL 복사가 함께 깨진다.
+# (같은 종류의 문제로 zlib/minizip DLL 이름 때문에 POST_BUILD 체인이 통째로 죽은 적이 있다.
+#  그때는 alice_find_dll로 해결했는데, assimp는 링크 단계에서도 이름이 필요해 더 앞에서 정해야 한다.)
+# 그래서 설치된 파일에서 직접 찾아 이름을 만든다.
+function(alice_detect_assimp OUT_BASE LIB_DIR SUFFIX)
+    file(GLOB _candidates "${LIB_DIR}/assimp-vc*-mt${SUFFIX}.lib")
+    if(NOT _candidates)
+        message(FATAL_ERROR
+            "[Alice] assimp 라이브러리를 찾을 수 없습니다: ${LIB_DIR}/assimp-vc*-mt${SUFFIX}.lib\n"
+            "        vcpkg에서 assimp가 설치됐는지 확인하십시오.")
+    endif()
+    list(GET _candidates 0 _first)
+    get_filename_component(_name "${_first}" NAME_WE)   # 예: assimp-vc143-mt
+    set(${OUT_BASE} "${_name}" PARENT_SCOPE)
+endfunction()
+
+alice_detect_assimp(ALICE_ASSIMP_REL "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/lib"       "")
+alice_detect_assimp(ALICE_ASSIMP_DBG "${VCPKG_ROOT}/installed/${VCPKG_TRIPLET_DYNAMIC}/debug/lib" "d")
+message(STATUS "[Alice] assimp: Release=${ALICE_ASSIMP_REL} Debug=${ALICE_ASSIMP_DBG}")
+
+# ==========================================
 # [Link] 라이브러리 연결
 # ==========================================
 # 두 타겟 모두 동일한 라이브러리 의존성을 가짐
@@ -726,8 +751,8 @@ foreach(target Launch AlicePlayer)
             directxtk
             directxtex
             shell32
-            $<$<CONFIG:Debug>:assimp-vc143-mtd>
-            $<$<CONFIG:Release>:assimp-vc143-mt>
+            $<$<CONFIG:Debug>:${ALICE_ASSIMP_DBG}>
+            $<$<CONFIG:Release>:${ALICE_ASSIMP_REL}>
     )
 endforeach()
 
@@ -735,8 +760,8 @@ if(MSVC)
     foreach(target Launch AlicePlayer)
         target_link_libraries(${target} PRIVATE delayimp)
         target_link_options(${target} PRIVATE
-            "$<$<CONFIG:Debug>:/DELAYLOAD:assimp-vc143-mtd.dll>"
-            "$<$<NOT:$<CONFIG:Debug>>:/DELAYLOAD:assimp-vc143-mt.dll>"
+            "$<$<CONFIG:Debug>:/DELAYLOAD:${ALICE_ASSIMP_DBG}.dll>"
+            "$<$<NOT:$<CONFIG:Debug>>:/DELAYLOAD:${ALICE_ASSIMP_REL}.dll>"
             "$<$<CONFIG:Debug>:/DELAYLOAD:fmodL.dll>"
             "$<$<NOT:$<CONFIG:Debug>>:/DELAYLOAD:fmod.dll>"
             "$<$<CONFIG:Debug>:/DELAYLOAD:rttr_core_d.dll>"
@@ -808,7 +833,7 @@ alice_find_dll(ALICE_MINIZIP_DLL_DBG "${ALICE_VCPKG_BIN_DBG}" minizipd.dll miniz
 
 # assimp 본체 + assimp가 import하는 의존성
 set(ALICE_ASSIMP_DLLS_RELEASE
-    "${ALICE_VCPKG_BIN_REL}/assimp-vc143-mt.dll"
+    "${ALICE_VCPKG_BIN_REL}/${ALICE_ASSIMP_REL}.dll"
     "${ALICE_ZLIB_DLL_REL}"
     "${ALICE_MINIZIP_DLL_REL}"
     "${ALICE_VCPKG_BIN_REL}/poly2tri.dll"
@@ -816,7 +841,7 @@ set(ALICE_ASSIMP_DLLS_RELEASE
     "${ALICE_VCPKG_BIN_REL}/pugixml.dll"
 )
 set(ALICE_ASSIMP_DLLS_DEBUG
-    "${ALICE_VCPKG_BIN_DBG}/assimp-vc143-mtd.dll"
+    "${ALICE_VCPKG_BIN_DBG}/${ALICE_ASSIMP_DBG}.dll"
     "${ALICE_ZLIB_DLL_DBG}"
     "${ALICE_MINIZIP_DLL_DBG}"
     "${ALICE_VCPKG_BIN_DBG}/poly2tri.dll"
