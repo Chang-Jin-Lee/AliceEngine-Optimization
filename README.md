@@ -80,6 +80,11 @@ Scripts\run_bench.bat       :: legacy / current 각 2회, CSV와 PNG 생성
 `run_bench.bat`이 `--vsync=off --debug-draw=off --width=1920 --height=1080`을 고정합니다.
 계측용 실행과 PNG 덤프 실행을 분리해 돌립니다. PNG 덤프가 프레임 시간을 왜곡하기 때문입니다.
 
+측정에 쓴 `#01PrototypeMap` 씬은 배경 애셋 56개가 저장소에 없어서 클론한 상태로는 그대로 재현되지 않습니다.
+`.gitignore`에 개별 파일로 나열돼 있고, 언제 왜 넣었는지 기록이 남아 있지 않아 임의로 풀지 않았습니다.
+씬은 열리지만 일부 배경이 비어 보입니다. 측정 결과 자체는 [`Docs/data/`](Docs/data)의 CSV로 확인하실 수 있습니다.
+ECS 비교에 쓴 [`Assets/Scenes/Bench/EcsStress5000.scene`](Assets/Scenes/Bench)은 참조 애셋이 모두 들어 있어 그대로 열립니다.
+
 ---
 
 ## 남은 한계
