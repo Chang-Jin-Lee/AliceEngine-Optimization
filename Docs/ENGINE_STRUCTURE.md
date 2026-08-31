@@ -1,6 +1,6 @@
 # AliceRenderer 엔진 구조 가이드
 
-## 📋 목차
+## 목차
 1. [전체 엔진 구조](#전체-엔진-구조)
 2. [핵심 시스템](#핵심-시스템)
 3. [ScriptsBuild 시스템](#scriptsbuild-시스템)
@@ -13,7 +13,7 @@
 
 ## 전체 엔진 구조
 
-### 🏗️ 소스 계층 구조 (Engine/src 기준)
+### ️ 소스 계층 구조 (Engine/src 기준)
 
 ```
 Engine/src
@@ -56,7 +56,7 @@ Engine/src
     └── json/
 ```
 
-### 🧱 프로젝트 구성
+### 프로젝트 구성
 
 ```
 AliceRenderer
@@ -186,7 +186,7 @@ Awake → Start → Update → LateUpdate → FixedUpdate → OnDestroy
 - 머티리얼 그림자 강도: `MaterialComponent.shadowStrength` (UI: **Shadow Intensity**). 전역 값과 곱해져 적용됨.
 - ToonPBREditable 전용: `Toon Shadow Strength (Editable)`로 별도 보정 가능.
 - ToonPBREditable Ramp Intensity: `MaterialComponent.toonPbrRampIntensity`로 **툰의 검은 밴드만 완화**.
-- UI는 `0~1` 정규화 값이며, 셰이더에서 더 강한 범위로 매핑되어 적용됨.
+- UI는 `0~1` 정규화 값이며 셰이더에서 더 강한 범위로 매핑되어 적용됨.
 - 그림자 선명도는 `ShadowSettings.mapSizePx`(해상도)와 `shadowPcfRadius`(PCF 반경), `m_shadowResolutionScale`로 조절.
 
 ---
@@ -249,7 +249,7 @@ Awake → Start → Update → LateUpdate → FixedUpdate → OnDestroy
 
 ## ScriptsBuild 시스템
 
-### 📦 개요
+### 개요
 
 `ScriptsBuild`는 `Assets/Scripts`를 별도 DLL(`AliceScripts.dll`)로 빌드하는 프로젝트입니다.
 
@@ -258,14 +258,14 @@ Awake → Start → Update → LateUpdate → FixedUpdate → OnDestroy
 - 엔진/스크립트 빌드 분리
 - RTTR 등록 공유
 
-### 🧩 주요 포인트
+### 주요 포인트
 
 - 스크립트 공용 PCH: `Engine/src/Runtime/Scripting/ScriptPCH.h`
 - `IScript.h`에서 `TransformComponent` 기본 include
 - Debug PDB 이름을 타임스탬프 기반으로 변경해 잠금 회피
 - Release는 `/DEBUG:NONE` 옵션으로 PDB 비활성화
 
-### 🔄 핫 리로드 흐름 (에디터)
+### 핫 리로드 흐름 (에디터)
 1. `Reload Scripts` 클릭
 2. `cmake -S ScriptsBuild -B ScriptsBuild/build`
 3. `cmake --build ScriptsBuild/build --target AliceScripts`
@@ -275,12 +275,12 @@ Awake → Start → Update → LateUpdate → FixedUpdate → OnDestroy
 
 ## 빌드 프로세스
 
-### 📝 초기 빌드
+### 초기 빌드
 
 **권장**: 루트의 `Build.bat` 실행
 - 내부적으로 `Engine/Setup.bat` + `Engine/build_msvc.cmd` 수행
 
-### 🔨 수동 빌드 예시
+### 수동 빌드 예시
 
 ```
 cmake -S . -B build -G "Visual Studio 17 2022"
@@ -290,7 +290,7 @@ cmake -S ScriptsBuild -B ScriptsBuild/build -G "Visual Studio 17 2022"
 cmake --build ScriptsBuild/build --config Debug --target AliceScripts
 ```
 
-### 🎯 에디터 Build Game 버튼 (최종 패키징)
+### 에디터 Build Game 버튼 (최종 패키징)
 
 - 에디터가 **Debug/Release 어떤 구성으로 실행 중이든** 최종 게임 빌드는 **Release로 고정**됩니다.
   - `cmake --build build --config Release --target AlicePlayer`

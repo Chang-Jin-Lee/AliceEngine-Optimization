@@ -1,6 +1,6 @@
 # AliceRenderer 엔진 아키텍처 구조도
 
-## 📐 전체 시스템 계층 구조
+## 전체 시스템 계층 구조
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -28,7 +28,7 @@
 
 ---
 
-## 🎮 ECS (Entity Component System) 구조
+## ECS (Entity Component System) 구조
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -57,7 +57,7 @@
 
 ---
 
-## 🔄 게임 루프 흐름 (요약)
+## 게임 루프 흐름 (요약)
 
 ```
 Engine::Run()
@@ -79,7 +79,7 @@ Engine::Run()
 
 ---
 
-## 🧩 주요 모듈 요약
+## 주요 모듈 요약
 
 ### Runtime/Resources
 - `SceneManager`, `SceneFile`, `ResourceManager`, `Prefab`
@@ -106,7 +106,7 @@ Engine::Run()
 
 ---
 
-## 📁 파일 구조 (요약)
+## 파일 구조 (요약)
 
 ```
 Engine/src
@@ -135,7 +135,7 @@ Engine/src
 
 ---
 
-## 🔗 주요 의존성 관계
+## 주요 의존성 관계
 
 ```
 Engine
@@ -150,7 +150,7 @@ Engine
 
 ---
 
-## 💡 설계 패턴 요약
+## 설계 패턴 요약
 
 1. **ECS (Entity Component System)**
    - Sparse Set 기반 컴포넌트 저장

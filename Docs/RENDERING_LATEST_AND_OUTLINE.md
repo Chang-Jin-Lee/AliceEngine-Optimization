@@ -316,7 +316,7 @@
   - `Engine/src/Runtime/Rendering/DeferredRenderSystem.cpp`
 
 - 문제 2: `CameraHalfCutDemo` 리팩터링 도중 `ApplyPostProcess` 시그니처와 호출부 불일치
-- 해결: `timeSec` 전달 포함으로 통일하고, splitFx 시간 구동을 해당 함수 내부로 집약
+- 해결: `timeSec` 전달 포함으로 통일하고 splitFx 시간 구동을 해당 함수 내부로 집약
 
 - 문제 3: splitFx 신규 필드 baseline 복원이 누락되면 연출 종료 후 볼륨 상태가 남을 수 있음
 - 해결: baseline capture/restore에 `splitFx*` 값과 override 플래그를 모두 추가

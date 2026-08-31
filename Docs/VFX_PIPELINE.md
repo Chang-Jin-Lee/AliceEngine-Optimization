@@ -3,7 +3,7 @@
 ## 목표
 - Unity ParticleSystem 기반 프리팹을 `effect.json + resources/ + report.json`으로 추출해,
   AliceRenderer에서 `UnityVfxComponent`로 재생할 수 있게 한다.
-- v1은 **ComputeEffect 기반 매핑**으로 동작하며, 일부 모듈은 비지원(보고서에 기록).
+- v1은 **ComputeEffect 기반 매핑**으로 동작하며 일부 모듈은 비지원(보고서에 기록).
 - v2는 **UnityVfxMeshRenderSystem 기반 CPU 시뮬 + 전용 렌더**로,
   텍스처/머티리얼/트레일 등 “유니티 룩”에 필요한 모듈을 직접 반영한다.
 
@@ -76,12 +76,12 @@ Unity → Engine 매핑:
 ## 5) v2 런타임 구조 (UnityVfxMeshRenderSystem)
 
 ### 5.1 핵심 이유 (v1이 큐브/점처럼 보이는 원인)
-- v1은 ComputeEffect로 **스폰/시뮬만 매핑**하고,
+- v1은 ComputeEffect로 **스폰/시뮬만 매핑**하고
   실제 렌더는 DebugDraw 성격이라 텍스처/머티리얼/트레일이 적용되지 않는다.
 - 따라서 유니티의 “검기/아크” 룩은 v1만으로는 재현 불가.
 
 ### 5.2 시스템 개요
-`UnityVfxMeshRenderSystem`이 effect.json을 파싱해 CPU 시뮬을 돌리고,
+`UnityVfxMeshRenderSystem`이 effect.json을 파싱해 CPU 시뮬을 돌리고
 **Mesh/Billboard/Trail**을 직접 렌더링한다.
 
 - **EffectCache**: effect.json 파싱 결과 (EmitterDef 목록)

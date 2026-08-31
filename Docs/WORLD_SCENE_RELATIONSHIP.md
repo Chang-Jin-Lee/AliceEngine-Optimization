@@ -118,7 +118,7 @@ sceneManager->SwitchTo("SampleScene"); // 요청만 등록
 sceneManager->CommitPendingSceneChange(world);  // 실제 전환
 ```
 
-**중요**: 즉시 전환은 `SwitchToImmediate()`로만 수행되며,
+**중요**: 즉시 전환은 `SwitchToImmediate()`로만 수행되며
 이는 엔진 초기화/프레임 경계 안전 지점에서만 호출되어야 합니다.
 
 ---

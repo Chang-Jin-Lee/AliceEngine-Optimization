@@ -55,7 +55,7 @@
 
 위치: `Engine/src/Runtime/Engine/EngineWindow.cpp`
 
-아래 메시지에서 공통 처리로 **잠금을 강제 해제**하고,  
+아래 메시지에서 공통 처리로 **잠금을 강제 해제**하고  
 스크립트 쪽에서 포커스 복귀를 감지할 수 있도록 상태를 노출합니다.
 
 - `WM_SIZE` + `SIZE_MINIMIZED`

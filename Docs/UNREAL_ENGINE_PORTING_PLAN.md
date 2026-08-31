@@ -1,6 +1,6 @@
 # EGOSIS 언리얼 엔진 포팅 계획
 
-자체 엔진을 언리얼에서 그대로 다시 만드는 것이 아니라, EGOSIS의 전투 감각과 플레이 구조를 언리얼 기능 위로 옮기는 방식이 가장 현실적입니다. 엔진 시스템은 언리얼의 Actor, Component, Gameplay Framework, Enhanced Input, Animation Blueprint, Niagara, Level 시스템으로 치환하고, 직접 만든 로직 중 게임의 정체성에 해당하는 전투, 보스 패턴, 카메라, 타격 피드백을 우선 이식합니다.
+자체 엔진을 언리얼에서 그대로 다시 만드는 것이 아니라, EGOSIS의 전투 감각과 플레이 구조를 언리얼 기능 위로 옮기는 방식이 가장 현실적입니다. 엔진 시스템은 언리얼의 Actor, Component, Gameplay Framework, Enhanced Input, Animation Blueprint, Niagara, Level 시스템으로 치환하고 직접 만든 로직 중 게임의 정체성에 해당하는 전투, 보스 패턴, 카메라, 타격 피드백을 우선 이식합니다.
 
 ## 포팅 원칙
 
@@ -17,7 +17,7 @@
 | --- | --- | --- |
 | World, Entity, Component | Actor, Actor Component, Scene Component | 엔티티 단위 오브젝트는 Actor로, 기능 단위 데이터와 로직은 Component로 이동 |
 | GameObject 래퍼 | Actor API, Blueprint 노드 | 스크립트에서 자주 쓰던 조작은 Actor 함수로 정리 |
-| SceneManager | Level, Open Level, Level Streaming | 씬 전환은 Level 단위로 재구성하고, 필요한 경우 스트리밍 사용 |
+| SceneManager | Level, Open Level, Level Streaming | 씬 전환은 Level 단위로 재구성하고 필요한 경우 스트리밍 사용 |
 | ResourceManager | Content Browser, Asset Manager, Data Asset | 리소스 경로 직접 로딩보다 에셋 참조와 데이터 에셋 중심으로 전환 |
 | Prefab | Blueprint Class, Actor Blueprint | 반복 배치 오브젝트와 VFX 묶음은 Blueprint로 변환 |
 | ScriptSystem | C++ Class, Blueprint, Actor Component | 전투 로직은 C++ 기반, 연출 연결은 Blueprint 허용 |
@@ -94,7 +94,7 @@ FBX, 애니메이션, 텍스처, 사운드, VFX 원본을 언리얼 Content 폴�
 
 3. 플레이어 캐릭터 구성
 
-기존 플레이어 엔티티를 Character 클래스로 옮깁니다. 이동은 Character Movement를 우선 사용하고, 회피나 공격 중 이동은 Root Motion 또는 Movement Lock으로 제어합니다.
+기존 플레이어 엔티티를 Character 클래스로 옮깁니다. 이동은 Character Movement를 우선 사용하고 회피나 공격 중 이동은 Root Motion 또는 Movement Lock으로 제어합니다.
 
 4. 입력 이식
 
@@ -102,7 +102,7 @@ FBX, 애니메이션, 텍스처, 사운드, VFX 원본을 언리얼 Content 폴�
 
 5. 애니메이션 이식
 
-이동은 Animation Blueprint와 Blend Space로 구성하고, 공격과 회피는 Montage로 구성합니다. 타격 판정, VFX, 사운드는 Anim Notify로 연결합니다.
+이동은 Animation Blueprint와 Blend Space로 구성하고 공격과 회피는 Montage로 구성합니다. 타격 판정, VFX, 사운드는 Anim Notify로 연결합니다.
 
 6. 전투 시스템 이식
 
@@ -110,7 +110,7 @@ FBX, 애니메이션, 텍스처, 사운드, VFX 원본을 언리얼 Content 폴�
 
 7. 카메라와 락온 이식
 
-Spring Arm과 Camera Component를 사용해 기본 추적 카메라를 만들고, 락온 시 타깃 방향 보정과 카메라 회전을 제어합니다. 기존 자체 엔진의 카메라 쉐이크와 FOV 연출은 Camera Manager 또는 Camera Shake로 옮깁니다.
+Spring Arm과 Camera Component를 사용해 기본 추적 카메라를 만들고 락온 시 타깃 방향 보정과 카메라 회전을 제어합니다. 기존 자체 엔진의 카메라 쉐이크와 FOV 연출은 Camera Manager 또는 Camera Shake로 옮깁니다.
 
 8. VFX 이식
 
@@ -122,7 +122,7 @@ Deferred Outline, HalfCut, 절단면 FX는 언리얼 Material과 Post Process Ma
 
 10. 레벨과 로딩 구성
 
-기존 Scene 파일은 언리얼 Level로 재배치합니다. 반복 배치 오브젝트는 Blueprint Class로 만들고, 시작 로딩은 Game Instance와 Level 전환 흐름에서 처리합니다.
+기존 Scene 파일은 언리얼 Level로 재배치합니다. 반복 배치 오브젝트는 Blueprint Class로 만들고 시작 로딩은 Game Instance와 Level 전환 흐름에서 처리합니다.
 
 ## 상태별 작업 계획
 
@@ -153,7 +153,7 @@ stateDiagram-v2
 | --- | --- |
 | 자체 ECS를 언리얼에 그대로 만들려는 시도 | Actor와 Component에 맞춰 구조를 단순화 |
 | Root Motion 거리와 충돌 캡슐이 맞지 않음 | Montage별 Root Motion 적용 여부와 Capsule 이동을 따로 검증 |
-| 기존 VFX와 Niagara의 모양이 다름 | 연출 목적을 기준으로 새로 제작하고, 기존 영상은 레퍼런스로 사용 |
+| 기존 VFX와 Niagara의 모양이 다름 | 연출 목적을 기준으로 새로 제작하고 기존 영상은 레퍼런스로 사용 |
 | 전투 로직을 Blueprint에 모두 넣어 복잡해짐 | 판정과 상태는 C++, 수치와 연출 연결은 Blueprint로 분리 |
 | 첫 단계부터 모든 시스템을 옮기려 함 | 플레이어, 보스 1종, 테스트 맵 하나로 먼저 검증 |
 

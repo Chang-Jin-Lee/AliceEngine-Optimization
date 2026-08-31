@@ -60,7 +60,7 @@ Engine/src/Editor
     └── PreloadAssetEditor.cpp       # Preload.json 전용 편집기
 ```
 
-> **EditorCore는 “오케스트레이터”**이며, 각 창/도구/에셋 편집기는 별도 파일로 분리되어 있습니다.
+> **EditorCore는 “오케스트레이터”**이며 각 창/도구/에셋 편집기는 별도 파일로 분리되어 있습니다.
 
 ---
 
@@ -126,7 +126,7 @@ Engine/src/Editor
 - `EditorUndoRedo.h` : `ExecuteUndo`, `ExecuteRedo`, `ClearUndoStack` API
 - `EditorUndoRedo.cpp` : 실제 Undo/Redo 스택 관리 + `EditorCore::PushCommand`
 
-> **원칙**: 씬 상태 변경 시 `PushCommand(...)`로 기록하며, `g_SceneDirty`를 갱신합니다.
+> **원칙**: 씬 상태 변경 시 `PushCommand(...)`로 기록하며 `g_SceneDirty`를 갱신합니다.
 
 ---
 

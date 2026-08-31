@@ -1,6 +1,6 @@
 # ECS vs OOP: 로우레벨 캐시 카운터 측정 (Task 7)
 
-## 왜 이걸 쟀는가
+## 배경
 
 Task 6까지의 `EcsVsOopBench`는 **시간**(add/step/random/remove의 median/min/max)과 **메모리**(할당 횟수·바이트,
 peak live bytes, working set)를 쟀다. 이 저장소 안의 가장 가까운 근거는 `Docs/Wiki/ecs.html:146`의
@@ -11,15 +11,15 @@ peak live bytes, working set)를 쟀다. 이 저장소 안의 가장 가까운 �
 가상 함수 디스패치 비용, 할당자 오버헤드 등 다른 요인으로도 설명될 수 있다.
 
 이 태스크는 CPU의 하드웨어 성능 카운터(PMU/PMC)를 직접 읽어 LLC(L3) 참조/미스, 명령어 리타이어,
-코어 사이클을 실측하고, "캐시 미스 자체가 줄었는가"라는 질문에 숫자로 답한다.
+코어 사이클을 실측하고 "캐시 미스 자체가 줄었는가"라는 질문에 숫자로 답한다.
 
-## 어떤 도구를 어떻게 찾았는가
+## 도구 탐색
 
 컨트롤러가 이미 확인해 준 사실(`task-7-brief-revised.md`): xperf 경로, 버전 10.0.26100, 관리자 권한,
-`-pmusources`가 아니라 `-pmcsources`가 맞는 플래그. 아래는 그걸 이 기계에서 직접 재확인하고,
+`-pmusources`가 아니라 `-pmcsources`가 맞는 플래그. 아래는 그걸 이 기계에서 직접 재확인하고
 그 다음 실제로 카운터 데이터를 뽑아내기까지 시도한 순서를 그대로 남긴 것이다.
 
-### Step 1 — `-pmcsources` 재확인
+### 1. `-pmcsources` 확인
 
 ```
 > "C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\xperf.exe" -pmcsources
@@ -47,11 +47,11 @@ Id  Name                             Interval  Min      Max
  36 TimerFixed                          10000  1221    1000000
 ```
 
-컨트롤러가 옮겨 둔 6개 항목과 이름·ID가 정확히 일치했고, 그 외에 `BranchInstructions`,
+컨트롤러가 옮겨 둔 6개 항목과 이름·ID가 정확히 일치했고 그 외에 `BranchInstructions`,
 `UnhaltedReferenceCycles`, `LbrInserts` 등 추가 소스도 보였다. "Maximum selectable profile sources: 9"
 라는 상한도 확인했다 — 우리가 쓸 4~5개는 여유 안이다.
 
-### Step 2 — `-help start`로 `-Pmc`/`-PmcProfile` 문법 확인
+### 2. `-Pmc` 문법 확인
 
 ```
 	-Pmc        counters events [strict] Dump hardware counters values with specified
@@ -68,7 +68,7 @@ Id  Name                             Interval  Min      Max
 
 브리프에 적힌 그대로였다.
 
-### Step 3 — `-help processing`으로 `pmc` 액션 확인, 그리고 첫 번째 막다른 길
+### 3. `pmc` 액션 — 첫 번째 막다른 길
 
 ```
 	pmc              Show Rollover Processor Counters Information
@@ -92,7 +92,7 @@ The trace you have just captured "...\pmu_test.etl" may contain personally ident
 발생 시 카운터 값을 "덤프"하는 방식)는 다른 이벤트 이름으로 기록되고 있었다 — 브리프가 예상한
 "Rollover 정보"라는 이름 그대로, `-a pmc` 액션은 우리가 쓴 방식의 리포트가 아니었다.
 
-### Step 4 — 두 번째 시도: `-a cswitch`
+### 4. `-a cswitch` — 두 번째 막다른 길
 
 혹시 컨텍스트 스위치 리포트에 카운터 열이 같이 붙어 나오나 확인했다.
 
@@ -105,7 +105,7 @@ The trace you have just captured "...\pmu_test.etl" may contain personally ident
 
 CPU별 사용률 요약표였다. PMC 값과는 무관했다 — 막다른 길.
 
-### Step 5 — 세 번째 시도: `-a tracestats`로 트레이스 안에 실제로 뭐가 있는지 확인
+### 5. `-a tracestats`로 이벤트 확인
 
 ```
 > xperf -i Artifacts\pmu_test.etl -tle -tti -o Artifacts\pmu_test_stats.csv -a tracestats
@@ -120,7 +120,7 @@ Total # Lost Events  : 0
 버퍼 유실이 없었다는 것은 확인했다 — 데이터가 없는 게 아니라 리포트 액션이 안 맞는 것이라는 심증을
 굳혔다.
 
-### Step 6 — 성공: 기본 `-a dumper`(원본 이벤트 텍스트 덤프)로 실제 이벤트 이름 확인
+### 6. `-a dumper`로 해결
 
 ```
 > xperf -i Artifacts\pmu_short.etl -tle -tti -o Artifacts\pmu_short_dump.txt -a dumper
@@ -134,7 +134,7 @@ Total # Lost Events  : 0
 `-Pmc` 인자로 넘긴 이벤트/카운터 순서 그대로다. **`-a pmc` 처리 액션이 아니라 원본 이벤트 덤퍼
 (`-a dumper`, 인자를 생략했을 때의 기본 액션)를 쓰고 텍스트를 직접 파싱해야 한다**는 것이 이 태스크
 도구 조사의 결론이다. `xperf -help processing`의 액션 이름과 실제 이벤트 클래스 이름이 다르다는
-것은 문서에 없었고, 실측으로만 알 수 있었다.
+것은 문서에 없었고 실측으로만 알 수 있었다.
 
 ### 원시 데이터 형태
 
@@ -148,24 +148,24 @@ Total # Lost Events  : 0
 `ThreadID` 필드가 있어 스레드별로 필터링할 수 있다. 값은 누적(cumulative)으로 보이고 — 뒷부분에서
 설명하겠지만 완전히 단조증가는 아니었다(뒤의 한계 참고).
 
-## 격리 실행 모드와 기본 경로 불변 검증
+## 격리 실행 모드
 
 ### 구현
 
 `main.cpp`에 `--isolate=ecs|oop --n=<N> --op=step --seconds=<S>` 인자를 추가했다(Ruling 16).
 `ParseIsolateArgs`가 `argc==1`(인자 없음)일 때 `requested=false`를 반환하므로 `main()`의 기존 로직은
-한 줄도 건드리지 않고 그대로 실행된다. 격리 모드 진입 판정은 `main()` 최상단에서 한 번만 하고,
+한 줄도 건드리지 않고 그대로 실행된다. 격리 모드 진입 판정은 `main()` 최상단에서 한 번만 하고
 `MeasureBackend`/`MeasurePeakLiveBytes`의 본문은 전혀 수정하지 않았다 — 격리 모드는 `RunIsolate<Backend>`라는
 완전히 별도의 템플릿 함수다. 스레드 친화도(logical processor 2)/우선순위 설정은 기존 코드와 동일한
-Win32 호출을 격리 모드에서 다시 수행한다(중복이지만, 감사된 기존 코드 경로를 건드리지 않기 위한
+Win32 호출을 격리 모드에서 다시 수행한다(중복이지만 감사된 기존 코드 경로를 건드리지 않기 위한
 의도적 선택이다).
 
-격리 모드는 `Backend backend; backend.Add(...)`로 N개를 채우고, 워밍업으로 `Step()`을 5회 돌린 뒤(트레이스
+격리 모드는 `Backend backend; backend.Add(...)`로 N개를 채우고 워밍업으로 `Step()`을 5회 돌린 뒤(트레이스
 밖에서 캐시/TLB를 데운다), `QueryPerformanceCounter` 기반 `ScopedTimer`로 지정한 초 동안 `Step(0.016f)`을
-반복하고, `stepCount`·`elapsedMs`·`componentUpdates`(= stepCount × N × 3컴포넌트)를 표준출력에 찍고 종료한다.
+반복하고 `stepCount`·`elapsedMs`·`componentUpdates`(= stepCount × N × 3컴포넌트)를 표준출력에 찍고 종료한다.
 `--op=step` 외의 값은 명시적으로 미지원 처리한다(브리프가 요구한 가장 중요한 케이스만 구현).
 
-### 기본 경로 불변 검증 (절대 조건)
+### 기본 경로 불변 검증
 
 빌드:
 ```
@@ -205,7 +205,7 @@ ECS가 OOP보다 초당 Step() 호출 수가 약 2.77배 많다 — Task 6의 �
 OOP보다 여러 배 빠름)과 방향이 일치해 격리 모드 자체의 정합성도 확인됐다. 격리 모드는 `Artifacts/`의
 CSV·env 파일을 전혀 건드리지 않는다(코드 상에서 해당 경로에 `fopen`을 호출하지 않음).
 
-## 측정 절차와 얻은 수치
+## 측정과 수치
 
 ### 트레이스 채집
 
@@ -267,12 +267,12 @@ PMC 채집 구간(첫~마지막 샘플)이 벤치가 보고한 5.000초 타이�
 ## 해석
 
 **N=1,000과 N=50,000 사이에 배율이 실제로 벌어졌다 (3.67배 → 14.64배).** 이건 포트폴리오 주장과
-"방향이 맞고, 그것도 브리프가 예측한 정확한 모양(작은 N에서는 차이가 작고, 큰 N에서 벌어진다)으로"
+"방향이 맞고 그것도 브리프가 예측한 정확한 모양(작은 N에서는 차이가 작고 큰 N에서 벌어진다)으로"
 나온 결과다. 작은 N(둘 다 L2에 들어가는 크기)에서도 OOP가 이미 3.67배 더 많은 캐시 미스를 내는 건,
 `std::make_unique`로 흩어놓은 개별 힙 할당(엔티티당 GameObject 1개 + Behaviour 3개, 총 4번의 개별
 할당)이 캐시 라인 활용을 근본적으로 나쁘게 만들기 때문으로 해석된다 — 데이터가 전부 L2/L3에
 "들어간다"는 것과 "한 캐시 라인을 알차게 쓴다"는 것은 다른 얘기다. N=50,000(`_msize` 기반 실측
-peakLiveBytes로 ECS 6.17MiB, OOP 9.86MiB — `Docs/ECS_VS_OOP.md`의 결과: 메모리 참고. 둘 다 L3 36MB 안에는
+peakLiveBytes로 ECS 6.17MiB, OOP 9.86MiB — `Docs/ECS_VS_OOP.md`의 메모리 절 참고. 둘 다 L3 36MB 안에는
 들어감)에서 배율이 14.64배로
 벌어지는 것은, 데이터셋이 L2(2MB)를 넘어서면서 ECS는 여전히 조밀한 배열 순회로 L3 대역폭을 효율적으로
 쓰는 반면 OOP는 포인터 추적이 L3 수준에서도 계속 새 캐시 라인을 만들어내기 때문으로 보인다.
@@ -285,13 +285,13 @@ N에 따라 더 크다**(1,000→50,000 사이 ECS는 5.51→5.08로 7.8% 하락
 높은 수치가 나오는데, 이는 실제로 캐시가 자주 미스한다는 뜻이 아니라 LLC까지 내려가는 참조 자체가
 워낙 적어서(5초에 780만~930만 건, N=50,000의 22억~44억 건과 비교하면 300배 이상 적다) 분모가 작아
 비율이 배경 잡음에 좌우된다는 뜻으로 해석해야 한다. N=1,000 워크로드는 데이터가 L2에 상주하므로
-Step() 루프 자체는 L3를 거의 건드리지 않고, 관측된 LLC 참조는 OS/다른 프로세스의 배경 활동이 상당
+Step() 루프 자체는 L3를 거의 건드리지 않고 관측된 LLC 참조는 OS/다른 프로세스의 배경 활동이 상당
 부분 섞였을 가능성이 크다. 반대로 "컴포넌트 갱신당 LLC 미스"(분모가 우리가 아는 작업량)는 N=1,000에서도
-noise에 덜 휘둘리는 지표이고, 그 값 자체가 3.67배 차이를 보였다는 게 이 태스크의 더 믿을 만한 결론이다.
+noise에 덜 휘둘리는 지표이고 그 값 자체가 3.67배 차이를 보였다는 게 이 태스크의 더 믿을 만한 결론이다.
 
 "Sparse Set으로 캐시 효율을 높인다"(`Docs/Wiki/ecs.html:146`)는 주장은 **이 측정 범위(N=1,000~50,000,
 Step() 연산)에서는 방향과 규모 모두 지지된다.** 다만 이 결론은 이 벤치마크의 특정 워크로드(3개
-컴포넌트, 단순 부동소수점 연산, 순차 접근)에 한정된 것이고, random-access 패턴이나 다른 N 구간까지
+컴포넌트, 단순 부동소수점 연산, 순차 접근)에 한정된 것이고 random-access 패턴이나 다른 N 구간까지
 일반화하려면 별도 측정이 필요하다는 점은 분명히 해 둔다.
 
 ## 한계
@@ -300,7 +300,7 @@ Step() 연산)에서는 방향과 규모 모두 지지된다.** 다만 이 결�
    덤프한다. 두 덤프 사이에 우리 스레드가 아닌 다른 무언가(DPC/ISR, 타이머 인터럽트로 인한 idle
    스레드로의 짧은 전환)가 같은 논리 프로세서 2번에서 실행됐다면 그 활동의 카운트가 우리 스레드의
    델타에 섞여 들어간다. 스레드 친화도+HIGH_PRIORITY_CLASS 덕에 표본 수가 적다(20~190개/5초)는 것
-   자체가 그런 간섭이 드물었다는 정황이지만, 완전히 배제하지는 못한다.
+   자체가 그런 간섭이 드물었다는 정황이지만 완전히 배제하지는 못한다.
 
 2. **첫 구간의 비단조성(non-monotonic) 관측 — 원인 미확정.** 4개 트레이스 전부에서 프로세스 시작
    직후 첫 5~10개 샘플이 단조증가하지 않고 한 번 이상 요동친다(예: ecs N=50000에서 값이 100248 →
@@ -334,6 +334,6 @@ Step() 연산)에서는 방향과 규모 모두 지지된다.** 다만 이 결�
    나눈 값)를 주 지표로 삼은 이유다.
 
 6. **표본 1개 프로세스, 1회 실행.** Task 6의 시간 측정은 11회 반복(워밍업 2회 제외 9회)의
-   중앙값을 쓰지만, 이 PMC 측정은 조합당 1회 실행(5초)만 했다 — xperf 트레이스 채집 자체가
+   중앙값을 쓰지만 이 PMC 측정은 조합당 1회 실행(5초)만 했다 — xperf 트레이스 채집 자체가
    무겁고(파일 100MB+, 덤프 500MB+) 시간이 오래 걸려 반복 스윕을 하기엔 무리였다. 실행 간 분산은
    확인하지 못했다.
